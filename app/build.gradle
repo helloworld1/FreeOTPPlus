@@ -14,5 +14,6 @@ android {
         versionName "1.0"
         minSdkVersion 20
         targetSdkVersion 23
+        applicationId "org.liberty.android.freeotpplus"
     }
 }
