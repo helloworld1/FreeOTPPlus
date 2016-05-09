@@ -25,16 +25,21 @@
         android:showAsAction="ifRoom"
         android:icon="@drawable/qrcode"
         android:title="@string/scan_qr_code" />
-
     <item
         android:id="@+id/action_add"
         android:showAsAction="ifRoom"
         android:icon="@drawable/ic_action_new_account"
         android:title="@string/add_token" />
-
+    <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_import"
+        android:title="@string/import_text" />
+    <item
+        android:id="@+id/action_export"
+        android:icon="@drawable/ic_export"
+        android:title="@string/export_text" />
     <item
         android:id="@+id/action_about"
-        android:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/about_freeotp" />
 </menu>

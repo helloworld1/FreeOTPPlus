@@ -36,6 +36,10 @@
 
 package org.fedorahosted.freeotp;
 
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.ParcelFileDescriptor;
+import android.widget.Toast;
 import org.fedorahosted.freeotp.add.AddActivity;
 import org.fedorahosted.freeotp.add.ScanActivity;
 
@@ -51,9 +55,23 @@ import android.view.View;
 import android.view.WindowManager.LayoutParams;
 import android.widget.GridView;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class MainActivity extends Activity implements OnMenuItemClickListener {
     private TokenAdapter mTokenAdapter;
     private DataSetObserver mDataSetObserver;
+    private Handler handler;
+    private TokenPersistence tokenPersistence;
+
+
+    private static final int READ_REQUEST_CODE = 42;
+
+    private static final int WRITE_REQUEST_CODE = 43;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +96,8 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
             }
         };
         mTokenAdapter.registerDataSetObserver(mDataSetObserver);
+
+        tokenPersistence = new TokenPersistence(this);
     }
 
     @Override
@@ -104,6 +124,8 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         menu.findItem(R.id.action_scan).setVisible(ScanActivity.haveCamera());
         menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this);
         menu.findItem(R.id.action_add).setOnMenuItemClickListener(this);
+        menu.findItem(R.id.action_import).setOnMenuItemClickListener(this);
+        menu.findItem(R.id.action_export).setOnMenuItemClickListener(this);
         menu.findItem(R.id.action_about).setOnMenuItemClickListener(this);
         return true;
     }
@@ -111,18 +133,26 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.action_scan:
-            startActivity(new Intent(this, ScanActivity.class));
-            overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-            return true;
+            case R.id.action_scan:
+                startActivity(new Intent(this, ScanActivity.class));
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                return true;
 
-        case R.id.action_add:
-            startActivity(new Intent(this, AddActivity.class));
-            return true;
+            case R.id.action_add:
+                startActivity(new Intent(this, AddActivity.class));
+                return true;
 
-        case R.id.action_about:
-            startActivity(new Intent(this, AboutActivity.class));
-            return true;
+            case R.id.action_import:
+                performFileSearch();
+                return true;
+
+            case R.id.action_export:
+                createFile("application/json", "freeotp-backup.json");
+                return true;
+
+            case R.id.action_about:
+                startActivity(new Intent(this, AboutActivity.class));
+                return true;
         }
 
         return false;
@@ -135,5 +165,136 @@ public class MainActivity extends Activity implements OnMenuItemClickListener {
         Uri uri = intent.getData();
         if (uri != null)
             TokenPersistence.addWithToast(this, uri.toString());
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
+        // response to some other intent, and the code below shouldn't run at all.
+
+        if (requestCode == WRITE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.
+            // Pull that URI using resultData.getData().
+            Uri uri = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                exportToFile(uri);
+            }
+        }
+
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
+        // response to some other intent, and the code below shouldn't run at all.
+
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.
+            // Pull that URI using resultData.getData().
+            Uri uri = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                importFromFile(uri);
+            }
+        }
+    }
+
+
+    /**
+     * Fires an intent to spin up the "file chooser" UI and select an image.
+     */
+    public void performFileSearch() {
+        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+        // browser.
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as a
+        // file (as opposed to a list of contacts or timezones)
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Filter to show only images, using the image MIME data type.
+        // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
+        // To search for all documents available via installed storage providers,
+        // it would be "*/*".
+        intent.setType("application/json");
+
+        startActivityForResult(intent, READ_REQUEST_CODE);
+    }
+
+    private void createFile(String mimeType, String fileName) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType(mimeType);
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        startActivityForResult(intent, WRITE_REQUEST_CODE);
+    }
+
+    private void exportToFile(final Uri uri) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    ParcelFileDescriptor pfd = MainActivity.this.getContentResolver().openFileDescriptor(uri, "w");
+                    FileOutputStream fileOutputStream =
+                        new FileOutputStream(pfd.getFileDescriptor());
+                    fileOutputStream.write(tokenPersistence.toJSON().getBytes());
+                    // Let the document provider know you're done by closing the stream.
+                    fileOutputStream.close();
+                    pfd.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Toast.makeText(MainActivity.this, R.string.export_succeeded_text, Toast.LENGTH_LONG).show();
+            }
+        }.execute((Void)null);
+    }
+
+    private void importFromFile(final Uri uri) {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line);
+                    }
+                    inputStream.close();
+                    String jsonString = stringBuilder.toString();
+                    tokenPersistence.importFromJSON(jsonString);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Toast.makeText(MainActivity.this, R.string.import_succeeded_text, Toast.LENGTH_LONG).show();
+                mTokenAdapter.notifyDataSetChanged();
+            }
+        }.execute((Void) null);
     }
 }

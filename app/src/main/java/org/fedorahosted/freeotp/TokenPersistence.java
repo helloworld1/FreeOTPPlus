@@ -1,9 +1,11 @@
 package org.fedorahosted.freeotp;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.gson.reflect.TypeToken;
 import org.fedorahosted.freeotp.Token.TokenUriInvalidException;
 
 import android.content.Context;
@@ -13,7 +15,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 
 public class TokenPersistence {
     private static final String NAME  = "tokens";
@@ -105,5 +106,27 @@ public class TokenPersistence {
 
     public void save(Token token) {
         prefs.edit().putString(token.getID(), gson.toJson(token)).apply();
+    }
+
+    public String toJSON() {
+        List<Token> tokenList = new ArrayList<>(length());
+        for (int i = 0; i < length(); i++) {
+            tokenList.add(get(i));
+        }
+
+        List<String> tokenOrder = getTokenOrder();
+
+        return gson.toJson(new SavedTokens(tokenList, tokenOrder));
+    }
+
+    public void importFromJSON(String jsonString) {
+        SavedTokens savedTokens = gson.fromJson(jsonString, SavedTokens.class);
+
+        setTokenOrder(savedTokens.getTokenOrder()).apply();
+
+        for (Token token : savedTokens.getTokens()) {
+            save(token);
+        }
+        prefs.edit().apply();
     }
 }

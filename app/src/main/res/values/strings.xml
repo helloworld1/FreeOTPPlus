@@ -37,6 +37,10 @@
 
     <string name="delete_summary">This is your last chance: if you delete this token, it will be gone forever. It will not be disabled on the server.</string>
     <string name="delete_question">Delete this token?</string>
+    <string name="import_text">Import</string>
+    <string name="export_text">Export</string>
+    <string name="export_succeeded_text">Export succeeded.</string>
+    <string name="import_succeeded_text">Import succeeded</string>
 
     <string-array name="algorithms">
         <item>MD5</item>
