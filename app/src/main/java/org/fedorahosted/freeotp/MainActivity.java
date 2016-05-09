@@ -39,6 +39,8 @@ package org.fedorahosted.freeotp;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 import org.fedorahosted.freeotp.add.AddActivity;
 import org.fedorahosted.freeotp.add.ScanActivity;
@@ -62,7 +64,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class MainActivity extends Activity implements OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener {
     private TokenAdapter mTokenAdapter;
     private DataSetObserver mDataSetObserver;
     private Handler handler;
