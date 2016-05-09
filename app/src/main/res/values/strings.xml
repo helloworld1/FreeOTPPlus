@@ -37,6 +37,7 @@
     <string name="export_text">Export</string>
     <string name="export_succeeded_text">Export succeeded.</string>
     <string name="import_succeeded_text">Import succeeded</string>
+    <string name="camera_permission_denied_text">Camera permission denied</string>
 
     <string-array name="algorithms">
         <item>MD5</item>

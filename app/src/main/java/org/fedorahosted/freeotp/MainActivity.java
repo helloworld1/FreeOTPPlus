@@ -36,10 +36,13 @@
 
 package org.fedorahosted.freeotp;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 import org.fedorahosted.freeotp.add.AddActivity;
@@ -65,6 +68,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity implements OnMenuItemClickListener {
+    private static final int CAMERA_PERMISSION_REQUEST = 10;
     private TokenAdapter mTokenAdapter;
     private DataSetObserver mDataSetObserver;
     private Handler handler;
@@ -136,8 +140,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_scan:
-                startActivity(new Intent(this, ScanActivity.class));
-                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                scanQRCode();
                 return true;
 
             case R.id.action_add:
@@ -228,6 +231,26 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         startActivityForResult(intent, READ_REQUEST_CODE);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_PERMISSION_REQUEST: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(new Intent(this, ScanActivity.class));
+                    overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                } else {
+                    Toast.makeText(this, R.string.camera_permission_denied_text, Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
     private void createFile(String mimeType, String fileName) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
 
@@ -240,6 +263,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         startActivityForResult(intent, WRITE_REQUEST_CODE);
     }
+
+    private void scanQRCode() {
+        if (ContextCompat.checkSelfPermission(this,
+            Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA},
+                CAMERA_PERMISSION_REQUEST);
+        } else {
+            startActivity(new Intent(this, ScanActivity.class));
+            overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+        }
+    }
+
 
     private void exportToFile(final Uri uri) {
         new AsyncTask<Void, Void, Void>() {
