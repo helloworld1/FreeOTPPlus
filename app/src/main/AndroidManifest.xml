@@ -20,14 +20,7 @@
    -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.fedorahosted.freeotp"
-    android:versionCode="17"
-    android:versionName="1.5" >
-
-    <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="20" />
-
+    package="org.fedorahosted.freeotp">
     <supports-screens
         android:smallScreens="true"
         android:normalScreens="true"
