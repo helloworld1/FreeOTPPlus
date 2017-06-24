@@ -18,30 +18,26 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add;
+package org.fedorahosted.freeotp.add
 
-import android.app.Activity;
-import android.text.Editable;
+import android.app.Activity
+import android.text.Editable
 
-public class AddSecretTextWatcher extends AddTextWatcher {
-    public AddSecretTextWatcher(Activity activity) {
-        super(activity);
-    }
+class AddSecretTextWatcher(activity: Activity) : AddTextWatcher(activity) {
 
-    @Override
-    public void afterTextChanged(Editable s) {
-        if (s.length() != 0) {
+    override fun afterTextChanged(s: Editable) {
+        if (s.length != 0) {
             // Ensure that = is only permitted at the end
-            boolean haveData = false;
-            for (int i = s.length() - 1; i >= 0; i--) {
-                char c = s.charAt(i);
+            var haveData = false
+            for (i in s.length - 1 downTo 0) {
+                val c = s[i]
                 if (c != '=')
-                    haveData = true;
+                    haveData = true
                 else if (haveData)
-                    s.delete(i, i + 1);
+                    s.delete(i, i + 1)
             }
         }
 
-        super.afterTextChanged(s);
+        super.afterTextChanged(s)
     }
 }

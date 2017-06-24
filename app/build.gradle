@@ -1,22 +1,39 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+    maven { url 'https://maven.google.com' }
+}
 
 dependencies {
-    compile 'com.android.support:support-v4:23.3.0'
-    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.google.zxing:core:3.2.1'
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.google.code.gson:gson:2.7'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.3'
     defaultConfig {
         versionCode 1
         versionName "1.0"
         minSdkVersion 19
-        targetSdkVersion 23
+        targetSdkVersion 25
         applicationId "org.liberty.android.freeotpplus"
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "FreeOTP+ Dev"
+        }
+        release {
+            resValue "string", "app_name", "FreeOTP+"
+        }
     }
 }
