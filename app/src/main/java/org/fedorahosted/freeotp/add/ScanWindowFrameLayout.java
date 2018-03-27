@@ -18,28 +18,33 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add
+package org.fedorahosted.freeotp.add;
 
-import android.content.Context
-import android.util.AttributeSet
-import android.widget.FrameLayout
+import android.content.Context;
+import android.util.AttributeSet;
+import android.widget.FrameLayout;
 
-class ScanWindowFrameLayout : FrameLayout {
-    constructor(context: Context) : super(context) {}
+public class ScanWindowFrameLayout extends FrameLayout {
+    public ScanWindowFrameLayout(Context context) {
+        super(context);
+    }
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
+    public ScanWindowFrameLayout(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {}
+    public ScanWindowFrameLayout(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+    }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        var widthMeasureSpec = widthMeasureSpec
-        var heightMeasureSpec = heightMeasureSpec
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Ensure that this view is always a square.
         if (widthMeasureSpec > heightMeasureSpec)
-            widthMeasureSpec = heightMeasureSpec
+            widthMeasureSpec = heightMeasureSpec;
         else
-            heightMeasureSpec = widthMeasureSpec
+            heightMeasureSpec = widthMeasureSpec;
 
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 }

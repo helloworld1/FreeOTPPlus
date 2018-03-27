@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.findItem(R.id.action_scan).setVisible(ScanActivity.Companion.haveCamera());
+        menu.findItem(R.id.action_scan).setVisible(ScanActivity.haveCamera());
         menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this);
         menu.findItem(R.id.action_add).setOnMenuItemClickListener(this);
         menu.findItem(R.id.action_import).setOnMenuItemClickListener(this);
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
 
         Uri uri = intent.getData();
         if (uri != null)
-            TokenPersistence.Companion.addWithToast(this, uri.toString());
+            TokenPersistence.addWithToast(this, uri.toString());
     }
 
     @Override
