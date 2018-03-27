@@ -1,22 +1,21 @@
 apply plugin: 'com.android.application'
 
 dependencies {
-    compile 'com.android.support:support-v4:23.3.0'
-    compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'com.google.zxing:core:3.2.1'
-    compile 'com.google.code.gson:gson:2.4'
-    compile 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
 
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
     defaultConfig {
         versionCode 1
         versionName "1.0"
         minSdkVersion 19
-        targetSdkVersion 23
+        targetSdkVersion 26
         applicationId "org.liberty.android.freeotpplus"
     }
 }
