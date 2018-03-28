@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -106,6 +107,19 @@ public class EditActivity extends BaseActivity implements TextWatcher, View.OnCl
         mLabel.setText(mLabelCurrent);
         mIssuer.setText(mIssuerCurrent);
         mIssuer.setSelection(mIssuer.getText().length());
+
+        // Token details
+        TextView algorithmTextView = findViewById(R.id.algorithm);
+        algorithmTextView.setText(token.getAlgorithm());
+
+        TextView digitsTextView = findViewById(R.id.digits);
+        digitsTextView.setText(String.valueOf(token.getDigits()));
+
+        TextView secretTextView = findViewById(R.id.secret);
+        secretTextView.setText(token.getSecret());
+
+        TextView intervalTextView = findViewById(R.id.interval);
+        intervalTextView.setText(String.valueOf(token.getPeriod()));
     }
 
     @Override

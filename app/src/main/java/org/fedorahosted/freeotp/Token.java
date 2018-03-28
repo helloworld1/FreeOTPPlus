@@ -303,4 +303,16 @@ public class Token {
 
         return null;
     }
+
+    public String getSecret() {
+        return Base32String.encode(secret);
+    }
+
+    public String getAlgorithm() {
+        return algo;
+    }
+
+    public int getPeriod() {
+        return period;
+    }
 }

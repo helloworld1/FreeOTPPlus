@@ -19,6 +19,7 @@
    - limitations under the License.
    -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -30,6 +31,71 @@
         android:orientation="vertical">
         <include layout="@layout/metadata" />
 
+        <TextView
+            android:id="@+id/token_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="Token details"/>
+        <TextView
+            android:id="@+id/algorithm_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/algorithm"/>
+        <TextView
+            android:id="@+id/algorithm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <TextView
+            android:id="@+id/digits_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/digits"/>
+        <TextView
+            android:id="@+id/digits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <TextView
+            android:id="@+id/secret_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/secret"/>
+        <TextView
+            android:id="@+id/secret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <TextView
+            android:id="@+id/interval_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="@string/interval"/>
+        <TextView
+            android:id="@+id/interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
         <Button
             android:id="@+id/restore"
             style="@android:style/Widget.Holo.Light.Button.Borderless.Small"

@@ -16,6 +16,18 @@ android {
         versionName "1.0"
         minSdkVersion 19
         targetSdkVersion 26
-        applicationId "org.liberty.android.freeotpplus"
+        applicationIdSuffix "org.liberty.android.freeotpplus"
     }
+     buildTypes {
+         debug {
+             applicationIdSuffix ".debug"
+             debuggable true
+             resValue "string", "app_name", "FreeOTP+ Debug"
+         }
+
+         release {
+             resValue "string", "app_name", "FreeOTP+"
+         }
+     }
+
 }
