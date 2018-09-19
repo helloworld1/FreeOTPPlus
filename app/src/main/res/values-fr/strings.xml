@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add">Ajouter</string>
+    <string name="invalid_token">Le jeton spécifié était invalide !</string>
+    <string name="delete">Supprimer</string>
+    <string name="edit">Modifier</string>
+    <string name="restore_defaults">Restaurer les valeurs par défaut</string>
+    <string name="no_keys">Aucune clé OTP n\'est installée.</string>
+    <string name="add_token">Ajouter un jeton</string>
+    <string name="scan_qr_code">Scaner QR Code</string>
+    <string name="interval">Intervalle</string>
+    <string name="counter">Compteur</string>
+    <string name="issuer">Émetteur</string>
+    <string name="id">ID</string>
+    <string name="secret">Secret</string>
+    <string name="type">Type</string>
+    <string name="algorithm">Algorithme</string>
+    <string name="digits">Chiffres</string>
+    <string name="save">Sauvegarder</string>
+    <string name="code_copied">Code copié dans le presse-papiers.</string>
+
+    <string name="about_freeotp">A propos de FreeOTP+</string>
+    <string name="about_version">FreeOTP+ Version %1$s (%2$d)</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n
+  © 2016 - Liberty</string>
+    <string name="about_license">FreeOTP+ est sous licence %1$s.</string>
+    <string name="about_website">Pour plus d\'informations, voir notre %s.</string>
+    <string name="about_feedback">Vos commentaires sont les bienvenus :<br/>• %1$s<br/>• %2$s</string>
+    <string name="about_icons">Certaines icônes utilisées par cette application sont reproduites à partir de travaux créés et partagés par le Projet Open Source Android et utilisées selon les termes décrits dans la Licence d\'Attribution Creative Commons 2.5.</string>
+    <string name="link_apache2"><a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></string>
+
+    <string name="error_camera_open">Erreur lors de l\'ouverture de la caméra !</string>
+
+    <string name="delete_summary">C\'est votre dernière chance : si vous supprimez ce jeton, il disparaîtra à jamais. Il ne sera pas désactivé sur le serveur.</string>
+    <string name="delete_question">Supprimer ce jeton ?</string>
+    <string name="import_text">Importation</string>
+    <string name="export_text">Exporter</string>
+    <string name="export_succeeded_text">L\'exportation a réussi.</string>
+    <string name="import_succeeded_text">Importation réussie</string>
+    <string name="camera_permission_denied_text">Autorisation de la caméra refusée</string>
+
+</resources>
