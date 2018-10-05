@@ -1,21 +1,13 @@
 apply plugin: 'com.android.application'
 
-dependencies {
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-        implementation 'com.google.zxing:core:3.2.1'
-        implementation 'com.google.code.gson:gson:2.8.2'
-        implementation 'com.squareup.picasso:picasso:2.5.2'
-
-}
-
 android {
-    compileSdkVersion 26
-        buildToolsVersion '27.0.3'
+    compileSdkVersion 28
+        buildToolsVersion '28.0.2'
         defaultConfig {
             versionCode 3
                 versionName "1.2"
                 minSdkVersion 19
-                targetSdkVersion 26
+                targetSdkVersion 28
                 applicationId "org.liberty.android.freeotpplus"
         }
     buildTypes {
@@ -29,5 +21,13 @@ android {
             resValue "string", "app_name", "FreeOTP+"
         }
     }
+
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
 
 }
