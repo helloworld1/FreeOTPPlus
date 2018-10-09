@@ -1,5 +1,5 @@
 # FreeOTP Plus
-FreeOTP Plus forked the same funcitonality of FreeOTP provided by redhat with the following enhancement:
+FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
 * Export settings to Google Drive or other document providers
 * Import settings from Google Drive or other document providers
 * Support Android 6.0 permissions.
