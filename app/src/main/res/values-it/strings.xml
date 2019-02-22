@@ -26,8 +26,6 @@
     <string name="about_website">Per maggiore informazioni, visita %s.</string>
     <string name="about_feedback">Sono ben accettati i feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Alcune icone utilizzate sono derivate dal progetto Android Open Source Project, sono usate concordando con i termini descritti nella licenza Creative Commons 2.5 (Attribuzione)</string>
-    <string name="link_apache2">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
-
     <string name="error_camera_open">Impossibile aprire la fotocamera!</string>
 
     <string name="delete_summary">Questa è l\'ultima possibilità: se si elimina questo token, verrà perso per sempre. Non verrà disabilitato nel lato server.</string>    <string name="delete_question">Delete this token?</string>
