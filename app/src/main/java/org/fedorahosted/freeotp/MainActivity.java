@@ -37,6 +37,7 @@
 package org.fedorahosted.freeotp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -278,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     private void exportToFile(final Uri uri) {
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -306,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuItemClickLi
         }.execute((Void)null);
     }
 
+    @SuppressLint("StaticFieldLeak")
     private void importFromFile(final Uri uri) {
         new AsyncTask<Void, Void, Void>() {
 
