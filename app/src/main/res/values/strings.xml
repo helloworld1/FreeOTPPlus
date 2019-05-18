@@ -37,6 +37,10 @@
     <string name="export_succeeded_text">Export succeeded.</string>
     <string name="import_succeeded_text">Import succeeded</string>
     <string name="camera_permission_denied_text">Camera permission denied</string>
+    <string name="import_json_format">Import JSON format</string>
+    <string name="import_key_uri_format">Import key URI format</string>
+    <string name="export_json_format">Export JSON format</string>
+    <string name="export_key_uri_format">Export key URI format</string>
 
     <string-array name="algorithms">
         <item>MD5</item>

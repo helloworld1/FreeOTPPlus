@@ -22,22 +22,36 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
         android:id="@+id/action_scan"
-        android:showAsAction="ifRoom"
         android:icon="@drawable/qrcode"
         android:title="@string/scan_qr_code" />
     <item
         android:id="@+id/action_add"
-        android:showAsAction="ifRoom"
         android:icon="@drawable/ic_action_new_account"
         android:title="@string/add_token" />
     <item
-        android:id="@+id/action_import"
         android:icon="@drawable/ic_import"
-        android:title="@string/import_text" />
+        android:title="@string/import_text">
+        <menu>
+            <item
+                android:id="@+id/action_import_json"
+                android:title="@string/import_json_format" />
+            <item
+                android:id="@+id/action_import_key_uri"
+                android:title="@string/import_key_uri_format" />
+        </menu>
+    </item>
     <item
-        android:id="@+id/action_export"
         android:icon="@drawable/ic_export"
-        android:title="@string/export_text" />
+        android:title="@string/export_text">
+        <menu>
+            <item
+                android:id="@+id/action_export_json"
+                android:title="@string/export_json_format" />
+            <item
+                android:id="@+id/action_export_key_uri"
+                android:title="@string/export_key_uri_format" />
+        </menu>
+    </item>
     <item
         android:id="@+id/action_about"
         android:icon="@android:drawable/ic_menu_info_details"
