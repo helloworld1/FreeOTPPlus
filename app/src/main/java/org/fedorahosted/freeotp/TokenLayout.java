@@ -10,12 +10,14 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import androidx.cardview.widget.CardView;
+
 import com.squareup.picasso.Picasso;
 
 import org.fedorahosted.freeotp.edit.DeleteActivity;
 import org.fedorahosted.freeotp.edit.EditActivity;
 
-public class TokenLayout extends FrameLayout implements View.OnClickListener, Runnable {
+public class TokenLayout extends CardView implements View.OnClickListener, Runnable {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
     private ImageView mImage;

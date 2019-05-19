@@ -209,16 +209,16 @@
 
     <View style="@style/Divider" />
 
-    <LinearLayout style="@style/Dialog.Button.Layout">
+    <LinearLayout style="@style/DialogButtonLayout">
 
         <Button
             android:id="@+id/cancel"
-            style="@style/Dialog.Button"
+            style="@style/DialogButton"
             android:text="@android:string/cancel" />
 
         <Button
             android:id="@+id/add"
-            style="@style/Dialog.Button"
+            style="@style/DialogButton"
             android:text="@string/add" />
     </LinearLayout>
 </LinearLayout>

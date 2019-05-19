@@ -55,6 +55,7 @@ import android.view.MenuItem.OnMenuItemClickListener
 import android.view.View
 import android.view.WindowManager.LayoutParams
 import android.widget.GridView
+import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 
@@ -69,9 +70,10 @@ private const val WRITE_JSON_REQUEST_CODE = 43
 private const val READ_KEY_URI_REQUEST_CODE = 44
 private const val WRITE_KEY_URI_REQUEST_CODE = 45
 
-class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
+class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var importFromUtil: ImportExportUtil
+    @Inject lateinit var settings: Settings
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mTokenAdapter: TokenAdapter
@@ -122,17 +124,12 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
-        menu.findItem(R.id.action_scan).isVisible = ScanActivity.haveCamera()
-        menu.findItem(R.id.action_scan).setOnMenuItemClickListener(this)
-        menu.findItem(R.id.action_add).setOnMenuItemClickListener(this)
-        menu.findItem(R.id.action_import_json).setOnMenuItemClickListener(this)
-        menu.findItem(R.id.action_export_json).setOnMenuItemClickListener(this)
-        menu.findItem(R.id.action_about).setOnMenuItemClickListener(this)
+        menu.findItem(R.id.use_dark_theme).isChecked = settings.darkMode
         return true
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
             R.id.action_scan -> {
                 scanQRCode()
                 return true
@@ -150,6 +147,17 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
 
             R.id.action_export_json -> {
                 createFile("application/json", "freeotp-backup.json")
+                return true
+            }
+
+            R.id.use_dark_theme -> {
+                settings.darkMode = !settings.darkMode
+                if (settings.darkMode) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                } else {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                }
+                recreate()
                 return true
             }
 
@@ -196,18 +204,6 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
         }
     }
 
-
-    /**
-     * Fires an intent to spin up the "file chooser" UI and select an image.
-     */
-    fun performFileSearch() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "*/*"
-
-        startActivityForResult(intent, READ_JSON_REQUEST_CODE)
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             CAMERA_PERMISSION_REQUEST -> {
@@ -221,6 +217,17 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
                 return
             }
         }
+    }
+
+    /**
+     * Fires an intent to spin up the "file chooser" UI and select an image.
+     */
+    private fun performFileSearch() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "*/*"
+
+        startActivityForResult(intent, READ_JSON_REQUEST_CODE)
     }
 
     private fun createFile(mimeType: String, fileName: String) {

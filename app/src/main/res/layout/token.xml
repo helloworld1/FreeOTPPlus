@@ -24,7 +24,7 @@
     xmlns:freeotp="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/token"
+    android:background="?android:selectableItemBackground"
     >
     <ImageView
         android:id="@+id/image"

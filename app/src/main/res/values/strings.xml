@@ -41,6 +41,7 @@
     <string name="import_key_uri_format">Import key URI format</string>
     <string name="export_json_format">Export JSON format</string>
     <string name="export_key_uri_format">Export key URI format</string>
+    <string name="use_dark_theme">Use dark theme</string>
 
     <string-array name="algorithms">
         <item>MD5</item>

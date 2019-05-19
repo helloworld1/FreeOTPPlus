@@ -1,8 +1,12 @@
 <resources>
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
+    </style>
 
+    <style name="DialogTheme" parent="Theme.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
     </style>
 
     <style name="Divider">
@@ -12,7 +16,7 @@
         <item name="android:background">?android:dividerHorizontal</item>
     </style>
 
-    <style name="Dialog.Button.Layout">
+    <style name="DialogButtonLayout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">0</item>
@@ -21,11 +25,11 @@
         <item name="android:showDividers">middle</item>
     </style>
 
-    <style name="Dialog.Button" parent="android:Widget.Holo.Light.Button.Borderless.Small">
-        <item name="android:layout_width">match_parent</item>
+    <style name="DialogButton">
+        <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">48dp</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
         <item name="android:layout_weight">1</item>
     </style>
 </resources>
