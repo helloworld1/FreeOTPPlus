@@ -22,7 +22,7 @@ private const val NAME = "tokens"
 private const val ORDER = "tokenOrder"
 
 @Singleton
-class TokenPersistence @Inject constructor(ctx: Context) {
+class TokenPersistence @Inject constructor(private val ctx: Context) {
     private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val gson: Gson = Gson()
 
@@ -70,6 +70,18 @@ class TokenPersistence @Inject constructor(ctx: Context) {
         val order = tokenOrder
         order.add(0, key)
         setTokenOrder(order).putString(key, gson.toJson(token)).apply()
+    }
+
+    fun addFromUriString(uriString: String):Token? {
+        try {
+            val token = Token(uriString)
+            add(token)
+            return token
+        } catch (e: TokenUriInvalidException) {
+            Toast.makeText(ctx, R.string.invalid_token, Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+        return null
     }
 
     fun move(fromPosition: Int, toPosition: Int) {

@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
 
         val uri = intent.data
         if (uri != null)
-            TokenPersistence.addWithToast(this, uri.toString())
+            tokenPersistence.addFromUriString(uri.toString())
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
