@@ -42,34 +42,23 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 
-        <activity
-            android:name=".AboutActivity"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            />
+        <activity android:name=".AboutActivity" />
 
-        <activity
-            android:name=".add.ScanActivity"
-            android:theme="@style/Theme.AppCompat.Light"
-            />
+        <activity android:name=".add.ScanActivity" />
 
         <activity
             android:name=".add.AddActivity"
             android:label="@string/add_token"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            android:windowSoftInputMode="stateVisible"
-            />
+            android:windowSoftInputMode="stateVisible" />
 
         <activity
             android:name=".edit.DeleteActivity"
             android:label="@string/delete_question"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            />
+            android:theme="@style/DialogTheme" />
 
         <activity
             android:name=".edit.EditActivity"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            android:windowSoftInputMode="stateVisible"
-            />
+            android:windowSoftInputMode="stateVisible" />
 
         <activity
             android:name=".MainActivity"

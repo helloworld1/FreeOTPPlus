@@ -41,15 +41,15 @@
 
     <View style="@style/Divider" />
 
-    <LinearLayout style="@style/Dialog.Button.Layout">
+    <LinearLayout style="@style/DialogButtonLayout">
         <Button
-            style="@style/Dialog.Button"
+            style="@style/DialogButton"
             android:id="@+id/cancel"
             android:text="@android:string/cancel"
             />
 
         <Button
-            style="@style/Dialog.Button"
+            style="@style/DialogButton"
             android:id="@+id/delete"
             android:text="@string/delete"
             />

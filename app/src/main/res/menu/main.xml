@@ -53,6 +53,10 @@
         </menu>
     </item>
     <item
+        android:id="@+id/use_dark_theme"
+        android:title="@string/use_dark_theme"
+        android:checkable="true"/>
+    <item
         android:id="@+id/action_about"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/about_freeotp" />
