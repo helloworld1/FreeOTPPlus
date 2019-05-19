@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.squareup.picasso.Picasso;
 
 import org.fedorahosted.freeotp.edit.DeleteActivity;
 import org.fedorahosted.freeotp.edit.EditActivity;
@@ -61,6 +62,7 @@ public class TokenAdapter extends BaseReorderableAdapter {
                 mTokenCodes.clear();
             }
         });
+        Picasso.get().setLoggingEnabled(true);
     }
 
     @Override

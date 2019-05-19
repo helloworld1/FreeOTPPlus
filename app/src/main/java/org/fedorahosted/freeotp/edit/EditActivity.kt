@@ -38,11 +38,19 @@ import androidx.appcompat.app.AppCompatActivity
 
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.ImageUtil
+import java.io.File
 import javax.inject.Inject
 
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var imageUtil: ImageUtil
+
+    private var uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
@@ -54,16 +62,18 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private var mIssuerDefault: String? = null
     private var mLabelCurrent: String? = null
     private var mLabelDefault: String? = null
+
     private var mImageCurrent: Uri? = null
     private var mImageDefault: Uri? = null
     private var mImageDisplay: Uri? = null
+
     private var position: Int = 0
 
-    private fun showImage(uri: Uri) {
-        mImageDisplay = uri
+    private fun showImage(imageUri: Uri) {
+        mImageDisplay = imageUri
         onTextChanged(null, 0, 0, 0)
-        Picasso.with(this)
-                .load(uri)
+        Picasso.get()
+                .load(imageUri)
                 .placeholder(R.drawable.logo)
                 .into(mImage)
     }
@@ -138,7 +148,10 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
         if (resultCode == RESULT_OK) {
             data?.data?.let {
-                showImage(it)
+                uiScope.launch {
+                    val path = imageUtil.saveImageUriToFile(it)
+                    showImage(path)
+                }
             }
         }
     }
@@ -160,8 +173,11 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.image -> startActivityForResult(Intent(Intent.ACTION_PICK,
-                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 0)
+            R.id.image -> {
+                val intent = Intent(Intent.ACTION_PICK,
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                startActivityForResult(intent, 0)
+            }
 
             R.id.restore -> {
                 mLabel.setText(mLabelDefault)

@@ -147,7 +147,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
         if (resultCode == Activity.RESULT_OK) {
             mImageURL = data?.data
-            Picasso.with(this)
+            Picasso.get()
                     .load(mImageURL)
                     .placeholder(R.drawable.logo)
                     .into(mImage)

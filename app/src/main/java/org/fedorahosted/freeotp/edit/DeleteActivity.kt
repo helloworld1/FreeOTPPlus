@@ -28,7 +28,7 @@ class DeleteActivity : AppCompatActivity() {
         val token = tokenPersistence[position]
         (findViewById<View>(R.id.issuer) as TextView).text = token!!.issuer
         (findViewById<View>(R.id.label) as TextView).text = token.label
-        Picasso.with(this)
+        Picasso.get()
                 .load(token.image)
                 .placeholder(R.drawable.logo)
                 .into(findViewById<View>(R.id.image) as ImageView)
