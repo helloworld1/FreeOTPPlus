@@ -5,13 +5,14 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import java.io.FileOutputStream
 import java.io.InputStreamReader
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
-class ImportExportUtil(private val context: Context,
-                       private val tokenPersistence: TokenPersistence) {
-
+@Singleton
+class ImportExportUtil @Inject constructor(private val context: Context,
+                                           private val tokenPersistence: TokenPersistence) {
     suspend fun importJson(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri).use { inputStream ->
