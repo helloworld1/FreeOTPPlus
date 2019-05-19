@@ -17,6 +17,8 @@ import com.squareup.picasso.Picasso;
 import org.fedorahosted.freeotp.edit.DeleteActivity;
 import org.fedorahosted.freeotp.edit.EditActivity;
 
+import java.io.File;
+
 public class TokenLayout extends CardView implements View.OnClickListener, Runnable {
     private ProgressCircle mProgressInner;
     private ProgressCircle mProgressOuter;
@@ -84,7 +86,7 @@ public class TokenLayout extends CardView implements View.OnClickListener, Runna
         mPlaceholder = new String(placeholder);
 
         // Show the image.
-        Picasso.with(getContext())
+        Picasso.get()
                 .load(token.getImage())
                 .placeholder(R.drawable.logo)
                 .into(mImage);

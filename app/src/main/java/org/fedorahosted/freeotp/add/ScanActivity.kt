@@ -79,7 +79,7 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
                 }
 
                 val image = findViewById<View>(R.id.image) as ImageView
-                Picasso.with(this@ScanActivity)
+                Picasso.get()
                         .load(token.image)
                         .placeholder(R.drawable.scan)
                         .into(image, object : Callback {
@@ -89,7 +89,8 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
                                 image.postDelayed({ finish() }, 2000)
                             }
 
-                            override fun onError() {
+                            override fun onError(e: java.lang.Exception) {
+                                e.printStackTrace()
                                 finish()
                             }
                         })
