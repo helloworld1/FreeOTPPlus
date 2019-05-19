@@ -1,15 +1,12 @@
 package org.fedorahosted.freeotp
 
-import java.lang.reflect.Type
 import java.util.ArrayList
-import java.util.LinkedList
 
 import com.google.gson.reflect.TypeToken
 import org.fedorahosted.freeotp.Token.TokenUriInvalidException
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import android.widget.Toast
 import androidx.annotation.WorkerThread
 
@@ -130,20 +127,5 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
             save(token)
         }
         prefs.edit().apply()
-    }
-
-    companion object {
-        fun addWithToast(ctx: Context, uri: String): Token? {
-            try {
-                val token = Token(uri)
-                TokenPersistence(ctx).add(token)
-                return token
-            } catch (e: TokenUriInvalidException) {
-                Toast.makeText(ctx, R.string.invalid_token, Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
-            }
-
-            return null
-        }
     }
 }
