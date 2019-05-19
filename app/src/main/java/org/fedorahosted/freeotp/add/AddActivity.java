@@ -130,7 +130,7 @@ public class AddActivity extends Activity implements View.OnClickListener, Compo
                 }
 
                 // Add the token
-                if (TokenPersistence.addWithToast(this, uri) != null)
+                if (TokenPersistence.Companion.addWithToast(this, uri) != null)
                     finish();
 
                 break;

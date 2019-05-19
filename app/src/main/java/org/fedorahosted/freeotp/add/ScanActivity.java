@@ -98,7 +98,7 @@ public class ScanActivity extends Activity implements SurfaceHolder.Callback {
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
-                Token token = TokenPersistence.addWithToast(ScanActivity.this, result);
+                Token token = TokenPersistence.Companion.addWithToast(ScanActivity.this, result);
                 if (token == null || token.getImage() == null) {
                     finish();
                     return;

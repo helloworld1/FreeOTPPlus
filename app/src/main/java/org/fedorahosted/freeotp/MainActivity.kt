@@ -56,25 +56,33 @@ import android.view.View
 import android.view.WindowManager.LayoutParams
 import android.widget.GridView
 import com.google.android.material.snackbar.Snackbar
+import dagger.android.AndroidInjection
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val CAMERA_PERMISSION_REQUEST = 10
-private const val READ_REQUEST_CODE = 42
-private const val WRITE_REQUEST_CODE = 43
+private const val READ_JSON_REQUEST_CODE = 42
+private const val WRITE_JSON_REQUEST_CODE = 43
+private const val READ_KEY_URI_REQUEST_CODE = 44
+private const val WRITE_KEY_URI_REQUEST_CODE = 45
 
 class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
+
+    @Inject lateinit var importFromUtil: ImportExportUtil
+
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mTokenAdapter: TokenAdapter
     private lateinit var mDataSetObserver: DataSetObserver
     private lateinit var tokenPersistence: TokenPersistence
-    private lateinit var importFromUtil: ImportExportUtil
     private lateinit var rootView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AndroidInjection.inject(this)
+
         onNewIntent(intent)
         setContentView(R.layout.main)
 
@@ -95,8 +103,6 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
             }
         }
         mTokenAdapter.registerDataSetObserver(mDataSetObserver)
-        tokenPersistence = TokenPersistence(this)
-        importFromUtil = ImportExportUtil(this, tokenPersistence)
     }
 
     override fun onResume() {
@@ -166,16 +172,7 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          resultData: Intent?) {
-
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
-        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
-        // response to some other intent, and the code below shouldn't run at all.
-
-        if (requestCode == WRITE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.
-            // Pull that URI using resultData.getData().
+        if (requestCode == WRITE_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             uiScope.launch {
                 val uri = resultData?.data
                 if (uri != null) {
@@ -186,15 +183,7 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
             }
         }
 
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
-        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
-        // response to some other intent, and the code below shouldn't run at all.
-
-        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.
-            // Pull that URI using resultData.getData().
+        if (requestCode == READ_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             uiScope.launch {
                 val uri = resultData?.data
                 if (uri != null) {
@@ -216,14 +205,14 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
 
-        startActivityForResult(intent, READ_REQUEST_CODE)
+        startActivityForResult(intent, READ_JSON_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             CAMERA_PERMISSION_REQUEST -> {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(Intent(this, ScanActivity::class.java))
                     overridePendingTransition(R.anim.fadein, R.anim.fadeout)
                 } else {
@@ -231,8 +220,7 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
                 }
                 return
             }
-        }// other 'case' lines to check for other
-        // permissions this app might request
+        }
     }
 
     private fun createFile(mimeType: String, fileName: String) {
@@ -245,7 +233,7 @@ class MainActivity : AppCompatActivity(), OnMenuItemClickListener {
         // Create a file with the requested MIME type.
         intent.type = mimeType
         intent.putExtra(Intent.EXTRA_TITLE, fileName)
-        startActivityForResult(intent, WRITE_REQUEST_CODE)
+        startActivityForResult(intent, WRITE_JSON_REQUEST_CODE)
     }
 
     private fun scanQRCode() {
