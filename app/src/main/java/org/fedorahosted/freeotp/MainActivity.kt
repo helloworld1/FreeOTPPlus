@@ -75,8 +75,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
+    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
-    private var uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var mTokenAdapter: TokenAdapter
     private lateinit var mDataSetObserver: DataSetObserver
     private lateinit var tokenPersistence: TokenPersistence
@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
+        lifecycle.addObserver(uiLifecycleScope)
 
         onNewIntent(intent)
         setContentView(R.layout.main)
@@ -182,7 +183,7 @@ class MainActivity : AppCompatActivity() {
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          resultData: Intent?) {
         if (requestCode == WRITE_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            uiScope.launch {
+            uiLifecycleScope.launch {
                 val uri = resultData?.data
                 if (uri != null) {
                     importFromUtil.exportJson(uri)
@@ -193,7 +194,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (requestCode == READ_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            uiScope.launch {
+            uiLifecycleScope.launch {
                 val uri = resultData?.data
                 if (uri != null) {
                     importFromUtil.importJson(uri)

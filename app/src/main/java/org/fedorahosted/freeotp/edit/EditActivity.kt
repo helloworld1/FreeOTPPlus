@@ -42,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.ImageUtil
+import org.fedorahosted.freeotp.UiLifecycleScope
 import java.io.File
 import javax.inject.Inject
 
@@ -49,8 +50,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var imageUtil: ImageUtil
-
-    private var uiScope = CoroutineScope(Dispatchers.Main)
+    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
@@ -86,6 +86,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
+        lifecycle.addObserver(uiLifecycleScope)
 
         position = intent.getIntExtra(EXTRA_POSITION, -1)
 
@@ -148,7 +149,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
         if (resultCode == RESULT_OK) {
             data?.data?.let {
-                uiScope.launch {
+                uiLifecycleScope.launch {
                     val path = imageUtil.saveImageUriToFile(it)
                     showImage(path)
                 }
