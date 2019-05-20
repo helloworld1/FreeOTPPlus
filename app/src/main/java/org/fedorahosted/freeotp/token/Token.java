@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
+import java.util.Objects;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -62,12 +63,12 @@ public class Token {
     private int period;
 
     private Token(Uri uri, boolean internal) throws TokenUriInvalidException {
-        if (!uri.getScheme().equals("otpauth"))
+        if (!Objects.equals(uri.getScheme(), "otpauth"))
             throw new TokenUriInvalidException();
 
-        if (uri.getAuthority().equals("totp"))
+        if (Objects.equals(uri.getAuthority(), "totp"))
             type = TokenType.TOTP;
-        else if (uri.getAuthority().equals("hotp"))
+        else if (Objects.equals(uri.getAuthority(), "hotp"))
             type = TokenType.HOTP;
         else
             throw new TokenUriInvalidException();
