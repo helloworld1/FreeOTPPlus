@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.token.TokenPersistence
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class ImportExportUtil @Inject constructor(private val context: Context,
                                            private val tokenPersistence: TokenPersistence) {
-    suspend fun importJson(uri: Uri) {
+    suspend fun importJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri).use { inputStream ->
                 val reader = BufferedReader(InputStreamReader(inputStream))
@@ -27,10 +28,37 @@ class ImportExportUtil @Inject constructor(private val context: Context,
         }
     }
 
-    suspend fun exportJson(uri: Uri) {
+    suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
                 outputStream?.write(tokenPersistence.toJSON().toByteArray())
+            }
+        }
+    }
+
+    suspend fun importKeyUriFile(fileUri: Uri) {
+        withContext(Dispatchers.IO) {
+            context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
+                reader.forEachLine { line ->
+                    if (line.isNotBlank()) {
+                        tokenPersistence.addFromUriString(line.trim())
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun exportKeyUriFile(fileUri: Uri) {
+        withContext(Dispatchers.IO) {
+            context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+                PrintWriter(outputStream).use { printWriter ->
+                    for (i in 0 until tokenPersistence.length()) {
+                        val token = tokenPersistence[i]
+                        if (token != null) {
+                            printWriter.println(token.toString())
+                        }
+                    }
+                }
             }
         }
     }

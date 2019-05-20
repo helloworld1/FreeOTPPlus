@@ -143,12 +143,22 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_import_json -> {
-                performFileSearch()
+                performFileSearch(READ_JSON_REQUEST_CODE)
+                return true
+            }
+
+            R.id.action_import_key_uri -> {
+                performFileSearch(READ_KEY_URI_REQUEST_CODE)
                 return true
             }
 
             R.id.action_export_json -> {
-                createFile("application/json", "freeotp-backup.json")
+                createFile("application/json", "freeotp-backup.json", WRITE_JSON_REQUEST_CODE)
+                return true
+            }
+
+            R.id.action_export_key_uri -> {
+                createFile("application/json", "freeotp-backup.txt", WRITE_KEY_URI_REQUEST_CODE)
                 return true
             }
 
@@ -182,28 +192,43 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          resultData: Intent?) {
-        if (requestCode == WRITE_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            uiLifecycleScope.launch {
-                val uri = resultData?.data
-                if (uri != null) {
-                    importFromUtil.exportJson(uri)
+
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+
+        val uri = resultData?.data ?: return
+
+        uiLifecycleScope.launch {
+            when (requestCode) {
+                WRITE_JSON_REQUEST_CODE -> {
+                    importFromUtil.exportJsonFile(uri)
                     Snackbar.make(rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
-            }
-        }
 
-        if (requestCode == READ_JSON_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            uiLifecycleScope.launch {
-                val uri = resultData?.data
-                if (uri != null) {
-                    importFromUtil.importJson(uri)
+                READ_JSON_REQUEST_CODE -> {
+                    importFromUtil.importJsonFile(uri)
+                    mTokenAdapter.notifyDataSetChanged()
+                    Snackbar.make(rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                            .show()
+                }
+
+                WRITE_KEY_URI_REQUEST_CODE -> {
+                    importFromUtil.exportKeyUriFile(uri)
+                    Snackbar.make(rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
+                            .show()
+                }
+
+                READ_KEY_URI_REQUEST_CODE -> {
+                    importFromUtil.importKeyUriFile(uri)
                     mTokenAdapter.notifyDataSetChanged()
                     Snackbar.make(rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
             }
         }
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -224,15 +249,15 @@ class MainActivity : AppCompatActivity() {
     /**
      * Fires an intent to spin up the "file chooser" UI and select an image.
      */
-    private fun performFileSearch() {
+    private fun performFileSearch(requestCode: Int) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
 
-        startActivityForResult(intent, READ_JSON_REQUEST_CODE)
+        startActivityForResult(intent, requestCode)
     }
 
-    private fun createFile(mimeType: String, fileName: String) {
+    private fun createFile(mimeType: String, fileName: String, requestCode: Int) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
         // Filter to only show results that can be "opened", such as
@@ -242,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         // Create a file with the requested MIME type.
         intent.type = mimeType
         intent.putExtra(Intent.EXTRA_TITLE, fileName)
-        startActivityForResult(intent, WRITE_JSON_REQUEST_CODE)
+        startActivityForResult(intent, requestCode)
     }
 
     private fun scanQRCode() {
