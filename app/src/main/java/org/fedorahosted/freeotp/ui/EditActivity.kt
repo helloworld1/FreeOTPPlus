@@ -77,7 +77,6 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     private fun imageIs(uri: Uri?): Boolean {
         return if (uri == null) mImageDisplay == null else uri == mImageDisplay
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
