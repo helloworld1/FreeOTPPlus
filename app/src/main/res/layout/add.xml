@@ -129,14 +129,21 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:checked="true"
-                            android:text="6" />
+                            android:text="@string/six" />
+
+                        <RadioButton
+                            android:id="@+id/digits7"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="@string/seven" />
 
                         <RadioButton
                             android:id="@+id/digits8"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="8" />
+                            android:text="@string/eight" />
                     </RadioGroup>
                 </TableRow>
 

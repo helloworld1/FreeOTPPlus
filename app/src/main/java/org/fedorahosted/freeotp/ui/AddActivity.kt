@@ -114,7 +114,11 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 val secret = Uri.encode(mSecret.text.toString())
                 val algorithm = mAlgorithm.selectedItem.toString().toLowerCase(Locale.US)
                 val interval = Integer.parseInt(mInterval.text.toString())
-                val digits = if ((findViewById<View>(R.id.digits6) as RadioButton).isChecked) 6 else 8
+                val digits = when {
+                    findViewById<RadioButton>(R.id.digits7).isChecked -> 7
+                    findViewById<RadioButton>(R.id.digits8).isChecked -> 8
+                    else -> 6
+                }
 
                 // Create the URI
                 var uri = String.format(Locale.US,

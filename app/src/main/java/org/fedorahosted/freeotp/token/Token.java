@@ -102,7 +102,7 @@ public class Token {
             if (d == null)
                 d = "6";
             digits = Integer.parseInt(d);
-            if (!issuerExt.equals("Steam") && digits != 6 && digits != 8)
+            if (!issuerExt.equals("Steam") && digits != 6 && digits != 7 && digits != 8)
                 throw new TokenUriInvalidException();
         } catch (NumberFormatException e) {
             throw new TokenUriInvalidException();
