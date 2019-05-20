@@ -9,6 +9,7 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
 import org.fedorahosted.freeotp.module.DaggerAppComponent
+import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 class FreeOtpPlusApplication: Application(), HasActivityInjector, HasSupportFragmentInjector {

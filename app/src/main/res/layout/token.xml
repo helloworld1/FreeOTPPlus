@@ -19,7 +19,7 @@
    - limitations under the License.
    -->
 
-<org.fedorahosted.freeotp.TokenLayout
+<org.fedorahosted.freeotp.token.TokenLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:freeotp="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -35,7 +35,7 @@
         android:scaleType="fitCenter"
         />
 
-    <org.fedorahosted.freeotp.ProgressCircle
+    <org.fedorahosted.freeotp.ui.ProgressCircle
         android:id="@+id/progressInner"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -44,7 +44,7 @@
         freeotp:max="1000"
         />
 
-    <org.fedorahosted.freeotp.ProgressCircle
+    <org.fedorahosted.freeotp.ui.ProgressCircle
         android:id="@+id/progressOuter"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -87,4 +87,4 @@
         android:paddingBottom="12dp"
         android:src="@drawable/menu"
         />
-</org.fedorahosted.freeotp.TokenLayout>
+</org.fedorahosted.freeotp.token.TokenLayout>

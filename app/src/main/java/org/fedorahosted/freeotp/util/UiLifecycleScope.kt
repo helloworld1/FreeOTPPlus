@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.util
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver

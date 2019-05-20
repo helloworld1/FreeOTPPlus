@@ -2,11 +2,11 @@ package org.fedorahosted.freeotp.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import org.fedorahosted.freeotp.MainActivity
-import org.fedorahosted.freeotp.add.AddActivity
-import org.fedorahosted.freeotp.add.ScanActivity
-import org.fedorahosted.freeotp.edit.DeleteActivity
-import org.fedorahosted.freeotp.edit.EditActivity
+import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.AddActivity
+import org.fedorahosted.freeotp.ui.ScanActivity
+import org.fedorahosted.freeotp.ui.DeleteActivity
+import org.fedorahosted.freeotp.ui.EditActivity
 
 @Module
 abstract class ActivityModule {

@@ -18,11 +18,10 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add
+package org.fedorahosted.freeotp.ui
 
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.Token
-import org.fedorahosted.freeotp.TokenPersistence
+import org.fedorahosted.freeotp.token.TokenPersistence
 
 import android.annotation.TargetApi
 import android.app.Activity

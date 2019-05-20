@@ -18,14 +18,14 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add
+package org.fedorahosted.freeotp.ui
 
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.Locale
 
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.TokenPersistence
+import org.fedorahosted.freeotp.token.TokenPersistence
 
 import android.app.Activity
 import android.content.Intent
@@ -42,8 +42,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.ImageUtil
-import org.fedorahosted.freeotp.UiLifecycleScope
+import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.UiLifecycleScope
 import javax.inject.Inject
 
 class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {

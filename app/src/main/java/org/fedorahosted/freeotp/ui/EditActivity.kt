@@ -18,10 +18,10 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.edit
+package org.fedorahosted.freeotp.ui
 
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.TokenPersistence
+import org.fedorahosted.freeotp.token.TokenPersistence
 
 import android.content.Intent
 import android.net.Uri
@@ -38,12 +38,9 @@ import androidx.appcompat.app.AppCompatActivity
 
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.ImageUtil
-import org.fedorahosted.freeotp.UiLifecycleScope
-import java.io.File
+import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.UiLifecycleScope
 import javax.inject.Inject
 
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {

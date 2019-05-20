@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.add;
+package org.fedorahosted.freeotp.ui;
 
 import org.fedorahosted.freeotp.R;
 

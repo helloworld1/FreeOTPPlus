@@ -18,17 +18,14 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.ui
 
-import android.app.Activity
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.os.Bundle
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import org.fedorahosted.freeotp.R
 
 class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

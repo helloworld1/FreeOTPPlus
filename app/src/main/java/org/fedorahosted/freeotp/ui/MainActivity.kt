@@ -34,7 +34,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -42,8 +42,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
-import org.fedorahosted.freeotp.add.AddActivity
-import org.fedorahosted.freeotp.add.ScanActivity
 
 import android.app.Activity
 import android.content.Intent
@@ -51,7 +49,6 @@ import android.database.DataSetObserver
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.MenuItem.OnMenuItemClickListener
 import android.view.View
 import android.view.WindowManager.LayoutParams
 import android.widget.GridView
@@ -59,10 +56,13 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.util.UiLifecycleScope
+import org.fedorahosted.freeotp.token.TokenAdapter
+import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.ImportExportUtil
 import javax.inject.Inject
 
 private const val CAMERA_PERMISSION_REQUEST = 10
