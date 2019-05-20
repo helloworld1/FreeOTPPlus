@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp;
+package org.fedorahosted.freeotp.token;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -33,8 +33,10 @@ import android.widget.PopupMenu;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.fedorahosted.freeotp.edit.DeleteActivity;
-import org.fedorahosted.freeotp.edit.EditActivity;
+import org.fedorahosted.freeotp.ui.BaseReorderableAdapter;
+import org.fedorahosted.freeotp.R;
+import org.fedorahosted.freeotp.ui.DeleteActivity;
+import org.fedorahosted.freeotp.ui.EditActivity;
 
 import java.util.HashMap;
 import java.util.Map;

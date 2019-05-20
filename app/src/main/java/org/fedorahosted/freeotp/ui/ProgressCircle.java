@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp;
+package org.fedorahosted.freeotp.ui;
 
 import android.content.Context;
 import android.content.res.Resources.Theme;
@@ -32,6 +32,8 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
+
+import org.fedorahosted.freeotp.R;
 
 public class ProgressCircle extends View {
     private Paint   mPaint;

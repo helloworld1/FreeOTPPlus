@@ -1,7 +1,7 @@
-package org.fedorahosted.freeotp.edit
+package org.fedorahosted.freeotp.ui
 
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.TokenPersistence
+import org.fedorahosted.freeotp.token.TokenPersistence
 
 import android.os.Bundle
 import android.view.View

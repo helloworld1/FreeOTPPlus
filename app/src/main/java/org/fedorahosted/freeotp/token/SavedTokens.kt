@@ -1,4 +1,6 @@
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.token
+
+import org.fedorahosted.freeotp.token.Token
 
 /**
  * The saved tokens to storage

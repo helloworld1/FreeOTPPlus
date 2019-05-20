@@ -1,9 +1,9 @@
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.token
 
 import java.util.ArrayList
 
 import com.google.gson.reflect.TypeToken
-import org.fedorahosted.freeotp.Token.TokenUriInvalidException
+import org.fedorahosted.freeotp.token.Token.TokenUriInvalidException
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -12,6 +12,7 @@ import androidx.annotation.WorkerThread
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import org.fedorahosted.freeotp.R
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,7 +70,7 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         setTokenOrder(order).putString(key, gson.toJson(token)).apply()
     }
 
-    fun addFromUriString(uriString: String):Token? {
+    fun addFromUriString(uriString: String): Token? {
         try {
             val token = Token(uriString)
             add(token)

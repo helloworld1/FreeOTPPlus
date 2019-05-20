@@ -1,11 +1,10 @@
-package org.fedorahosted.freeotp;
+package org.fedorahosted.freeotp.token;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -14,10 +13,8 @@ import androidx.cardview.widget.CardView;
 
 import com.squareup.picasso.Picasso;
 
-import org.fedorahosted.freeotp.edit.DeleteActivity;
-import org.fedorahosted.freeotp.edit.EditActivity;
-
-import java.io.File;
+import org.fedorahosted.freeotp.ui.ProgressCircle;
+import org.fedorahosted.freeotp.R;
 
 public class TokenLayout extends CardView implements View.OnClickListener, Runnable {
     private ProgressCircle mProgressInner;

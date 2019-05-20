@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp
+package org.fedorahosted.freeotp.util
 
 import android.content.SharedPreferences
 import javax.inject.Inject
