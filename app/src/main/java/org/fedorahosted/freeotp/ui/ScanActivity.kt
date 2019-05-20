@@ -36,6 +36,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
@@ -71,28 +72,7 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
         mScanAsyncTask = object : ScanAsyncTask() {
             override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
-                val token = tokenPersistence.addFromUriString(result)
-                if (token == null || token.image == null) {
-                    finish()
-                    return
-                }
-
-                val image = findViewById<View>(R.id.image) as ImageView
-                Picasso.get()
-                        .load(token.image)
-                        .placeholder(R.drawable.scan)
-                        .into(image, object : Callback {
-                            override fun onSuccess() {
-                                findViewById<View>(R.id.progress).visibility = View.INVISIBLE
-                                image.alpha = 0.9f
-                                image.postDelayed({ finish() }, 2000)
-                            }
-
-                            override fun onError(e: java.lang.Exception) {
-                                e.printStackTrace()
-                                finish()
-                            }
-                        })
+                scanResult(result)
             }
         }
     }
@@ -196,6 +176,37 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
         mCamera!!.release()
         mCamera = null
     }
+
+    private fun scanResult(result: String) {
+        val token = tokenPersistence.addFromUriString(result)
+        if (token != null) {
+            Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
+        }
+
+        if (token?.image == null) {
+            finish()
+            return
+        }
+
+        val image = findViewById<View>(R.id.image) as ImageView
+        Picasso.get()
+                .load(token.image)
+                .placeholder(R.drawable.scan)
+                .into(image, object : Callback {
+                    override fun onSuccess() {
+                        findViewById<View>(R.id.progress).visibility = View.INVISIBLE
+                        image.alpha = 0.9f
+                        image.postDelayed({ finish() }, 2000)
+                    }
+
+                    override fun onError(e: java.lang.Exception) {
+                        e.printStackTrace()
+                        finish()
+                    }
+                })
+
+    }
+
 
     companion object {
 
