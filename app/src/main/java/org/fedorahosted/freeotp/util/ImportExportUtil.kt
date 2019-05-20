@@ -39,11 +39,12 @@ class ImportExportUtil @Inject constructor(private val context: Context,
     suspend fun importKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
-                reader.forEachLine { line ->
+                reader.readLines().asReversed().forEach { line ->
                     if (line.isNotBlank()) {
                         tokenPersistence.addFromUriString(line.trim())
                     }
                 }
+
             }
         }
     }
