@@ -18,7 +18,9 @@ class ImageUtil @Inject constructor(val context: Context) {
         val outputFile = File(context.filesDir.absolutePath + "/" + "image" + uri.toString().hashCode() + ".jpg")
         val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
 
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputFile.outputStream())
+        outputFile.outputStream().use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)
+        }
 
         outputFile.toUri()
     }

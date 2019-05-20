@@ -41,11 +41,16 @@ import androidx.appcompat.app.AppCompatActivity
 
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.ImageUtil
+import org.fedorahosted.freeotp.UiLifecycleScope
 import javax.inject.Inject
 
 class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
+    @Inject lateinit var imageUtil: ImageUtil
 
     private val SHA1_OFFSET = 1
     private lateinit var mImage: ImageButton
@@ -62,6 +67,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
+        lifecycle.addObserver(uiLifecycleScope)
 
         setContentView(R.layout.add)
 
@@ -146,11 +152,17 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK) {
-            mImageURL = data?.data
-            Picasso.get()
-                    .load(mImageURL)
-                    .placeholder(R.drawable.logo)
-                    .into(mImage)
+            uiLifecycleScope.launch {
+                mImageURL = data?.data?.let {
+                    imageUtil.saveImageUriToFile(it)
+                }
+
+                Picasso.get()
+                        .load(mImageURL)
+                        .placeholder(R.drawable.logo)
+                        .into(mImage)
+
+            }
         }
     }
 }
