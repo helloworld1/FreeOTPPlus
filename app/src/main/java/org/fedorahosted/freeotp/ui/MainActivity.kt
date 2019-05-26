@@ -45,22 +45,23 @@ import android.widget.Toast
 
 import android.app.Activity
 import android.content.Intent
-import android.database.DataSetObserver
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager.LayoutParams
-import android.widget.GridView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.UiLifecycleScope
-import org.fedorahosted.freeotp.token.TokenAdapter
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import javax.inject.Inject
@@ -76,11 +77,10 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var uiLifecycleScope: UiLifecycleScope
+    @Inject lateinit var tokenPersistence: TokenPersistence
 
-    private lateinit var mTokenAdapter: TokenAdapter
-    private lateinit var mDataSetObserver: DataSetObserver
-    private lateinit var tokenPersistence: TokenPersistence
-    private lateinit var rootView: View
+    private lateinit var tokenListAdapter: TokenListAdapter
+    private lateinit var binding: MainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,40 +88,21 @@ class MainActivity : AppCompatActivity() {
         lifecycle.addObserver(uiLifecycleScope)
 
         onNewIntent(intent)
-        setContentView(R.layout.main)
+        binding = DataBindingUtil.setContentView(this, R.layout.main)
 
-        rootView = findViewById(R.id.root)
-        mTokenAdapter = TokenAdapter(this)
-        (findViewById<View>(R.id.grid) as GridView).adapter = mTokenAdapter
+        tokenListAdapter = TokenListAdapter(this, tokenPersistence)
+        binding.tokenList.adapter = tokenListAdapter
+        binding.tokenList.layoutManager = LinearLayoutManager(this)
+
+        ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
-
-        mDataSetObserver = object : DataSetObserver() {
-            override fun onChanged() {
-                super.onChanged()
-                if (mTokenAdapter.count == 0)
-                    findViewById<View>(android.R.id.empty).visibility = View.VISIBLE
-                else
-                    findViewById<View>(android.R.id.empty).visibility = View.GONE
-            }
-        }
-        mTokenAdapter.registerDataSetObserver(mDataSetObserver)
     }
 
     override fun onResume() {
         super.onResume()
-        mTokenAdapter.notifyDataSetChanged()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mTokenAdapter.notifyDataSetChanged()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mTokenAdapter.unregisterDataSetObserver(mDataSetObserver)
+        refreshTokenList()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -203,27 +184,27 @@ class MainActivity : AppCompatActivity() {
             when (requestCode) {
                 WRITE_JSON_REQUEST_CODE -> {
                     importFromUtil.exportJsonFile(uri)
-                    Snackbar.make(rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
 
                 READ_JSON_REQUEST_CODE -> {
                     importFromUtil.importJsonFile(uri)
-                    mTokenAdapter.notifyDataSetChanged()
-                    Snackbar.make(rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                    refreshTokenList()
+                    Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
 
                 WRITE_KEY_URI_REQUEST_CODE -> {
                     importFromUtil.exportKeyUriFile(uri)
-                    Snackbar.make(rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
 
                 READ_KEY_URI_REQUEST_CODE -> {
                     importFromUtil.importKeyUriFile(uri)
-                    mTokenAdapter.notifyDataSetChanged()
-                    Snackbar.make(rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                    refreshTokenList()
+                    Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
             }
@@ -279,6 +260,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             startActivity(Intent(this, ScanActivity::class.java))
             overridePendingTransition(R.anim.fadein, R.anim.fadeout)
+        }
+    }
+
+    private fun refreshTokenList() {
+        tokenListAdapter.notifyDataSetChanged()
+        if (tokenListAdapter.itemCount == 0) {
+            binding.empty.visibility = View.VISIBLE
+            binding.tokenList.visibility = View.GONE
+        } else {
+            binding.empty.visibility = View.GONE
+            binding.tokenList.visibility = View.VISIBLE
         }
     }
 }

@@ -19,32 +19,26 @@
    - limitations under the License.
    -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:id="@+id/root"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	>
-
-    <TextView
-        android:id="@android:id/empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:gravity="center"
-        android:text="@string/no_keys" />
-
-	<GridView
-	    android:id="@+id/grid"
-	    android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-	    android:columnWidth="250dp"
-	    android:gravity="center"
-	    android:horizontalSpacing="8dp"
-	    android:numColumns="auto_fit"
-	    android:padding="8dp"
-	    android:stretchMode="columnWidth"
-	    android:verticalSpacing="8dp"
-	    />
-</LinearLayout>
+<layout
+	 xmlns:android="http://schemas.android.com/apk/res/android">
+	<LinearLayout
+		android:orientation="vertical"
+		android:id="@+id/root"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		>
+		<TextView
+			android:id="@android:id/empty"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:padding="8dp"
+			android:gravity="center"
+			android:visibility="gone"
+			android:text="@string/no_keys" />
+		<androidx.recyclerview.widget.RecyclerView
+			android:id="@+id/token_list"
+			android:layout_width="match_parent"
+			android:layout_weight="1"
+			android:layout_height="0dp" />
+	</LinearLayout>
+</layout>
