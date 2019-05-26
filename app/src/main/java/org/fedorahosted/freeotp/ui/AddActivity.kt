@@ -71,6 +71,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
         setContentView(R.layout.add)
 
+        setSupportActionBar(findViewById(R.id.toolbar))
         mImage = findViewById(R.id.image)
         mIssuer = findViewById(R.id.issuer)
         mLabel = findViewById(R.id.label)

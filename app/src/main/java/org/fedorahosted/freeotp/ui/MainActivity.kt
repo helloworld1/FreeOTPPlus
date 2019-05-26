@@ -93,8 +93,11 @@ class MainActivity : AppCompatActivity() {
         tokenListAdapter = TokenListAdapter(this, tokenPersistence)
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
-
         ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
+
+        setSupportActionBar(binding.toolbar)
+
+        binding.toolbar.menu
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)

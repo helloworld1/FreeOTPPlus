@@ -106,6 +106,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         mImage = findViewById<View>(R.id.image) as ImageButton
         mRestore = findViewById<View>(R.id.restore) as Button
         mSave = findViewById<View>(R.id.save) as Button
+        setSupportActionBar(findViewById(R.id.toolbar))
 
         // Setup text changed listeners.
         mIssuer.addTextChangedListener(this)
