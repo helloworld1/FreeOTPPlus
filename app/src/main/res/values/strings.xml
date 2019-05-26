@@ -37,14 +37,16 @@
     <string name="export_succeeded_text">Export succeeded.</string>
     <string name="import_succeeded_text">Import succeeded</string>
     <string name="camera_permission_denied_text">Camera permission denied</string>
+    <string name="six" translatable="false">6</string>
+    <string name="seven" translatable="false">7</string>
+    <string name="eight" translatable="false">8</string>
+    <string name="issuer_hint" translatable="false">example@example.com</string>
+    <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
     <string name="import_json_format">Import JSON format</string>
     <string name="import_key_uri_format">Import key URI format</string>
     <string name="export_json_format">Export JSON format</string>
     <string name="export_key_uri_format">Export key URI format</string>
     <string name="use_dark_theme">Use dark theme</string>
-    <string name="six">6</string>
-    <string name="seven">7</string>
-    <string name="eight">8</string>
     <string name="add_token_success">The token was successfully added</string>
 
     <string-array name="algorithms">
