@@ -50,6 +50,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager.LayoutParams
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tokenListAdapter: TokenListAdapter
     private lateinit var binding: MainBinding
+    private var searchQuery = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +100,20 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        binding.toolbar.menu
+        binding.search.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchQuery = query ?: ""
+                refreshTokenList(searchQuery)
+                return true
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                searchQuery = query ?: ""
+                refreshTokenList(searchQuery)
+                return true
+            }
+
+        })
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
@@ -106,7 +121,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        refreshTokenList()
+        refreshTokenList(searchQuery)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -195,7 +210,7 @@ class MainActivity : AppCompatActivity() {
                 READ_JSON_REQUEST_CODE -> {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.importJsonFile(uri)
-                    refreshTokenList()
+                    refreshTokenList(searchQuery)
                     Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
@@ -210,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                 READ_KEY_URI_REQUEST_CODE -> {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.importKeyUriFile(uri)
-                    refreshTokenList()
+                    refreshTokenList(searchQuery)
                     Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
@@ -273,9 +288,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshTokenList() {
-        tokenListAdapter.submitList(tokenPersistence.getTokens())
-        if (tokenListAdapter.itemCount == 0) {
+    private fun refreshTokenList(queryString: String) {
+        val tokens = if(queryString.isEmpty()) {
+            tokenPersistence.getTokens()
+        } else {
+            tokenPersistence.getTokens().filter {token ->
+                token.label.contains(queryString) || token.issuer.contains(queryString)
+            }
+        }
+
+        tokenListAdapter.submitList(tokens)
+
+        if (tokens.isEmpty()) {
             binding.empty.visibility = View.VISIBLE
             binding.tokenList.visibility = View.GONE
         } else {

@@ -26,16 +26,15 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
     private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val gson: Gson = Gson()
 
-    private val tokenOrder: MutableList<String>
+    private var tokenOrder: List<String>
         get() {
             val type = object : TypeToken<List<String>>() {}.type
             val str = prefs.getString(ORDER, "[]")
             return ArrayList(gson.fromJson<List<String>>(str, type))
         }
-
-    private fun setTokenOrder(order: List<String>): SharedPreferences.Editor {
-        return prefs.edit().putString(ORDER, gson.toJson(order))
-    }
+        set(value) {
+            prefs.edit().putString(ORDER, gson.toJson(value)).apply()
+        }
 
     operator fun get(id: String): Token? {
         val str = prefs.getString(id, null)
@@ -62,9 +61,10 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         if (prefs.contains(key))
             return
 
-        val order = tokenOrder
+        val order = tokenOrder.toMutableList()
         order.add(0, key)
-        setTokenOrder(order).putString(key, gson.toJson(token)).apply()
+        tokenOrder = order
+        prefs.edit().putString(key, gson.toJson(token)).apply()
     }
 
     fun addFromUriString(uriString: String): Token? {
@@ -93,14 +93,14 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         if (fromPosition == toPosition)
             return
 
-        val order = tokenOrder
+        val order = tokenOrder.toMutableList()
         if (fromPosition < 0 || fromPosition > order.size)
             return
         if (toPosition < 0 || toPosition > order.size)
             return
 
         order.add(toPosition, order.removeAt(fromPosition))
-        setTokenOrder(order).apply()
+        tokenOrder = order
     }
 
     fun delete(tokenId: String) {
@@ -109,8 +109,10 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
             return
         }
 
-        val key = tokenOrder.removeAt(position)
-        setTokenOrder(tokenOrder).remove(key).apply()
+        val order = tokenOrder.toMutableList()
+        val key = order.removeAt(position)
+        tokenOrder = order
+        prefs.edit().remove(key).apply()
     }
 
     fun save(token: Token) {
@@ -126,7 +128,7 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
     fun importFromJSON(jsonString: String) {
         val savedTokens = gson.fromJson(jsonString, SavedTokens::class.java)
 
-        setTokenOrder(savedTokens.tokenOrder).apply()
+        tokenOrder = savedTokens.tokenOrder
 
         for (token in savedTokens.tokens) {
             save(token)

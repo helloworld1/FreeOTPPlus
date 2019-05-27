@@ -5,6 +5,7 @@ FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with th
 * Support Android 6.0 permissions.
 * Enhanced UI with material design.
 * Support dark theme
+* Search token
 
 Most part of the code is re-written with modern Jetpack library and Kotlin language.
 
