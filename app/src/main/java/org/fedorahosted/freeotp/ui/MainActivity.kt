@@ -71,6 +71,7 @@ private const val READ_JSON_REQUEST_CODE = 42
 private const val WRITE_JSON_REQUEST_CODE = 43
 private const val READ_KEY_URI_REQUEST_CODE = 44
 private const val WRITE_KEY_URI_REQUEST_CODE = 45
+private const val ADD_TOKEN_REQUEST_CODE = 46
 
 class MainActivity : AppCompatActivity() {
 
@@ -122,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_add -> {
-                startActivity(Intent(this, AddActivity::class.java))
+                startActivityForResult(Intent(this, AddActivity::class.java), ADD_TOKEN_REQUEST_CODE)
                 return true
             }
 
@@ -181,17 +182,18 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val uri = resultData?.data ?: return
 
         uiLifecycleScope.launch {
             when (requestCode) {
                 WRITE_JSON_REQUEST_CODE -> {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
 
                 READ_JSON_REQUEST_CODE -> {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.importJsonFile(uri)
                     refreshTokenList()
                     Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
@@ -199,16 +201,21 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 WRITE_KEY_URI_REQUEST_CODE -> {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
 
                 READ_KEY_URI_REQUEST_CODE -> {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.importKeyUriFile(uri)
                     refreshTokenList()
                     Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
+                }
+                ADD_TOKEN_REQUEST_CODE -> {
+                    binding.tokenList.scrollToPosition(0)
                 }
             }
         }

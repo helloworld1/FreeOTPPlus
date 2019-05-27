@@ -143,8 +143,10 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 // Add the token
-                if (tokenPersistence.addFromUriString(uri) != null)
+                if (tokenPersistence.addFromUriString(uri) != null) {
+                    setResult(Activity.RESULT_OK)
                     finish()
+                }
             }
         }
     }
