@@ -67,16 +67,10 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         prefs.edit().putString(key, gson.toJson(token)).apply()
     }
 
-    fun addFromUriString(uriString: String): Token? {
-        try {
-            val token = Token(uriString)
-            add(token)
-            return token
-        } catch (e: TokenUriInvalidException) {
-            Toast.makeText(ctx, R.string.invalid_token, Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
-        }
-        return null
+    fun addFromUriString(uriString: String): Token {
+        val token = Token(uriString)
+        add(token)
+        return token
     }
 
     fun move(sourceTokenId: String, targetTokenId: String) {

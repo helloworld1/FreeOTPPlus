@@ -44,6 +44,4 @@ class TokenListAdapter(val context: Context,
             (v as TokenLayout).start(token.type, codes, true)
         })
     }
-
-
 }

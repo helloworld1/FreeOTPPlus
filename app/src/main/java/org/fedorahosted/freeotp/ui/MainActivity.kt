@@ -46,6 +46,7 @@ import android.widget.Toast
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -65,6 +66,7 @@ import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.UiLifecycleScope
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
+import java.lang.Exception
 import javax.inject.Inject
 
 private const val CAMERA_PERMISSION_REQUEST = 10
@@ -76,6 +78,7 @@ private const val ADD_TOKEN_REQUEST_CODE = 46
 private const val SCAN_TOKEN_REQUEST_CODE = 47
 
 class MainActivity : AppCompatActivity() {
+    val TAG = MainActivity::class.java.simpleName
 
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
@@ -187,8 +190,14 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
 
         val uri = intent.data
-        if (uri != null)
-            tokenPersistence.addFromUriString(uri.toString())
+        if (uri != null) {
+            try {
+                tokenPersistence.addFromUriString(uri.toString())
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                        .show()
+            }
+        }
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
@@ -210,10 +219,16 @@ class MainActivity : AppCompatActivity() {
 
                 READ_JSON_REQUEST_CODE -> {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.importJsonFile(uri)
-                    refreshTokenList(searchQuery)
-                    Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                    try {
+                        importFromUtil.importJsonFile(uri)
+                        refreshTokenList(searchQuery)
+                        Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                                .show()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Import JSON failed", e)
+                        Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
+                                .show()
+                    }
                 }
 
                 WRITE_KEY_URI_REQUEST_CODE -> {
@@ -225,10 +240,16 @@ class MainActivity : AppCompatActivity() {
 
                 READ_KEY_URI_REQUEST_CODE -> {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.importKeyUriFile(uri)
-                    refreshTokenList(searchQuery)
-                    Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                    try {
+                        importFromUtil.importKeyUriFile(uri)
+                        refreshTokenList(searchQuery)
+                        Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                                .show()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Import Key uri failed", e)
+                        Snackbar.make(binding.root, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
+                                .show()
+                    }
                 }
 
                 ADD_TOKEN_REQUEST_CODE -> {

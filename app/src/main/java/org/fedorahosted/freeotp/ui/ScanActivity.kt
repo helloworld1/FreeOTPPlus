@@ -178,13 +178,18 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
     }
 
     private fun scanResult(result: String) {
-        val token = tokenPersistence.addFromUriString(result)
-        if (token != null) {
-            Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
+        val token = try {
+            tokenPersistence.addFromUriString(result)
+        } catch (e: java.lang.Exception) {
+            Toast.makeText(this, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+            return
         }
+
+        Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
+
         setResult(RESULT_OK)
 
-        if (token?.image == null) {
+        if (token.image == null) {
             finish()
             return
         }
