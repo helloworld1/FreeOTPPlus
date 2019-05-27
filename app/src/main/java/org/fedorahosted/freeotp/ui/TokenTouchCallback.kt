@@ -9,8 +9,10 @@ class TokenTouchCallback(private val adapter: TokenListAdapter,
     : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN , 0) {
 
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-        tokenPersistence.move(viewHolder.adapterPosition, target.adapterPosition)
-        adapter.notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+        val sourceToken = adapter.currentList[viewHolder.adapterPosition]
+        val targetToken = adapter.currentList[target.adapterPosition]
+        tokenPersistence.move(sourceToken.id, targetToken.id)
+        adapter.submitList(tokenPersistence.getTokens())
         return true
     }
 

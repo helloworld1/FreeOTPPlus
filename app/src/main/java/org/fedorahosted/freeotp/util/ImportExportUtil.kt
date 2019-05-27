@@ -53,11 +53,8 @@ class ImportExportUtil @Inject constructor(private val context: Context,
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
-                    for (i in 0 until tokenPersistence.length()) {
-                        val token = tokenPersistence[i]
-                        if (token != null) {
-                            printWriter.println(token.toString())
-                        }
+                    for (token in tokenPersistence.getTokens()) {
+                        printWriter.println(token.toString())
                     }
                 }
             }

@@ -7,6 +7,7 @@ import org.fedorahosted.freeotp.token.Token.TokenUriInvalidException
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.WorkerThread
 
@@ -21,6 +22,7 @@ private const val ORDER = "tokenOrder"
 
 @Singleton
 class TokenPersistence @Inject constructor(private val ctx: Context) {
+    private val TAG = TokenPersistence::class.java.simpleName
     private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val gson: Gson = Gson()
 
@@ -35,13 +37,8 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         return prefs.edit().putString(ORDER, gson.toJson(order))
     }
 
-    fun length(): Int {
-        return tokenOrder.size
-    }
-
-    operator fun get(position: Int): Token? {
-        val key = tokenOrder[position]
-        val str = prefs.getString(key, null)
+    operator fun get(id: String): Token? {
+        val str = prefs.getString(id, null)
 
         try {
             return gson.fromJson(str, Token::class.java)
@@ -82,7 +79,17 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         return null
     }
 
-    fun move(fromPosition: Int, toPosition: Int) {
+    fun move(sourceTokenId: String, targetTokenId: String) {
+        val fromPosition = getOrder(sourceTokenId) ?: run {
+            Log.e(TAG, "Token $sourceTokenId not found for moving")
+            return
+        }
+
+        val toPosition = getOrder(targetTokenId) ?: run {
+            Log.e(TAG, "Token $targetTokenId not found for moving")
+            return
+        }
+
         if (fromPosition == toPosition)
             return
 
@@ -96,10 +103,14 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         setTokenOrder(order).apply()
     }
 
-    fun delete(position: Int) {
-        val order = tokenOrder
-        val key = order.removeAt(position)
-        setTokenOrder(order).remove(key).apply()
+    fun delete(tokenId: String) {
+        val position = getOrder(tokenId) ?: run {
+            Log.e(TAG, "Token $tokenId not found for deletion")
+            return
+        }
+
+        val key = tokenOrder.removeAt(position)
+        setTokenOrder(tokenOrder).remove(key).apply()
     }
 
     fun save(token: Token) {
@@ -108,14 +119,7 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
 
     @WorkerThread
     fun toJSON(): String {
-        val tokenList = ArrayList<Token>(length())
-        for (i in 0 until length()) {
-            get(i)?.let { tokenList.add(it) }
-        }
-
-        val tokenOrder = tokenOrder
-
-        return gson.toJson(SavedTokens(tokenList, tokenOrder))
+        return gson.toJson(SavedTokens(getTokens(), tokenOrder))
     }
 
     @WorkerThread
@@ -128,5 +132,21 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
             save(token)
         }
         prefs.edit().apply()
+    }
+
+    fun getTokens(): List<Token> {
+        return tokenOrder.mapNotNull {tokenId ->
+            get(tokenId)
+        }
+    }
+
+    private fun getOrder(tokenId: String): Int? {
+        for ((index,key) in tokenOrder.withIndex()) {
+            if (key == tokenId) {
+                return index
+            }
+        }
+
+        return null
     }
 }

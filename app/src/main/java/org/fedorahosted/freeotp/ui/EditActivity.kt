@@ -64,7 +64,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private var mImageDefault: Uri? = null
     private var mImageDisplay: Uri? = null
 
-    private var position: Int = 0
+    private var tokenId: String = ""
 
     private fun showImage(imageUri: Uri) {
         mImageDisplay = imageUri
@@ -84,21 +84,24 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         AndroidInjection.inject(this)
         lifecycle.addObserver(uiLifecycleScope)
 
-        position = intent.getIntExtra(EXTRA_POSITION, -1)
+        tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
+            return
+        }
+
 
         setContentView(R.layout.edit)
 
         // Get token values.
-        val token = tokenPersistence[position]
-        mIssuerCurrent = token?.issuer
-        mLabelCurrent = token?.label
-        mImageCurrent = token?.image
-        token?.issuer = null
-        token?.label = null
-        token?.image = null
-        mIssuerDefault = token?.issuer
-        mLabelDefault = token?.label
-        mImageDefault = token?.image
+        val token = tokenPersistence[tokenId] ?: return
+        mIssuerCurrent = token.issuer
+        mLabelCurrent = token.label
+        mImageCurrent = token.image
+        token.issuer = null
+        token.label = null
+        token.image = null
+        mIssuerDefault = token.issuer
+        mLabelDefault = token.label
+        mImageDefault = token.image
 
         // Get references to widgets.
         mIssuer = findViewById<View>(R.id.issuer) as EditText
@@ -129,16 +132,16 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
         // Token details
         val algorithmTextView = findViewById<TextView>(R.id.algorithm)
-        algorithmTextView.text = token?.algorithm
+        algorithmTextView.text = token.algorithm
 
         val digitsTextView = findViewById<TextView>(R.id.digits)
-        digitsTextView.text = token?.digits.toString()
+        digitsTextView.text = token.digits.toString()
 
         val secretTextView = findViewById<TextView>(R.id.secret)
-        secretTextView.text = token?.secret
+        secretTextView.text = token.secret
 
         val intervalTextView = findViewById<TextView>(R.id.interval)
-        intervalTextView.text = token?.period.toString()
+        intervalTextView.text = token.period.toString()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -187,13 +190,11 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             }
 
             R.id.save -> {
-                val token = tokenPersistence[position]
-                token?.issuer = mIssuer.text.toString()
-                token?.label = mLabel.text.toString()
-                token?.image = mImageDisplay
-                token?.let {
-                    tokenPersistence.save(it)
-                }
+                val token = tokenPersistence[tokenId] ?: return
+                token.issuer = mIssuer.text.toString()
+                token.label = mLabel.text.toString()
+                token.image = mImageDisplay
+                tokenPersistence.save(token)
                 finish()
             }
 
@@ -202,6 +203,6 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     }
 
     companion object {
-        const val EXTRA_POSITION = "position"
+        const val EXTRA_TOKEN_ID = "token_id"
     }
 }

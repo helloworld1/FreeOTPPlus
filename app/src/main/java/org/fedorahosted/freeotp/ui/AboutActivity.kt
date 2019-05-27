@@ -36,6 +36,7 @@ class AboutActivity : AppCompatActivity() {
     public override fun onStart() {
         super.onStart()
 
+        setSupportActionBar(findViewById(R.id.toolbar))
         val res = resources
         val aboutVersion: TextView = findViewById(R.id.about_version)
 

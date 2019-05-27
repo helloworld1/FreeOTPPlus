@@ -267,7 +267,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTokenList() {
-        tokenListAdapter.notifyDataSetChanged()
+        tokenListAdapter.submitList(tokenPersistence.getTokens())
         if (tokenListAdapter.itemCount == 0) {
             binding.empty.visibility = View.VISIBLE
             binding.tokenList.visibility = View.GONE

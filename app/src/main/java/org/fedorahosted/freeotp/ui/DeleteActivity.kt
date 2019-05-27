@@ -23,10 +23,10 @@ class DeleteActivity : AppCompatActivity() {
 
         setContentView(R.layout.delete)
 
-        val position = intent.getIntExtra(EXTRA_POSITION, -1)
+        val tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: return
 
-        val token = tokenPersistence[position]
-        (findViewById<View>(R.id.issuer) as TextView).text = token!!.issuer
+        val token = tokenPersistence[tokenId] ?: return
+        (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
         (findViewById<View>(R.id.label) as TextView).text = token.label
         Picasso.get()
                 .load(token.image)
@@ -36,12 +36,12 @@ class DeleteActivity : AppCompatActivity() {
         findViewById<View>(R.id.cancel).setOnClickListener { finish() }
 
         findViewById<View>(R.id.delete).setOnClickListener {
-            tokenPersistence.delete(position)
+            tokenPersistence.delete(tokenId)
             finish()
         }
     }
 
     companion object {
-        const val EXTRA_POSITION = "position"
+        const val EXTRA_TOKEN_ID = "token_id"
     }
 }

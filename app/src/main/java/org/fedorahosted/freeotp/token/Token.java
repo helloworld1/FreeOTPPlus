@@ -23,6 +23,7 @@ package org.fedorahosted.freeotp.token;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -329,5 +330,32 @@ public class Token {
 
     public int getPeriod() {
         return period;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Token token = (Token) o;
+        return digits == token.digits &&
+                counter == token.counter &&
+                period == token.period &&
+                Objects.equals(issuerInt, token.issuerInt) &&
+                Objects.equals(issuerExt, token.issuerExt) &&
+                Objects.equals(issuerAlt, token.issuerAlt) &&
+                Objects.equals(label, token.label) &&
+                Objects.equals(labelAlt, token.labelAlt) &&
+                Objects.equals(image, token.image) &&
+                Objects.equals(imageAlt, token.imageAlt) &&
+                type == token.type &&
+                Objects.equals(algo, token.algo) &&
+                Arrays.equals(secret, token.secret);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(issuerInt, issuerExt, issuerAlt, label, labelAlt, image, imageAlt, type, algo, digits, counter, period);
+        result = 31 * result + Arrays.hashCode(secret);
+        return result;
     }
 }
