@@ -71,17 +71,7 @@ import org.fedorahosted.freeotp.util.ImportExportUtil
 import java.lang.Exception
 import javax.inject.Inject
 
-private const val CAMERA_PERMISSION_REQUEST = 10
-private const val READ_JSON_REQUEST_CODE = 42
-private const val WRITE_JSON_REQUEST_CODE = 43
-private const val READ_KEY_URI_REQUEST_CODE = 44
-private const val WRITE_KEY_URI_REQUEST_CODE = 45
-private const val ADD_TOKEN_REQUEST_CODE = 46
-private const val SCAN_TOKEN_REQUEST_CODE = 47
-
 class MainActivity : AppCompatActivity() {
-    private val TAG = MainActivity::class.java.simpleName
-
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var uiLifecycleScope: UiLifecycleScope
@@ -350,5 +340,16 @@ class MainActivity : AppCompatActivity() {
             binding.empty.visibility = View.GONE
             binding.tokenList.visibility = View.VISIBLE
         }
+    }
+
+    companion object {
+        private const val CAMERA_PERMISSION_REQUEST = 10
+        private const val READ_JSON_REQUEST_CODE = 42
+        private const val WRITE_JSON_REQUEST_CODE = 43
+        private const val READ_KEY_URI_REQUEST_CODE = 44
+        private const val WRITE_KEY_URI_REQUEST_CODE = 45
+        private const val ADD_TOKEN_REQUEST_CODE = 46
+        private const val SCAN_TOKEN_REQUEST_CODE = 47
+        private val TAG = MainActivity::class.java.simpleName
     }
 }
