@@ -6,8 +6,8 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 28
     defaultConfig {
-        versionCode 4
-        versionName "1.3"
+        versionCode 5
+        versionName "1.4"
         minSdkVersion 19
         targetSdkVersion 28
         applicationId "org.liberty.android.freeotpplus"
