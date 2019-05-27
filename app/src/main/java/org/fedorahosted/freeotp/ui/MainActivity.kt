@@ -57,6 +57,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
@@ -80,6 +81,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tokenListAdapter: TokenListAdapter
     private lateinit var binding: MainBinding
     private var searchQuery = ""
+    private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
+        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+            super.onItemRangeInserted(positionStart, itemCount)
+            binding.tokenList.scrollToPosition(positionStart)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
         ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
+        tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         setSupportActionBar(binding.toolbar)
 
@@ -113,6 +121,11 @@ class MainActivity : AppCompatActivity() {
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
     }
 
     override fun onResume() {
@@ -258,14 +271,6 @@ class MainActivity : AppCompatActivity() {
                                 .show()
                     }
                 }
-            }
-
-            ADD_TOKEN_REQUEST_CODE -> {
-                binding.tokenList.scrollToPosition(0)
-            }
-
-            SCAN_TOKEN_REQUEST_CODE -> {
-                binding.tokenList.scrollToPosition(0)
             }
         }
 
