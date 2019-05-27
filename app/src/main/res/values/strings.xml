@@ -39,7 +39,11 @@
     <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
     <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
     <string name="invalid_token_uri_received">Invalid token URI received</string>
+    <string name="import_json_file">Import JSON file</string>
+    <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
     <string name="camera_permission_denied_text">Camera permission denied</string>
+    <string name="ok_text">Ok</string>
+    <string name="cancel_text">Cancel</string>
     <string name="six" translatable="false">6</string>
     <string name="seven" translatable="false">7</string>
     <string name="eight" translatable="false">8</string>

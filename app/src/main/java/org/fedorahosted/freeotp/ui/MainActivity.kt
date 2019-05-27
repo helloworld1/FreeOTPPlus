@@ -44,6 +44,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -56,6 +57,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 
@@ -78,7 +80,7 @@ private const val ADD_TOKEN_REQUEST_CODE = 46
 private const val SCAN_TOKEN_REQUEST_CODE = 47
 
 class MainActivity : AppCompatActivity() {
-    val TAG = MainActivity::class.java.simpleName
+    private val TAG = MainActivity::class.java.simpleName
 
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
@@ -208,37 +210,52 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        uiLifecycleScope.launch {
-            when (requestCode) {
-                WRITE_JSON_REQUEST_CODE -> {
+        when (requestCode) {
+            WRITE_JSON_REQUEST_CODE -> {
+                uiLifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
+            }
 
-                READ_JSON_REQUEST_CODE -> {
-                    val uri = resultData?.data ?: return@launch
-                    try {
-                        importFromUtil.importJsonFile(uri)
-                        refreshTokenList(searchQuery)
-                        Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                .show()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Import JSON failed", e)
-                        Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
-                                .show()
-                    }
-                }
+            READ_JSON_REQUEST_CODE -> {
+                MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.import_json_file)
+                        .setMessage(R.string.import_json_file_warning)
+                        .setIcon(R.drawable.alert)
+                        .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
+                            uiLifecycleScope.launch {
+                                val uri = resultData?.data ?: return@launch
+                                try {
+                                    importFromUtil.importJsonFile(uri)
+                                    refreshTokenList(searchQuery)
+                                    Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                                            .show()
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Import JSON failed", e)
+                                    Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
+                                            .show()
+                                }
+                            }
 
-                WRITE_KEY_URI_REQUEST_CODE -> {
+                        }
+                        .setNegativeButton(R.string.cancel_text, null)
+                        .show()
+            }
+
+            WRITE_KEY_URI_REQUEST_CODE -> {
+                uiLifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
+            }
 
-                READ_KEY_URI_REQUEST_CODE -> {
+            READ_KEY_URI_REQUEST_CODE -> {
+                uiLifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.importKeyUriFile(uri)
@@ -251,14 +268,14 @@ class MainActivity : AppCompatActivity() {
                                 .show()
                     }
                 }
+            }
 
-                ADD_TOKEN_REQUEST_CODE -> {
-                    binding.tokenList.scrollToPosition(0)
-                }
+            ADD_TOKEN_REQUEST_CODE -> {
+                binding.tokenList.scrollToPosition(0)
+            }
 
-                SCAN_TOKEN_REQUEST_CODE -> {
-                    binding.tokenList.scrollToPosition(0)
-                }
+            SCAN_TOKEN_REQUEST_CODE -> {
+                binding.tokenList.scrollToPosition(0)
             }
         }
 
