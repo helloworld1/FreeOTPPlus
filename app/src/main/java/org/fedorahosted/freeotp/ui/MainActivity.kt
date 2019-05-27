@@ -293,7 +293,7 @@ class MainActivity : AppCompatActivity() {
             tokenPersistence.getTokens()
         } else {
             tokenPersistence.getTokens().filter {token ->
-                token.label.contains(queryString) || token.issuer.contains(queryString)
+                token.label.contains(queryString, true) || token.issuer.contains(queryString, true)
             }
         }
 
