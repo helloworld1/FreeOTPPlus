@@ -73,6 +73,7 @@ private const val WRITE_JSON_REQUEST_CODE = 43
 private const val READ_KEY_URI_REQUEST_CODE = 44
 private const val WRITE_KEY_URI_REQUEST_CODE = 45
 private const val ADD_TOKEN_REQUEST_CODE = 46
+private const val SCAN_TOKEN_REQUEST_CODE = 47
 
 class MainActivity : AppCompatActivity() {
 
@@ -229,7 +230,12 @@ class MainActivity : AppCompatActivity() {
                     Snackbar.make(binding.root, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
+
                 ADD_TOKEN_REQUEST_CODE -> {
+                    binding.tokenList.scrollToPosition(0)
+                }
+
+                SCAN_TOKEN_REQUEST_CODE -> {
                     binding.tokenList.scrollToPosition(0)
                 }
             }
@@ -283,7 +289,7 @@ class MainActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.CAMERA),
                     CAMERA_PERMISSION_REQUEST)
         } else {
-            startActivity(Intent(this, ScanActivity::class.java))
+            startActivityForResult(Intent(this, ScanActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
             overridePendingTransition(R.anim.fadein, R.anim.fadeout)
         }
     }

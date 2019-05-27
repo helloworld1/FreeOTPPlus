@@ -182,6 +182,7 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
         if (token != null) {
             Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
         }
+        setResult(RESULT_OK)
 
         if (token?.image == null) {
             finish()
@@ -196,7 +197,9 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
                     override fun onSuccess() {
                         findViewById<View>(R.id.progress).visibility = View.INVISIBLE
                         image.alpha = 0.9f
-                        image.postDelayed({ finish() }, 2000)
+                        image.postDelayed({
+                            finish()
+                        }, 2000)
                     }
 
                     override fun onError(e: java.lang.Exception) {
