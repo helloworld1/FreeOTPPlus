@@ -13,6 +13,9 @@ import androidx.annotation.WorkerThread
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.R
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,28 +57,15 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         return null
     }
 
-    @Throws(TokenUriInvalidException::class)
-    fun add(token: Token) {
-        val key = token.id
-
-        // Shared preference may have key but delete in the order
-        // The toke order is the source for tokens in the list
-        if (tokenOrder.any { it == key })
-            return
-
-        val order = tokenOrder.toMutableList()
-        order.add(0, key)
-        tokenOrder = order
-        prefs.edit().putString(key, gson.toJson(token)).apply()
+    suspend fun addFromUriString(uriString: String): Token {
+        return withContext(Dispatchers.IO) {
+            val token = Token(uriString)
+            add(token)
+            token
+        }
     }
 
-    fun addFromUriString(uriString: String): Token {
-        val token = Token(uriString)
-        add(token)
-        return token
-    }
-
-    fun move(sourceTokenId: String, targetTokenId: String) {
+    suspend fun move(sourceTokenId: String, targetTokenId: String) {
         val fromPosition = getOrder(sourceTokenId) ?: run {
             Log.e(TAG, "Token $sourceTokenId not found for moving")
             return
@@ -89,52 +79,81 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
         if (fromPosition == toPosition)
             return
 
-        val order = tokenOrder.toMutableList()
-        if (fromPosition < 0 || fromPosition > order.size)
-            return
-        if (toPosition < 0 || toPosition > order.size)
-            return
+        withContext(Dispatchers.IO) {
+            val order = tokenOrder.toMutableList()
+            if (fromPosition < 0 || fromPosition > order.size)
+                return@withContext
+            if (toPosition < 0 || toPosition > order.size)
+                return@withContext
 
-        order.add(toPosition, order.removeAt(fromPosition))
-        tokenOrder = order
-    }
-
-    fun delete(tokenId: String) {
-        val position = getOrder(tokenId) ?: run {
-            Log.e(TAG, "Token $tokenId not found for deletion")
-            return
+            order.add(toPosition, order.removeAt(fromPosition))
+            tokenOrder = order
         }
-
-        val order = tokenOrder.toMutableList()
-        val key = order.removeAt(position)
-        tokenOrder = order
-        prefs.edit().remove(key).apply()
     }
 
-    fun save(token: Token) {
-        prefs.edit().putString(token.id, gson.toJson(token)).apply()
+    suspend fun delete(tokenId: String) {
+        withContext(Dispatchers.IO) {
+            val position = getOrder(tokenId) ?: run {
+                Log.e(TAG, "Token $tokenId not found for deletion")
+                return@withContext
+            }
+
+            val order = tokenOrder.toMutableList()
+            val key = order.removeAt(position)
+            tokenOrder = order
+            prefs.edit().remove(key).apply()
+        }
+    }
+
+    suspend fun save(token: Token) {
+        withContext(Dispatchers.IO) {
+            prefs.edit().putString(token.id, gson.toJson(token)).apply()
+        }
+    }
+
+    suspend fun toJSON(): String {
+        return withContext(Dispatchers.IO) {
+            gson.toJson(SavedTokens(getTokens(), tokenOrder))
+        }
     }
 
     @WorkerThread
-    fun toJSON(): String {
-        return gson.toJson(SavedTokens(getTokens(), tokenOrder))
-    }
+    suspend fun importFromJSON(jsonString: String) {
+        withContext(Dispatchers.IO) {
+            val savedTokens = gson.fromJson(jsonString, SavedTokens::class.java)
 
-    @WorkerThread
-    fun importFromJSON(jsonString: String) {
-        val savedTokens = gson.fromJson(jsonString, SavedTokens::class.java)
+            tokenOrder = savedTokens.tokenOrder
 
-        tokenOrder = savedTokens.tokenOrder
-
-        for (token in savedTokens.tokens) {
-            save(token)
+            for (token in savedTokens.tokens) {
+                save(token)
+            }
+            prefs.edit().apply()
         }
-        prefs.edit().apply()
     }
 
-    fun getTokens(): List<Token> {
-        return tokenOrder.mapNotNull {tokenId ->
-            get(tokenId)
+    suspend fun getTokens(): List<Token> {
+        return withContext(Dispatchers.IO) {
+            tokenOrder.mapNotNull { tokenId ->
+                get(tokenId)
+            }
+
+        }
+    }
+
+    @Throws(TokenUriInvalidException::class)
+    private suspend fun add(token: Token) {
+        withContext(Dispatchers.IO) {
+            val key = token.id
+
+            // Shared preference may have key but delete in the order
+            // The toke order is the source for tokens in the list
+            if (tokenOrder.any { it == key })
+                return@withContext
+
+            val order = tokenOrder.toMutableList()
+            order.add(0, key)
+            tokenOrder = order
+            prefs.edit().putString(key, gson.toJson(token)).apply()
         }
     }
 

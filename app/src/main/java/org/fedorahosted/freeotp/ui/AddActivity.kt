@@ -42,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.UiLifecycleScope
 import javax.inject.Inject
@@ -143,9 +144,11 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 // Add the token
-                tokenPersistence.addFromUriString(uri)
-                setResult(Activity.RESULT_OK)
-                finish()
+                uiLifecycleScope.launch {
+                    tokenPersistence.addFromUriString(uri)
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
             }
         }
     }

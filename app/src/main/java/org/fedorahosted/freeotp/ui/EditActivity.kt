@@ -190,12 +190,14 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             }
 
             R.id.save -> {
-                val token = tokenPersistence[tokenId] ?: return
-                token.issuer = mIssuer.text.toString()
-                token.label = mLabel.text.toString()
-                token.image = mImageDisplay
-                tokenPersistence.save(token)
-                finish()
+                uiLifecycleScope.launch {
+                    val token = tokenPersistence[tokenId] ?: return@launch
+                    token.issuer = mIssuer.text.toString()
+                    token.label = mLabel.text.toString()
+                    token.image = mImageDisplay
+                    tokenPersistence.save(token)
+                    finish()
+                }
             }
 
             R.id.cancel -> finish()

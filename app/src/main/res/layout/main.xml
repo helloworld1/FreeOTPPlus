@@ -42,18 +42,31 @@
 					android:iconifiedByDefault="true"/>
 			</com.google.android.material.appbar.MaterialToolbar>
 		</com.google.android.material.appbar.AppBarLayout>
-		<TextView
-			android:id="@android:id/empty"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:padding="8dp"
-			android:gravity="center"
-			android:visibility="gone"
-			android:text="@string/no_keys" />
-		<androidx.recyclerview.widget.RecyclerView
-			android:id="@+id/token_list"
-			android:layout_width="match_parent"
+		<FrameLayout
 			android:layout_weight="1"
-			android:layout_height="0dp" />
+			android:layout_width="match_parent"
+			android:layout_height="0dp">
+			<TextView
+				android:id="@+id/empty"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:padding="8dp"
+				android:gravity="center"
+				android:visibility="gone"
+				android:text="@string/no_keys" />
+			<ProgressBar
+				android:id="@+id/loading"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="8dp"
+				android:layout_gravity="center"
+				android:text="@string/no_keys" />
+			<androidx.recyclerview.widget.RecyclerView
+				android:id="@+id/token_list"
+				android:visibility="gone"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent" />
+
+		</FrameLayout>
 	</LinearLayout>
 </layout>

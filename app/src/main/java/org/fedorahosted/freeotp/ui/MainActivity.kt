@@ -96,10 +96,10 @@ class MainActivity : AppCompatActivity() {
         onNewIntent(intent)
         binding = DataBindingUtil.setContentView(this, R.layout.main)
 
-        tokenListAdapter = TokenListAdapter(this, tokenPersistence)
+        tokenListAdapter = TokenListAdapter(this, tokenPersistence, uiLifecycleScope)
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
-        ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
+        ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence, uiLifecycleScope)).attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         setSupportActionBar(binding.toolbar)
@@ -196,11 +196,13 @@ class MainActivity : AppCompatActivity() {
 
         val uri = intent.data
         if (uri != null) {
-            try {
-                tokenPersistence.addFromUriString(uri.toString())
-            } catch (e: Exception) {
-                Snackbar.make(binding.root, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                        .show()
+            uiLifecycleScope.launch {
+                try {
+                    tokenPersistence.addFromUriString(uri.toString())
+                } catch (e: Exception) {
+                    Snackbar.make(binding.root, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                            .show()
+                }
             }
         }
     }
@@ -328,33 +330,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTokenList(queryString: String) {
-        val tokens = if(queryString.isEmpty()) {
-            tokenPersistence.getTokens()
-        } else {
-            tokenPersistence.getTokens().filter {token ->
-                token.label.contains(queryString, true) || token.issuer.contains(queryString, true)
+        uiLifecycleScope.launch {
+
+            val tokens = if (queryString.isEmpty()) {
+                tokenPersistence.getTokens()
+            } else {
+                tokenPersistence.getTokens().filter { token ->
+                    token.label.contains(queryString, true) || token.issuer.contains(queryString, true)
+                }
+            }
+
+            tokenListAdapter.submitList(tokens)
+
+            if (tokens.isEmpty()) {
+                binding.empty.visibility = View.VISIBLE
+                binding.tokenList.visibility = View.GONE
+                binding.loading.visibility = View.GONE
+            } else {
+                binding.empty.visibility = View.GONE
+                binding.loading.visibility = View.GONE
+                binding.tokenList.visibility = View.VISIBLE
             }
         }
+    }
 
-        tokenListAdapter.submitList(tokens)
-
-        if (tokens.isEmpty()) {
-            binding.empty.visibility = View.VISIBLE
-            binding.tokenList.visibility = View.GONE
-        } else {
-            binding.empty.visibility = View.GONE
-            binding.tokenList.visibility = View.VISIBLE
+        companion object {
+            private const val CAMERA_PERMISSION_REQUEST = 10
+            private const val READ_JSON_REQUEST_CODE = 42
+            private const val WRITE_JSON_REQUEST_CODE = 43
+            private const val READ_KEY_URI_REQUEST_CODE = 44
+            private const val WRITE_KEY_URI_REQUEST_CODE = 45
+            private const val ADD_TOKEN_REQUEST_CODE = 46
+            private const val SCAN_TOKEN_REQUEST_CODE = 47
+            private val TAG = MainActivity::class.java.simpleName
         }
-    }
-
-    companion object {
-        private const val CAMERA_PERMISSION_REQUEST = 10
-        private const val READ_JSON_REQUEST_CODE = 42
-        private const val WRITE_JSON_REQUEST_CODE = 43
-        private const val READ_KEY_URI_REQUEST_CODE = 44
-        private const val WRITE_KEY_URI_REQUEST_CODE = 45
-        private const val ADD_TOKEN_REQUEST_CODE = 46
-        private const val SCAN_TOKEN_REQUEST_CODE = 47
-        private val TAG = MainActivity::class.java.simpleName
-    }
 }

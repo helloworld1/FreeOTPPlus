@@ -12,14 +12,18 @@ import androidx.appcompat.app.AppCompatActivity
 
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.util.UiLifecycleScope
 import javax.inject.Inject
 
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
+        lifecycle.addObserver(uiLifecycleScope)
 
         setContentView(R.layout.delete)
 
@@ -36,8 +40,10 @@ class DeleteActivity : AppCompatActivity() {
         findViewById<View>(R.id.cancel).setOnClickListener { finish() }
 
         findViewById<View>(R.id.delete).setOnClickListener {
-            tokenPersistence.delete(tokenId)
-            finish()
+            uiLifecycleScope.launch {
+                tokenPersistence.delete(tokenId)
+                finish()
+            }
         }
     }
 

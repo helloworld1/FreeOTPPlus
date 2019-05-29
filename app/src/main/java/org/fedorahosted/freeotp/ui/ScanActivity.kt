@@ -37,14 +37,18 @@ import android.view.SurfaceView
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.util.UiLifecycleScope
 import javax.inject.Inject
 
-class ScanActivity : Activity(), SurfaceHolder.Callback {
+class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
     @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     private val mCameraInfo = CameraInfo()
     private val mScanAsyncTask: ScanAsyncTask
@@ -80,6 +84,7 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
+        lifecycle.addObserver(uiLifecycleScope)
         setContentView(R.layout.scan)
         mScanAsyncTask.execute()
     }
@@ -178,41 +183,43 @@ class ScanActivity : Activity(), SurfaceHolder.Callback {
     }
 
     private fun scanResult(result: String) {
-        val token = try {
-            tokenPersistence.addFromUriString(result)
-        } catch (e: java.lang.Exception) {
-            Toast.makeText(this, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
-            return
-        }
+        uiLifecycleScope.launch {
+            val token = try {
+                tokenPersistence.addFromUriString(result)
+            } catch (e: java.lang.Exception) {
+                Toast.makeText(this@ScanActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
 
-        Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@ScanActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
 
-        setResult(RESULT_OK)
+            setResult(RESULT_OK)
 
-        if (token.image == null) {
-            finish()
-            return
-        }
+            if (token.image == null) {
+                finish()
+                return@launch
+            }
 
-        val image = findViewById<View>(R.id.image) as ImageView
-        Picasso.get()
-                .load(token.image)
-                .placeholder(R.drawable.scan)
-                .into(image, object : Callback {
-                    override fun onSuccess() {
-                        findViewById<View>(R.id.progress).visibility = View.INVISIBLE
-                        image.alpha = 0.9f
-                        image.postDelayed({
+            val image = findViewById<View>(R.id.image) as ImageView
+            Picasso.get()
+                    .load(token.image)
+                    .placeholder(R.drawable.scan)
+                    .into(image, object : Callback {
+                        override fun onSuccess() {
+                            findViewById<View>(R.id.progress).visibility = View.INVISIBLE
+                            image.alpha = 0.9f
+                            image.postDelayed({
+                                finish()
+                            }, 2000)
+                        }
+
+                        override fun onError(e: java.lang.Exception) {
+                            e.printStackTrace()
                             finish()
-                        }, 2000)
-                    }
+                        }
+                    })
 
-                    override fun onError(e: java.lang.Exception) {
-                        e.printStackTrace()
-                        finish()
-                    }
-                })
-
+        }
     }
 
 
