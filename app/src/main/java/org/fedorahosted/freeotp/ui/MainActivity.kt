@@ -224,13 +224,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             READ_JSON_REQUEST_CODE -> {
+                val uri = resultData?.data ?: return
                 MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.import_json_file)
                         .setMessage(R.string.import_json_file_warning)
                         .setIcon(R.drawable.alert)
                         .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
                             uiLifecycleScope.launch {
-                                val uri = resultData?.data ?: return@launch
                                 try {
                                     importFromUtil.importJsonFile(uri)
                                     refreshTokenList(searchQuery)

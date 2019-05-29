@@ -139,7 +139,7 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
     }
 
     private fun getOrder(tokenId: String): Int? {
-        for ((index,key) in tokenOrder.withIndex()) {
+        for ((index, key) in tokenOrder.withIndex()) {
             if (key == tokenId) {
                 return index
             }
