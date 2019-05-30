@@ -21,10 +21,11 @@
 package org.fedorahosted.freeotp.ui
 
 import android.os.Bundle
-import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.pm.PackageInfoCompat
+import androidx.core.text.HtmlCompat
 import org.fedorahosted.freeotp.R
 
 class AboutActivity : AppCompatActivity() {
@@ -42,7 +43,8 @@ class AboutActivity : AppCompatActivity() {
 
         val pm = packageManager
         val info = pm.getPackageInfo(packageName, 0)
-        val version = res.getString(R.string.about_version, info.versionName, info.versionCode)
+        val version = res.getString(R.string.about_version,
+                info.versionName, PackageInfoCompat.getLongVersionCode(info))
         aboutVersion.text = version
 
         val apache2 = res.getString(R.string.link_apache2)
@@ -50,6 +52,6 @@ class AboutActivity : AppCompatActivity() {
 
         val aboutLicense:TextView = findViewById(R.id.about_license)
         aboutLicense.movementMethod = LinkMovementMethod.getInstance()
-        aboutLicense.text = Html.fromHtml(license)
+        aboutLicense.text = HtmlCompat.fromHtml(license, HtmlCompat.FROM_HTML_MODE_COMPACT)
     }
 }
