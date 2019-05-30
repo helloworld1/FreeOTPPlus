@@ -2,24 +2,29 @@ package org.fedorahosted.freeotp.util
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.*
 
-class UiLifecycleScope @Inject constructor(): CoroutineScope, LifecycleObserver{
 
-    private lateinit var job: Job
-    override val coroutineContext: CoroutineContext
-        get() = job + Dispatchers.Main
+fun LifecycleOwner.uiLifecycleScope(block: suspend CoroutineScope.() -> Unit) {
+    lifecycle.addObserver(UiLifecycleScope(block))
+}
+
+private class UiLifecycleScope(val block: suspend CoroutineScope.() -> Unit) : LifecycleObserver {
+
+    private var scope: CoroutineScope? = null
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
-        job = Job()
+        scope = CoroutineScope(Job() + Dispatchers.Main)
+        scope?.launch {
+            block()
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun destroy() = job.cancel()
+    fun onDestroy() {
+        scope?.coroutineContext?.cancel()
+    }
 }

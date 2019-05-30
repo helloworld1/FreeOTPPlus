@@ -1,29 +1,23 @@
 package org.fedorahosted.freeotp.ui
 
-import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.TokenPersistence
-
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-
 import androidx.appcompat.app.AppCompatActivity
-
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.util.UiLifecycleScope
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
-    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-        lifecycle.addObserver(uiLifecycleScope)
 
         setContentView(R.layout.delete)
 
@@ -40,7 +34,7 @@ class DeleteActivity : AppCompatActivity() {
         findViewById<View>(R.id.cancel).setOnClickListener { finish() }
 
         findViewById<View>(R.id.delete).setOnClickListener {
-            uiLifecycleScope.launch {
+            uiLifecycleScope {
                 tokenPersistence.delete(tokenId)
                 finish()
             }

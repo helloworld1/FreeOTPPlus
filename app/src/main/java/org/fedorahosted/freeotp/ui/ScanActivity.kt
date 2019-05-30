@@ -20,11 +20,7 @@
 
 package org.fedorahosted.freeotp.ui
 
-import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.TokenPersistence
-
 import android.annotation.TargetApi
-import android.app.Activity
 import android.hardware.Camera
 import android.hardware.Camera.CameraInfo
 import android.hardware.Camera.Parameters
@@ -38,17 +34,16 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.util.UiLifecycleScope
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
     @Inject lateinit var tokenPersistence: TokenPersistence
-    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     private val mCameraInfo = CameraInfo()
     private val mScanAsyncTask: ScanAsyncTask
@@ -84,7 +79,6 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-        lifecycle.addObserver(uiLifecycleScope)
         setContentView(R.layout.scan)
         mScanAsyncTask.execute()
     }
@@ -183,12 +177,12 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
     }
 
     private fun scanResult(result: String) {
-        uiLifecycleScope.launch {
+        uiLifecycleScope {
             val token = try {
                 tokenPersistence.addFromUriString(result)
             } catch (e: java.lang.Exception) {
                 Toast.makeText(this@ScanActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
-                return@launch
+                return@uiLifecycleScope
             }
 
             Toast.makeText(this@ScanActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
@@ -197,7 +191,7 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
             if (token.image == null) {
                 finish()
-                return@launch
+                return@uiLifecycleScope
             }
 
             val image = findViewById<View>(R.id.image) as ImageView
@@ -218,7 +212,6 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
                             finish()
                         }
                     })
-
         }
     }
 

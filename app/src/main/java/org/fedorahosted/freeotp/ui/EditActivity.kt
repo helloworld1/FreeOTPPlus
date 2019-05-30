@@ -20,9 +20,6 @@
 
 package org.fedorahosted.freeotp.ui
 
-import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.TokenPersistence
-
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -33,21 +30,19 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-
 import androidx.appcompat.app.AppCompatActivity
-
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.UiLifecycleScope
+import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var imageUtil: ImageUtil
-    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
 
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
@@ -82,7 +77,6 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-        lifecycle.addObserver(uiLifecycleScope)
 
         tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
             return
@@ -149,7 +143,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
         if (resultCode == RESULT_OK) {
             data?.data?.let {
-                uiLifecycleScope.launch {
+                uiLifecycleScope {
                     val path = imageUtil.saveImageUriToFile(it)
                     showImage(path)
                 }
@@ -190,8 +184,8 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             }
 
             R.id.save -> {
-                uiLifecycleScope.launch {
-                    val token = tokenPersistence[tokenId] ?: return@launch
+                uiLifecycleScope {
+                    val token = tokenPersistence[tokenId] ?: return@uiLifecycleScope
                     token.issuer = mIssuer.text.toString()
                     token.label = mLabel.text.toString()
                     token.image = mImageDisplay

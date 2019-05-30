@@ -37,15 +37,10 @@
 package org.fedorahosted.freeotp.ui
 
 import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import android.widget.Toast
-
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -53,7 +48,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager.LayoutParams
 import android.widget.SearchView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -61,21 +60,17 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
-
-import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.MainBinding
-import org.fedorahosted.freeotp.util.Settings
-import org.fedorahosted.freeotp.util.UiLifecycleScope
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
-import java.lang.Exception
+import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
-    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
     @Inject lateinit var tokenPersistence: TokenPersistence
 
     private lateinit var tokenListAdapter: TokenListAdapter
@@ -91,15 +86,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-        lifecycle.addObserver(uiLifecycleScope)
 
         onNewIntent(intent)
         binding = DataBindingUtil.setContentView(this, R.layout.main)
 
-        tokenListAdapter = TokenListAdapter(this, tokenPersistence, uiLifecycleScope)
+        tokenListAdapter = TokenListAdapter(this, tokenPersistence)
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
-        ItemTouchHelper(TokenTouchCallback(tokenListAdapter, tokenPersistence, uiLifecycleScope)).attachToRecyclerView(binding.tokenList)
+        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         setSupportActionBar(binding.toolbar)
@@ -196,7 +190,7 @@ class MainActivity : AppCompatActivity() {
 
         val uri = intent.data
         if (uri != null) {
-            uiLifecycleScope.launch {
+            uiLifecycleScope {
                 try {
                     tokenPersistence.addFromUriString(uri.toString())
                 } catch (e: Exception) {
@@ -217,8 +211,8 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
-                uiLifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
+                uiLifecycleScope {
+                    val uri = resultData?.data ?: return@uiLifecycleScope
                     importFromUtil.exportJsonFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
@@ -232,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                         .setMessage(R.string.import_json_file_warning)
                         .setIcon(R.drawable.alert)
                         .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                            uiLifecycleScope.launch {
+                            uiLifecycleScope {
                                 try {
                                     importFromUtil.importJsonFile(uri)
                                     refreshTokenList(searchQuery)
@@ -251,8 +245,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             WRITE_KEY_URI_REQUEST_CODE -> {
-                uiLifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
+                uiLifecycleScope {
+                    val uri = resultData?.data ?: return@uiLifecycleScope
                     importFromUtil.exportKeyUriFile(uri)
                     Snackbar.make(binding.root, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
@@ -260,8 +254,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             READ_KEY_URI_REQUEST_CODE -> {
-                uiLifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
+                uiLifecycleScope {
+                    val uri = resultData?.data ?: return@uiLifecycleScope
                     try {
                         importFromUtil.importKeyUriFile(uri)
                         refreshTokenList(searchQuery)
@@ -330,8 +324,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTokenList(queryString: String) {
-        uiLifecycleScope.launch {
-
+        uiLifecycleScope {
             val tokens = if (queryString.isEmpty()) {
                 tokenPersistence.getTokens()
             } else {

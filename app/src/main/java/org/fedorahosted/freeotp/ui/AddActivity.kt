@@ -20,13 +20,6 @@
 
 package org.fedorahosted.freeotp.ui
 
-import java.io.UnsupportedEncodingException
-import java.net.URLEncoder
-import java.util.Locale
-
-import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.TokenPersistence
-
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -38,19 +31,20 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
-
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.UiLifecycleScope
+import org.fedorahosted.freeotp.util.uiLifecycleScope
+import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
+import java.util.*
 import javax.inject.Inject
 
 class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
-    @Inject lateinit var uiLifecycleScope: UiLifecycleScope
     @Inject lateinit var imageUtil: ImageUtil
 
     private val SHA1_OFFSET = 1
@@ -68,7 +62,6 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-        lifecycle.addObserver(uiLifecycleScope)
 
         setContentView(R.layout.add)
 
@@ -144,7 +137,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 // Add the token
-                uiLifecycleScope.launch {
+                uiLifecycleScope {
                     tokenPersistence.addFromUriString(uri)
                     setResult(Activity.RESULT_OK)
                     finish()
@@ -161,7 +154,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK) {
-            uiLifecycleScope.launch {
+            uiLifecycleScope {
                 mImageURL = data?.data?.let {
                     imageUtil.saveImageUriToFile(it)
                 }
