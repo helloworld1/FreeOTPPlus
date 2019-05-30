@@ -76,66 +76,66 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidInjection.inject(this)
-
-        tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
-            return
-        }
-
-
+        AndroidInjection.inject(this@EditActivity)
         setContentView(R.layout.edit)
 
-        // Get token values.
-        val token = tokenPersistence[tokenId] ?: return
-        mIssuerCurrent = token.issuer
-        mLabelCurrent = token.label
-        mImageCurrent = token.image
-        token.issuer = null
-        token.label = null
-        token.image = null
-        mIssuerDefault = token.issuer
-        mLabelDefault = token.label
-        mImageDefault = token.image
+        uiLifecycleScope {
+            tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
+                return@uiLifecycleScope
+            }
 
-        // Get references to widgets.
-        mIssuer = findViewById<View>(R.id.issuer) as EditText
-        mLabel = findViewById<View>(R.id.label) as EditText
-        mImage = findViewById<View>(R.id.image) as ImageButton
-        mRestore = findViewById<View>(R.id.restore) as Button
-        mSave = findViewById<View>(R.id.save) as Button
-        setSupportActionBar(findViewById(R.id.toolbar))
+            // Get token values.
+            val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
+            mIssuerCurrent = token.issuer
+            mLabelCurrent = token.label
+            mImageCurrent = token.image
+            token.issuer = null
+            token.label = null
+            token.image = null
+            mIssuerDefault = token.issuer
+            mLabelDefault = token.label
+            mImageDefault = token.image
 
-        // Setup text changed listeners.
-        mIssuer.addTextChangedListener(this)
-        mLabel.addTextChangedListener(this)
+            // Get references to widgets.
+            mIssuer = findViewById<View>(R.id.issuer) as EditText
+            mLabel = findViewById<View>(R.id.label) as EditText
+            mImage = findViewById<View>(R.id.image) as ImageButton
+            mRestore = findViewById<View>(R.id.restore) as Button
+            mSave = findViewById<View>(R.id.save) as Button
+            setSupportActionBar(findViewById(R.id.toolbar))
 
-        // Setup click callbacks.
-        findViewById<View>(R.id.cancel).setOnClickListener(this)
-        findViewById<View>(R.id.save).setOnClickListener(this)
-        findViewById<View>(R.id.restore).setOnClickListener(this)
-        mImage.setOnClickListener(this)
+            // Setup text changed listeners.
+            mIssuer.addTextChangedListener(this@EditActivity)
+            mLabel.addTextChangedListener(this@EditActivity)
 
-        // Setup initial state.
-        mImageCurrent?.let {
-            showImage(it)
+            // Setup click callbacks.
+            findViewById<View>(R.id.cancel).setOnClickListener(this@EditActivity)
+            findViewById<View>(R.id.save).setOnClickListener(this@EditActivity)
+            findViewById<View>(R.id.restore).setOnClickListener(this@EditActivity)
+            mImage.setOnClickListener(this@EditActivity)
+
+            // Setup initial state.
+            mImageCurrent?.let {
+                showImage(it)
+            }
+
+            mLabel.setText(mLabelCurrent)
+            mIssuer.setText(mIssuerCurrent)
+            mIssuer.setSelection(mIssuer.text.length)
+
+            // Token details
+            val algorithmTextView = findViewById<TextView>(R.id.algorithm)
+            algorithmTextView.text = token.algorithm
+
+            val digitsTextView = findViewById<TextView>(R.id.digits)
+            digitsTextView.text = token.digits.toString()
+
+            val secretTextView = findViewById<TextView>(R.id.secret)
+            secretTextView.text = token.secret
+
+            val intervalTextView = findViewById<TextView>(R.id.interval)
+            intervalTextView.text = token.period.toString()
         }
-
-        mLabel.setText(mLabelCurrent)
-        mIssuer.setText(mIssuerCurrent)
-        mIssuer.setSelection(mIssuer.text.length)
-
-        // Token details
-        val algorithmTextView = findViewById<TextView>(R.id.algorithm)
-        algorithmTextView.text = token.algorithm
-
-        val digitsTextView = findViewById<TextView>(R.id.digits)
-        digitsTextView.text = token.digits.toString()
-
-        val secretTextView = findViewById<TextView>(R.id.secret)
-        secretTextView.text = token.secret
-
-        val intervalTextView = findViewById<TextView>(R.id.interval)
-        intervalTextView.text = token.period.toString()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -185,7 +185,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
             R.id.save -> {
                 uiLifecycleScope {
-                    val token = tokenPersistence[tokenId] ?: return@uiLifecycleScope
+                    val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
                     token.issuer = mIssuer.text.toString()
                     token.label = mLabel.text.toString()
                     token.image = mImageDisplay

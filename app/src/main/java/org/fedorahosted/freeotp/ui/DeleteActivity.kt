@@ -17,26 +17,28 @@ class DeleteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidInjection.inject(this)
+        AndroidInjection.inject(this@DeleteActivity)
 
         setContentView(R.layout.delete)
 
-        val tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: return
+        uiLifecycleScope {
+            val tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: return@uiLifecycleScope
 
-        val token = tokenPersistence[tokenId] ?: return
-        (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
-        (findViewById<View>(R.id.label) as TextView).text = token.label
-        Picasso.get()
-                .load(token.image)
-                .placeholder(R.drawable.logo)
-                .into(findViewById<View>(R.id.image) as ImageView)
+            val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
+            (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
+            (findViewById<View>(R.id.label) as TextView).text = token.label
+            Picasso.get()
+                    .load(token.image)
+                    .placeholder(R.drawable.logo)
+                    .into(findViewById<View>(R.id.image) as ImageView)
 
-        findViewById<View>(R.id.cancel).setOnClickListener { finish() }
+            findViewById<View>(R.id.cancel).setOnClickListener { finish() }
 
-        findViewById<View>(R.id.delete).setOnClickListener {
-            uiLifecycleScope {
-                tokenPersistence.delete(tokenId)
-                finish()
+            findViewById<View>(R.id.delete).setOnClickListener {
+                uiLifecycleScope {
+                    tokenPersistence.delete(tokenId)
+                    finish()
+                }
             }
         }
     }
