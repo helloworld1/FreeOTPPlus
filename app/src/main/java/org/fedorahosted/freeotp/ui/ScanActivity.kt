@@ -20,7 +20,6 @@
 
 package org.fedorahosted.freeotp.ui
 
-import android.annotation.TargetApi
 import android.hardware.Camera
 import android.hardware.Camera.CameraInfo
 import android.hardware.Camera.Parameters
@@ -38,6 +37,7 @@ import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.token.Token
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
@@ -46,7 +46,6 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
     @Inject lateinit var tokenPersistence: TokenPersistence
 
     private val mCameraInfo = CameraInfo()
-    private val mScanAsyncTask: ScanAsyncTask
     private val mCameraId: Int
     private var mHandler: Handler? = null
     private var mCamera: Camera? = null
@@ -67,25 +66,12 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
         mCameraId = findCamera(mCameraInfo)
 
-        // Create the decoder thread
-        mScanAsyncTask = object : ScanAsyncTask() {
-            override fun onPostExecute(result: String) {
-                super.onPostExecute(result)
-                scanResult(result)
-            }
-        }
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
         setContentView(R.layout.scan)
-        mScanAsyncTask.execute()
-    }
-
-    public override fun onDestroy() {
-        super.onDestroy()
-        mScanAsyncTask.cancel(true)
     }
 
     override fun onStart() {
@@ -125,15 +111,14 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
             mHandler!!.sendEmptyMessageDelayed(0, 100)
     }
 
-    @TargetApi(14)
     override fun surfaceCreated(holder: SurfaceHolder) {
         surfaceDestroyed(holder)
 
         try {
             // Open the camera
             mCamera = Camera.open(mCameraId)
-            mCamera!!.setPreviewDisplay(holder)
-            mCamera!!.setPreviewCallback(mScanAsyncTask)
+            mCamera?.setPreviewDisplay(holder)
+            mCamera?.setPreviewCallback(ScanPreviewCallback(this, tokenPersistence, ::scanResult))
         } catch (e: Exception) {
             e.printStackTrace()
             surfaceDestroyed(holder)
@@ -149,13 +134,13 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
         // Set auto-focus mode
         val params = mCamera!!.parameters
         val modes = params.supportedFocusModes
-        if (modes.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-            params.focusMode = Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
-        else if (modes.contains(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
-            params.focusMode = Parameters.FOCUS_MODE_CONTINUOUS_VIDEO
-        else if (modes.contains(Parameters.FOCUS_MODE_AUTO)) {
-            params.focusMode = Parameters.FOCUS_MODE_AUTO
-            mHandler = AutoFocusHandler(mCamera!!)
+        when {
+            modes.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE) -> params.focusMode = Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
+            modes.contains(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) -> params.focusMode = Parameters.FOCUS_MODE_CONTINUOUS_VIDEO
+            modes.contains(Parameters.FOCUS_MODE_AUTO) -> {
+                params.focusMode = Parameters.FOCUS_MODE_AUTO
+                mHandler = AutoFocusHandler(mCamera!!)
+            }
         }
         mCamera!!.parameters = params
     }
@@ -176,43 +161,40 @@ class ScanActivity : AppCompatActivity(), SurfaceHolder.Callback {
         mCamera = null
     }
 
-    private fun scanResult(result: String) {
-        uiLifecycleScope {
-            val token = try {
-                tokenPersistence.addFromUriString(result)
-            } catch (e: java.lang.Exception) {
-                Toast.makeText(this@ScanActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
-                return@uiLifecycleScope
-            }
+    private fun scanResult(token: Token?) {
+        setResult(RESULT_OK)
 
-            Toast.makeText(this@ScanActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
-
-            setResult(RESULT_OK)
-
-            if (token.image == null) {
-                finish()
-                return@uiLifecycleScope
-            }
-
-            val image = findViewById<View>(R.id.image) as ImageView
-            Picasso.get()
-                    .load(token.image)
-                    .placeholder(R.drawable.scan)
-                    .into(image, object : Callback {
-                        override fun onSuccess() {
-                            findViewById<View>(R.id.progress).visibility = View.INVISIBLE
-                            image.alpha = 0.9f
-                            image.postDelayed({
-                                finish()
-                            }, 2000)
-                        }
-
-                        override fun onError(e: java.lang.Exception) {
-                            e.printStackTrace()
-                            finish()
-                        }
-                    })
+        if (token == null) {
+            Toast.makeText(this, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+            finish()
+            return
         }
+
+        Toast.makeText(this, R.string.add_token_success, Toast.LENGTH_SHORT).show()
+
+        if (token.image == null) {
+            finish()
+            return
+        }
+
+        val image = findViewById<View>(R.id.image) as ImageView
+        Picasso.get()
+                .load(token.image)
+                .placeholder(R.drawable.scan)
+                .into(image, object : Callback {
+                    override fun onSuccess() {
+                        findViewById<View>(R.id.progress).visibility = View.INVISIBLE
+                        image.alpha = 0.9f
+                        image.postDelayed({
+                            finish()
+                        }, 2000)
+                    }
+
+                    override fun onError(e: java.lang.Exception) {
+                        e.printStackTrace()
+                        finish()
+                    }
+                })
     }
 
 
