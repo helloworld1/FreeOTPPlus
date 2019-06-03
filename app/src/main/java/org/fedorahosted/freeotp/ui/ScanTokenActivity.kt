@@ -26,6 +26,8 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.QR_DECODER_MAX_IMAGE_HEIGHT
+import org.fedorahosted.freeotp.util.QR_DECODER_MAX_IMAGE_WIDTH
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
@@ -86,7 +88,7 @@ class ScanTokenActivity : AppCompatActivity() {
 
 
         val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
-            setTargetResolution(Size(1920, 1080))
+            setTargetResolution(Size(QR_DECODER_MAX_IMAGE_WIDTH, QR_DECODER_MAX_IMAGE_HEIGHT))
         }.build()
 
         val imageAnalysis = ImageAnalysis(imageAnalysisConfig)
@@ -154,6 +156,7 @@ class ScanTokenActivity : AppCompatActivity() {
         }
 
         val tokenString = tokenQRCodeDecoder.parseQRCode(image) ?: return
+
         foundToken = true
 
         uiLifecycleScope {
