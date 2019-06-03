@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import android.graphics.Matrix
 import android.media.Image
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Size
 import android.view.Surface
 import android.view.View
@@ -48,6 +50,7 @@ class ScanTokenActivity : AppCompatActivity() {
     @Inject lateinit var imageUtil: ImageUtil
 
     private var foundToken = false
+    private val imageAnalysisHandlerThread = HandlerThread("imageAnalysisHandler")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +68,13 @@ class ScanTokenActivity : AppCompatActivity() {
         binding.viewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             updateTransform()
         }
+
+        imageAnalysisHandlerThread.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        imageAnalysisHandlerThread.quitSafely()
     }
 
     private fun startCamera() {
@@ -86,8 +96,11 @@ class ScanTokenActivity : AppCompatActivity() {
             updateTransform()
         }
 
+        // Run image analysis on a different thread to not block main thread
+        val imageAnalysisHandler = Handler(imageAnalysisHandlerThread.looper)
 
         val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
+            setCallbackHandler(imageAnalysisHandler)
             setTargetResolution(Size(QR_DECODER_MAX_IMAGE_WIDTH, QR_DECODER_MAX_IMAGE_HEIGHT))
         }.build()
 
@@ -162,7 +175,7 @@ class ScanTokenActivity : AppCompatActivity() {
         uiLifecycleScope {
             val token = try {
                 tokenPersistence.addFromUriString(tokenString)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
                 finish()
                 return@uiLifecycleScope
