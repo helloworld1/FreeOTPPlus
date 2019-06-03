@@ -90,7 +90,7 @@ class ScanTokenActivity : AppCompatActivity() {
         }.build()
 
         val imageAnalysis = ImageAnalysis(imageAnalysisConfig)
-        imageAnalysis.setAnalyzer { image, rotationDegrees ->
+        imageAnalysis.setAnalyzer { image, _ ->
             image?.image?.let { analyzeImage(it) }
         }
 
