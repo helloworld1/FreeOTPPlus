@@ -4,9 +4,9 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.AddActivity
-import org.fedorahosted.freeotp.ui.ScanActivity
 import org.fedorahosted.freeotp.ui.DeleteActivity
 import org.fedorahosted.freeotp.ui.EditActivity
+import org.fedorahosted.freeotp.ui.ScanTokenActivity
 
 @Module
 abstract class ActivityModule {
@@ -24,6 +24,5 @@ abstract class ActivityModule {
     abstract fun contributeAddActivityInjector(): AddActivity
 
     @ContributesAndroidInjector
-    abstract fun contributeScanActivityInjector(): ScanActivity
-
+    abstract fun contributeScanTokenActivityInjector(): ScanTokenActivity
 }

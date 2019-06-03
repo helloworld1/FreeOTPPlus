@@ -36,23 +36,17 @@
 
 package org.fedorahosted.freeotp.ui
 
-import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager.LayoutParams
 import android.widget.SearchView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -114,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         // Don't permit screenshots since these might contain OTP codes.
-        window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
+        //window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
     }
 
     override fun onDestroy() {
@@ -136,7 +130,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.action_scan -> {
-                scanQRCode()
+                startActivityForResult(Intent(this, ScanTokenActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
                 return true
             }
 
@@ -272,21 +266,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            CAMERA_PERMISSION_REQUEST -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(Intent(this, ScanActivity::class.java))
-                    overridePendingTransition(R.anim.fadein, R.anim.fadeout)
-                } else {
-                    Toast.makeText(this, R.string.camera_permission_denied_text, Toast.LENGTH_LONG).show()
-                }
-                return
-            }
-        }
-    }
-
     /**
      * Fires an intent to spin up the "file chooser" UI and select an image.
      */
@@ -309,18 +288,6 @@ class MainActivity : AppCompatActivity() {
         intent.type = mimeType
         intent.putExtra(Intent.EXTRA_TITLE, fileName)
         startActivityForResult(intent, requestCode)
-    }
-
-    private fun scanQRCode() {
-        if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.CAMERA),
-                    CAMERA_PERMISSION_REQUEST)
-        } else {
-            startActivityForResult(Intent(this, ScanActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
-            overridePendingTransition(R.anim.fadein, R.anim.fadeout)
-        }
     }
 
     private fun refreshTokenList(queryString: String) {
@@ -348,7 +315,6 @@ class MainActivity : AppCompatActivity() {
     }
 
         companion object {
-            private const val CAMERA_PERMISSION_REQUEST = 10
             private const val READ_JSON_REQUEST_CODE = 42
             private const val WRITE_JSON_REQUEST_CODE = 43
             private const val READ_KEY_URI_REQUEST_CODE = 44

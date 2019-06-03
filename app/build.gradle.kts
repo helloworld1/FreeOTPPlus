@@ -12,7 +12,7 @@ android {
     defaultConfig {
         versionCode = 5
         versionName = "1.4" 
-        minSdkVersion(19)
+        minSdkVersion(21)
         targetSdkVersion(28)
         applicationId = "org.liberty.android.freeotpplus"
     }
@@ -46,6 +46,8 @@ dependencies {
     implementation("com.google.dagger:dagger:2.22.1")
     implementation("com.google.dagger:dagger-android:2.22.1")
     implementation("com.google.dagger:dagger-android-support:2.22.1")
+    implementation("androidx.camera:camera-core:1.0.0-alpha01")
+    implementation("androidx.camera:camera-camera2:1.0.0-alpha01")
     kapt("com.google.dagger:dagger-compiler:2.22.1")
     kapt("com.google.dagger:dagger-android-processor:2.22.1")
     kapt("com.google.dagger:dagger-android-support:2.22.1")
