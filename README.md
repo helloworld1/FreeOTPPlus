@@ -2,12 +2,15 @@
 FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
 * Export settings to Google Drive or other document providers
 * Import settings from Google Drive or other document providers
+* Lots of stability improvement
 * Support Android 6.0 permissions.
-* Enhanced UI with material design.
-* Support dark theme
-* Search token
+* Enhanced UI with material design with dark theme support
+* Search bar to search token
+* Provide more token details for better interoperatibility with other apps
+* Utilize modern camera hardware to scan QR code faster
+* More settings to customize the app functionality
 
-Most part of the code is re-written with modern Jetpack library and Kotlin language.
+Most part of the code is re-written with modern Jetpack libraries and Kotlin language.
 
 <a href="https://f-droid.org/packages/org.liberty.android.freeotpplus/" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
