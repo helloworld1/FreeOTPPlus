@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         onNewIntent(intent)
         binding = DataBindingUtil.setContentView(this, R.layout.main)
 
-        tokenListAdapter = TokenListAdapter(this, tokenPersistence)
+        tokenListAdapter = TokenListAdapter(this, tokenPersistence, settings)
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
         ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence)).attachToRecyclerView(binding.tokenList)
@@ -124,6 +124,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
         menu.findItem(R.id.use_dark_theme).isChecked = settings.darkMode
+        menu.findItem(R.id.copy_to_clipboard).isChecked = settings.copyToClipboard
         return true
     }
 
@@ -170,6 +171,11 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
 
+            R.id.copy_to_clipboard -> {
+                settings.copyToClipboard = !settings.copyToClipboard
+                item.isChecked = settings.copyToClipboard
+            }
+
             R.id.action_about -> {
                 startActivity(Intent(this, AboutActivity::class.java))
                 return true
@@ -197,6 +203,7 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          resultData: Intent?) {
+        super.onActivityResult(requestCode, resultCode, resultData)
 
         if (resultCode != Activity.RESULT_OK) {
             return

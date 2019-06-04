@@ -14,10 +14,12 @@ import org.fedorahosted.freeotp.token.Token
 import org.fedorahosted.freeotp.token.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.uiLifecycleScope
 
 class TokenListAdapter(val activity: AppCompatActivity,
-                       val tokenPersistence: TokenPersistence) : ListAdapter<Token, TokenViewHolder>(TokenItemCallback()) {
+                       val tokenPersistence: TokenPersistence,
+                       val settings: Settings) : ListAdapter<Token, TokenViewHolder>(TokenItemCallback()) {
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     private val tokenCodes: MutableMap<String, TokenCode> = ArrayMap()
 
@@ -35,10 +37,11 @@ class TokenListAdapter(val activity: AppCompatActivity,
                 val codes = token.generateCodes() ?: return@uiLifecycleScope
                 tokenPersistence.save(token)
 
-                // Copy code to clipboard.
-                clipboardManager.primaryClip = ClipData.newPlainText(null, codes.currentCode)
-
-                Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                if (settings.copyToClipboard) {
+                    // Copy code to clipboard.
+                    clipboardManager.primaryClip = ClipData.newPlainText(null, codes.currentCode)
+                    Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                }
 
                 tokenCodes[token.id] = codes
                 (v as TokenLayout).start(token.type, codes, true)
