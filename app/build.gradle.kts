@@ -35,10 +35,9 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.0.2")
     implementation("com.google.android.material:material:1.1.0-alpha07")
-    implementation("com.google.zxing:core:3.3.0")
+    implementation("com.google.zxing:core:3.4.0")
     implementation("com.google.code.gson:gson:2.8.2")
     implementation("com.squareup.picasso:picasso:2.71828")
-    implementation("com.google.android.material:material:1.0.0")
     implementation("androidx.core:core-ktx:1.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1")
