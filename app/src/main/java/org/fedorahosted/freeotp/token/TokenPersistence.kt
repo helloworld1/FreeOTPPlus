@@ -129,7 +129,7 @@ class TokenPersistence @Inject constructor(private val ctx: Context) {
 
         // Shared preference may have key but delete in the order
         // The toke order is the source for tokens in the list
-        if (tokenOrder.any { it == key })
+        if (tokenOrder.any { it == key } && getToken(key) != null)
             return@withContext
 
         val order = tokenOrder.toMutableList()
