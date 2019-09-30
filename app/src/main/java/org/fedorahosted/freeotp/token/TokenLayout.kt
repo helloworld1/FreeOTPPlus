@@ -9,14 +9,14 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 
-import androidx.cardview.widget.CardView
+import com.google.android.material.card.MaterialCardView
 
 import com.squareup.picasso.Picasso
 
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
 
-class TokenLayout : CardView, View.OnClickListener, Runnable {
+class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private val tag = TokenLayout::class.java.simpleName
     private lateinit var mProgressInner: ProgressCircle
     private lateinit var mProgressOuter: ProgressCircle
