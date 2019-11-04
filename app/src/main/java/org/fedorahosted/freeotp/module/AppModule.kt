@@ -8,6 +8,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import org.fedorahosted.freeotp.FreeOtpPlusApplication
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -27,5 +29,10 @@ abstract class AppModule {
         @JvmStatic
         @Provides
         fun qrCodeReader(): QRCodeReader = QRCodeReader()
+
+        @Singleton
+        @JvmStatic
+        @Provides
+        fun executorService(): ExecutorService = Executors.newFixedThreadPool(4)
     }
 }

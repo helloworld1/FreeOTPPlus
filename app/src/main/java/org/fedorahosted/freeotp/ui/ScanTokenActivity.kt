@@ -13,9 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysisConfig
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.core.app.ActivityCompat
@@ -28,10 +30,9 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.QR_DECODER_MAX_IMAGE_HEIGHT
-import org.fedorahosted.freeotp.util.QR_DECODER_MAX_IMAGE_WIDTH
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import org.fedorahosted.freeotp.util.uiLifecycleScope
+import java.util.concurrent.ExecutorService
 import javax.inject.Inject
 
 private const val REQUEST_CODE_PERMISSIONS = 10
@@ -49,8 +50,9 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var imageUtil: ImageUtil
 
+    @Inject lateinit var executorService: ExecutorService
+
     private var foundToken = false
-    private val imageAnalysisHandlerThread = HandlerThread("imageAnalysisHandler")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,18 +70,11 @@ class ScanTokenActivity : AppCompatActivity() {
         binding.viewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             updateTransform()
         }
-
-        imageAnalysisHandlerThread.start()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        imageAnalysisHandlerThread.quitSafely()
     }
 
     private fun startCamera() {
         val previewConfig = PreviewConfig.Builder().apply {
-            setTargetResolution(Size(1920, 1080))
+            setTargetAspectRatio(AspectRatio.RATIO_16_9)
         }.build()
 
         // Build the viewfinder use case
@@ -96,18 +91,16 @@ class ScanTokenActivity : AppCompatActivity() {
             updateTransform()
         }
 
-        // Run image analysis on a different thread to not block main thread
-        val imageAnalysisHandler = Handler(imageAnalysisHandlerThread.looper)
-
         val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
-            setCallbackHandler(imageAnalysisHandler)
-            setTargetResolution(Size(QR_DECODER_MAX_IMAGE_WIDTH, QR_DECODER_MAX_IMAGE_HEIGHT))
+            setBackgroundExecutor(executorService)
+            setTargetAspectRatio(AspectRatio.RATIO_16_9)
         }.build()
 
         val imageAnalysis = ImageAnalysis(imageAnalysisConfig)
-        imageAnalysis.setAnalyzer { image, _ ->
-            image?.image?.let { analyzeImage(it) }
-        }
+        imageAnalysis.setAnalyzer(executorService, ImageAnalysis.Analyzer { imageProxy: ImageProxy, _ ->
+            analyzeImage(imageProxy)
+        })
+
 
         CameraX.bindToLifecycle(this, preview, imageAnalysis)
     }
@@ -163,7 +156,7 @@ class ScanTokenActivity : AppCompatActivity() {
         return true
     }
 
-    private fun analyzeImage(image: Image) {
+    private fun analyzeImage(image: ImageProxy) {
         if (foundToken) {
             return
         }

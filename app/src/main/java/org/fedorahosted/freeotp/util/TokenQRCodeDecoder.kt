@@ -1,7 +1,7 @@
 package org.fedorahosted.freeotp.util
 
-import android.media.Image
 import android.util.Log
+import androidx.camera.core.ImageProxy
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.ChecksumException
 import com.google.zxing.FormatException
@@ -13,26 +13,25 @@ import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-const val QR_DECODER_MAX_IMAGE_WIDTH = 1920
-const val QR_DECODER_MAX_IMAGE_HEIGHT = 1080
-
 @Singleton
 class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeReader) {
 
     private val tag: String = TokenQRCodeDecoder::class.java.simpleName
 
-    private val imageData: ByteArray = ByteArray(QR_DECODER_MAX_IMAGE_WIDTH * QR_DECODER_MAX_IMAGE_HEIGHT)
+    private lateinit var imageData: ByteArray
 
-    fun parseQRCode(image: Image): String? {
+    fun parseQRCode(image: ImageProxy): String? {
+        if (!::imageData.isInitialized || imageData.size < image.width * image.height) {
+            imageData = ByteArray(image.width * image.height)
+        }
+
         synchronized(imageData) {
             // Only Y component of YUV is needed
 
             val y = image.planes[0]
             val ySize = y.buffer.remaining()
 
-            if (ySize > imageData.size) {
-                throw IllegalArgumentException("Image size is larger than $QR_DECODER_MAX_IMAGE_WIDTH*$QR_DECODER_MAX_IMAGE_HEIGHT]")
-            }
+            require(ySize <= imageData.size) { "Incorrect image size" }
 
             y.buffer.get(imageData, 0, ySize)
 

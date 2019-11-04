@@ -38,7 +38,7 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.1.0")
-    implementation("com.google.android.material:material:1.1.0-alpha10")
+    implementation("com.google.android.material:material:1.1.0-beta01")
     implementation("com.google.zxing:core:3.4.0")
     implementation("com.google.code.gson:gson:2.8.5")
     implementation("com.squareup.picasso:picasso:2.71828")
@@ -49,8 +49,8 @@ dependencies {
     implementation("com.google.dagger:dagger:2.22.1")
     implementation("com.google.dagger:dagger-android:2.22.1")
     implementation("com.google.dagger:dagger-android-support:2.22.1")
-    implementation("androidx.camera:camera-core:1.0.0-alpha05")
-    implementation("androidx.camera:camera-camera2:1.0.0-alpha05")
+    implementation("androidx.camera:camera-core:1.0.0-alpha06")
+    implementation("androidx.camera:camera-camera2:1.0.0-alpha06")
     kapt("com.google.dagger:dagger-compiler:2.22.1")
     kapt("com.google.dagger:dagger-android-processor:2.22.1")
     kapt("com.google.dagger:dagger-android-support:2.22.1")
