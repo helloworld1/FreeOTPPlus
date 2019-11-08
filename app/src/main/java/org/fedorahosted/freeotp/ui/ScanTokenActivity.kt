@@ -3,11 +3,7 @@ package org.fedorahosted.freeotp.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Matrix
-import android.media.Image
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
-import android.util.Size
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
