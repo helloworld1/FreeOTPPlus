@@ -12,24 +12,57 @@
         android:scaleType="centerInside"
         android:src="@drawable/logo" />
 
-    <EditText
-        android:id="@+id/issuer"
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_toRightOf="@id/image"
-        android:layout_marginTop="4dp"
-        android:hint="jdoe@example.com"
-        android:inputType="textNoSuggestions"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="104dp"
+        >
 
-    <EditText
-        android:id="@+id/label"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_toRightOf="@id/image"
-        android:layout_below="@id/issuer"
-        android:layout_marginBottom="4dp"
-        android:hint="18c5d06cfcbd4927"
-        android:inputType="textNoSuggestions"
-        android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:paddingRight="8dp"
+                android:text="@string/account"
+                android:textStyle="bold"/>
+
+            <EditText
+                android:id="@+id/issuer"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+            android:layout_toRightOf="@id/image"
+            android:layout_marginTop="4dp"
+            android:hint="jdoe@example.com"
+            android:inputType="textNoSuggestions"
+            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:paddingRight="8dp"
+                android:text="@string/secret"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/label"
+                android:layout_width="197dp"
+                android:layout_height="48dp"
+                android:layout_below="@id/issuer"
+                android:layout_marginBottom="4dp"
+                android:layout_toRightOf="@id/image"
+                android:hint="18c5d06cfcbd4927"
+                android:inputType="textNoSuggestions"
+                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        </TableRow>
+    </TableLayout>
 </RelativeLayout>
