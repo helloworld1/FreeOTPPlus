@@ -9,7 +9,6 @@ import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,8 +29,6 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
 
             val y = image.planes[0]
             val ySize = y.buffer.remaining()
-
-            require(ySize <= imageData.size) { "Incorrect image size" }
 
             y.buffer.get(imageData, 0, ySize)
 
