@@ -21,7 +21,7 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
     private lateinit var imageData: ByteArray
 
     fun parseQRCode(image: ImageProxy): String? {
-        if (!::imageData.isInitialized || imageData.size < image.width * image.height) {
+        if (!::imageData.isInitialized) {
             imageData = ByteArray(image.width * image.height)
         }
 
@@ -31,7 +31,9 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
             val y = image.planes[0]
             val ySize = y.buffer.remaining()
 
-            require(ySize <= imageData.size) { "Incorrect image size" }
+            if (ySize > imageData.size) {
+                imageData = ByteArray(ySize)
+            }
 
             y.buffer.get(imageData, 0, ySize)
 
