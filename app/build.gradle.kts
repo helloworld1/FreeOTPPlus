@@ -38,7 +38,7 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.1.0")
-    implementation("com.google.android.material:material:1.1.0-beta01")
+    implementation("com.google.android.material:material:1.1.0-beta02")
     implementation("com.google.zxing:core:3.4.0")
     implementation("com.google.code.gson:gson:2.8.5")
     implementation("com.squareup.picasso:picasso:2.71828")
