@@ -9,7 +9,6 @@ import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +20,13 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
     private lateinit var imageData: ByteArray
 
     fun parseQRCode(image: ImageProxy): String? {
+
+        // In some phones, row stride is larger than the width. Use row stride instead to avoid
+        // buffer overflow
+        val rowStride = image.planes[0].rowStride
+
         if (!::imageData.isInitialized) {
-            imageData = ByteArray(image.width * image.height)
+            imageData = ByteArray(rowStride * image.height)
         }
 
         synchronized(imageData) {
@@ -38,8 +42,8 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
             y.buffer.get(imageData, 0, ySize)
 
             val ls = PlanarYUVLuminanceSource(
-                    imageData, image.width, image.height,
-                    0, 0, image.width, image.height, false)
+                    imageData, rowStride, image.height,
+                    0, 0, rowStride, image.height, false)
 
             return try {
                 qrCodeReader.decode(BinaryBitmap(HybridBinarizer(ls))).text
