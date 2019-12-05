@@ -11,6 +11,7 @@
     <string name="interval">Intervallo</string>
     <string name="counter">Contatore</string>
     <string name="issuer">Emittente</string>
+    <string name="account">Conto</string>
     <string name="id">ID</string>
     <string name="secret">Segreto</string>
     <string name="type">Tipo</string>
