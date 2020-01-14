@@ -15,11 +15,11 @@ import javax.inject.Singleton
 @Singleton
 class ImageUtil @Inject constructor(val context: Context) {
     suspend fun saveImageUriToFile(uri: Uri):Uri = withContext(Dispatchers.IO) {
-        val outputFile = File(context.filesDir.absolutePath + "/" + "image" + uri.toString().hashCode() + ".jpg")
+        val outputFile = File(context.filesDir.absolutePath + "/image" + uri.toString().hashCode() + ".png")
         val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
 
         outputFile.outputStream().use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, it)
         }
 
         outputFile.toUri()
