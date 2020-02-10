@@ -91,7 +91,7 @@ class ProgressCircle : View {
 
         val percent = mProgress * 100 / max
         if (percent > 25 || mProgress == 0) {
-            if (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_NO)
+            if (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_NO && AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY)
                 mPaint!!.setARGB(0x99, 0x2B, 0xAD, 0x00)
             else
                 mPaint!!.setARGB(0x99, 0x33, 0x33, 0x33)
