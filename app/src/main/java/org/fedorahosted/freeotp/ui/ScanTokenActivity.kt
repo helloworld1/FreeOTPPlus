@@ -10,18 +10,22 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageAnalysisConfig
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
-import androidx.camera.core.PreviewConfig
+import androidx.camera.core.SurfaceRequest
+import androidx.camera.core.impl.ImageAnalysisConfig
+import androidx.camera.core.impl.PreviewConfig
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.activity_scan_token.*
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
@@ -38,8 +42,6 @@ private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
 
 class ScanTokenActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityScanTokenBinding
-
     @Inject lateinit var tokenQRCodeDecoder: TokenQRCodeDecoder
 
     @Inject lateinit var tokenPersistence: TokenPersistence
@@ -53,73 +55,44 @@ class ScanTokenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AndroidInjection.inject(this)
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_scan_token)
+        setContentView(R.layout.activity_scan_token)
 
         if (allPermissionsGranted()) {
-            binding.viewFinder.post { startCamera() }
+            view_finder.post { startCamera() }
         } else {
             ActivityCompat.requestPermissions(
                     this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
-        binding.viewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-            updateTransform()
-        }
     }
 
     private fun startCamera() {
-        val previewConfig = PreviewConfig.Builder().apply {
-            setTargetAspectRatio(AspectRatio.RATIO_16_9)
-        }.build()
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener(Runnable {
 
-        // Build the viewfinder use case
-        val preview = Preview(previewConfig)
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
-        // Every time the viewfinder is updated, recompute layout
-        preview.setOnPreviewOutputUpdateListener {
-            // To update the SurfaceTexture, we have to remove it and re-add it
-            val parent = binding.viewFinder.parent as ViewGroup
-            parent.removeView(binding.viewFinder)
-            parent.addView(binding.viewFinder, 0)
+            val preview = Preview.Builder().apply {
+                setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                setTargetRotation(Surface.ROTATION_0)
+            }.build()
 
-            binding.viewFinder.surfaceTexture = it.surfaceTexture
-            updateTransform()
-        }
+            preview.setSurfaceProvider(view_finder.previewSurfaceProvider)
 
-        val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
-            setBackgroundExecutor(executorService)
-            setTargetAspectRatio(AspectRatio.RATIO_16_9)
-        }.build()
+            val imageAnalysis = ImageAnalysis.Builder().apply {
+                setBackgroundExecutor(executorService)
+                setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                setTargetRotation(Surface.ROTATION_0)
+            }.build()
 
-        val imageAnalysis = ImageAnalysis(imageAnalysisConfig)
-        imageAnalysis.setAnalyzer(executorService, ImageAnalysis.Analyzer { imageProxy: ImageProxy, _ ->
-            analyzeImage(imageProxy)
-        })
+            imageAnalysis.setAnalyzer(executorService, ImageAnalysis.Analyzer { imageProxy: ImageProxy ->
+                analyzeImage(imageProxy)
+            })
 
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-        CameraX.bindToLifecycle(this, preview, imageAnalysis)
-    }
-
-    private fun updateTransform() {
-        val matrix = Matrix()
-
-        // Compute the center of the view finder
-        val centerX = binding.viewFinder.width / 2f
-        val centerY = binding.viewFinder.height / 2f
-
-        // Correct preview output to account for display rotation
-        val rotationDegrees = when(binding.viewFinder.display.rotation) {
-            Surface.ROTATION_0 -> 0
-            Surface.ROTATION_90 -> 90
-            Surface.ROTATION_180 -> 180
-            Surface.ROTATION_270 -> 270
-            else -> return
-        }
-        matrix.postRotate(-rotationDegrees.toFloat(), centerX, centerY)
-
-        // Finally, apply transformations to our TextureView
-        binding.viewFinder.setTransform(matrix)
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+        }, ContextCompat.getMainExecutor(this));
     }
 
     /**
@@ -130,7 +103,7 @@ class ScanTokenActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                binding.viewFinder.post {
+                view_finder.post {
                     startCamera()
                 }
             } else {
@@ -152,12 +125,14 @@ class ScanTokenActivity : AppCompatActivity() {
         return true
     }
 
-    private fun analyzeImage(image: ImageProxy) {
+    private fun analyzeImage(imageProxy: ImageProxy) {
         if (foundToken) {
             return
         }
 
-        val tokenString = tokenQRCodeDecoder.parseQRCode(image) ?: return
+        val tokenString = imageProxy.use { image ->
+            tokenQRCodeDecoder.parseQRCode(image) ?: return
+        }
 
         foundToken = true
 
@@ -180,11 +155,11 @@ class ScanTokenActivity : AppCompatActivity() {
             Picasso.get()
                     .load(token.image)
                     .placeholder(R.drawable.scan)
-                    .into(binding.image, object : Callback {
+                    .into(image, object : Callback {
                         override fun onSuccess() {
-                            binding.progress.visibility = View.INVISIBLE
-                            binding.image.alpha = 0.9f
-                            binding.image.postDelayed({
+                            progress.visibility = View.INVISIBLE
+                            image.alpha = 0.9f
+                            image.postDelayed({
                                 finish()
                             }, 2000)
                         }

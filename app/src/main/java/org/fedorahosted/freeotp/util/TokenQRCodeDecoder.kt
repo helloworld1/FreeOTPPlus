@@ -47,7 +47,8 @@ class TokenQRCodeDecoder @Inject constructor(private val qrCodeReader: QRCodeRea
 
             return try {
                 qrCodeReader.decode(BinaryBitmap(HybridBinarizer(ls))).text
-            } catch (_: NotFoundException) {
+            } catch (e: NotFoundException) {
+                Log.d(tag, "QR code Not found", e)
                 null
             } catch (e: ChecksumException) {
                 e.printStackTrace()
