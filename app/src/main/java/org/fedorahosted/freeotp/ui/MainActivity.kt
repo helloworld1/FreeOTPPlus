@@ -44,6 +44,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -108,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         // Don't permit screenshots since these might contain OTP codes.
-        //window.setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE)
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun onDestroy() {
