@@ -42,7 +42,10 @@ android {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.1.0")
     implementation("com.google.android.material:material:1.1.0")
-    implementation("com.google.zxing:core:3.4.0")
+
+
+    // Version 3.4.0 contains a crashing bug before api level 24
+    implementation("com.google.zxing:core:3.3.3")
     implementation("com.google.code.gson:gson:2.8.5")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.core:core-ktx:1.2.0")
