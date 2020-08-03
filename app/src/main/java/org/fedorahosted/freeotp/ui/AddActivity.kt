@@ -110,6 +110,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 val algorithm = mAlgorithm.selectedItem.toString().toLowerCase(Locale.US)
                 val interval = Integer.parseInt(mInterval.text.toString())
                 val digits = when {
+                    findViewById<RadioButton>(R.id.digits5).isChecked -> 5
                     findViewById<RadioButton>(R.id.digits7).isChecked -> 7
                     findViewById<RadioButton>(R.id.digits8).isChecked -> 8
                     else -> 6

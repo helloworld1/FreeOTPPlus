@@ -53,6 +53,7 @@
     <string name="add_token_success">The token was successfully added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
 
+    <string name="five" translatable="false">5</string>
     <string name="six" translatable="false">6</string>
     <string name="seven" translatable="false">7</string>
     <string name="eight" translatable="false">8</string>
