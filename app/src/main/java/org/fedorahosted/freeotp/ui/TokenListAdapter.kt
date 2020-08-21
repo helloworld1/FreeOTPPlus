@@ -39,7 +39,7 @@ class TokenListAdapter(val activity: AppCompatActivity,
 
                 if (settings.copyToClipboard) {
                     // Copy code to clipboard.
-                    clipboardManager.primaryClip = ClipData.newPlainText(null, codes.currentCode)
+                    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, codes.currentCode))
                     Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
                 }
 
