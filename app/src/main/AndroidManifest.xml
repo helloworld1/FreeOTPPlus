@@ -29,7 +29,6 @@
         android:theme="@style/AppTheme">
         <activity android:name=".ui.ScanTokenActivity" />
         <activity android:name=".ui.AboutActivity" />
-        <activity android:name=".ui.ScanActivity" />
         <activity
             android:name=".ui.AddActivity"
             android:label="@string/add_token"
