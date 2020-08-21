@@ -52,6 +52,13 @@
     <string name="use_dark_theme">Use dark theme</string>
     <string name="add_token_success">The token was successfully added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="require_authentication">Require authentication</string>
+    <string name="quit_and_lock">Quit and lock</string>
+    <string name="authentication_succeeded">Authentication succeeded!</string>
+    <string name="authentication_error">Authentication error:</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="authentication_dialog_title">Authentication required</string>
+    <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
 
     <string name="five" translatable="false">5</string>
     <string name="six" translatable="false">6</string>

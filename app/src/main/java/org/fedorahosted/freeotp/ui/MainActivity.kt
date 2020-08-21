@@ -46,8 +46,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -71,6 +74,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tokenListAdapter: TokenListAdapter
     private lateinit var binding: MainBinding
     private var searchQuery = ""
+    private var menu: Menu? = null
+
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
@@ -80,6 +85,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         AndroidInjection.inject(this)
 
         onNewIntent(intent)
@@ -110,6 +116,10 @@ class MainActivity : AppCompatActivity() {
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+
+        if (settings.requireAuthentication) {
+            verifyAuthentication();
+        }
     }
 
     override fun onDestroy() {
@@ -124,8 +134,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
-        menu.findItem(R.id.use_dark_theme).isChecked = settings.darkMode
-        menu.findItem(R.id.copy_to_clipboard).isChecked = settings.copyToClipboard
+        this.menu = menu
+        refreshOptionMenu()
         return true
     }
 
@@ -175,10 +185,30 @@ class MainActivity : AppCompatActivity() {
             R.id.copy_to_clipboard -> {
                 settings.copyToClipboard = !settings.copyToClipboard
                 item.isChecked = settings.copyToClipboard
+                refreshOptionMenu()
+            }
+
+            R.id.require_authentication -> {
+                // Make sure we also verify authentication before turning on the settings
+                if (!settings.requireAuthentication) {
+                    verifyAuthentication {
+                        settings.requireAuthentication = true
+                        refreshOptionMenu()
+                    }
+                } else {
+                    settings.requireAuthentication = false
+                    refreshOptionMenu()
+                }
+                return true
             }
 
             R.id.action_about -> {
                 startActivity(Intent(this, AboutActivity::class.java))
+                return true
+            }
+
+            R.id.quit_and_lock -> {
+                finish()
                 return true
             }
         }
@@ -322,13 +352,62 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-        companion object {
-            private const val READ_JSON_REQUEST_CODE = 42
-            private const val WRITE_JSON_REQUEST_CODE = 43
-            private const val READ_KEY_URI_REQUEST_CODE = 44
-            private const val WRITE_KEY_URI_REQUEST_CODE = 45
-            private const val ADD_TOKEN_REQUEST_CODE = 46
-            private const val SCAN_TOKEN_REQUEST_CODE = 47
-            private val TAG = MainActivity::class.java.simpleName
-        }
+    private fun refreshOptionMenu() {
+        this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
+        this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
+        this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
+    }
+
+    private fun verifyAuthentication(onSuccess: () -> Unit = {}) {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationError(errorCode: Int,
+                                                       errString: CharSequence) {
+                        super.onAuthenticationError(errorCode, errString)
+                        Toast.makeText(applicationContext,
+                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+                                .show()
+                        
+                        if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                            finish()
+                        }
+                    }
+
+                    override fun onAuthenticationSucceeded(
+                            result: BiometricPrompt.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+                        Toast.makeText(applicationContext,
+                                getString(R.string.authentication_succeeded), Toast.LENGTH_SHORT)
+                                .show()
+                        onSuccess()
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        super.onAuthenticationFailed()
+                        Toast.makeText(applicationContext, getString(R.string.authentication_failed),
+                                Toast.LENGTH_SHORT)
+                                .show()
+                        finish()
+                    }
+                })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getString(R.string.authentication_dialog_title))
+                .setSubtitle(getString(R.string.authentication_dialog_subtitle))
+                .setDeviceCredentialAllowed(true)
+                .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
+
+    companion object {
+        private const val READ_JSON_REQUEST_CODE = 42
+        private const val WRITE_JSON_REQUEST_CODE = 43
+        private const val READ_KEY_URI_REQUEST_CODE = 44
+        private const val WRITE_KEY_URI_REQUEST_CODE = 45
+        private const val ADD_TOKEN_REQUEST_CODE = 46
+        private const val SCAN_TOKEN_REQUEST_CODE = 47
+        private val TAG = MainActivity::class.java.simpleName
+    }
 }
