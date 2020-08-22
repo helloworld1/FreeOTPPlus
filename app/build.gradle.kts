@@ -27,9 +27,6 @@ android {
             resValue("string", "app_name", "FreeOTP+")
         }
     }
-    buildFeatures {
-        dataBinding = true
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
