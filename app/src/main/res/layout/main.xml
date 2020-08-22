@@ -19,54 +19,55 @@
    - limitations under the License.
    -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+	android:id="@+id/root_view"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto">
-	<LinearLayout
-		android:orientation="vertical"
-		android:id="@+id/root"
+	<com.google.android.material.appbar.AppBarLayout
 		android:layout_width="match_parent"
-		android:layout_height="match_parent" >
-        <com.google.android.material.appbar.AppBarLayout
+		android:layout_height="wrap_content">
+		<com.google.android.material.appbar.MaterialToolbar
+			android:id="@+id/toolbar"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
-			<com.google.android.material.appbar.MaterialToolbar
-				android:id="@+id/toolbar"
-				android:layout_width="match_parent"
-				android:layout_height="?attr/actionBarSize">
-				<androidx.appcompat.widget.SearchView
-					android:id="@+id/search"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="end"
-					android:layout_marginEnd="@dimen/space_2"
-					android:iconifiedByDefault="true"/>
-			</com.google.android.material.appbar.MaterialToolbar>
-		</com.google.android.material.appbar.AppBarLayout>
-		<FrameLayout
-			android:layout_weight="1"
-			android:layout_width="match_parent"
-			android:layout_height="0dp">
-			<TextView
-				android:id="@+id/empty"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:padding="8dp"
-				android:gravity="center"
-				android:visibility="gone"
-				android:text="@string/no_keys" />
-			<ProgressBar
-				android:id="@+id/loading"
+			android:layout_height="?attr/actionBarSize">
+			<androidx.appcompat.widget.SearchView
+				android:id="@+id/search_view"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:padding="8dp"
-				android:layout_gravity="center"
-				android:text="@string/no_keys" />
-			<androidx.recyclerview.widget.RecyclerView
-				android:id="@+id/token_list"
-				android:visibility="gone"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent" />
-
-		</FrameLayout>
-	</LinearLayout>
-</layout>
+				android:layout_gravity="end"
+				android:layout_marginEnd="@dimen/space_2"
+				android:iconifiedByDefault="true"/>
+		</com.google.android.material.appbar.MaterialToolbar>
+	</com.google.android.material.appbar.AppBarLayout>
+	<androidx.core.widget.NestedScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		app:layout_behavior="@string/appbar_scrolling_view_behavior">
+		<TextView
+			android:id="@+id/empty_view"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:padding="8dp"
+			android:gravity="center"
+			android:visibility="gone"
+			android:text="@string/no_keys" />
+	</androidx.core.widget.NestedScrollView>
+	<androidx.recyclerview.widget.RecyclerView
+		android:id="@+id/token_list"
+		android:visibility="gone"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:clipToPadding="false"
+		android:paddingBottom="96dp"
+		app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+		android:id="@+id/add_token_fab"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom|end"
+		android:layout_margin="24dp"
+		android:contentDescription="@string/add_token"
+		app:srcCompat="@drawable/camera"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
