@@ -133,12 +133,14 @@ class ScanTokenActivity : AppCompatActivity() {
                 tokenPersistence.addFromUriString(tokenString)
             } catch (e: Throwable) {
                 Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+
                 finish()
                 return@uiLifecycleScope
             }
 
             Toast.makeText(this@ScanTokenActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
 
+            setResult(RESULT_OK)
             if (token.image == null) {
                 finish()
                 return@uiLifecycleScope

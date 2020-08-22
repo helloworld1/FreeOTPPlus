@@ -25,7 +25,7 @@ class TokenListAdapter(val activity: AppCompatActivity,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenViewHolder {
         val tokenLayout = LayoutInflater.from(activity).inflate(R.layout.token, parent, false) as TokenLayout
-        return TokenViewHolder(tokenLayout)
+        return TokenViewHolder(activity, tokenLayout)
     }
 
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {

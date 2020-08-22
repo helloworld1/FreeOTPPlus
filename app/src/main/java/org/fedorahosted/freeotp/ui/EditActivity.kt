@@ -190,6 +190,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     token.label = mLabel.text.toString()
                     token.image = mImageDisplay
                     tokenPersistence.save(token)
+                    setResult(RESULT_OK)
                     finish()
                 }
             }

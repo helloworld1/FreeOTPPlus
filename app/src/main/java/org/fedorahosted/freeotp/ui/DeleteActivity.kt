@@ -32,11 +32,14 @@ class DeleteActivity : AppCompatActivity() {
                     .placeholder(R.drawable.logo)
                     .into(findViewById<View>(R.id.image) as ImageView)
 
-            findViewById<View>(R.id.cancel).setOnClickListener { finish() }
+            findViewById<View>(R.id.cancel).setOnClickListener {
+                finish()
+            }
 
             findViewById<View>(R.id.delete).setOnClickListener {
                 uiLifecycleScope {
                     tokenPersistence.delete(tokenId)
+                    setResult(RESULT_OK)
                     finish()
                 }
             }

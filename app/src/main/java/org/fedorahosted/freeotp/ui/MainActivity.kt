@@ -120,7 +120,11 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 
         if (settings.requireAuthentication) {
-            verifyAuthentication();
+            verifyAuthentication() {
+                refreshTokenList("")
+            }
+        } else {
+            refreshTokenList("")
         }
     }
 
@@ -128,12 +132,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
     }
-
-    override fun onResume() {
-        super.onResume()
-        refreshTokenList(searchQuery)
-    }
-
+    
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
         this.menu = menu
@@ -242,6 +241,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        refreshTokenList(searchQuery)
 
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
@@ -402,12 +402,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val READ_JSON_REQUEST_CODE = 42
-        private const val WRITE_JSON_REQUEST_CODE = 43
-        private const val READ_KEY_URI_REQUEST_CODE = 44
-        private const val WRITE_KEY_URI_REQUEST_CODE = 45
-        private const val ADD_TOKEN_REQUEST_CODE = 46
-        private const val SCAN_TOKEN_REQUEST_CODE = 47
         private val TAG = MainActivity::class.java.simpleName
     }
 }
