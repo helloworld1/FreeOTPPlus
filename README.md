@@ -8,6 +8,8 @@ FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with th
 * Search bar to search token
 * Provide more token details for better interoperatibility with other apps
 * Utilize modern camera hardware to scan QR code faster
+* Option to require Biometric / PIN authentication to launch the app
+* Heuristic based offline icon for tokens of 250+ websites.
 * More settings to customize the app functionality
 
 Most part of the code is re-written with modern Jetpack libraries and Kotlin language.
@@ -19,4 +21,4 @@ Most part of the code is re-written with modern Jetpack libraries and Kotlin lan
 
 # Build FreeOTP
 * Android SDK
-* Android Studio 3.4+
+* Android Studio 4.0+
