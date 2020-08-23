@@ -120,9 +120,9 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 
         if (settings.requireAuthentication) {
-            verifyAuthentication() {
+            verifyAuthentication(onSuccess =  {
                 refreshTokenList("")
-            }
+            })
         } else {
             refreshTokenList("")
         }
@@ -192,10 +192,14 @@ class MainActivity : AppCompatActivity() {
             R.id.require_authentication -> {
                 // Make sure we also verify authentication before turning on the settings
                 if (!settings.requireAuthentication) {
-                    verifyAuthentication {
+                    verifyAuthentication(onSuccess =  {
                         settings.requireAuthentication = true
                         refreshOptionMenu()
-                    }
+                    }, onFailure = {
+                        Toast.makeText(applicationContext,
+                                R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
+                                .show()
+                    })
                 } else {
                     settings.requireAuthentication = false
                     refreshOptionMenu()
@@ -358,19 +362,23 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
     }
 
-    private fun verifyAuthentication(onSuccess: () -> Unit = {}) {
+    private fun verifyAuthentication(onSuccess: () -> Unit = {}, onFailure: (() -> Unit)? = null) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationError(errorCode: Int,
                                                        errString: CharSequence) {
                         super.onAuthenticationError(errorCode, errString)
-                        Toast.makeText(applicationContext,
-                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
-                                .show()
-                        
-                        if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                            finish()
+                        if (onFailure == null) {
+                            Toast.makeText(applicationContext,
+                                    "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+                                    .show()
+
+                            if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                                finish()
+                            }
+                        } else {
+                            onFailure()
                         }
                     }
 
@@ -385,10 +393,15 @@ class MainActivity : AppCompatActivity() {
 
                     override fun onAuthenticationFailed() {
                         super.onAuthenticationFailed()
-                        Toast.makeText(applicationContext, getString(R.string.authentication_failed),
-                                Toast.LENGTH_SHORT)
-                                .show()
-                        finish()
+
+                        if (onFailure == null) {
+                            Toast.makeText(applicationContext, getString(R.string.authentication_failed),
+                                    Toast.LENGTH_SHORT)
+                                    .show()
+                            finish()
+                        } else {
+                            onFailure()
+                        }
                     }
                 })
 
