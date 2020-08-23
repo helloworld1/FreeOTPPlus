@@ -32,14 +32,14 @@
         <activity
             android:name=".ui.AddActivity"
             android:label="@string/add_token"
-            android:windowSoftInputMode="stateVisible" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.DeleteActivity"
             android:label="@string/delete_question"
             android:theme="@style/DialogTheme" />
         <activity
             android:name=".ui.EditActivity"
-            android:windowSoftInputMode="stateVisible" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.MainActivity"
             android:clearTaskOnLaunch="true"
