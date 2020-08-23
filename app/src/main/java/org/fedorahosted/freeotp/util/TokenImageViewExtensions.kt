@@ -5,7 +5,7 @@ import com.squareup.picasso.Picasso
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.Token
 import org.fedorahosted.freeotp.token.TokenThumbnail
-import org.fedorahosted.freeotp.token.matchIssuer
+import org.fedorahosted.freeotp.token.matchToken
 
 fun ImageView.setTokenImage(token: Token) {
     if (token.image != null) {
@@ -23,9 +23,7 @@ fun ImageView.setTokenImage(token: Token) {
 }
 
 private fun matchIssuerWithTokenThumbnail(token: Token): Int? {
-    return TokenThumbnail.values().firstOrNull {tokenThumbnail ->
-        token.issuer ?.let {issuer ->
-            tokenThumbnail.matchIssuer(issuer)
-        } ?: false
+    return TokenThumbnail.values().firstOrNull {
+        it.matchToken(token)
     }?.resource
 }

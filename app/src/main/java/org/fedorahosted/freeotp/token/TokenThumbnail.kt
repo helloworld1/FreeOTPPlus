@@ -1,13 +1,11 @@
 package org.fedorahosted.freeotp.token
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import androidx.appcompat.content.res.AppCompatResources
 import org.fedorahosted.freeotp.R
 import java.util.*
 
-enum class TokenThumbnail(val resource: Int, val issuer: String? = null) {
+enum class TokenThumbnail(val resource: Int,
+                          val issuer: String? = null,
+                          val alsoMatchLabel: Boolean = false) {
     OneAndOne(R.drawable.thumb_1and1),
     OnePassword(R.drawable.thumb_1password),
     TwentyThreeAndMe(R.drawable.thumb_23andme),
@@ -95,10 +93,10 @@ enum class TokenThumbnail(val resource: Int, val issuer: String? = null) {
     Fritz(R.drawable.thumb_fritz),
     Gamepad(R.drawable.thumb_gamepad),
     Gandi(R.drawable.thumb_gandi),
-    Git(R.drawable.thumb_git),
     Gitea(R.drawable.thumb_gitea),
-    GitHub(R.drawable.thumb_github),
+    GitHub(R.drawable.thumb_github, null, true),
     GitLab(R.drawable.thumb_gitlab),
+    Git(R.drawable.thumb_git),
     GMX(R.drawable.thumb_gmx),
     GoDaddy(R.drawable.thumb_godaddy),
     Gogs(R.drawable.thumb_gogs),
@@ -137,7 +135,7 @@ enum class TokenThumbnail(val resource: Int, val issuer: String? = null) {
     Lobsters(R.drawable.thumb_lobsters),
     LocalBitcoins(R.drawable.thumb_localbitcoins),
     LocalMonero(R.drawable.thumb_localmonero),
-    LoginGov(R.drawable.thumb_login_gov),
+    LoginGov(R.drawable.thumb_login_gov, "login.gov"),
     LogMeIn(R.drawable.thumb_logmein),
     Mailbox(R.drawable.thumb_mailbox),
     Mailchimp(R.drawable.thumb_mailchimp),
@@ -261,19 +259,17 @@ enum class TokenThumbnail(val resource: Int, val issuer: String? = null) {
     Zoom(R.drawable.thumb_zoom);
 }
 
-fun TokenThumbnail.getBitmap(context: Context): Bitmap {
-    val drawable = AppCompatResources.getDrawable(context, this.resource)
-    val bitmap = Bitmap.createBitmap(drawable!!.minimumWidth, drawable.minimumHeight, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    drawable.setBounds(0, 0, drawable.minimumWidth, drawable.minimumHeight)
-    drawable.draw(canvas)
-    return bitmap
-}
-
-fun TokenThumbnail.matchIssuer(issuer: String): Boolean {
+fun TokenThumbnail.matchToken(token: Token): Boolean {
     val issuerToMatch = this.issuer ?: this.name
 
-    return issuer.toLowerCase(Locale.getDefault())
-            .contains(issuerToMatch.toLowerCase(Locale.getDefault()))
+    val issuerMatched = token.issuer?.toLowerCase(Locale.getDefault())
+            ?.contains(issuerToMatch.toLowerCase(Locale.getDefault())) ?: false
+
+    return if (!issuerMatched && this.alsoMatchLabel) {
+        token.label?.toLowerCase(Locale.getDefault())
+                ?.contains(issuerToMatch.toLowerCase(Locale.getDefault())) ?: false
+    } else {
+        issuerMatched
+    }
 }
 
