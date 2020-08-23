@@ -2,13 +2,13 @@ package org.fedorahosted.freeotp.ui
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.delete.*
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.setTokenImage
 import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
@@ -27,10 +27,9 @@ class DeleteActivity : AppCompatActivity() {
             val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
             (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
             (findViewById<View>(R.id.label) as TextView).text = token.label
-            Picasso.get()
-                    .load(token.image)
-                    .placeholder(R.drawable.logo)
-                    .into(findViewById<View>(R.id.image) as ImageView)
+
+            image_view.setTokenImage(token)
+
 
             findViewById<View>(R.id.cancel).setOnClickListener {
                 finish()

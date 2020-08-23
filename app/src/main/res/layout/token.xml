@@ -21,7 +21,7 @@
 
 <org.fedorahosted.freeotp.token.TokenLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:freeotp="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -33,23 +33,24 @@
         android:layout_height="96dp"
         android:layout_gravity="start"
         android:src="@drawable/logo"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:padding="16dp" />
 
     <org.fedorahosted.freeotp.ui.ProgressCircle
         android:id="@+id/progressInner"
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:padding="28dp"
-        freeotp:hollow="false"
-        freeotp:max="1000" />
+        app:hollow="false"
+        app:max="1000" />
 
     <org.fedorahosted.freeotp.ui.ProgressCircle
         android:id="@+id/progressOuter"
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:padding="24dp"
-        freeotp:hollow="true"
-        freeotp:max="1000" />
+        app:hollow="true"
+        app:max="1000" />
 
     <TextView
         android:id="@+id/code"
@@ -83,6 +84,6 @@
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
         android:src="@drawable/menu"
-        android:tint="?android:textColorSecondary"
+        app:tint="?android:textColorSecondary"
         />
 </org.fedorahosted.freeotp.token.TokenLayout>

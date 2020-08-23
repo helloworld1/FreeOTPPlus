@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso
 
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private val tag = TokenLayout::class.java.simpleName
@@ -77,10 +78,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mPlaceholder = String(placeholder)
 
         // Show the image.
-        Picasso.get()
-                .load(token.image)
-                .placeholder(R.drawable.logo)
-                .into(mImage)
+        mImage.setTokenImage(token)
 
         // Set the labels.
         mLabel.text = token.label
