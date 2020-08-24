@@ -1,0 +1,7 @@
+RELEASE-1.3
+ * Import / Export using key uri file format for interoperability with other apps
+ * Support non-standard 7 digits token
+ * Add dark theme (Experimental)
+ * Fix issues when persisting images associated with the token
+ * Better error handling
+ * Use full screen to edit and add token

@@ -1,0 +1,5 @@
+RELEASE-1.4
+ * Search token
+ * Better dark mode theme
+ * Fix several crashes caused by invalid token
+ * More responsive UI on low end devices

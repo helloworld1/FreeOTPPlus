@@ -1,0 +1,6 @@
+RELEASE-1.5
+ * New camera scanning rewrite for faster and more accurate QR code scanning
+ * Updated dark theme support for more contrast menu and token card
+ * Adaptive icon support
+ * Add option to not copy to clipboard
+ * Fix token order issue after crash

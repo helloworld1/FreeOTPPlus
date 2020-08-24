@@ -1,0 +1,7 @@
+RELEASE-1.8
+ * Night mode improvement
+ * General UI improvement
+ * Fixed token image transparency issue
+ * Afrikaans translation
+
+Thanks error401de's contribution for most of the features
