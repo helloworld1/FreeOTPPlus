@@ -32,3 +32,5 @@ Thumbs.db
 *.iml
 .idea
 
+# Crowdin Config
+crowdin.yml
