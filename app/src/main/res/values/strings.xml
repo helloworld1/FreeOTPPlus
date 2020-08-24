@@ -67,11 +67,4 @@
     <string name="eight" translatable="false">8</string>
     <string name="issuer_hint" translatable="false">example@example.com</string>
     <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
-
-    <string-array name="algorithms">
-        <item>MD5</item>
-        <item>SHA1</item>
-        <item>SHA256</item>
-        <item>SHA512</item>
-    </string-array>
 </resources>
