@@ -1,0 +1,2 @@
+RELEASE-1.7
+ * Another attempt to fix the crash on scan QR code on some phone models

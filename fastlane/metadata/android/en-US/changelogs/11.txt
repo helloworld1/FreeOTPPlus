@@ -1,0 +1,5 @@
+RELEASE-2.0
+ * Add optional biometric / PIN authentication to launch
+ * Add icons based on token's issuer. Currently about 250 sites are supported.
+ * UI update to add FAB to launch camera
+ * CameraX Update

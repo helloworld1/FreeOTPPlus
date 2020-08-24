@@ -1,0 +1,2 @@
+RELEASE-1.6
+ * Fixed QR code scan issue on some devices
