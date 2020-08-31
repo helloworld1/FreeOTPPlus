@@ -4,8 +4,8 @@ import android.widget.ImageView
 import com.squareup.picasso.Picasso
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.Token
-import org.fedorahosted.freeotp.token.TokenThumbnail
-import org.fedorahosted.freeotp.token.matchToken
+import org.liberty.android.freeotp.token_images.TokenImage
+import org.liberty.android.freeotp.token_images.matchToken
 
 fun ImageView.setTokenImage(token: Token) {
     if (token.image != null) {
@@ -23,7 +23,7 @@ fun ImageView.setTokenImage(token: Token) {
 }
 
 private fun matchIssuerWithTokenThumbnail(token: Token): Int? {
-    return TokenThumbnail.values().firstOrNull {
-        it.matchToken(token)
+    return TokenImage.values().firstOrNull {
+        it.matchToken(token.issuer, token.label)
     }?.resource
 }
