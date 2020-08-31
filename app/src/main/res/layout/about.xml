@@ -66,4 +66,13 @@
         android:layout_marginEnd="@dimen/space_3"
         android:layout_marginTop="16dp"
         android:text="@string/about_icons" />
+
+    <TextView
+        android:id="@+id/about_token_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_marginEnd="@dimen/space_3"
+        android:layout_marginTop="16dp"
+        android:text="@string/about_token_image" />
 </LinearLayout>
