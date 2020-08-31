@@ -9,7 +9,7 @@ Creative Commons 2.5 Attribution License.
 Original Icons:
  * ic_launcher.png - Copyright 2013: Red Hat, Inc.
 
-The token thumbnails thumb_*.xml are from andOTP
+The token thumbnails token_image_*.xml in token-images library are from andOTP
 Copyright (C) 2017-2020 Jakob Nixdorf <andotp@shadowice.org>
 Copyright (C) 2015 Bruno Bierbaumer
 
