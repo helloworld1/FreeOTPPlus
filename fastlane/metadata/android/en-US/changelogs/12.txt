@@ -1,0 +1,4 @@
+RELEASE-2.1
+ * German Translation
+ * Copyright license update in about screen
+
