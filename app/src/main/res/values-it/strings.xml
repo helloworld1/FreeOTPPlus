@@ -19,7 +19,6 @@
     <string name="digits">Cifre</string>
     <string name="save">Salva</string>
     <string name="code_copied">Codice copiato negli appunti.</string>
-
     <string name="about_freeotp">Riguardo FreeOTP+</string>
     <string name="about_version">FreeOTP+ Versione %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
@@ -27,12 +26,35 @@
     <string name="about_website">Per maggiore informazioni, visita %s.</string>
     <string name="about_feedback">Sono ben accettati i feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Alcune icone utilizzate sono derivate dal progetto Android Open Source Project, sono usate concordando con i termini descritti nella licenza Creative Commons 2.5 (Attribuzione)</string>
+    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Impossibile aprire la fotocamera!</string>
-
-    <string name="delete_summary">Questa è l\'ultima possibilità: se si elimina questo token, verrà perso per sempre. Non verrà disabilitato nel lato server.</string>    <string name="delete_question">Delete this token?</string>
+    <string name="delete_summary">Questa è l\'ultima possibilità: se si elimina questo token, verrà perso per sempre. Non verrà disabilitato nel lato server.</string>
+    <string name="delete_question">Delete this token?</string>
     <string name="import_text">Importa</string>
     <string name="export_text">Esporta</string>
     <string name="export_succeeded_text">Esportazione completata.</string>
     <string name="import_succeeded_text">Importazione completata.</string>
+    <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
+    <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
+    <string name="invalid_token_uri_received">Invalid token URI received</string>
+    <string name="import_json_file">Import JSON file</string>
+    <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
     <string name="camera_permission_denied_text">Permesso per la fotocamera negato</string>
+    <string name="ok_text">Ok</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="import_json_format">Import JSON format</string>
+    <string name="import_key_uri_format">Import key URI format</string>
+    <string name="export_json_format">Export JSON format</string>
+    <string name="export_key_uri_format">Export key URI format</string>
+    <string name="use_dark_theme">Use dark theme</string>
+    <string name="add_token_success">The token was successfully added</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="require_authentication">Require authentication</string>
+    <string name="quit_and_lock">Quit and lock</string>
+    <string name="authentication_succeeded">Authentication succeeded!</string>
+    <string name="authentication_error">Authentication error:</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="authentication_dialog_title">Authentication required</string>
+    <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
+    <string name="unable_to_authenticate">Unable to authenticate. Do you have screen lock enabled with PIN / biometric enabled?</string>
 </resources>

@@ -26,6 +26,7 @@
     <string name="about_website">Weitere Informationen finden Sie in unserer %s.</string>
     <string name="about_feedback">Wir freuen uns über Ihr Feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Einige Symbole, die von dieser Anwendung verwendet werden, werden aus Arbeiten reproduziert, die vom Android Open Source Projekt erstellt und gemeinsam verwendet werden, gemäß den in der Creative Commons 2 beschriebenen Begriffen. Namensnennungs-Lizenz.</string>
+    <string name="about_token_image">Die Token Thumbnails token_image_*.xml in der Token-Bilder-Bibliothek sind von andOTP unter &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Fehler beim Öffnen der Kamera!</string>
     <string name="delete_summary">Dies ist deine letzte Chance: Wenn du dieses Token löschst, wird er für immer gelöscht. Er wird nicht auf dem Server deaktiviert.</string>
     <string name="delete_question">Diesen Token löschen?</string>
