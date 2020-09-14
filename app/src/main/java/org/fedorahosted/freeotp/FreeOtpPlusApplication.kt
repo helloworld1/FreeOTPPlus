@@ -1,20 +1,16 @@
 package org.fedorahosted.freeotp
 
-import android.app.Activity
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.Fragment
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import org.fedorahosted.freeotp.module.DaggerAppComponent
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
-class FreeOtpPlusApplication: Application(), HasActivityInjector, HasSupportFragmentInjector {
-    @Inject lateinit var dispatchingActivityInjector: DispatchingAndroidInjector<Activity>
-    @Inject lateinit var dispatchingFragmentInjector: DispatchingAndroidInjector<Fragment>
+class FreeOtpPlusApplication: Application(), HasAndroidInjector {
+    @Inject lateinit var androidInjector: DispatchingAndroidInjector<Any>
     @Inject lateinit var settings: Settings
 
     override fun onCreate() {
@@ -27,13 +23,5 @@ class FreeOtpPlusApplication: Application(), HasActivityInjector, HasSupportFrag
         }
     }
 
-    override fun activityInjector(): AndroidInjector<Activity> {
-        return dispatchingActivityInjector
-    }
-
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> {
-        return dispatchingFragmentInjector
-    }
-
-
+    override fun androidInjector(): AndroidInjector<Any> = androidInjector
 }

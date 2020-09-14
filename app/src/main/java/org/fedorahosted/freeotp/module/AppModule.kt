@@ -17,7 +17,7 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindContext(application: FreeOtpPlusApplication): Context
-    @Module
+
     companion object {
         @Singleton
         @JvmStatic
