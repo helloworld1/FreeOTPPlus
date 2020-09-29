@@ -26,7 +26,7 @@
     <string name="about_website">Para más información, vea nuestra %s.</string>
     <string name="about_feedback">Sus comentarios son bienvenidos:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Algunos iconos usados por esta aplicación son reproducidos a partir de trabajos creados y compartidos por Android Open Source Project y utilizados de acuerdo a los términos descritos en la licencia Creative Commons 2.5 Attribution.</string>
-    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Las miniaturas del token token_image_*.xml en la biblioteca de imágenes de tokens son de andOTP bajo &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">¡Error al abrir la cámara!</string>
     <string name="delete_summary">Esta es tu última oportunidad: si eliminas este token, será olvidado para siempre. No será desactivado en el servidor.</string>
     <string name="delete_question">¿Eliminar este token?</string>
