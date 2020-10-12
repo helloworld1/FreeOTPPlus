@@ -34,15 +34,15 @@
     <string name="export_text">Esporta</string>
     <string name="export_succeeded_text">Esportazione completata.</string>
     <string name="import_succeeded_text">Importazione completata.</string>
-    <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
+    <string name="import_json_failed_text">Importazione di JSON non riuscita. Il file è malformato.</string>
     <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
     <string name="invalid_token_uri_received">Invalid token URI received</string>
-    <string name="import_json_file">Import JSON file</string>
+    <string name="import_json_file">Importa file JSON</string>
     <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
     <string name="camera_permission_denied_text">Permesso per la fotocamera negato</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Annulla</string>
-    <string name="import_json_format">Import JSON format</string>
+    <string name="import_json_format">Importa formato JSON</string>
     <string name="import_key_uri_format">Import key URI format</string>
     <string name="export_json_format">Export JSON format</string>
     <string name="export_key_uri_format">Export key URI format</string>
@@ -55,6 +55,6 @@
     <string name="authentication_error">Errore di autenticazione:</string>
     <string name="authentication_failed">Autenticazione non riuscita</string>
     <string name="authentication_dialog_title">Autenticazione richiesta</string>
-    <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">Si prega di utilizzare la biometria o un PIN per autenticare FreeOTP+</string>
     <string name="unable_to_authenticate">Impossibile autenticarsi. Hai abilitato il blocco schermo con PIN / biometrico?</string>
 </resources>
