@@ -168,7 +168,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_key_uri -> {
-                createFile("application/json", "freeotp-backup.txt", WRITE_KEY_URI_REQUEST_CODE)
+                createFile("text/plain", "freeotp-backup.txt", WRITE_KEY_URI_REQUEST_CODE)
                 return true
             }
 
