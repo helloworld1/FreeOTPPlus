@@ -34,7 +34,8 @@
         android:layout_gravity="start"
         android:src="@drawable/logo"
         android:scaleType="fitCenter"
-        android:padding="16dp" />
+        android:padding="16dp"
+        android:background="@color/token_background"/>
 
     <org.fedorahosted.freeotp.ui.ProgressCircle
         android:id="@+id/progressInner"

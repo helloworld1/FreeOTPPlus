@@ -3,5 +3,6 @@
     <color name="primary">#16AFF9</color>
     <color name="primary_dark">#128EC9</color>
     <color name="secondary">#16AFF9</color>
+    <color name="token_background">@android:color/white</color>
 </resources>
 
