@@ -104,8 +104,12 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
         <Button
+            android:id="@+id/remove_user_token_image"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/remove_user_token_image" />
+        <Button
             android:id="@+id/restore"
-            style="@android:style/Widget.Holo.Light.Button.Borderless.Small"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:enabled="false"

@@ -33,6 +33,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.edit.*
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
@@ -61,13 +62,17 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     private var tokenId: String = ""
 
-    private fun showImage(imageUri: Uri) {
+    private fun showImage(imageUri: Uri?) {
         mImageDisplay = imageUri
         onTextChanged(null, 0, 0, 0)
+
         Picasso.get()
                 .load(imageUri)
                 .placeholder(R.drawable.logo)
                 .into(mImage)
+
+        // Remove user image option is only enabled if there is image to display
+        remove_user_token_image.isEnabled = mImageDisplay != null
     }
 
     private fun imageIs(uri: Uri?): Boolean {
@@ -112,12 +117,12 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             findViewById<View>(R.id.cancel).setOnClickListener(this@EditActivity)
             findViewById<View>(R.id.save).setOnClickListener(this@EditActivity)
             findViewById<View>(R.id.restore).setOnClickListener(this@EditActivity)
+            remove_user_token_image.setOnClickListener(this@EditActivity)
             mImage.setOnClickListener(this@EditActivity)
 
-            // Setup initial state.
-            mImageCurrent?.let {
-                showImage(it)
-            }
+            // Setup initial state. When the image is null, the image removal button will be
+            // disabled and a placeholder image is displayed
+            showImage(mImageCurrent)
 
             mLabel.setText(mLabelCurrent)
             mIssuer.setText(mIssuerCurrent)
@@ -193,6 +198,10 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     setResult(RESULT_OK)
                     finish()
                 }
+            }
+
+            R.id.remove_user_token_image -> {
+                showImage(null)
             }
 
             R.id.cancel -> finish()
