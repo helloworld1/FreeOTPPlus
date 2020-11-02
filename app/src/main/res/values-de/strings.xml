@@ -57,4 +57,5 @@
     <string name="authentication_dialog_title">Authentifizierung erforderlich</string>
     <string name="authentication_dialog_subtitle">Bitte verwenden Sie Biometrik oder PIN um FreeOTP+ zu authentifizieren</string>
     <string name="unable_to_authenticate">Authentifizierung nicht möglich. Aktivieren Sie die Bildschirmsperre mit PIN / biometrisch?</string>
+    <string name="remove_user_token_image">Benutzer-Token Bild entfernen</string>
 </resources>

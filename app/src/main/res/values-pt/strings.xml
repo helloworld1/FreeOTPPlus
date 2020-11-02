@@ -57,4 +57,5 @@
     <string name="authentication_dialog_title">Autenticação exigida</string>
     <string name="authentication_dialog_subtitle">Favor usar a biometria ou PIN para autenticar com FreeOTP+</string>
     <string name="unable_to_authenticate">Não foi possível autenticar. Tem o bloqueio de tela com PIN / biometria ativado?</string>
+    <string name="remove_user_token_image">Remove user token image</string>
 </resources>
