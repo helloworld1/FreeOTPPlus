@@ -1,0 +1,5 @@
+RELEASE-2.2
+ * Fix token image contrast issues in dark theme
+ * Add option to remove user token image
+ * Translations updates, German, French, Spanish, Portuguese Brazilian, Basque are mostly complete thanks to @6543's contribution.
+ * Key uri file type bug fixed.
