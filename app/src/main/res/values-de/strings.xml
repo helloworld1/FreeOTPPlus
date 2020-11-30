@@ -4,10 +4,10 @@
     <string name="invalid_token">Der angegebene Token ist ungültig!</string>
     <string name="delete">Löschen</string>
     <string name="edit">Bearbeiten</string>
-    <string name="restore_defaults">Standard wiederherstellen</string>
+    <string name="restore_defaults">Standards wiederherstellen</string>
     <string name="no_keys">Keine OTP-Schlüssel installiert.</string>
     <string name="add_token">Token hinzufügen</string>
-    <string name="scan_qr_code">QR Code scannen</string>
+    <string name="scan_qr_code">QR-Code scannen</string>
     <string name="interval">Intervall</string>
     <string name="counter">Zähler</string>
     <string name="issuer">Aussteller</string>
@@ -23,18 +23,18 @@
     <string name="about_version">FreeOTP+ Version %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
     <string name="about_license">FreeOTP+ ist unter %1$s lizenziert.</string>
-    <string name="about_website">Weitere Informationen finden Sie in unserer %s.</string>
+    <string name="about_website">Weitere Informationen finden Sie in unserem %s.</string>
     <string name="about_feedback">Wir freuen uns über Ihr Feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Einige Symbole, die von dieser Anwendung verwendet werden, werden aus Arbeiten reproduziert, die vom Android Open Source Projekt erstellt und gemeinsam verwendet werden, gemäß den in der Creative Commons 2 beschriebenen Begriffen. Namensnennungs-Lizenz.</string>
-    <string name="about_token_image">Die Token Thumbnails token_image_*.xml in der Token-Bilder-Bibliothek sind von andOTP unter &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_icons">Einige Symbole, die in dieser App genutzt werden, wurden vom Android Open Source Projekt erstellt bzw. daraus generiert. Die Symbole werden gemäß der Creative Commons 2.5 Namensnennungs Lizenz benutzt.</string>
+    <string name="about_token_image">Die Token Thumbnails token_image_*.xml in der Token-Bilder-Bibliothek sind von andOTP und stehen unter &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Fehler beim Öffnen der Kamera!</string>
-    <string name="delete_summary">Dies ist deine letzte Chance: Wenn du dieses Token löschst, wird er für immer gelöscht. Er wird nicht auf dem Server deaktiviert.</string>
+    <string name="delete_summary">Dies ist deine letzte Chance: Wenn du dieses Token löschst, wird er für immer gelöscht sein. Er wird jedoch nicht auf dem Server deaktiviert.</string>
     <string name="delete_question">Diesen Token löschen?</string>
     <string name="import_text">Importieren</string>
     <string name="export_text">Exportieren</string>
     <string name="export_succeeded_text">Export erfolgreich.</string>
     <string name="import_succeeded_text">Import erfolgreich</string>
-    <string name="import_json_failed_text">Import von JSON fehlgeschlagen. Die Datei ist fehlerhaft.</string>
+    <string name="import_json_failed_text">Importieren von JSON fehlgeschlagen. Die Datei ist fehlerhaft.</string>
     <string name="import_key_uri_failed_text">Fehler beim Importieren der Schlüssel-Url-Datei. Die Datei ist fehlerhaft.</string>
     <string name="invalid_token_uri_received">Ungültige Token-URL erhalten</string>
     <string name="import_json_file">JSON-Datei importieren</string>
@@ -48,14 +48,14 @@
     <string name="export_key_uri_format">Export Schlüssel-Url-Format</string>
     <string name="use_dark_theme">Dunkles Design verwenden</string>
     <string name="add_token_success">Der Token wurde erfolgreich hinzugefügt</string>
-    <string name="copy_to_clipboard">In Zwischenablage kopieren</string>
+    <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
     <string name="require_authentication">Authentifizierung erforderlich</string>
     <string name="quit_and_lock">Beenden und sperren</string>
     <string name="authentication_succeeded">Authentifizierung erfolgreich!</string>
     <string name="authentication_error">Authentifizierungsfehler:</string>
     <string name="authentication_failed">Authentifizierung fehlgeschlagen</string>
     <string name="authentication_dialog_title">Authentifizierung erforderlich</string>
-    <string name="authentication_dialog_subtitle">Bitte verwenden Sie Biometrik oder PIN um FreeOTP+ zu authentifizieren</string>
-    <string name="unable_to_authenticate">Authentifizierung nicht möglich. Aktivieren Sie die Bildschirmsperre mit PIN / biometrisch?</string>
-    <string name="remove_user_token_image">Benutzer-Token Bild entfernen</string>
+    <string name="authentication_dialog_subtitle">Bitte verwenden Sie Biometrie oder PIN um FreeOTP+ zu authentifizieren</string>
+    <string name="unable_to_authenticate">Authentifizierung nicht möglich. Haben Sie die Sperre mit einer PIN / mit biometrischen Daten aktiviert?</string>
+    <string name="remove_user_token_image">Benutzerdefiniertes Token Bild entfernen</string>
 </resources>

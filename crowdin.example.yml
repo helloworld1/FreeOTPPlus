@@ -1,0 +1,18 @@
+"project_id":         "417526"
+"api_token":          "-removed-"
+"base_path":          ""
+"preserve_hierarchy": false
+files:                [
+{
+  "source":           "app/src/main/res/values/strings.xml",
+  "translation":      "app/src/main/res/values-%two_letters_code%/strings.xml",
+},
+{
+  "source":           "fastlane/metadata/android/en-US/short_description.txt",
+  "translation":      "fastlane/metadata/android/%locale%/short_description.txt",
+},
+{
+  "source":           "fastlane/metadata/android/en-US/full_description.txt",
+  "translation":      "fastlane/metadata/android/%locale%/full_description.txt",
+}
+]
