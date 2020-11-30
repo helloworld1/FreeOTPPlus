@@ -57,5 +57,5 @@
     <string name="authentication_dialog_title">Authentification nécessaire</string>
     <string name="authentication_dialog_subtitle">Veuillez utiliser la biométrie ou un NIP pour vous authentifier sur FreeOTP+</string>
     <string name="unable_to_authenticate">Authentification impossible. Avez-vous activé le verrouillage de l’écran par NIP / biométrie ?</string>
-    <string name="remove_user_token_image">Remove user token image</string>
+    <string name="remove_user_token_image">Retirer l\'image du jeton utilisateur</string>
 </resources>

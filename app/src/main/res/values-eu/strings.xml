@@ -57,5 +57,5 @@
     <string name="authentication_dialog_title">Autentifikazioa beharrezkoa</string>
     <string name="authentication_dialog_subtitle">Mesedez erabili biometrika edo PINa FreeOTP+ autentifikatzeko</string>
     <string name="unable_to_authenticate">Ezin da autentifikatu. Pantaila blokeoa PIN / biometrikarekin duzu gaituta?</string>
-    <string name="remove_user_token_image">Remove user token image</string>
+    <string name="remove_user_token_image">Kendu erabiltzaile tokenaren irudia</string>
 </resources>
