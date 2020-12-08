@@ -68,7 +68,7 @@ class ScanTokenActivity : AppCompatActivity() {
                 setTargetRotation(Surface.ROTATION_0)
             }.build()
 
-            preview.setSurfaceProvider(view_finder.createSurfaceProvider())
+            preview.setSurfaceProvider(view_finder.surfaceProvider)
 
             val imageAnalysis = ImageAnalysis.Builder().apply {
                 setBackgroundExecutor(executorService)
