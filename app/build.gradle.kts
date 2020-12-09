@@ -59,6 +59,8 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.0.0-beta12")
     implementation("androidx.camera:camera-view:1.0.0-alpha19")
     implementation("androidx.biometric:biometric:1.0.1")
+    implementation("com.amulyakhare:com.amulyakhare.textdrawable:1.0.1")
+
     kapt("com.google.dagger:dagger-compiler:2.28.3")
     kapt("com.google.dagger:dagger-android-processor:2.28.3")
     kapt("com.google.dagger:dagger-android-support:2.28.3")
