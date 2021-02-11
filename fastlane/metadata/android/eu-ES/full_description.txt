@@ -1,0 +1,21 @@
+FreeOTP Plus RedHat-ek hornitutako FreeOTP-ren funtzionalitate bera adarkatzen du, hobekuntza hauekin:
+
+* Esportatu ezarpenak Google Drive edo beste dokumentu hornitzaileetara
+* Inportatu ezarpenak Google Drive edo beste dokumentu hornitzaileetatik
+* Egonkortasun hobekuntzak
+* Android 6.0 baimenentzako bateragarritasuna.
+* Erabiltzaile-interfaze hobetua material design eta gai ilunarekin
+* Bilaketa barra tokenak bilatzeko
+* Tokenen xehetasun gehiago beste aplikazio batzuekin bateragarriagoa izateko
+* Kamera hardware modernoa erabili QR kodeak arinago eskaneatzeko
+* Aplikazioa abiarazteko biometrika / PINa behar izatea
+* Heuristikan oinarritutako lineaz kanpoko irudiak 250+ web orrientzako.
+* Ezarpen gehiago aplikazioaren funtzionalitatea pertsonalizatzeko
+
+FreeOTP bi faktoreko autentifikazio (2FA) aplikazioa da, pasahitz bakarreko protokoloak (OTP) erabiltzen duten sistementzako.
+Tokenak QR kode bat eskaneatzen edo tokenaren konfigurazioa eskuz sartuz gehitu daitezke.
+
+FreeOTP estandar irekiak inplementatzen ditu. Honek esan nahi du zerbitzariaren aldeko osagai jabedunik ez dela beharrezkoa:
+erabili estandar hauek inplementatzen dituen edozein zerbitzariaren aldeko osagai — adibidez FreeIPA, TOTP erabiltzen duena.
+Estandarrak betetzen dituen edozein inplementaziok funtzionatuko du.
+Momentu honetan, FreeOTPk HOTP (RFC 4226) eta TOTP (RFC 6238) inplementazioak onartzen ditu.

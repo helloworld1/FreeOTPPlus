@@ -1,0 +1,1 @@
+FreeOTP-Android-en adarkatze hobetua, ezaugarriz betetako 2FA autentifikazio aplikazioa
