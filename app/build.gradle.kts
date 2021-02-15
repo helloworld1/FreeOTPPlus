@@ -8,12 +8,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(29)
+    compileSdkVersion(30)
     defaultConfig {
         versionCode = 13
         versionName = "2.2"
         minSdkVersion(21)
-        targetSdkVersion(29)
+        targetSdkVersion(30)
         applicationId = "org.liberty.android.freeotpplus"
     }
 
@@ -40,7 +40,7 @@ android {
 dependencies {
     implementation(project(":token-images"))
     implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("com.google.android.material:material:1.2.1")
+    implementation("com.google.android.material:material:1.3.0")
 
 
     // Version 3.4.0 contains a crashing bug before api level 24
@@ -54,11 +54,11 @@ dependencies {
     implementation("com.google.dagger:dagger:2.28.3")
     implementation("com.google.dagger:dagger-android:2.28.3")
     implementation("com.google.dagger:dagger-android-support:2.28.3")
-    implementation("androidx.camera:camera-core:1.0.0-beta12")
-    implementation("androidx.camera:camera-camera2:1.0.0-beta12")
-    implementation("androidx.camera:camera-lifecycle:1.0.0-beta12")
-    implementation("androidx.camera:camera-view:1.0.0-alpha19")
-    implementation("androidx.biometric:biometric:1.0.1")
+    implementation("androidx.camera:camera-core:1.0.0-rc02")
+    implementation("androidx.camera:camera-camera2:1.0.0-rc02")
+    implementation("androidx.camera:camera-lifecycle:1.0.0-rc02")
+    implementation("androidx.camera:camera-view:1.0.0-alpha21")
+    implementation("androidx.biometric:biometric:1.1.0")
     implementation("com.amulyakhare:com.amulyakhare.textdrawable:1.0.1")
 
     kapt("com.google.dagger:dagger-compiler:2.28.3")

@@ -108,7 +108,7 @@ class ProgressCircle : View {
         mRect!!.top += (paddingTop + mPadding).toInt()
         mRect!!.right -= (paddingRight + mPadding).toInt()
         mRect!!.bottom -= (paddingBottom + mPadding).toInt()
-        mRectF!!.set(mRect)
+        mRectF!!.set(mRect!!)
 
         canvas.drawArc(mRectF!!, -90f, (mProgress * 360 / max).toFloat(), !hollow, mPaint!!)
     }

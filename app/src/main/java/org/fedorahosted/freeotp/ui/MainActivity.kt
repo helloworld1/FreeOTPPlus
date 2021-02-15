@@ -49,6 +49,7 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -140,8 +141,8 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_scan -> {
                 startActivityForResult(Intent(this, ScanTokenActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
                 return true
@@ -408,7 +409,7 @@ class MainActivity : AppCompatActivity() {
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(getString(R.string.authentication_dialog_title))
                 .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-                .setDeviceCredentialAllowed(true)
+                .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
                 .build()
 
         biometricPrompt.authenticate(promptInfo)
