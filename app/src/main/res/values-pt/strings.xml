@@ -5,7 +5,7 @@
     <string name="delete">Remover</string>
     <string name="edit">Editar</string>
     <string name="restore_defaults">Restaurar padrões</string>
-    <string name="no_keys">Nenhuma chave OTP instalada.</string>
+    <string name="no_keys">Nenhuma chave OTP está instalada.</string>
     <string name="add_token">Adicionar token</string>
     <string name="scan_qr_code">Escanear código QR</string>
     <string name="interval">Intervalo</string>
@@ -28,17 +28,17 @@
     <string name="about_icons">Alguns dos ícones usados por este aplicativo são reproduções do trabalho criado e compartilhado pelo Android Open Source Project e usados de acordo com os termos descritos na Creative Commons 2.5 Attribution License.</string>
     <string name="about_token_image">As miniaturas token_image_*.xml na biblioteca token-images são originárias do projeto andOTP sob a licensa &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT&lt;/a&gt;. Direitos Autorais © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Direitos Autorais © 2015 Bruno Bierbaumer.</string>
     <string name="error_camera_open">Erro ao tentar abrir a câmera!</string>
-    <string name="delete_summary">Esta é sua última chance: se você remover este token, não será possível desfazer esta ação. O token não será desativado no servidor.</string>
+    <string name="delete_summary">Esta é sua última chance: não será possível desfazer esta ação. O token não será desativado no servidor.</string>
     <string name="delete_question">Remover este token?</string>
     <string name="import_text">Importar</string>
     <string name="export_text">Exportar</string>
     <string name="export_succeeded_text">Exportação bem-sucedida.</string>
     <string name="import_succeeded_text">Importação bem-sucedida.</string>
-    <string name="import_json_failed_text">Falha ao tentar importar arquivo no formato JSON. Erro de formatação.</string>
-    <string name="import_key_uri_failed_text">Falha ao tentar importar arquivo no formato URI. Erro de formatação.</string>
+    <string name="import_json_failed_text">Falha ao tentar importar arquivo JSON. Erro de formatação.</string>
+    <string name="import_key_uri_failed_text">Falha ao tentar importar arquivo URI. Erro de formatação.</string>
     <string name="invalid_token_uri_received">Um token com URI inválido foi recebido.</string>
     <string name="import_json_file">Importar arquivo JSON</string>
-    <string name="import_json_file_warning">Após a importação todos os tokens atuais serão excluídos e substituídos.</string>
+    <string name="import_json_file_warning">Importar este arquivo sobrescreverá tokens presentes.</string>
     <string name="camera_permission_denied_text">A permissão de uso da câmera foi negada.</string>
     <string name="ok_text">Certo</string>
     <string name="cancel_text">Cancelar</string>
@@ -47,7 +47,7 @@
     <string name="export_json_format">Em formato JSON</string>
     <string name="export_key_uri_format">Em formato URI</string>
     <string name="use_dark_theme">Usar tema escuro</string>
-    <string name="add_token_success">Token adicionado com sucesso.</string>
+    <string name="add_token_success">O token foi adicionado com sucesso.</string>
     <string name="copy_to_clipboard">Copiar p/ área de transf.</string>
     <string name="require_authentication">Exigir autenticação</string>
     <string name="quit_and_lock">Sair e bloquear</string>
@@ -55,7 +55,7 @@
     <string name="authentication_error">Erro de autenticação:</string>
     <string name="authentication_failed">A autenticação falhou.</string>
     <string name="authentication_dialog_title">Autenticação exigida</string>
-    <string name="authentication_dialog_subtitle">Por favor, use PIN ou biometria para autenticar-se ao FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">Por favor, use PIN ou biometria para autenticar-se ao FreeOTP+.</string>
     <string name="unable_to_authenticate">Não foi possível autenticar. O bloqueio de tela está habilitado com PIN ou biometria?</string>
     <string name="remove_user_token_image">Remover imagem do token</string>
 </resources>
