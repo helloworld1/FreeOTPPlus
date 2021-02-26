@@ -345,6 +345,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            tokens.forEach {
+                if (it.image != null) {
+                    Picasso.get().load(it.image).fetch()
+                }
+            }
             tokenListAdapter.submitList(tokens)
 
             if (tokens.isEmpty()) {
@@ -353,11 +358,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 empty_view.visibility = View.GONE
                 token_list.visibility = View.VISIBLE
-                tokens.forEach {
-                    if (it.image != null) {
-                        Picasso.get().load(it.image).fetch()
-                    }
-                }
             }
         }
     }
