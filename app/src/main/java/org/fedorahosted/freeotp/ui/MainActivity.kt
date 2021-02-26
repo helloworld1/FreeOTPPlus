@@ -56,6 +56,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.main.*
 import org.fedorahosted.freeotp.R
@@ -352,6 +353,11 @@ class MainActivity : AppCompatActivity() {
             } else {
                 empty_view.visibility = View.GONE
                 token_list.visibility = View.VISIBLE
+                tokens.forEach {
+                    if (it.image != null) {
+                        Picasso.get().load(it.image).fetch()
+                    }
+                }
             }
         }
     }
