@@ -70,10 +70,11 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenPersistence: TokenPersistence
-
+    
     private lateinit var tokenListAdapter: TokenListAdapter
     private var searchQuery = ""
     private var menu: Menu? = null
+    private var lastSessionEndTimestamp = 0L;
 
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             token_list.scrollToPosition(positionStart)
         }
     }
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,8 +121,20 @@ class MainActivity : AppCompatActivity() {
 
         // Don't permit screenshots since these might contain OTP codes.
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+    }
 
-        if (settings.requireAuthentication) {
+    override fun onDestroy() {
+        super.onDestroy()
+        tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
+        lastSessionEndTimestamp = 0L;
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        // When the authentication failed, the Activity will be destroyed so lastSessionEndTimestamp
+        // will be zero and next launch will require authentication
+        if (settings.requireAuthentication && (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS) {
             verifyAuthentication(onSuccess =  {
                 refreshTokenList("")
             })
@@ -128,12 +142,12 @@ class MainActivity : AppCompatActivity() {
             refreshTokenList("")
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
-    }
     
+    override fun onStop() {
+        super.onStop()
+        lastSessionEndTimestamp = System.currentTimeMillis()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
         this.menu = menu
@@ -413,9 +427,11 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         biometricPrompt.authenticate(promptInfo)
+        token_list.visibility = View.GONE
     }
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
+        private const val TIMEOUT_DELAY_MS: Long = 120 * 1000L;
     }
 }
