@@ -56,11 +56,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.main.*
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.uiLifecycleScope
@@ -68,6 +68,7 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
+    @Inject lateinit var imageUtil: ImageUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenPersistence: TokenPersistence
 
@@ -345,11 +346,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            tokens.forEach {
-                if (it.image != null) {
-                    Picasso.get().load(it.image).fetch()
-                }
-            }
+            imageUtil.fetchImages(tokens)
             tokenListAdapter.submitList(tokens)
 
             if (tokens.isEmpty()) {
