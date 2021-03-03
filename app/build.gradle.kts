@@ -10,8 +10,8 @@ plugins {
 android {
     compileSdkVersion(30)
     defaultConfig {
-        versionCode = 13
-        versionName = "2.2"
+        versionCode = 14
+        versionName = "2.3"
         minSdkVersion(21)
         targetSdkVersion(30)
         applicationId = "org.liberty.android.freeotpplus"
