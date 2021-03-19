@@ -13,6 +13,8 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val PREFETCHED_TOKEN_IMAGES = 12
+
 @Singleton
 class ImageUtil @Inject constructor(val context: Context) {
     suspend fun saveImageUriToFile(uri: Uri):Uri = withContext(Dispatchers.IO) {
@@ -27,7 +29,7 @@ class ImageUtil @Inject constructor(val context: Context) {
     }
 
     suspend fun fetchImages(tokens: List<Token>) = withContext(Dispatchers.IO) {
-        tokens.forEach {
+        tokens.subList(0, minOf(tokens.size, PREFETCHED_TOKEN_IMAGES)).forEach {
             if (it.image != null) {
                 Picasso.get().load(it.image).fetch()
             }
