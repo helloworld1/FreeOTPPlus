@@ -75,6 +75,7 @@ class MainActivity : AppCompatActivity() {
     private var searchQuery = ""
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
+    private var openingChildActivity = false;
 
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -146,6 +147,23 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         lastSessionEndTimestamp = System.currentTimeMillis()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        openingChildActivity = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!openingChildActivity && !isFinishing) {
+            finish()
+        }
+    }
+
+    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
+        openingChildActivity = true
+        super.startActivityForResult(intent, requestCode)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

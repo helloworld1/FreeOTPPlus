@@ -44,8 +44,7 @@
             android:name=".ui.MainActivity"
             android:clearTaskOnLaunch="true"
             android:label="@string/app_name"
-            android:launchMode="singleTask"
-            android:noHistory="true">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
