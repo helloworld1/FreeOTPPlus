@@ -65,6 +65,11 @@
         android:title="@string/require_authentication"
         android:checkable="true"/>
     <item
+        android:id="@+id/always_require_authentication"
+        android:title="@string/always_require_authentication"
+        android:checkable="true"
+        android:enabled="true"/>
+    <item
         android:id="@+id/action_about"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/about_freeotp" />

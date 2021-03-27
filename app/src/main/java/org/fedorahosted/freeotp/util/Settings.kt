@@ -7,6 +7,7 @@ import javax.inject.Singleton
 private const val DARK_MODE_KEY = "darkMode"
 private const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
 private const val REQUIRE_AUTHENTICATION = "requireAuthentication"
+private const val ALWAYS_REQUIRE_AUTHENTICATION = "alwaysRequireAuthentication"
 
 @Singleton
 class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
@@ -19,5 +20,8 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
     var requireAuthentication: Boolean
         get() = sharedPreferences.getBoolean(REQUIRE_AUTHENTICATION, false)
         set(value) = sharedPreferences.edit().putBoolean(REQUIRE_AUTHENTICATION, value).apply()
+    var alwaysRequireAuthentication: Boolean
+        get() = sharedPreferences.getBoolean(ALWAYS_REQUIRE_AUTHENTICATION, false)
+        set(value) = sharedPreferences.edit().putBoolean(ALWAYS_REQUIRE_AUTHENTICATION, value).apply()
 
 }

@@ -54,6 +54,7 @@
     <string name="add_token_success">The token was successfully added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="require_authentication">Require authentication</string>
+    <string name="always_require_authentication">Always require authentication</string>
     <string name="quit_and_lock">Quit and lock</string>
     <string name="authentication_succeeded">Authentication succeeded!</string>
     <string name="authentication_error">Authentication error:</string>

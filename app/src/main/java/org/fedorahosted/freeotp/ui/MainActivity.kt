@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
 
         // When the authentication failed, the Activity will be destroyed so lastSessionEndTimestamp
         // will be zero and next launch will require authentication
-        if (settings.requireAuthentication && (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS) {
+        if (settings.requireAuthentication && (settings.alwaysRequireAuthentication || (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS)) {
             verifyAuthentication(onSuccess =  {
                 refreshTokenList("")
             })
@@ -209,6 +209,7 @@ class MainActivity : AppCompatActivity() {
                 if (!settings.requireAuthentication) {
                     verifyAuthentication(onSuccess =  {
                         settings.requireAuthentication = true
+                        menu?.findItem(R.id.always_require_authentication)?.isEnabled = true
                         refreshOptionMenu()
                     }, onFailure = {
                         Toast.makeText(applicationContext,
@@ -217,8 +218,16 @@ class MainActivity : AppCompatActivity() {
                     })
                 } else {
                     settings.requireAuthentication = false
+                    settings.alwaysRequireAuthentication = false
+                    menu?.findItem(R.id.always_require_authentication)?.isEnabled = false
                     refreshOptionMenu()
                 }
+                return true
+            }
+
+            R.id.always_require_authentication -> {
+                settings.alwaysRequireAuthentication = !settings.alwaysRequireAuthentication
+                refreshOptionMenu()
                 return true
             }
 
@@ -375,6 +384,7 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
+        this.menu?.findItem(R.id.always_require_authentication)?.isChecked = settings.alwaysRequireAuthentication
     }
 
     private fun verifyAuthentication(onSuccess: () -> Unit = {}, onFailure: (() -> Unit)? = null) {
