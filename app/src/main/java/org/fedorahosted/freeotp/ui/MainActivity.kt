@@ -430,6 +430,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 })
 
+        // Prevents "Caller is not foreground" AuthService error
+        Thread.sleep(100)
+
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(getString(R.string.authentication_dialog_title))
                 .setSubtitle(getString(R.string.authentication_dialog_subtitle))
