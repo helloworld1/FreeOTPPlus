@@ -142,22 +142,15 @@ class MainActivity : AppCompatActivity() {
         } else {
             refreshTokenList("")
         }
+        openingChildActivity = false
     }
     
     override fun onStop() {
         super.onStop()
-        lastSessionEndTimestamp = System.currentTimeMillis()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        openingChildActivity = false
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (!openingChildActivity && !isFinishing) {
-            finish()
+        if (openingChildActivity) {
+            lastSessionEndTimestamp = System.currentTimeMillis()
+        } else {
+            lastSessionEndTimestamp = 0L
         }
     }
 
