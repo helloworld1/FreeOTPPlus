@@ -31,7 +31,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.edit.*
 import org.fedorahosted.freeotp.R
@@ -66,7 +66,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         mImageDisplay = imageUri
         onTextChanged(null, 0, 0, 0)
 
-        Picasso.get()
+        Glide.with(this)
                 .load(imageUri)
                 .placeholder(R.drawable.logo)
                 .into(mImage)

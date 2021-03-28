@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.Surface
 import android.view.View
@@ -15,8 +16,11 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_scan_token.*
 import org.fedorahosted.freeotp.R
@@ -146,23 +150,27 @@ class ScanTokenActivity : AppCompatActivity() {
                 return@uiLifecycleScope
             }
 
-            Picasso.get()
+            Glide.with(this@ScanTokenActivity)
                     .load(token.image)
                     .placeholder(R.drawable.scan)
-                    .into(image, object : Callback {
-                        override fun onSuccess() {
+                    .listener(object: RequestListener<Drawable> {
+                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                            e?.printStackTrace()
+                            finish()
+                            return false
+                        }
+
+                        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
                             progress.visibility = View.INVISIBLE
                             image.alpha = 0.9f
                             image.postDelayed({
                                 finish()
                             }, 2000)
+                            return false 
                         }
 
-                        override fun onError(e: java.lang.Exception) {
-                            e.printStackTrace()
-                            finish()
-                        }
                     })
+                    .into(image)
         }
     }
 
