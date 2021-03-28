@@ -210,6 +210,7 @@ class MainActivity : AppCompatActivity() {
                     verifyAuthentication(onSuccess =  {
                         settings.requireAuthentication = true
                         refreshOptionMenu()
+                        refreshTokenList("")
                     }, onFailure = {
                         Toast.makeText(applicationContext,
                                 R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
