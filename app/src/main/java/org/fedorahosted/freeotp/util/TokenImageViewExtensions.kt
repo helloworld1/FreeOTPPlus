@@ -3,7 +3,7 @@ package org.fedorahosted.freeotp.util
 import android.widget.ImageView
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.Token
 import org.liberty.android.freeotp.token_images.TokenImage
@@ -12,9 +12,8 @@ import org.liberty.android.freeotp.token_images.matchToken
 fun ImageView.setTokenImage(token: Token) {
     when {
         token.image != null -> {
-            Picasso.get()
+            Glide.with(this)
                     .load(token.image)
-                    .placeholder(R.drawable.logo)
                     .into(this)
         }
         token.issuer.isNotBlank() -> {

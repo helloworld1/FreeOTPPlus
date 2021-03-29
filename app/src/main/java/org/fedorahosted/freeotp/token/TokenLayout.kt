@@ -11,8 +11,6 @@ import android.widget.TextView
 
 import com.google.android.material.card.MaterialCardView
 
-import com.squareup.picasso.Picasso
-
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.util.setTokenImage

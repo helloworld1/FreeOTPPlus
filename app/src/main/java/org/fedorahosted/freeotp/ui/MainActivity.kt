@@ -211,6 +211,7 @@ class MainActivity : AppCompatActivity() {
                         settings.requireAuthentication = true
                         menu?.findItem(R.id.always_require_authentication)?.isEnabled = true
                         refreshOptionMenu()
+                        refreshTokenList("")
                     }, onFailure = {
                         Toast.makeText(applicationContext,
                                 R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
@@ -395,9 +396,12 @@ class MainActivity : AppCompatActivity() {
                                                        errString: CharSequence) {
                         super.onAuthenticationError(errorCode, errString)
                         if (onFailure == null) {
-                            Toast.makeText(applicationContext,
-                                    "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
-                                    .show()
+                            // Don't show error message toast if user pressed back button
+                            if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                                Toast.makeText(applicationContext,
+                                        "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+                                        .show()
+                            }
 
                             if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
                                 finish()
@@ -410,21 +414,15 @@ class MainActivity : AppCompatActivity() {
                     override fun onAuthenticationSucceeded(
                             result: BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
-                        Toast.makeText(applicationContext,
-                                getString(R.string.authentication_succeeded), Toast.LENGTH_SHORT)
-                                .show()
                         onSuccess()
                     }
 
                     override fun onAuthenticationFailed() {
+                        // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
+                        // error, so no need for FreeOTP to show one
                         super.onAuthenticationFailed()
 
-                        if (onFailure == null) {
-                            Toast.makeText(applicationContext, getString(R.string.authentication_failed),
-                                    Toast.LENGTH_SHORT)
-                                    .show()
-                            finish()
-                        } else {
+                        if (onFailure != null) {
                             onFailure()
                         }
                     }

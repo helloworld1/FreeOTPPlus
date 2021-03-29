@@ -31,7 +31,7 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dagger.android.AndroidInjection
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
@@ -160,7 +160,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                     imageUtil.saveImageUriToFile(it)
                 }
 
-                Picasso.get()
+                Glide.with(this@AddActivity)
                         .load(mImageURL)
                         .placeholder(R.drawable.logo)
                         .into(mImage)
