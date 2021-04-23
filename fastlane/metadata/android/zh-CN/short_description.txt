@@ -1,0 +1,1 @@
+FreeOTP-Android的增强分叉，提供了一个功能丰富的 2FA 认证器

@@ -1,1 +1,1 @@
-Enhanced fork of FreeOTP-Android providing a feature-rich 2FA authenticator
+Un fork migliorato di FreeOTP-Android che offre un autenticatore 2FA ricco di funzionalità
