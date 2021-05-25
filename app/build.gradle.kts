@@ -27,39 +27,37 @@ android {
             resValue("string", "app_name", "FreeOTP+")
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = "1.8"
     }
 }
 
 dependencies {
     implementation(project(":token-images"))
-    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation(project(":text-drawable"))
+    implementation("androidx.appcompat:appcompat:1.3.0")
     implementation("com.google.android.material:material:1.3.0")
-
 
     // Version 3.4.0 contains a crashing bug before api level 24
     implementation("com.google.zxing:core:3.3.3")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("com.github.bumptech.glide:glide:4.11.0")
-    implementation("androidx.core:core-ktx:1.3.2")
+    implementation("androidx.core:core-ktx:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
-    implementation(kotlin("stdlib-jdk7", KotlinCompilerVersion.VERSION))
+    implementation(kotlin("stdlib-jdk8", KotlinCompilerVersion.VERSION))
     implementation("com.google.dagger:dagger:2.28.3")
     implementation("com.google.dagger:dagger-android:2.28.3")
     implementation("com.google.dagger:dagger-android-support:2.28.3")
-    implementation("androidx.camera:camera-core:1.0.0-rc04")
-    implementation("androidx.camera:camera-camera2:1.0.0-rc04")
-    implementation("androidx.camera:camera-lifecycle:1.0.0-rc04")
-    implementation("androidx.camera:camera-view:1.0.0-alpha23")
+    implementation("androidx.camera:camera-core:1.0.0")
+    implementation("androidx.camera:camera-camera2:1.0.0")
+    implementation("androidx.camera:camera-lifecycle:1.0.0")
+    implementation("androidx.camera:camera-view:1.0.0-alpha24")
     implementation("androidx.biometric:biometric:1.1.0")
-    implementation("com.amulyakhare:com.amulyakhare.textdrawable:1.0.1")
 
     kapt("com.google.dagger:dagger-compiler:2.28.3")
     kapt("com.google.dagger:dagger-android-processor:2.28.3")

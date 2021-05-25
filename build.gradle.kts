@@ -1,18 +1,18 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:4.1.2")
-        classpath(kotlin("gradle-plugin", version = "1.4.0"))
+        classpath("com.android.tools.build:gradle:4.2.1")
+        classpath(kotlin("gradle-plugin", version = "1.4.32"))
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
 }
