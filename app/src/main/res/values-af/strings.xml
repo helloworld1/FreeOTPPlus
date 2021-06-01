@@ -50,6 +50,7 @@
     <string name="add_token_success">Die kenteken was suksesvol begevoeg.</string>
     <string name="copy_to_clipboard">Stoor na geheue</string>
     <string name="require_authentication">Require authentication</string>
+    <string name="always_require_authentication">Vereis altyd verifikasie</string>
     <string name="quit_and_lock">Quit and lock</string>
     <string name="authentication_succeeded">Authentication succeeded!</string>
     <string name="authentication_error">Authentication error:</string>

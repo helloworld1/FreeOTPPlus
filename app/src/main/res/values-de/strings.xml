@@ -50,6 +50,7 @@
     <string name="add_token_success">Der Token wurde erfolgreich hinzugefügt</string>
     <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
     <string name="require_authentication">Authentifizierung erforderlich</string>
+    <string name="always_require_authentication">Immer eine Authentifizierung erforderlich</string>
     <string name="quit_and_lock">Beenden und sperren</string>
     <string name="authentication_succeeded">Authentifizierung erfolgreich!</string>
     <string name="authentication_error">Authentifizierungsfehler:</string>

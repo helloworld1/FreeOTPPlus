@@ -50,6 +50,7 @@
     <string name="add_token_success">Le jeton a été ajouté avec succès</string>
     <string name="copy_to_clipboard">Copier dans le presse-papier</string>
     <string name="require_authentication">Authentification nécessaire</string>
+    <string name="always_require_authentication">Exiger toujours une authentification</string>
     <string name="quit_and_lock">Quitter et verrouiller</string>
     <string name="authentication_succeeded">Authentification réussie !</string>
     <string name="authentication_error">Erreur d’authentification :</string>
