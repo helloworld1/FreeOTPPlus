@@ -12,6 +12,7 @@ import androidx.annotation.WorkerThread
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,7 +22,7 @@ private const val NAME = "tokens"
 private const val ORDER = "tokenOrder"
 
 @Singleton
-class TokenPersistence @Inject constructor(private val ctx: Context) {
+class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: Context) {
     private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val gson: Gson = Gson()
 

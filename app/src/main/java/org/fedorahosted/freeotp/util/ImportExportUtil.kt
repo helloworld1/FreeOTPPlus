@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.util
 
 import android.content.Context
 import android.net.Uri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.token.TokenPersistence
@@ -13,7 +14,7 @@ import javax.inject.Singleton
 
 
 @Singleton
-class ImportExportUtil @Inject constructor(private val context: Context,
+class ImportExportUtil @Inject constructor(@ApplicationContext private val context: Context,
                                            private val tokenPersistence: TokenPersistence) {
     suspend fun importJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {

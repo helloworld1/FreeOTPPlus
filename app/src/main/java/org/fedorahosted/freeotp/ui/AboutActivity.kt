@@ -26,9 +26,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.text.HtmlCompat
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.about.*
 import org.fedorahosted.freeotp.R
 
+@AndroidEntryPoint
 class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

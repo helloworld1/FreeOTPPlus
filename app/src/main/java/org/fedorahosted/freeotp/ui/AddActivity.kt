@@ -32,7 +32,7 @@ import android.widget.RadioButton
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import dagger.android.AndroidInjection
+import dagger.hilt.android.AndroidEntryPoint
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
@@ -42,6 +42,7 @@ import java.net.URLEncoder
 import java.util.*
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     @Inject lateinit var tokenPersistence: TokenPersistence
@@ -61,7 +62,6 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidInjection.inject(this)
 
         setContentView(R.layout.add)
 

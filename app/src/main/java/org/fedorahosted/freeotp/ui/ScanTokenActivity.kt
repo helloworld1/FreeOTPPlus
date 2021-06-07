@@ -16,18 +16,19 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import dagger.android.AndroidInjection
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_scan_token.*
+import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
-import org.fedorahosted.freeotp.util.uiLifecycleScope
 import java.util.concurrent.ExecutorService
 import javax.inject.Inject
 
@@ -35,7 +36,7 @@ private const val REQUEST_CODE_PERMISSIONS = 10
 
 private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
 
-
+@AndroidEntryPoint
 class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var tokenQRCodeDecoder: TokenQRCodeDecoder
@@ -50,7 +51,6 @@ class ScanTokenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidInjection.inject(this)
         setContentView(R.layout.activity_scan_token)
 
         if (allPermissionsGranted()) {
@@ -97,6 +97,7 @@ class ScanTokenActivity : AppCompatActivity() {
      */
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 view_finder.post {
@@ -132,14 +133,16 @@ class ScanTokenActivity : AppCompatActivity() {
 
         foundToken = true
 
-        uiLifecycleScope {
+
+
+        lifecycleScope.launch {
             val token = try {
                 tokenPersistence.addFromUriString(tokenString)
             } catch (e: Throwable) {
                 Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
 
                 finish()
-                return@uiLifecycleScope
+                return@launch
             }
 
             Toast.makeText(this@ScanTokenActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
@@ -147,7 +150,7 @@ class ScanTokenActivity : AppCompatActivity() {
             setResult(RESULT_OK)
             if (token.image == null) {
                 finish()
-                return@uiLifecycleScope
+                return@launch
             }
 
             Glide.with(this@ScanTokenActivity)
