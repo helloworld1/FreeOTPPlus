@@ -52,6 +52,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
@@ -59,11 +60,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.main.*
+import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
-import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -242,7 +243,7 @@ class MainActivity : AppCompatActivity() {
 
         val uri = intent.data
         if (uri != null) {
-            uiLifecycleScope {
+            lifecycleScope.launch {
                 try {
                     tokenPersistence.addFromUriString(uri.toString())
                 } catch (e: Exception) {
@@ -265,8 +266,8 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
-                uiLifecycleScope {
-                    val uri = resultData?.data ?: return@uiLifecycleScope
+                lifecycleScope.launch {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
                     Snackbar.make(root_view, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
@@ -280,7 +281,7 @@ class MainActivity : AppCompatActivity() {
                         .setMessage(R.string.import_json_file_warning)
                         .setIcon(R.drawable.alert)
                         .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                            uiLifecycleScope {
+                            lifecycleScope.launch {
                                 try {
                                     importFromUtil.importJsonFile(uri)
                                     refreshTokenList(searchQuery)
@@ -299,8 +300,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             WRITE_KEY_URI_REQUEST_CODE -> {
-                uiLifecycleScope {
-                    val uri = resultData?.data ?: return@uiLifecycleScope
+                lifecycleScope.launch {
+                    val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
                     Snackbar.make(root_view, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
@@ -308,8 +309,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             READ_KEY_URI_REQUEST_CODE -> {
-                uiLifecycleScope {
-                    val uri = resultData?.data ?: return@uiLifecycleScope
+                lifecycleScope.launch {
+                    val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.importKeyUriFile(uri)
                         refreshTokenList(searchQuery)
@@ -351,7 +352,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTokenList(queryString: String) {
-        uiLifecycleScope {
+        lifecycleScope.launch {
             val tokens = if (queryString.isEmpty()) {
                 tokenPersistence.getTokens()
             } else {

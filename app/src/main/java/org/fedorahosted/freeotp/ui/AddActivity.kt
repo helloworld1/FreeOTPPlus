@@ -31,12 +31,13 @@ import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.uiLifecycleScope
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.*
@@ -138,7 +139,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 // Add the token
-                uiLifecycleScope {
+                lifecycleScope.launch {
                     tokenPersistence.addFromUriString(uri)
                     setResult(Activity.RESULT_OK)
                     finish()
@@ -155,7 +156,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK) {
-            uiLifecycleScope {
+            lifecycleScope.launch {
                 mImageURL = data?.data?.let {
                     imageUtil.saveImageUriToFile(it)
                 }

@@ -31,13 +31,14 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.edit.*
+import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.uiLifecycleScope
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -84,13 +85,13 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.edit)
 
-        uiLifecycleScope {
+        lifecycleScope.launch {
             tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
-                return@uiLifecycleScope
+                return@launch
             }
 
             // Get token values.
-            val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
+            val token = tokenPersistence.getToken(tokenId) ?: return@launch
             mIssuerCurrent = token.issuer
             mLabelCurrent = token.label
             mImageCurrent = token.image
@@ -148,7 +149,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
         if (resultCode == RESULT_OK) {
             data?.data?.let {
-                uiLifecycleScope {
+                lifecycleScope.launch {
                     val path = imageUtil.saveImageUriToFile(it)
                     showImage(path)
                 }
@@ -189,8 +190,8 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             }
 
             R.id.save -> {
-                uiLifecycleScope {
-                    val token = tokenPersistence.getToken(tokenId) ?: return@uiLifecycleScope
+                lifecycleScope.launch {
+                    val token = tokenPersistence.getToken(tokenId) ?: return@launch
                     token.issuer = mIssuer.text.toString()
                     token.label = mLabel.text.toString()
                     token.image = mImageDisplay

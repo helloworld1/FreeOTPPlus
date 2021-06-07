@@ -7,15 +7,16 @@ import android.util.ArrayMap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.token.Token
 import org.fedorahosted.freeotp.token.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.Settings
-import org.fedorahosted.freeotp.util.uiLifecycleScope
 
 class TokenListAdapter(val activity: AppCompatActivity,
                        val tokenPersistence: TokenPersistence,
@@ -33,8 +34,8 @@ class TokenListAdapter(val activity: AppCompatActivity,
 
         holder.bind(token)
         holder.tokenLayout.setOnClickListener { v ->
-            activity.uiLifecycleScope {
-                val codes = token.generateCodes() ?: return@uiLifecycleScope
+            activity.lifecycleScope.launch {
+                val codes = token.generateCodes() ?: return@launch
                 tokenPersistence.save(token)
 
                 if (settings.copyToClipboard) {
