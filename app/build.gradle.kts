@@ -45,6 +45,7 @@ android {
 dependencies {
     implementation(project(":token-images"))
     implementation(project(":text-drawable"))
+    implementation(project(":token-data"))
     implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
     implementation("com.google.android.material:material:${Versions.MATERIAL}")
 

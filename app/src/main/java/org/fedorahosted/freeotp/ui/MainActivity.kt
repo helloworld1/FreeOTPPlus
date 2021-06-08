@@ -62,7 +62,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.MainBinding
-import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject

@@ -9,7 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.DeleteBinding
-import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
 

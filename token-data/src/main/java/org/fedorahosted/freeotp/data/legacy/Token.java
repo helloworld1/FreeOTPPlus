@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.token;
+package org.fedorahosted.freeotp.data.legacy;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;

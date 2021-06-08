@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.Token
-import org.fedorahosted.freeotp.token.TokenCode
+import org.fedorahosted.freeotp.data.legacy.Token
+import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
-import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.Settings
 
 class TokenListAdapter(val activity: AppCompatActivity,

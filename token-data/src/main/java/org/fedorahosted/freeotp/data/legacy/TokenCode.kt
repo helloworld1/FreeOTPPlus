@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.fedorahosted.freeotp.token
+package org.fedorahosted.freeotp.data.legacy
 
 class TokenCode(private val mCode: String, private val mStart: Long, private val mUntil: Long) {
     private var mNext: TokenCode? = null

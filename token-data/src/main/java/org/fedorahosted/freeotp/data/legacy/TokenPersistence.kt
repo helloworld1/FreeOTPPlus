@@ -1,9 +1,8 @@
-package org.fedorahosted.freeotp.token
+package org.fedorahosted.freeotp.data.legacy
 
 import java.util.ArrayList
 
 import com.google.gson.reflect.TypeToken
-import org.fedorahosted.freeotp.token.Token.TokenUriInvalidException
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -45,7 +44,7 @@ class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: 
             // Backwards compatibility for URL-based persistence.
             try {
                 Token(str, true)
-            } catch (tuie: TokenUriInvalidException) {
+            } catch (tuie: Token.TokenUriInvalidException) {
                 tuie.printStackTrace()
                 null
             }
@@ -124,7 +123,7 @@ class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: 
         }
     }
 
-    @Throws(TokenUriInvalidException::class)
+    @Throws(Token.TokenUriInvalidException::class)
     private suspend fun add(token: Token) = withContext(Dispatchers.IO) {
         val key = token.id
 

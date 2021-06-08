@@ -5,7 +5,7 @@ import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter

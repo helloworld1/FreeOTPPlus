@@ -12,5 +12,6 @@ object Versions {
     const val ZXING = "3.3.3"
     const val GSON = "2.8.7"
     const val GLIDE = "4.12.0"
+    const val ROOM = "2.3.0"
 }
 

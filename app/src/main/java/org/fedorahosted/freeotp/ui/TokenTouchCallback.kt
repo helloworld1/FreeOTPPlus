@@ -5,7 +5,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.token.TokenPersistence
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 
 class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
                          val adapter: TokenListAdapter,

@@ -9,26 +9,24 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.fedorahosted.freeotp.data.module.DataModule
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 
-@Module
+@Module(includes = [DataModule::class])
 @InstallIn(SingletonComponent::class)
 object AppModule {
     @Singleton
-    @JvmStatic
     @Provides
     fun sharedPreference(@ApplicationContext context: Context): SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
     @Singleton
-    @JvmStatic
     @Provides
     fun qrCodeReader(): QRCodeReader = QRCodeReader()
 
     @Singleton
-    @JvmStatic
     @Provides
     fun executorService(): ExecutorService = Executors.newFixedThreadPool(4)
 }

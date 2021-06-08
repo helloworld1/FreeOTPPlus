@@ -5,7 +5,7 @@ import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.bumptech.glide.Glide
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.token.Token
+import org.fedorahosted.freeotp.data.legacy.Token
 import org.liberty.android.freeotp.token_images.TokenImage
 import org.liberty.android.freeotp.token_images.matchToken
 
