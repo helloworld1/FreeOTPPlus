@@ -34,3 +34,5 @@ Thumbs.db
 
 # Crowdin Config
 crowdin.yml
+
+app/release/
