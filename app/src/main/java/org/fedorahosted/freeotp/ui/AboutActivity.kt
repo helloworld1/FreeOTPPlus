@@ -27,14 +27,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.text.HtmlCompat
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.about.*
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.AboutBinding
 
 @AndroidEntryPoint
 class AboutActivity : AppCompatActivity() {
+    private lateinit var binding: AboutBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.about)
+        binding = AboutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
     }
 
     public override fun onStart() {
@@ -53,11 +56,11 @@ class AboutActivity : AppCompatActivity() {
         val apache2 = res.getString(R.string.link_apache2)
         val license = res.getString(R.string.about_license, apache2)
 
-        about_license.movementMethod = LinkMovementMethod.getInstance()
-        about_license.text = HtmlCompat.fromHtml(license, HtmlCompat.FROM_HTML_MODE_COMPACT)
+        binding.aboutLicense.movementMethod = LinkMovementMethod.getInstance()
+        binding.aboutLicense.text = HtmlCompat.fromHtml(license, HtmlCompat.FROM_HTML_MODE_COMPACT)
 
-        about_token_image.movementMethod = LinkMovementMethod.getInstance()
-        about_token_image.text = HtmlCompat.fromHtml(getString(R.string.about_token_image),
+        binding.aboutTokenImage.movementMethod = LinkMovementMethod.getInstance()
+        binding.aboutTokenImage.text = HtmlCompat.fromHtml(getString(R.string.about_token_image),
                 HtmlCompat.FROM_HTML_MODE_COMPACT)
     }
 }

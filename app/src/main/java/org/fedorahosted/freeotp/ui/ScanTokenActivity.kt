@@ -23,9 +23,9 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_scan_token.*
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
@@ -47,14 +47,18 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var executorService: ExecutorService
 
+    private lateinit var binding: ActivityScanTokenBinding
+
     private var foundToken = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scan_token)
+
+        binding = ActivityScanTokenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (allPermissionsGranted()) {
-            view_finder.post { startCamera() }
+            binding.viewFinder.post { startCamera() }
         } else {
             ActivityCompat.requestPermissions(
                     this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
@@ -72,7 +76,7 @@ class ScanTokenActivity : AppCompatActivity() {
                 setTargetRotation(Surface.ROTATION_0)
             }.build()
 
-            preview.setSurfaceProvider(view_finder.surfaceProvider)
+            preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
             val imageAnalysis = ImageAnalysis.Builder().apply {
                 setBackgroundExecutor(executorService)
@@ -100,7 +104,7 @@ class ScanTokenActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                view_finder.post {
+                binding.viewFinder.post {
                     startCamera()
                 }
             } else {
@@ -164,16 +168,16 @@ class ScanTokenActivity : AppCompatActivity() {
                         }
 
                         override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                            progress.visibility = View.INVISIBLE
-                            image.alpha = 0.9f
-                            image.postDelayed({
+                            binding.progress.visibility = View.INVISIBLE
+                            binding.image.alpha = 0.9f
+                            binding.image.postDelayed({
                                 finish()
                             }, 2000)
                             return false 
                         }
 
                     })
-                    .into(image)
+                    .into(binding.image)
         }
     }
 

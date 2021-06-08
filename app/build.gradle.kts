@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("android.extensions")
     kotlin("kapt")
     id("dagger.hilt.android.plugin")
 }
@@ -28,12 +27,18 @@ android {
             resValue("string", "app_name", "FreeOTP+")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 }
 
@@ -49,7 +54,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.11.0")
     implementation("androidx.core:core-ktx:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     implementation(kotlin("stdlib-jdk8", KotlinCompilerVersion.VERSION))

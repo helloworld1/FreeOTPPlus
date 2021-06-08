@@ -6,9 +6,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.delete.*
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.DeleteBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
@@ -16,11 +16,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
+    private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.delete)
+        binding = DeleteBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         lifecycleScope.launch {
             val tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: return@launch
@@ -29,7 +31,7 @@ class DeleteActivity : AppCompatActivity() {
             (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
             (findViewById<View>(R.id.label) as TextView).text = token.label
 
-            image_view.setTokenImage(token)
+            binding.imageView.setTokenImage(token)
 
 
             findViewById<View>(R.id.cancel).setOnClickListener {

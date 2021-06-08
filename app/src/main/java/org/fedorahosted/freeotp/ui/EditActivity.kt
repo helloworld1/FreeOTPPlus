@@ -34,9 +34,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.edit.*
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
 import javax.inject.Inject
@@ -47,6 +47,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var imageUtil: ImageUtil
 
+    private lateinit var binding: EditBinding
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
     private lateinit var mImage: ImageButton
@@ -74,7 +75,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                 .into(mImage)
 
         // Remove user image option is only enabled if there is image to display
-        remove_user_token_image.isEnabled = mImageDisplay != null
+        binding.removeUserTokenImage.isEnabled = mImageDisplay != null
     }
 
     private fun imageIs(uri: Uri?): Boolean {
@@ -83,7 +84,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.edit)
+
+        binding = EditBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         lifecycleScope.launch {
             tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
@@ -118,7 +121,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             findViewById<View>(R.id.cancel).setOnClickListener(this@EditActivity)
             findViewById<View>(R.id.save).setOnClickListener(this@EditActivity)
             findViewById<View>(R.id.restore).setOnClickListener(this@EditActivity)
-            remove_user_token_image.setOnClickListener(this@EditActivity)
+            binding.removeUserTokenImage.setOnClickListener(this@EditActivity)
             mImage.setOnClickListener(this@EditActivity)
 
             // Setup initial state. When the image is null, the image removal button will be

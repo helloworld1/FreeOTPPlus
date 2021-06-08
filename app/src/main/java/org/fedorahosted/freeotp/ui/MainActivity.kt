@@ -59,9 +59,9 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.main.*
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.token.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
     
     private lateinit var tokenListAdapter: TokenListAdapter
+    private lateinit var binding: MainBinding
     private var searchQuery = ""
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
@@ -81,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
-            token_list.scrollToPosition(positionStart)
+            binding.tokenList.scrollToPosition(positionStart)
         }
     }
     
@@ -91,17 +92,19 @@ class MainActivity : AppCompatActivity() {
 
         onNewIntent(intent)
 
-        setContentView(R.layout.main)
+        binding = MainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         tokenListAdapter = TokenListAdapter(this, tokenPersistence, settings)
-        token_list.adapter = tokenListAdapter
-        token_list.layoutManager = LinearLayoutManager(this)
-        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence)).attachToRecyclerView(token_list)
+        binding.tokenList.adapter = tokenListAdapter
+        binding.tokenList.layoutManager = LinearLayoutManager(this)
+        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence))
+            .attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
 
-        search_view.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchQuery = query ?: ""
                 refreshTokenList(searchQuery)
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-        add_token_fab.setOnClickListener {
+        binding.addTokenFab.setOnClickListener {
             startActivityForResult(Intent(this, ScanTokenActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
         }
 
@@ -247,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     tokenPersistence.addFromUriString(uri.toString())
                 } catch (e: Exception) {
-                    Snackbar.make(root_view, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
                             .show()
                 }
             }
@@ -269,7 +272,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
-                    Snackbar.make(root_view, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
             }
@@ -285,11 +288,11 @@ class MainActivity : AppCompatActivity() {
                                 try {
                                     importFromUtil.importJsonFile(uri)
                                     refreshTokenList(searchQuery)
-                                    Snackbar.make(root_view, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                                    Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                                             .show()
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Import JSON failed", e)
-                                    Snackbar.make(root_view, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
+                                    Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
                                             .show()
                                 }
                             }
@@ -303,7 +306,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
-                    Snackbar.make(root_view, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                 }
             }
@@ -314,11 +317,11 @@ class MainActivity : AppCompatActivity() {
                     try {
                         importFromUtil.importKeyUriFile(uri)
                         refreshTokenList(searchQuery)
-                        Snackbar.make(root_view, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                                 .show()
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
-                        Snackbar.make(root_view, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(binding.rootView, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
                                 .show()
                     }
                 }
@@ -364,11 +367,11 @@ class MainActivity : AppCompatActivity() {
             tokenListAdapter.submitList(tokens)
 
             if (tokens.isEmpty()) {
-                empty_view.visibility = View.VISIBLE
-                token_list.visibility = View.GONE
+                binding.emptyView.visibility = View.VISIBLE
+                binding.tokenList.visibility = View.GONE
             } else {
-                empty_view.visibility = View.GONE
-                token_list.visibility = View.VISIBLE
+                binding.emptyView.visibility = View.GONE
+                binding.tokenList.visibility = View.VISIBLE
             }
         }
     }
@@ -426,7 +429,7 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         biometricPrompt.authenticate(promptInfo)
-        token_list.visibility = View.GONE
+        binding.tokenList.visibility = View.GONE
     }
 
     companion object {
