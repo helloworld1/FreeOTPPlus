@@ -4,10 +4,11 @@ buildscript {
         mavenCentral()
         google()
     }
+
     dependencies {
         classpath("com.android.tools.build:gradle:4.2.1")
-        classpath(kotlin("gradle-plugin", version = "1.5.10"))
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.35")
+        classpath(kotlin("gradle-plugin", version = Versions.KOTLIN))
+        classpath("com.google.dagger:hilt-android-gradle-plugin:${Versions.HILT}")
     }
 }
 

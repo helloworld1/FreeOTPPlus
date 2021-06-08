@@ -34,10 +34,7 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8", KotlinCompilerVersion.VERSION))
-    implementation("androidx.core:core-ktx:1.5.0")
-    implementation("androidx.appcompat:appcompat:1.3.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.2")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+    implementation(kotlin("stdlib-jdk8", Versions.KOTLIN))
+    implementation("androidx.core:core-ktx:${Versions.CORE_KTX}")
+    implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
 }
