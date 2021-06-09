@@ -6,8 +6,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.DeleteBinding
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.setTokenImage
@@ -16,6 +19,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,9 +29,14 @@ class DeleteActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            val tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: return@launch
+            val tokenId = intent.getIntExtra(EXTRA_TOKEN_ID, 0)
 
-            val token = tokenPersistence.getToken(tokenId) ?: return@launch
+            if (tokenId == 0) {
+                return@launch
+            }
+
+            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+
             (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
             (findViewById<View>(R.id.label) as TextView).text = token.label
 
@@ -40,7 +49,7 @@ class DeleteActivity : AppCompatActivity() {
 
             findViewById<View>(R.id.delete).setOnClickListener {
                 lifecycleScope.launch {
-                    tokenPersistence.delete(tokenId)
+                    otpTokenDatabase.otpTokenDao().deleteById(tokenId)
                     setResult(RESULT_OK)
                     finish()
                 }

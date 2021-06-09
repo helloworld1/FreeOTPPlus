@@ -59,9 +59,13 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
+import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
@@ -74,8 +78,10 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
-
+    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenListAdapter: TokenListAdapter
+
+
     private lateinit var binding: MainBinding
     private var searchQuery = ""
     private var menu: Menu? = null
@@ -103,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
-        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence))
+        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
             .attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
@@ -361,22 +367,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshTokenList(queryString: String) {
         lifecycleScope.launch {
-            val tokens = if (queryString.isEmpty()) {
-                tokenPersistence.getTokens()
-            } else {
-                tokenPersistence.getTokens().filter { token ->
-                    token.label.contains(queryString, true) || token.issuer.contains(queryString, true)
+
+            otpTokenDatabase.otpTokenDao().getAll().map {
+                if (queryString.isEmpty()) {
+                    it
+                } else {
+                    it.filter { token ->
+                        token.label?.contains(queryString, true)?: false
+                                || token.issuer.contains(queryString, true)
+
+                    }
                 }
-            }
+            }.collect { tokens ->
+                tokenListAdapter.submitList(tokens)
 
-            tokenListAdapter.submitList(tokens)
+                if (tokens.isEmpty()) {
+                    binding.emptyView.visibility = View.VISIBLE
+                    binding.tokenList.visibility = View.GONE
+                } else {
+                    binding.emptyView.visibility = View.GONE
+                    binding.tokenList.visibility = View.VISIBLE
+                }
 
-            if (tokens.isEmpty()) {
-                binding.emptyView.visibility = View.VISIBLE
-                binding.tokenList.visibility = View.GONE
-            } else {
-                binding.emptyView.visibility = View.GONE
-                binding.tokenList.visibility = View.VISIBLE
             }
         }
     }

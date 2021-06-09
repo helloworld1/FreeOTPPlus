@@ -5,16 +5,17 @@ import android.content.Intent
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.token.TokenLayout
 
 class TokenViewHolder(private val activity: Activity,
                       val tokenLayout: TokenLayout) : RecyclerView.ViewHolder(tokenLayout) {
-    fun bind(token: Token) {
+    fun bind(token: OtpToken) {
         tokenLayout.bind(token, R.menu.token, getOnMenuItemClick(token))
     }
 
-    fun getOnMenuItemClick(token: Token) = PopupMenu.OnMenuItemClickListener { item ->
+    fun getOnMenuItemClick(token: OtpToken) = PopupMenu.OnMenuItemClickListener { item ->
         when (item.itemId) {
             R.id.action_edit -> {
                 val i = Intent(tokenLayout.context, EditActivity::class.java)

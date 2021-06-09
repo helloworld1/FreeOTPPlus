@@ -13,8 +13,9 @@ import com.google.android.material.card.MaterialCardView
 
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
-import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
@@ -29,7 +30,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private lateinit var mPopupMenu: PopupMenu
 
     private var mCodes: TokenCode? = null
-    private var mType: Token.TokenType? = null
+    private var mType: OtpTokenType? = null
     private var mPlaceholder: String? = null
     private var mStartTime: Long = 0
 
@@ -54,7 +55,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mMenu.setOnClickListener(this)
     }
 
-    fun bind(token: Token, menu: Int, micl: PopupMenu.OnMenuItemClickListener) {
+    fun bind(token: OtpToken, menu: Int, micl: PopupMenu.OnMenuItemClickListener) {
         mCodes = null
 
         // Setup menu.
@@ -99,7 +100,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         view.startAnimation(a)
     }
 
-    fun start(type: Token.TokenType, codes: TokenCode, animate: Boolean) {
+    fun start(type: OtpTokenType, codes: TokenCode, animate: Boolean) {
         mCodes = codes
         mType = type
 
@@ -110,8 +111,8 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
 
         // Handle type-specific UI.
         when (type) {
-            Token.TokenType.HOTP -> isEnabled = false
-            Token.TokenType.TOTP -> {
+            OtpTokenType.HOTP -> isEnabled = false
+            OtpTokenType.TOTP -> {
                 mProgressOuter.visibility = View.VISIBLE
                 animate(mProgressOuter, R.anim.fadein, animate)
             }
@@ -152,7 +153,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         // Update the fields
         mCode.text = code
         mProgressInner.setProgress(currentProgress)
-        if (mType != Token.TokenType.HOTP)
+        if (mType != OtpTokenType.HOTP)
             mProgressOuter.setProgress(totalProgress)
 
         postDelayed(this, 100)

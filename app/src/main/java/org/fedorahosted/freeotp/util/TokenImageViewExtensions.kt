@@ -5,15 +5,15 @@ import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.bumptech.glide.Glide
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.data.legacy.Token
+import org.fedorahosted.freeotp.data.OtpToken
 import org.liberty.android.freeotp.token_images.TokenImage
 import org.liberty.android.freeotp.token_images.matchToken
 
-fun ImageView.setTokenImage(token: Token) {
+fun ImageView.setTokenImage(token: OtpToken) {
     when {
-        token.image != null -> {
+        token.imagePath != null -> {
             Glide.with(this)
-                    .load(token.image)
+                    .load(token.imagePath)
                     .into(this)
         }
         token.issuer.isNotBlank() -> {
@@ -32,7 +32,7 @@ fun ImageView.setTokenImage(token: Token) {
     }
 }
 
-private fun matchIssuerWithTokenThumbnail(token: Token): Int? {
+private fun matchIssuerWithTokenThumbnail(token: OtpToken): Int? {
     return TokenImage.values().firstOrNull {
         it.matchToken(token.issuer, token.label)
     }?.resource

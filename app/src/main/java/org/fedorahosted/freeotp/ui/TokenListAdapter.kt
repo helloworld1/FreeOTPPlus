@@ -15,8 +15,8 @@ import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
-import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
@@ -29,10 +29,10 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
                                            val tokenPersistence: TokenPersistence,
                                            val otpTokenDatabase: OtpTokenDatabase,
                                            val tokenCodeUtil: TokenCodeUtil,
-                                           val settings: Settings) : ListAdapter<Token, TokenViewHolder>(TokenItemCallback()) {
+                                           val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    private val tokenCodes: MutableMap<String, TokenCode> = ArrayMap()
+    private val tokenCodes: MutableMap<Int, TokenCode> = ArrayMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenViewHolder {
         val tokenLayout = LayoutInflater.from(activity).inflate(R.layout.token, parent, false) as TokenLayout
@@ -45,8 +45,11 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
         holder.bind(token)
         holder.tokenLayout.setOnClickListener { v ->
             activity.lifecycleScope.launch {
-                val codes = token.generateCodes() ?: return@launch
-                tokenPersistence.save(token)
+                val codes = tokenCodeUtil.generateTokenCode(token)
+
+                //////////////////
+                // Need to increment the token
+                // tokenPersistence.save(token)
 
                 if (settings.copyToClipboard) {
                     // Copy code to clipboard.
@@ -56,7 +59,7 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
 
                 tokenCodes[token.id] = codes
 
-                (v as TokenLayout).start(token.type, codes, true)
+                (v as TokenLayout).start(token.tokenType, codes, true)
 
                 otpTokenDatabase.otpTokenDao().getAll().collect {
                     it.forEach {
