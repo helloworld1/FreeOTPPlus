@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.annotation.WorkerThread
 
@@ -17,12 +18,12 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val NAME = "tokens"
-private const val ORDER = "tokenOrder"
-
 @Singleton
 class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: Context) {
     private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+    private val globalPrefs =
+        PreferenceManager.getDefaultSharedPreferences(ctx)
+
     private val gson: Gson = Gson()
 
     private var tokenOrder: List<String>
@@ -123,6 +124,14 @@ class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: 
         }
     }
 
+    fun isLegacyTokenMigrated(): Boolean {
+        return globalPrefs.getBoolean(TOKEN_MIGRATED_KEY, false)
+    }
+
+    fun setLegacyTokenMigrated() {
+        globalPrefs.edit().putBoolean(TOKEN_MIGRATED_KEY, true).apply()
+    }
+
     @Throws(Token.TokenUriInvalidException::class)
     private suspend fun add(token: Token) = withContext(Dispatchers.IO) {
         val key = token.id
@@ -150,5 +159,9 @@ class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: 
 
     companion object {
         val TAG = TokenPersistence::class.java.simpleName
+
+        private const val NAME = "tokens"
+        private const val ORDER = "tokenOrder"
+        private const val TOKEN_MIGRATED_KEY = "tokenMigrated"
     }
 }

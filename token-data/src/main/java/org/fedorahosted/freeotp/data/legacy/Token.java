@@ -151,6 +151,10 @@ public class Token {
         }
     }
 
+    public long getCounter() {
+        return counter;
+    }
+
     private String getHOTP(long counter) {
         // Encode counter in network byte order
         ByteBuffer bb = ByteBuffer.allocate(8);

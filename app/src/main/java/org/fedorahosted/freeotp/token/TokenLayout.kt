@@ -13,8 +13,8 @@ import com.google.android.material.card.MaterialCardView
 
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenCode
+import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
