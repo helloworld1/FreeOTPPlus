@@ -7,18 +7,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.DeleteBinding
-import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
-    @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     private lateinit var binding: DeleteBinding
 
@@ -35,25 +34,28 @@ class DeleteActivity : AppCompatActivity() {
                 return@launch
             }
 
-            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
-
-            (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
-            (findViewById<View>(R.id.label) as TextView).text = token.label
-
-            binding.imageView.setTokenImage(token)
-
-
-            findViewById<View>(R.id.cancel).setOnClickListener {
+            binding.cancel.setOnClickListener {
                 finish()
             }
 
-            findViewById<View>(R.id.delete).setOnClickListener {
+            binding.delete.setOnClickListener {
                 lifecycleScope.launch {
                     otpTokenDatabase.otpTokenDao().deleteById(tokenId)
                     setResult(RESULT_OK)
-                    finish()
                 }
             }
+
+            otpTokenDatabase.otpTokenDao().get(tokenId).collect { token ->
+                if (token == null) {
+                    finish()
+                    return@collect
+                }
+
+                (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
+                (findViewById<View>(R.id.label) as TextView).text = token.label
+                binding.imageView.setTokenImage(token)
+            }
+
         }
     }
 
