@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
 
-    private lateinit var tokenListAdapter: TokenListAdapter
+    @Inject lateinit var tokenListAdapter: TokenListAdapter
     private lateinit var binding: MainBinding
     private var searchQuery = ""
     private var menu: Menu? = null
@@ -101,7 +101,6 @@ class MainActivity : AppCompatActivity() {
             tokenMigrationUtil.migrate()
         }
 
-        tokenListAdapter = TokenListAdapter(this, tokenPersistence, settings)
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
         ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, tokenPersistence))

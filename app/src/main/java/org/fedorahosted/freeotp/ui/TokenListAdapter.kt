@@ -10,17 +10,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.qualifiers.ActivityContext
+import dagger.hilt.android.scopes.ActivityScoped
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
+import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.util.Settings
+import javax.inject.Inject
 
-class TokenListAdapter(val activity: AppCompatActivity,
-                       val tokenPersistence: TokenPersistence,
-                       val settings: Settings) : ListAdapter<Token, TokenViewHolder>(TokenItemCallback()) {
+@ActivityScoped
+class TokenListAdapter @Inject constructor(@ActivityContext val context: Context,
+                                           val tokenPersistence: TokenPersistence,
+                                           val otpTokenDatabase: OtpTokenDatabase,
+                                           val tokenCodeUtil: TokenCodeUtil,
+                                           val settings: Settings) : ListAdapter<Token, TokenViewHolder>(TokenItemCallback()) {
+    val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     private val tokenCodes: MutableMap<String, TokenCode> = ArrayMap()
 
@@ -45,7 +55,15 @@ class TokenListAdapter(val activity: AppCompatActivity,
                 }
 
                 tokenCodes[token.id] = codes
+
                 (v as TokenLayout).start(token.type, codes, true)
+
+                otpTokenDatabase.otpTokenDao().getAll().collect {
+                    it.forEach {
+                        val code = tokenCodeUtil.generateTokenCode(it)
+                        println("CCCCC: issuer: ${it.issuer} code: ${code.currentCode}")
+                    }
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ data class OtpToken (
     val algorithm: String,
     val secret: String,
     val digits: Int,
-    val counter: Long?,
-    val period: Int?,
+    val counter: Long,
+    val period: Int,
     val encryptionType: EncryptionType
 )
