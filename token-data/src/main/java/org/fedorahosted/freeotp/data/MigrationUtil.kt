@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.data
 
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.legacy.Token
@@ -9,7 +8,7 @@ import javax.inject.Inject
 
 class MigrationUtil @Inject constructor(
     private val optTokenDatabase: OtpTokenDatabase,
-    @ApplicationContext private val tokenPersistence: TokenPersistence,
+    private val tokenPersistence: TokenPersistence,
 ) {
     fun isMigrated(): Boolean = tokenPersistence.isLegacyTokenMigrated()
 

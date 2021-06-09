@@ -61,6 +61,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
@@ -72,7 +73,8 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenPersistence: TokenPersistence
-    
+    @Inject lateinit var tokenMigrationUtil: MigrationUtil
+
     private lateinit var tokenListAdapter: TokenListAdapter
     private lateinit var binding: MainBinding
     private var searchQuery = ""
@@ -94,6 +96,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        lifecycleScope.launch {
+            tokenMigrationUtil.migrate()
+        }
 
         tokenListAdapter = TokenListAdapter(this, tokenPersistence, settings)
         binding.tokenList.adapter = tokenListAdapter
