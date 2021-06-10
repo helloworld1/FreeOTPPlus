@@ -373,8 +373,8 @@ class MainActivity : AppCompatActivity() {
                     it
                 } else {
                     it.filter { token ->
-                        token.label?.contains(queryString, true)?: false
-                                || token.issuer.contains(queryString, true)
+                        token.label.contains(queryString, true)
+                                || token.issuer?.contains(queryString, true) ?: false
 
                     }
                 }

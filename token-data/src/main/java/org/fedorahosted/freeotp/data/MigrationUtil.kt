@@ -23,8 +23,8 @@ class MigrationUtil @Inject constructor(
     private suspend fun convertLegacyTokens(legacyTokens: List<Token>) = withContext(Dispatchers.IO) {
         legacyTokens.mapIndexed{ index, legacyToken ->
             OtpToken(
-                id = index + 1,
-                ordinal = index + 1,
+                id = index.toLong() + 1,
+                ordinal = index.toLong() + 1,
                 issuer = legacyToken.issuer,
                 label = legacyToken.label,
                 imagePath = legacyToken.image?.toString(),

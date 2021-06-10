@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
@@ -28,9 +26,9 @@ class DeleteActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            val tokenId = intent.getIntExtra(EXTRA_TOKEN_ID, 0)
+            val tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0L)
 
-            if (tokenId == 0) {
+            if (tokenId == 0L) {
                 return@launch
             }
 

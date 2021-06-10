@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "otp_tokens")
 data class OtpToken (
-    @PrimaryKey(autoGenerate = true) val id: Int,
-    val ordinal: Int,
-    val issuer: String,
-    val label: String?,
+    @PrimaryKey(autoGenerate = true) val id: Long,
+    val ordinal: Long,
+    val issuer: String?,
+    val label: String,
     val imagePath: String?,
     val tokenType: OtpTokenType,
     val algorithm: String,

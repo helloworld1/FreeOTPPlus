@@ -17,19 +17,22 @@ interface OtpTokenDao {
     fun getAll(): Flow<List<OtpToken>>
 
     @Query("select * from otp_tokens where id = :id")
-    fun get(id: Int): Flow<OtpToken?>
+    fun get(id: Long): Flow<OtpToken?>
 
     @Query("delete from otp_tokens where id = :id")
-    suspend fun deleteById(id: Int): Void
+    suspend fun deleteById(id: Long): Void
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(otpTokenList: List<OtpToken>)
+    suspend fun insertAll(otpTokenList: List<OtpToken>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(otpTokenList: OtpToken)
 
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
-    suspend fun updateOrdinal(id: Int, ordinal: Int)
+    suspend fun updateOrdinal(id: Long, ordinal: Long)
 
     @Transaction
-    suspend fun move(tokenId1: Int, tokenId2: Int) {
+    suspend fun move(tokenId1: Long, tokenId2: Long) {
         withContext(Dispatchers.IO) {
             val token1 = get(tokenId1).first()
             val token2 = get(tokenId2).first()

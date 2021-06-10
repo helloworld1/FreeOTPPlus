@@ -16,11 +16,11 @@ fun ImageView.setTokenImage(token: OtpToken) {
                     .load(token.imagePath)
                     .into(this)
         }
-        token.issuer.isNotBlank() -> {
+        !token.issuer.isNullOrBlank() -> {
             matchIssuerWithTokenThumbnail(token)?.let {
                 setImageResource(it)
             } ?: run {
-                val tokenText = token.issuer.substring(0, 1)
+                val tokenText = token.issuer?.substring(0, 1) ?: ""
                 val color = ColorGenerator.MATERIAL.getColor(tokenText)
                 val tokenTextDrawable = TextDrawable.builder().buildRoundRect(tokenText, color, 10)
                 setImageDrawable(tokenTextDrawable)

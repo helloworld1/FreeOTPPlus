@@ -32,7 +32,7 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
                                            val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    private val tokenCodes: MutableMap<Int, TokenCode> = ArrayMap()
+    private val tokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenViewHolder {
         val tokenLayout = LayoutInflater.from(activity).inflate(R.layout.token, parent, false) as TokenLayout
@@ -60,13 +60,6 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
                 tokenCodes[token.id] = codes
 
                 (v as TokenLayout).start(token.tokenType, codes, true)
-
-                otpTokenDatabase.otpTokenDao().getAll().collect {
-                    it.forEach {
-                        val code = tokenCodeUtil.generateTokenCode(it)
-                        println("CCCCC: issuer: ${it.issuer} code: ${code.currentCode}")
-                    }
-                }
             }
         }
     }
