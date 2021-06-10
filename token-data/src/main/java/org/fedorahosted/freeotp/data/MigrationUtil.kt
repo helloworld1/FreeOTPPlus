@@ -30,9 +30,9 @@ class MigrationUtil @Inject constructor(
                 imagePath = legacyToken.image?.toString(),
                 tokenType = if (legacyToken.type == Token.TokenType.HOTP) OtpTokenType.HOTP else OtpTokenType.TOTP,
                 algorithm = legacyToken.algorithm ?: "sha1",
+                counter = legacyToken.counter,
                 secret = legacyToken.secret,
                 digits = legacyToken.digits,
-                counter = legacyToken.counter,
                 period = legacyToken.period,
                 encryptionType = EncryptionType.PLAIN_TEXT
             )

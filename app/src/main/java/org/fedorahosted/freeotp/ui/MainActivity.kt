@@ -60,14 +60,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.databinding.MainBinding
-import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
@@ -76,7 +76,6 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
-    @Inject lateinit var tokenPersistence: TokenPersistence
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenListAdapter: TokenListAdapter
@@ -261,7 +260,7 @@ class MainActivity : AppCompatActivity() {
         if (uri != null) {
             lifecycleScope.launch {
                 try {
-                    tokenPersistence.addFromUriString(uri.toString())
+                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
                 } catch (e: Exception) {
                     Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
                             .show()

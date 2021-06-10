@@ -12,21 +12,19 @@ import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
-import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @ActivityScoped
 class TokenListAdapter @Inject constructor(@ActivityContext val context: Context,
-                                           val tokenPersistence: TokenPersistence,
                                            val otpTokenDatabase: OtpTokenDatabase,
                                            val tokenCodeUtil: TokenCodeUtil,
                                            val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
@@ -47,9 +45,9 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
             activity.lifecycleScope.launch {
                 val codes = tokenCodeUtil.generateTokenCode(token)
 
-                //////////////////
-                // Need to increment the token
-                // tokenPersistence.save(token)
+                if (token.tokenType == OtpTokenType.HOTP) {
+                    otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+                }
 
                 if (settings.copyToClipboard) {
                     // Copy code to clipboard.
