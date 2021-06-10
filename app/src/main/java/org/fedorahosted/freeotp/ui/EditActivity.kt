@@ -34,8 +34,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
@@ -44,7 +46,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
-    @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var imageUtil: ImageUtil
 
     private lateinit var binding: EditBinding
@@ -63,7 +65,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private var mImageDefault: Uri? = null
     private var mImageDisplay: Uri? = null
 
-    private var tokenId: String = ""
+    private var tokenId: Long = 0L
 
     private fun showImage(imageUri: Uri?) {
         mImageDisplay = imageUri
@@ -89,21 +91,16 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            tokenId = intent.getStringExtra(EXTRA_TOKEN_ID) ?: run {
-                return@launch
-            }
+            tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)
 
             // Get token values.
-            val token = tokenPersistence.getToken(tokenId) ?: return@launch
+            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
             mIssuerCurrent = token.issuer
             mLabelCurrent = token.label
-            mImageCurrent = token.image
-            token.issuer = null
-            token.label = null
-            token.image = null
+            mImageCurrent = if (token.imagePath != null) Uri.parse(token.imagePath) else null
             mIssuerDefault = token.issuer
             mLabelDefault = token.label
-            mImageDefault = token.image
+            mImageDefault = mImageCurrent
 
             // Get references to widgets.
             mIssuer = findViewById<View>(R.id.issuer) as EditText
@@ -194,11 +191,14 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
             R.id.save -> {
                 lifecycleScope.launch {
-                    val token = tokenPersistence.getToken(tokenId) ?: return@launch
-                    token.issuer = mIssuer.text.toString()
-                    token.label = mLabel.text.toString()
-                    token.image = mImageDisplay
-                    tokenPersistence.save(token)
+                    val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+                    val newToken = token.copy(
+                        issuer = mIssuer.text.toString(),
+                        label = mLabel.text.toString(),
+                        imagePath = mImageDisplay?.toString()
+                    )
+
+                    otpTokenDatabase.otpTokenDao().update(newToken)
                     setResult(RESULT_OK)
                     finish()
                 }

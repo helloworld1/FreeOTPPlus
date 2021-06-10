@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -27,6 +28,9 @@ interface OtpTokenDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(otpTokenList: OtpToken)
+
+    @Update
+    suspend fun update(otpTokenList: OtpToken)
 
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
     suspend fun updateOrdinal(id: Long, ordinal: Long)

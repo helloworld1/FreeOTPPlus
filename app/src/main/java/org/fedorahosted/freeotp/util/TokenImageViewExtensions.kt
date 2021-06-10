@@ -13,8 +13,9 @@ fun ImageView.setTokenImage(token: OtpToken) {
     when {
         token.imagePath != null -> {
             Glide.with(this)
-                    .load(token.imagePath)
-                    .into(this)
+                .load(token.imagePath)
+                .placeholder(R.drawable.logo)
+                .into(this)
         }
         !token.issuer.isNullOrBlank() -> {
             matchIssuerWithTokenThumbnail(token)?.let {
