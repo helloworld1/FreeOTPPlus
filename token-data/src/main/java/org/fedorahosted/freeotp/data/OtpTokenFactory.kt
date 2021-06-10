@@ -72,7 +72,7 @@ object OtpTokenFactory {
 
         return OtpToken (
             id = 0,
-            ordinal = System.currentTimeMillis(), // One way to make ordinal monolithic increasing
+            ordinal = -System.currentTimeMillis(), // One way to make the token to the top of the list
             issuer = issuer,
             label = label,
             imagePath = image,

@@ -3,6 +3,7 @@ package org.fedorahosted.freeotp.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.view.Surface
 import android.view.View
@@ -25,8 +26,9 @@ import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
-import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import java.util.concurrent.ExecutorService
@@ -41,7 +43,7 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var tokenQRCodeDecoder: TokenQRCodeDecoder
 
-    @Inject lateinit var tokenPersistence: TokenPersistence
+    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
 
     @Inject lateinit var imageUtil: ImageUtil
 
@@ -141,7 +143,9 @@ class ScanTokenActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val token = try {
-                tokenPersistence.addFromUriString(tokenString)
+                val t = OtpTokenFactory.createFromUri((Uri.parse(tokenString)))
+                otpTokenDatabase.otpTokenDao().insert(t)
+                t
             } catch (e: Throwable) {
                 Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
 
@@ -152,13 +156,13 @@ class ScanTokenActivity : AppCompatActivity() {
             Toast.makeText(this@ScanTokenActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
 
             setResult(RESULT_OK)
-            if (token.image == null) {
+            if (token.imagePath == null) {
                 finish()
                 return@launch
             }
 
             Glide.with(this@ScanTokenActivity)
-                    .load(token.image)
+                    .load(token.imagePath)
                     .placeholder(R.drawable.scan)
                     .listener(object: RequestListener<Drawable> {
                         override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {

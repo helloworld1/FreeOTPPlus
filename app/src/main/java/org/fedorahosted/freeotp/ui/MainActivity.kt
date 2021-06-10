@@ -104,7 +104,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         lifecycleScope.launch {
-            tokenMigrationUtil.migrate()
+            if (!tokenMigrationUtil.isMigrated()) {
+                tokenMigrationUtil.migrate()
+            }
         }
 
         binding.tokenList.adapter = tokenListAdapter
