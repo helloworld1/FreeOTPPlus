@@ -60,7 +60,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
     suspend fun importKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
-                reader.readLines().filter {
+                reader.readLines().reversed().filter {
                     it.isNotBlank()
 
                 }.map { line ->
