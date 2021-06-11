@@ -236,9 +236,13 @@ public class Token {
     }
 
     public String getIssuer() {
-        if (issuerAlt != null)
+        if (issuerAlt != null && !issuerAlt.isEmpty())
             return issuerAlt;
-        return issuerExt != null ? issuerExt : "";
+        if (issuerExt != null && !issuerExt.isEmpty())
+            return issuerExt;
+        if (issuerInt != null && !issuerInt.isEmpty())
+            return issuerInt;
+        return "";
     }
 
     // NOTE: This changes internal data. You MUST save the token immediately.

@@ -21,25 +21,19 @@ import javax.inject.Singleton
 class ImportExportUtil @Inject constructor(@ApplicationContext private val context: Context,
                                            private val migrationUtil: MigrationUtil,
                                            private val gson: Gson,
-                                           private val otpTokenDatabase: OtpTokenDatabase,
-                                           private val tokenPersistence: TokenPersistence
+                                           private val otpTokenDatabase: OtpTokenDatabase
 ) {
     suspend fun importJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri).use { inputStream ->
                 val reader = BufferedReader(InputStreamReader(inputStream))
-                val stringBuilder = StringBuilder()
-                reader.forEachLine {
-                    stringBuilder.append(it)
-                }
-
-
-                val savedTokens = gson.fromJson(stringBuilder.toString(), SavedTokens::class.java)
-
+                reader.readText()
+            } .let {
+                val savedTokens = gson.fromJson(it, SavedTokens::class.java)
                 val newTokens = migrationUtil.convertLegacyTokensToOtpTokens(savedTokens.tokens);
                 otpTokenDatabase.otpTokenDao().insertAll(newTokens)
-
             }
+
         }
     }
 
@@ -83,8 +77,8 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
             context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
                     val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
-                    for (token in tokens ) {
-                        printWriter.println(token.toString())
+                    for (token in tokens) {
+                        printWriter.println(OtpTokenFactory.toUri(token).toString())
                     }
                 }
             }
