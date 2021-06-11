@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import androidx.room.Room
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +23,8 @@ object DataModule {
     fun database(@ApplicationContext context:Context)
             = Room.databaseBuilder(context, OtpTokenDatabase::class.java, "otp-token-db")
         .build()
+
+    @Singleton
+    @Provides
+    fun gson() = Gson()
 }

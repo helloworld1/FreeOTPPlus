@@ -2,7 +2,7 @@ package org.fedorahosted.freeotp.data
 
 import android.net.Uri
 import com.google.android.apps.authenticator.Base32String
-import java.lang.IllegalArgumentException
+import org.fedorahosted.freeotp.data.legacy.Token.TokenType
 import java.util.*
 import javax.crypto.Mac
 
@@ -84,5 +84,24 @@ object OtpTokenFactory {
             period = period,
             encryptionType = EncryptionType.PLAIN_TEXT
         )
+    }
+
+    fun toUri(token: OtpToken): Uri {
+        val builder = Uri.Builder().scheme("otpauth").path(token.label)
+            .appendQueryParameter("secret", token.secret)
+            .appendQueryParameter("issuer", token.issuer)
+            .appendQueryParameter("algorithm", token.algorithm)
+            .appendQueryParameter("digits", token.digits.toString())
+            .appendQueryParameter("period", token.period.toString())
+
+        when (token.tokenType) {
+            OtpTokenType.HOTP -> {
+                builder.authority("hotp")
+                builder.appendQueryParameter("counter", (token.counter + 1).toString())
+            }
+            OtpTokenType.TOTP -> builder.authority("totp")
+        }
+
+        return builder.build()
     }
 }

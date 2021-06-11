@@ -14,13 +14,13 @@ class MigrationUtil @Inject constructor(
 
     suspend fun migrate() {
         withContext(Dispatchers.IO) {
-            val tokenList = convertLegacyTokens(tokenPersistence.getTokens())
+            val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens())
             optTokenDatabase.otpTokenDao().insertAll(tokenList)
             tokenPersistence.setLegacyTokenMigrated()
         }
     }
 
-    private suspend fun convertLegacyTokens(legacyTokens: List<Token>) = withContext(Dispatchers.IO) {
+    suspend fun convertLegacyTokensToOtpTokens(legacyTokens: List<Token>) = withContext(Dispatchers.IO) {
         legacyTokens.mapIndexed{ index, legacyToken ->
             OtpToken(
                 id = index.toLong() + 1,
@@ -39,4 +39,11 @@ class MigrationUtil @Inject constructor(
         }
     };
 
+    suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
+        tokens.map {
+            OtpTokenFactory.toUri(it)
+        }.map { uri ->
+            Token(uri)
+        }
+    }
 }
