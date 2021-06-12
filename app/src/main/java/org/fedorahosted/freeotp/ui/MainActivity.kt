@@ -61,7 +61,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
@@ -93,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -419,7 +417,6 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         biometricPrompt.authenticate(promptInfo)
-        binding.tokenList.visibility = View.GONE
     }
 
     companion object {

@@ -23,7 +23,6 @@ class MainViewModel @Inject constructor(
     private val tokenSearchQuery = MutableStateFlow("")
     private val authState = MutableStateFlow(AuthState.UNAUTHENTICATED)
 
-
     fun migrateOldData() {
         viewModelScope.launch {
             if (!tokenMigrationUtil.isMigrated()) {
