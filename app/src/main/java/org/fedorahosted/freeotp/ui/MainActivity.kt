@@ -47,6 +47,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricManager
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenListAdapter: TokenListAdapter
 
-
+    private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
     private var searchQuery = ""
     private var menu: Menu? = null
@@ -101,11 +102,7 @@ class MainActivity : AppCompatActivity() {
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        lifecycleScope.launch {
-            if (!tokenMigrationUtil.isMigrated()) {
-                tokenMigrationUtil.migrate()
-            }
-        }
+        viewModel.migrateOldData()
 
         binding.tokenList.adapter = tokenListAdapter
         binding.tokenList.layoutManager = LinearLayoutManager(this)
@@ -113,18 +110,31 @@ class MainActivity : AppCompatActivity() {
             .attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
+        lifecycleScope.launch {
+            viewModel.getTokenList().collect { tokens ->
+                tokenListAdapter.submitList(tokens)
+
+                if (tokens.isEmpty()) {
+                    binding.emptyView.visibility = View.VISIBLE
+                    binding.tokenList.visibility = View.GONE
+                } else {
+                    binding.emptyView.visibility = View.GONE
+                    binding.tokenList.visibility = View.VISIBLE
+                }
+            }
+        }
+
         setSupportActionBar(binding.toolbar)
 
         binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                searchQuery = query ?: ""
-                refreshTokenList(searchQuery)
+                viewModel.setTokenSearchQuery(query ?: "")
                 return true
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
                 searchQuery = query ?: ""
-                refreshTokenList(searchQuery)
+                viewModel.setTokenSearchQuery(query ?: "")
                 return true
             }
 
@@ -150,11 +160,10 @@ class MainActivity : AppCompatActivity() {
         // When the authentication failed, the Activity will be destroyed so lastSessionEndTimestamp
         // will be zero and next launch will require authentication
         if (settings.requireAuthentication && (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS) {
-            verifyAuthentication(onSuccess =  {
-                refreshTokenList("")
-            })
+            viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+            verifyAuthentication()
         } else {
-            refreshTokenList("")
+            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         }
     }
     
@@ -221,20 +230,15 @@ class MainActivity : AppCompatActivity() {
 
             R.id.require_authentication -> {
                 // Make sure we also verify authentication before turning on the settings
+
                 if (!settings.requireAuthentication) {
-                    verifyAuthentication(onSuccess =  {
-                        settings.requireAuthentication = true
-                        refreshOptionMenu()
-                        refreshTokenList("")
-                    }, onFailure = {
-                        Toast.makeText(applicationContext,
-                                R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
-                                .show()
-                    })
+                    verifyAuthentication()
                 } else {
                     settings.requireAuthentication = false
+                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                     refreshOptionMenu()
                 }
+
                 return true
             }
 
@@ -276,8 +280,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        refreshTokenList(searchQuery)
-
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
                 lifecycleScope.launch {
@@ -298,7 +300,6 @@ class MainActivity : AppCompatActivity() {
                             lifecycleScope.launch {
                                 try {
                                     importFromUtil.importJsonFile(uri)
-                                    refreshTokenList(searchQuery)
                                     Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                                             .show()
                                 } catch (e: Exception) {
@@ -327,7 +328,6 @@ class MainActivity : AppCompatActivity() {
                     val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.importKeyUriFile(uri)
-                        refreshTokenList(searchQuery)
                         Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                                 .show()
                     } catch (e: Exception) {
@@ -365,67 +365,40 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, requestCode)
     }
 
-    private fun refreshTokenList(queryString: String) {
-        lifecycleScope.launch {
-
-            otpTokenDatabase.otpTokenDao().getAll().map {
-                if (queryString.isEmpty()) {
-                    it
-                } else {
-                    it.filter { token ->
-                        token.label.contains(queryString, true)
-                                || token.issuer?.contains(queryString, true) ?: false
-
-                    }
-                }
-            }.collect { tokens ->
-                tokenListAdapter.submitList(tokens)
-
-                if (tokens.isEmpty()) {
-                    binding.emptyView.visibility = View.VISIBLE
-                    binding.tokenList.visibility = View.GONE
-                } else {
-                    binding.emptyView.visibility = View.GONE
-                    binding.tokenList.visibility = View.VISIBLE
-                }
-
-            }
-        }
-    }
-
     private fun refreshOptionMenu() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
     }
 
-    private fun verifyAuthentication(onSuccess: () -> Unit = {}, onFailure: (() -> Unit)? = null) {
+    private fun verifyAuthentication() {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationError(errorCode: Int,
                                                        errString: CharSequence) {
                         super.onAuthenticationError(errorCode, errString)
-                        if (onFailure == null) {
-                            // Don't show error message toast if user pressed back button
-                            if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                                Toast.makeText(applicationContext,
-                                        "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
-                                        .show()
-                            }
+                        // Don't show error message toast if user pressed back button
+                        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                            Toast.makeText(applicationContext,
+                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+                                .show()
+                        }
 
-                            if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                                finish()
-                            }
-                        } else {
-                            onFailure()
+                        if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                            finish()
                         }
                     }
 
                     override fun onAuthenticationSucceeded(
                             result: BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
-                        onSuccess()
+                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+
+                        if (!settings.requireAuthentication) {
+                            settings.requireAuthentication = true
+                            refreshOptionMenu()
+                        }
                     }
 
                     override fun onAuthenticationFailed() {
@@ -433,9 +406,9 @@ class MainActivity : AppCompatActivity() {
                         // error, so no need for FreeOTP to show one
                         super.onAuthenticationFailed()
 
-                        if (onFailure != null) {
-                            onFailure()
-                        }
+                        Toast.makeText(applicationContext,
+                            R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
+                            .show()
                     }
                 })
 

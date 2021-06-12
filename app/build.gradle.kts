@@ -54,6 +54,7 @@ dependencies {
     implementation("com.google.code.gson:gson:${Versions.GSON}")
     implementation("com.github.bumptech.glide:glide:${Versions.GLIDE}")
     implementation("androidx.core:core-ktx:${Versions.CORE_KTX}")
+    implementation("androidx.activity:activity-ktx:${Versions.ACTIVITY_KTX}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLINX_COROUTINES}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE_KTX}")
