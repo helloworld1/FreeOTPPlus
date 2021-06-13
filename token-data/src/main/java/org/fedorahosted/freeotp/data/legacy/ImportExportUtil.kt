@@ -6,7 +6,6 @@ import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
@@ -60,7 +59,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun importKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
-            var currentLastOrdinal = otpTokenDatabase.otpTokenDao().getLastOrdinal() ?: 0
+            val currentLastOrdinal = otpTokenDatabase.otpTokenDao().getLastOrdinal() ?: 0
 
             context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
                 reader.readLines().filter {

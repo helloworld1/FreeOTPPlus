@@ -88,7 +88,7 @@ object OtpTokenFactory {
 
     fun toUri(token: OtpToken): Uri {
         val labelAndIssuer = if (token.issuer != null && token.issuer.isNotBlank()) {
-            "${token.label}:${token.issuer}"
+            "${token.issuer}:${token.label}"
         } else {
             "{token.label}"
         }
