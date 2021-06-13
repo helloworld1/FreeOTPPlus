@@ -38,7 +38,7 @@ object OtpTokenFactory {
         val issuerExt = if (i < 0) "" else path.substring(0, i)
         val issuerInt = uri.getQueryParameter("issuer")
 
-        val issuer = if (issuerInt?.isEmpty() == true) issuerExt else issuerInt
+        val issuer = if (issuerInt != null && issuerInt.isNotBlank()) issuerInt else issuerExt
         val label = path.substring(if (i >= 0) i + 1 else 0)
 
         var algo = uri.getQueryParameter("algorithm")
