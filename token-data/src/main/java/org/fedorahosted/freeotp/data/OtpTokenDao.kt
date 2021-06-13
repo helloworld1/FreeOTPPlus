@@ -23,6 +23,9 @@ interface OtpTokenDao {
     @Query("select * from otp_tokens where id = :id")
     fun get(id: Long): Flow<OtpToken?>
 
+    @Query("select ordinal from otp_tokens order by ordinal desc limit 1")
+    fun getLastOrdinal(): Long?
+
     @Query("delete from otp_tokens where id = :id")
     suspend fun deleteById(id: Long): Void
 

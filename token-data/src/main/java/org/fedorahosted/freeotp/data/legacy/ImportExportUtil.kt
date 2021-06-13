@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
@@ -39,7 +40,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
+            context.contentResolver.openOutputStream(uri, "wt").use { outputStream ->
                 val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first() ?: return@use
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
                 val tokenOrder = otpTokens.map {
@@ -59,12 +60,16 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun importKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
+            var currentLastOrdinal = otpTokenDatabase.otpTokenDao().getLastOrdinal() ?: 0
+
             context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
-                reader.readLines().reversed().filter {
+                reader.readLines().filter {
                     it.isNotBlank()
 
-                }.map { line ->
-                    OtpTokenFactory.createFromUri(Uri.parse(line.trim()))
+                }.mapIndexed { index, line ->
+                    OtpTokenFactory.createFromUri(Uri.parse(line.trim())).copy(
+                        ordinal = currentLastOrdinal + index + 1
+                    )
                 }
             } ?.let { tokens ->
                 otpTokenDatabase.otpTokenDao().insertAll(tokens)
@@ -74,7 +79,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun exportKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(fileUri)?.use { outputStream ->
+            context.contentResolver.openOutputStream(fileUri, "wt")?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
                     val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
                     for (token in tokens) {

@@ -38,6 +38,7 @@ class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
         return true
     }
 
+
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
     }
 }

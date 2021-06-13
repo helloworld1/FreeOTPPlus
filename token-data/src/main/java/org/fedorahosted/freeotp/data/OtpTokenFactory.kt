@@ -87,9 +87,14 @@ object OtpTokenFactory {
     }
 
     fun toUri(token: OtpToken): Uri {
-        val builder = Uri.Builder().scheme("otpauth").path(token.label)
+        val labelAndIssuer = if (token.issuer != null && token.issuer.isNotBlank()) {
+            "${token.label}:${token.issuer}"
+        } else {
+            "{token.label}"
+        }
+
+        val builder = Uri.Builder().scheme("otpauth").path(labelAndIssuer)
             .appendQueryParameter("secret", token.secret)
-            .appendQueryParameter("issuer", token.issuer)
             .appendQueryParameter("algorithm", token.algorithm)
             .appendQueryParameter("digits", token.digits.toString())
             .appendQueryParameter("period", token.period.toString())
