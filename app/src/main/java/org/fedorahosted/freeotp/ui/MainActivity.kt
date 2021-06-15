@@ -122,6 +122,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        lifecycleScope.launch {
+            viewModel.getAuthState().collect { authState ->
+                if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
+                    verifyAuthentication()
+                }
+            }
+        }
+
         setSupportActionBar(binding.toolbar)
 
         binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -155,19 +163,12 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        // When the authentication failed, the Activity will be destroyed so lastSessionEndTimestamp
-        // will be zero and next launch will require authentication
-        if (settings.requireAuthentication && (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS) {
-            viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
-            verifyAuthentication()
-        } else {
-            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-        }
+        viewModel.onSessionStart()
     }
     
     override fun onStop() {
         super.onStop()
-        lastSessionEndTimestamp = System.currentTimeMillis()
+        viewModel.onSessionStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -230,7 +231,7 @@ class MainActivity : AppCompatActivity() {
                 // Make sure we also verify authentication before turning on the settings
 
                 if (!settings.requireAuthentication) {
-                    verifyAuthentication()
+                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
                 } else {
                     settings.requireAuthentication = false
                     viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
@@ -421,6 +422,5 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
-        private const val TIMEOUT_DELAY_MS: Long = 120 * 1000L;
     }
 }

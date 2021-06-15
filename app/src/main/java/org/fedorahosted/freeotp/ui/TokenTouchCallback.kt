@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 
 class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
-                         val adapter: TokenListAdapter,
+                         private val adapter: TokenListAdapter,
                          private val optTokenDatabase: OtpTokenDatabase)
     : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN , 0) {
 

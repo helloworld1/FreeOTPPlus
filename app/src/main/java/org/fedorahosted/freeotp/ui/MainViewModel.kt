@@ -21,7 +21,15 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tokenSearchQuery = MutableStateFlow("")
-    private val authState = MutableStateFlow(AuthState.UNAUTHENTICATED)
+    private val authState = MutableStateFlow(
+        if (settings.requireAuthentication) {
+            AuthState.UNAUTHENTICATED
+        } else {
+            AuthState.AUTHENTICATED
+        }
+    )
+
+    private var lastSessionEndTimestamp = 0L;
 
     fun migrateOldData() {
         viewModelScope.launch {
@@ -38,6 +46,8 @@ class MainViewModel @Inject constructor(
     fun setAuthState(auth: AuthState) {
         authState.value = auth
     }
+
+    fun getAuthState(): Flow<AuthState> = authState
 
     fun getTokenList(): Flow<List<OtpToken>> {
         return combine(authState, tokenSearchQuery, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, tokens ->
@@ -58,9 +68,25 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onSessionStart() {
+        if (settings.requireAuthentication && (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS) {
+            setAuthState(AuthState.UNAUTHENTICATED)
+        } else {
+            setAuthState(AuthState.AUTHENTICATED)
+        }
+    }
+
+    fun onSessionStop() {
+        lastSessionEndTimestamp = System.currentTimeMillis()
+    }
+
     enum class AuthState {
         AUTHENTICATED,
         UNAUTHENTICATED
+    }
+
+    companion object {
+        private const val TIMEOUT_DELAY_MS: Long = 120 * 1000L;
     }
 
 }
