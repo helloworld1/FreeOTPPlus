@@ -54,6 +54,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
@@ -103,7 +104,12 @@ class MainActivity : AppCompatActivity() {
         viewModel.migrateOldData()
 
         binding.tokenList.adapter = tokenListAdapter
-        binding.tokenList.layoutManager = LinearLayoutManager(this)
+
+        // Used GridlayoutManager to support tablet mode for multiple columns
+        val columns =  resources.configuration.screenWidthDp / 400 + 1
+        binding.tokenList.layoutManager = GridLayoutManager(this, columns)
+
+
         ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
             .attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
