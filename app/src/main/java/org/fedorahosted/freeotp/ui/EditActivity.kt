@@ -30,6 +30,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -146,11 +147,16 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == RESULT_OK) {
-            data?.data?.let {
-                lifecycleScope.launch {
-                    val path = imageUtil.saveImageUriToFile(it)
-                    showImage(path)
+        if (requestCode == IMAGE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                data?.data?.let {
+                    lifecycleScope.launch {
+                        val path = imageUtil.saveImageUriToFile(it)
+                        showImage(path)
+                    }
+                } ?: let {
+                    Toast.makeText(this, R.string.fail_to_add_image, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -176,7 +182,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             R.id.image -> {
                 val intent = Intent(Intent.ACTION_PICK,
                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                startActivityForResult(intent, 0)
+                startActivityForResult(intent, IMAGE_REQUEST_CODE)
             }
 
             R.id.restore -> {
@@ -213,5 +219,6 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     companion object {
         const val EXTRA_TOKEN_ID = "token_id"
+        const val IMAGE_REQUEST_CODE = 60
     }
 }
