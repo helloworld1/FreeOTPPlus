@@ -20,13 +20,13 @@ class TokenViewHolder(private val activity: Activity,
             R.id.action_edit -> {
                 val i = Intent(tokenLayout.context, EditActivity::class.java)
                 i.putExtra(EditActivity.EXTRA_TOKEN_ID, token.id)
-                activity.startActivityForResult(i, EDIT_TOKEN_REQUEST_CODE)
+                activity.startActivity(i)
             }
 
             R.id.action_delete -> {
                 val i = Intent(tokenLayout.context, DeleteActivity::class.java)
                 i.putExtra(DeleteActivity.EXTRA_TOKEN_ID, token.id)
-                activity.startActivityForResult(i, DELETE_TOKEN_REQUEST_CODE)
+                activity.startActivity(i)
             }
         }
         true

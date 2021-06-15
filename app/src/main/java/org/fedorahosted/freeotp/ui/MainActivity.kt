@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.addTokenFab.setOnClickListener {
-            startActivityForResult(Intent(this, ScanTokenActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
+            startActivity(Intent(this, ScanTokenActivity::class.java))
         }
 
         // Don't permit screenshots since these might contain OTP codes.
@@ -181,12 +181,12 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_scan -> {
-                startActivityForResult(Intent(this, ScanTokenActivity::class.java), SCAN_TOKEN_REQUEST_CODE)
+                startActivity(Intent(this, ScanTokenActivity::class.java))
                 return true
             }
 
             R.id.action_add -> {
-                startActivityForResult(Intent(this, AddActivity::class.java), ADD_TOKEN_REQUEST_CODE)
+                startActivity(Intent(this, AddActivity::class.java))
                 return true
             }
 
@@ -422,5 +422,9 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
+        const val READ_JSON_REQUEST_CODE = 42
+        const val WRITE_JSON_REQUEST_CODE = 43
+        const val READ_KEY_URI_REQUEST_CODE = 44
+        const val WRITE_KEY_URI_REQUEST_CODE = 45
     }
 }
