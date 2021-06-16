@@ -14,5 +14,9 @@ object Versions {
     const val GSON = "2.8.7"
     const val GLIDE = "4.12.0"
     const val ROOM = "2.3.0"
+    const val ANDROIDX_TEST_CORE = "1.3.0"
+    const val ANDROIDX_JUNIT = "1.1.2"
+    const val ANDROIDX_TRUTH = "1.3.0"
+    const val ESPRESSO = "3.3.0"
 }
 

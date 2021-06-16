@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
-
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -15,6 +13,8 @@ android {
         minSdkVersion(AppConfigs.MIN_SDK_VERSION)
         targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
         applicationId = "org.liberty.android.freeotpplus"
+
+        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
     }
 
     buildTypes {
@@ -68,5 +68,18 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:${Versions.HILT}")
     kapt("com.google.dagger:hilt-android-compiler:${Versions.HILT}")
+
+    androidTestImplementation("androidx.test:core:${Versions.ANDROIDX_TEST_CORE}")
+    androidTestImplementation("androidx.test:core-ktx:${Versions.ANDROIDX_TEST_CORE}")
+    androidTestImplementation("androidx.test:rules:${Versions.ANDROIDX_TEST_CORE}")
+    androidTestImplementation("androidx.test:runner:${Versions.ANDROIDX_TEST_CORE}")
+
+    androidTestImplementation("androidx.test.ext:junit:${Versions.ANDROIDX_JUNIT}")
+    androidTestImplementation("androidx.test.ext:junit-ktx:${Versions.ANDROIDX_JUNIT}")
+    androidTestImplementation("androidx.test.ext:truth:${Versions.ANDROIDX_TRUTH}")
+
+    androidTestImplementation("androidx.test.espresso:espresso-core:${Versions.ESPRESSO}")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:${Versions.ESPRESSO}")
+
 
 }
