@@ -30,7 +30,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                 reader.readText()
             } .let {
                 val savedTokens = gson.fromJson(it, SavedTokens::class.java)
-                val newTokens = migrationUtil.convertLegacyTokensToOtpTokens(savedTokens.tokens);
+                val newTokens = migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens);
                 otpTokenDatabase.otpTokenDao().insertAll(newTokens)
             }
 

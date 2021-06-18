@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import javax.inject.Inject
@@ -20,7 +21,19 @@ class MigrationUtil @Inject constructor(
         }
     }
 
-    suspend fun convertLegacyTokensToOtpTokens(legacyTokens: List<Token>) = withContext(Dispatchers.IO) {
+    suspend fun convertLegacySavedTokensToOtpTokens(savedTokens: SavedTokens): List<OtpToken> = withContext(Dispatchers.IO) {
+        val tokenMap = savedTokens.tokens.map { token ->
+            token.id to token
+        }.toMap()
+
+        val legacyTokens = savedTokens.tokenOrder.mapNotNull { tokenKey ->
+            tokenMap[tokenKey]
+        }
+
+        convertLegacyTokensToOtpTokens(legacyTokens)
+    }
+
+    suspend fun convertLegacyTokensToOtpTokens(legacyTokens: List<Token>): List<OtpToken> = withContext(Dispatchers.IO) {
         legacyTokens.mapIndexed{ index, legacyToken ->
             OtpToken(
                 id = index.toLong() + 1,
