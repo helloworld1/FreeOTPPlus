@@ -14,6 +14,5 @@ class MainActivityTest {
 
     @Test
     fun test() {
-
     }
 }

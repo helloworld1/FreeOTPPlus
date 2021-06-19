@@ -14,8 +14,10 @@ android {
         targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
         applicationId = "org.liberty.android.freeotpplus"
 
-        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments(mapOf("clearPackageData" to "true"))
     }
+
 
     buildTypes {
         getByName("debug") {
@@ -39,6 +41,10 @@ android {
 
     buildFeatures {
         viewBinding = true
+    }
+
+    testOptions {
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
 }
 
@@ -73,6 +79,7 @@ dependencies {
     androidTestImplementation("androidx.test:core-ktx:${Versions.ANDROIDX_TEST_CORE}")
     androidTestImplementation("androidx.test:rules:${Versions.ANDROIDX_TEST_CORE}")
     androidTestImplementation("androidx.test:runner:${Versions.ANDROIDX_TEST_CORE}")
+    androidTestUtil("androidx.test:orchestrator:${Versions.ANDROIDX_TEST_CORE}")
 
     androidTestImplementation("androidx.test.ext:junit:${Versions.ANDROIDX_JUNIT}")
     androidTestImplementation("androidx.test.ext:junit-ktx:${Versions.ANDROIDX_JUNIT}")
@@ -80,6 +87,7 @@ dependencies {
 
     androidTestImplementation("androidx.test.espresso:espresso-core:${Versions.ESPRESSO}")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:${Versions.ESPRESSO}")
+
 
 
 }
