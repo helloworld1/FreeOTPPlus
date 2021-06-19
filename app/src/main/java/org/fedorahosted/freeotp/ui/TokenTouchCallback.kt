@@ -12,9 +12,12 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
                          private val adapter: TokenListAdapter,
                          private val optTokenDatabase: OtpTokenDatabase)
-    : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN , 0) {
+    : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
+        or ItemTouchHelper.DOWN
+        or ItemTouchHelper.LEFT
+        or ItemTouchHelper.RIGHT, 0) {
 
-    var moveRunnable: Runnable? = null
+    private var moveRunnable: Runnable? = null
 
     private val handler = Handler(Looper.getMainLooper())
 
