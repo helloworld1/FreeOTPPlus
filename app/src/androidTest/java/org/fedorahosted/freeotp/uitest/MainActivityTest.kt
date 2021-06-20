@@ -28,6 +28,19 @@ class MainActivityTest {
     var activityRule = activityScenarioRule<MainActivity>()
 
     @Test
+    fun testListing() {
+        populateTestData()
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("github.com"))))
+            .check(matches(hasDescendant(withText("github account 1"))))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
+            .check(matches(hasDescendant(withText("microsoft.com"))))
+            .check(matches(hasDescendant(withText("microsoft account 1"))))
+    }
+
+    @Test
     fun testInsertToken() {
         openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext);
         onView(withText(R.string.add_token))
@@ -44,6 +57,20 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("issuer1"))))
             .check(matches(hasDescendant(withText("account1"))))
+    }
+
+    @Test
+    fun testEditToken() {
+        populateTestData()
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+
+
+
     }
 
     private fun populateTestData() {
