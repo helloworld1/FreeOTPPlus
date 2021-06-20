@@ -3,7 +3,6 @@ package org.fedorahosted.freeotp.uitest
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.launchActivity
@@ -11,26 +10,16 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.BoundedMatcher
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.fedorahosted.freeotp.ui.TokenViewHolder
-import org.hamcrest.Description
-import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -68,10 +57,46 @@ class MigrationTest {
             .check(matches(hasDescendant(withText("github.com"))))
     }
 
+    @Test
+    fun testTotpToken() {
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+        onView(withId(R.id.issuer))
+            .check(matches(withText("microsoft.com")))
+        onView(withId(R.id.label))
+            .check(matches(withText("account1totp")))
+        onView(withId(R.id.algorithm))
+            .check(matches(withText("SHA1")))
+        onView(withId(R.id.digits))
+            .check(matches(withText("6")))
+        onView(withId(R.id.secret))
+            .check(matches(withText("AAAA2345")))
+    }
+
+    @Test
+    fun testHotpToken() {
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1,
+                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+        onView(withId(R.id.issuer))
+            .check(matches(withText("github.com")))
+        onView(withId(R.id.label))
+            .check(matches(withText("account2hotp")))
+        onView(withId(R.id.algorithm))
+            .check(matches(withText("SHA256")))
+        onView(withId(R.id.digits))
+            .check(matches(withText("6")))
+        onView(withId(R.id.secret))
+            .check(matches(withText("BBBB2345")))
+    }
+
     @After
     fun cleanUp() {
         activityScenario?.close()
     }
-
-
 }
