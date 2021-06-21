@@ -20,6 +20,5 @@ object RecyclerViewChildAction {
             val child = view?.findViewById<View>(id)
             child?.performClick()?: throw AssertionError("Cannot find view with id: $id")
         }
-
     }
 }

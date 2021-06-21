@@ -5,6 +5,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -69,8 +70,16 @@ class MainActivityTest {
         onView(withText(R.string.edit))
             .perform(click())
 
-
-
+        onView(withId(R.id.issuer))
+            .perform(replaceText("new issuer"))
+        onView(withId(R.id.label))
+            .perform(replaceText("new account"))
+        onView(withId(R.id.save))
+            .perform(click())
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("new issuer"))))
+            .check(matches(hasDescendant(withText("new account"))))
     }
 
     private fun populateTestData() {
