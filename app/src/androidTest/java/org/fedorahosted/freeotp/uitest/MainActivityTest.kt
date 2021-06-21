@@ -51,7 +51,7 @@ class MainActivityTest {
         onView(withId(R.id.label))
             .perform(typeText("account1"), closeSoftKeyboard())
         onView(withId(R.id.secret))
-            .perform(typeText("abcd12345"))
+            .perform(typeText("abcd5432"))
         onView(withId(R.id.add))
             .perform(click())
         onView(withId(R.id.token_list))
@@ -103,6 +103,18 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("microsoft.com"))))
             .check(matches(hasDescendant(withText("microsoft account 1"))))
+    }
+
+    @Test
+    fun testTokenClickRevealHotp() {
+        populateTestData()
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("github.com"))))
+            .check(matches(hasDescendant(withText("github account 1"))))
+            .check(matches(hasDescendant(withText("248759"))))
     }
 
     private fun populateTestData() {

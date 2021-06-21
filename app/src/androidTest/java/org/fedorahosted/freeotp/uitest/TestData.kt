@@ -5,7 +5,7 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 
 object TestData {
     val OTP_HOTP_TOKEN_1 = OtpTokenFactory.createFromUri(
-        Uri.parse("otpauth://hotp/github.com:github%20account%201?secret=abcd12345&algorithm=SHA256&digits=6&period=30&lock=false&counter=0"))
+        Uri.parse("otpauth://hotp/github.com:github%20account%201?secret=abcd5432&algorithm=SHA256&digits=6&period=30&lock=false&counter=0"))
         .copy(
             id = 1,
             ordinal = 1
