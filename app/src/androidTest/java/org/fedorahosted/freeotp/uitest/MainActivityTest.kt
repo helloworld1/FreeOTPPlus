@@ -66,7 +66,7 @@ class MainActivityTest {
 
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
         onView(withText(R.string.edit))
             .perform(click())
 
@@ -80,6 +80,29 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("new issuer"))))
             .check(matches(hasDescendant(withText("new account"))))
+    }
+
+    @Test
+    fun testDeleteToken() {
+        populateTestData()
+
+        onView(withId(R.id.token_list))
+            .check(RecyclerViewAssertion.childrenCount(2))
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.delete))
+            .perform(click())
+        onView(withId(R.id.delete))
+            .perform(click())
+
+        onView(withId(R.id.token_list))
+            .check(RecyclerViewAssertion.childrenCount(1))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("microsoft.com"))))
+            .check(matches(hasDescendant(withText("microsoft account 1"))))
     }
 
     private fun populateTestData() {

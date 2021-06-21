@@ -61,7 +61,7 @@ class MigrationTest {
     fun testTotpToken() {
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
         onView(withText(R.string.edit))
             .perform(click())
         onView(withId(R.id.issuer))
@@ -80,7 +80,7 @@ class MigrationTest {
     fun testHotpToken() {
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1,
-                RecyclerViewChildAction.clickChildViewWithId(R.id.menu)))
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
         onView(withText(R.string.edit))
             .perform(click())
         onView(withId(R.id.issuer))

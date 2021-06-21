@@ -6,7 +6,7 @@ import androidx.test.espresso.ViewAction
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 
-object RecyclerViewChildAction {
+object RecyclerViewAction {
     fun clickChildViewWithId(id: Int) = object: ViewAction {
         override fun getConstraints(): Matcher<View> {
             return Matchers.any(View::class.java)
