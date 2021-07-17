@@ -58,4 +58,5 @@
     <string name="authentication_dialog_subtitle">请使用生物识别或 PIN 验证 FreeOTP+</string>
     <string name="unable_to_authenticate">无法验证。你是否启用了PIN 码/生物识别功能的屏幕锁定?</string>
     <string name="remove_user_token_image">删除用户令牌图像</string>
+    <string name="fail_to_add_image">添加图像失败</string>
 </resources>

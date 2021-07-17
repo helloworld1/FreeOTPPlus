@@ -58,4 +58,5 @@
     <string name="authentication_dialog_subtitle">Пожалуйста, используйте биометрические данные или PIN-код для авторизации FreeOTP+</string>
     <string name="unable_to_authenticate">Невозможно пройти авторизацию. Включена ли у вас блокировка экрана с требованием PIN / биометрическим кодом?</string>
     <string name="remove_user_token_image">Удалить изображение токена</string>
+    <string name="fail_to_add_image">Fail to add image</string>
 </resources>
