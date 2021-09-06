@@ -11,8 +11,6 @@ android {
     defaultConfig {
         minSdkVersion(AppConfigs.MIN_SDK_VERSION)
         targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
-        versionCode = AppConfigs.VERSION_CODE
-        versionName = AppConfigs.VERSION_NAME
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
