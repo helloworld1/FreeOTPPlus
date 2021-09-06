@@ -1,0 +1,5 @@
+RELEASE-2.3
+ * Display first letter as placeholder for token text
+ * Add 2 minutes timeout to lock if authentication is turned on
+ * Dark theme update
+ * Translations update

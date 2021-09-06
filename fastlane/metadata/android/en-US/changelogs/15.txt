@@ -1,0 +1,6 @@
+RELEASE-2.4
+ * Major rewrite of the data layer to be more flexible (Changed from shared preference to SQLite db). Existing token data will be migrated automatically to the new internal format.
+ * Allows multiple tokens with the same issuer and account to be added without replacing
+ * Huge performance improvement on loading custom image
+ * Improves UI on tablets
+ * Updated translation changes.
