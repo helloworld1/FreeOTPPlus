@@ -106,7 +106,8 @@ class MainActivity : AppCompatActivity() {
         binding.tokenList.adapter = tokenListAdapter
 
         // Used GridlayoutManager to support tablet mode for multiple columns
-        val columns =  resources.configuration.screenWidthDp / 400 + 1
+        // Make sure one column has at least 320 DP
+        val columns =  resources.configuration.screenWidthDp / 640 + 1
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
 
 
