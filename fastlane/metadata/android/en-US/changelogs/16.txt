@@ -1,0 +1,2 @@
+RELEASE-2.5
+ * Make sure the token width is at least 320 dp to show full token. Fix the incomplete token not shown on some phones.
