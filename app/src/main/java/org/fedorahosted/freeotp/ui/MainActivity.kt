@@ -71,6 +71,7 @@ import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
+import kotlin.math.max
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -107,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
         // Used GridlayoutManager to support tablet mode for multiple columns
         // Make sure one column has at least 320 DP
-        val columns =  resources.configuration.screenWidthDp / 640 + 1
+        val columns =  max(1, resources.configuration.screenWidthDp / 320)
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
 
 
