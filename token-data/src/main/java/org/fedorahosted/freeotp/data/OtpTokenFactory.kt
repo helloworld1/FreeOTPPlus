@@ -90,7 +90,7 @@ object OtpTokenFactory {
         val labelAndIssuer = if (token.issuer != null && token.issuer.isNotBlank()) {
             "${token.issuer}:${token.label}"
         } else {
-            "{token.label}"
+            token.label
         }
 
         val builder = Uri.Builder().scheme("otpauth").path(labelAndIssuer)
