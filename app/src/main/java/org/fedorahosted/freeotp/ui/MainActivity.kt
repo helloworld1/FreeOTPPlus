@@ -356,7 +356,13 @@ class MainActivity : AppCompatActivity() {
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
 
-        startActivityForResult(intent, requestCode)
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivityForResult(intent, requestCode)
+        } else {
+            Toast.makeText(applicationContext,
+                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+
+        }
     }
 
     private fun createFile(mimeType: String, fileName: String, requestCode: Int) {
@@ -369,7 +375,14 @@ class MainActivity : AppCompatActivity() {
         // Create a file with the requested MIME type.
         intent.type = mimeType
         intent.putExtra(Intent.EXTRA_TITLE, fileName)
-        startActivityForResult(intent, requestCode)
+
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivityForResult(intent, requestCode)
+        } else {
+            Toast.makeText(applicationContext,
+                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+
+        }
     }
 
     private fun refreshOptionMenu() {

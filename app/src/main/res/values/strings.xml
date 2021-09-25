@@ -70,4 +70,5 @@
     <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
     <string name="remove_user_token_image">Remove user token image</string>
     <string name="fail_to_add_image">Fail to add image</string>
+    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
 </resources>
