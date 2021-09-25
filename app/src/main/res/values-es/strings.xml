@@ -58,5 +58,6 @@
     <string name="authentication_dialog_subtitle">Por favor, utiliza el PIN o biométrico para autenticar FreeOTP+</string>
     <string name="unable_to_authenticate">No se puede autenticar. ¿Tiene activado el bloqueo de pantalla con PIN / biométrico activado?</string>
     <string name="remove_user_token_image">Eliminar token de imagen de usuario</string>
-    <string name="fail_to_add_image">Fail to add image</string>
+    <string name="fail_to_add_image">No se puedo agregar la imagen</string>
+    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
 </resources>
