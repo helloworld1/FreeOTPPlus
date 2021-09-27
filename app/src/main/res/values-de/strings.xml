@@ -59,4 +59,5 @@
     <string name="unable_to_authenticate">Authentifizierung nicht möglich. Haben Sie die Sperre mit einer PIN / mit biometrischen Daten aktiviert?</string>
     <string name="remove_user_token_image">Benutzerdefiniertes Token Bild entfernen</string>
     <string name="fail_to_add_image">Fehler beim hinzufügen des Bildes</string>
+    <string name="launch_file_browser_failure">Der Dateibrowser des Systems konnte nicht gestartet werden. Es ist wahrscheinlich ein Problem des Betriebssystems.</string>
 </resources>

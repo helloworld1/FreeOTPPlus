@@ -20,11 +20,11 @@
     <string name="save">שמירה</string>
     <string name="code_copied">הקוד הועתק ללוח.</string>
     <string name="about_freeotp">אודות FreeOTP+</string>
-    <string name="about_version">FreeOTP+ גרסה %1$s (%2$d)</string>
+    <string name="about_version">גרסת FreeOTP+ %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
     <string name="about_license">FreeOTP+ תחת רישיון %1$s.</string>
     <string name="about_website">למידע נוסף, ניתן לראות את %s שלנו.</string>
-    <string name="about_feedback">נשמח למשוב שלך: &lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+    <string name="about_feedback">נשמח למשוב שלך:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">סמלים מסוימים המשמשים יישום זה משוחזרים מעבודות שנוצרו ושותפו על ידי פרויקט הקוד הפתוח של אנדרואיד ומשמשים בהתאם למונחים המתוארים ברישיון ייחוס Creative Commons 2.5.</string>
     <string name="about_token_image">התמונות הממוזערות של האסימונים token_image_*.xml בספריית תמונות האסימונים הם מ- andOTP תחת &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;רשיון MIT&lt;/a&gt;. זכויות יוצרים © 2017-2020 יעקב ניקסדורף. &lt;andotp@shadowice.org&gt; זכויות יוצרים © 2015 ברונו בירבאומר</string>
     <string name="error_camera_open">תקלה בפתיחת מצלמה!</string>
@@ -59,4 +59,5 @@
     <string name="unable_to_authenticate">לא ניתן לאמת. האם נעילת מסך מופעלת כאשר PIN / ביומטריה מופעלת?</string>
     <string name="remove_user_token_image">הסרת תמונת האסימון של המשתמש</string>
     <string name="fail_to_add_image">כשלון בהוספת תמונה</string>
+    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
 </resources>

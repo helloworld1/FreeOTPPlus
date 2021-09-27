@@ -59,4 +59,5 @@
     <string name="unable_to_authenticate">Impossibile autenticarsi. Hai abilitato il blocco schermo con PIN / biometrico?</string>
     <string name="remove_user_token_image">Rimuovi l\'immagine del token utente</string>
     <string name="fail_to_add_image">Fail to add image</string>
+    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
 </resources>
