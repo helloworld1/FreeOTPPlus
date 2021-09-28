@@ -37,6 +37,7 @@
 package org.fedorahosted.freeotp.ui
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -56,7 +57,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -356,12 +356,12 @@ class MainActivity : AppCompatActivity() {
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
 
-        if (intent.resolveActivity(packageManager) != null) {
+        try {
             startActivityForResult(intent, requestCode)
-        } else {
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
             Toast.makeText(applicationContext,
                     getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
-
         }
     }
 
@@ -376,12 +376,12 @@ class MainActivity : AppCompatActivity() {
         intent.type = mimeType
         intent.putExtra(Intent.EXTRA_TITLE, fileName)
 
-        if (intent.resolveActivity(packageManager) != null) {
+        try {
             startActivityForResult(intent, requestCode)
-        } else {
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
             Toast.makeText(applicationContext,
                     getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
-
         }
     }
 
