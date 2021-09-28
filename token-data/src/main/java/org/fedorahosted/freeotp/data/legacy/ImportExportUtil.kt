@@ -39,7 +39,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(uri, "wt").use { outputStream ->
+            context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
                 val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first() ?: return@use
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
                 val tokenOrder = otpTokens.map {
@@ -78,7 +78,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun exportKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(fileUri, "wt")?.use { outputStream ->
+            context.contentResolver.openOutputStream(fileUri, "w")?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
                     val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
                     for (token in tokens) {
