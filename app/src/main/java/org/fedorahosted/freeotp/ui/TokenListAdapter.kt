@@ -7,7 +7,6 @@ import android.util.ArrayMap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
@@ -26,10 +25,10 @@ import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @ActivityScoped
-class TokenListAdapter @Inject constructor(@ActivityContext val context: Context,
-                                           val otpTokenDatabase: OtpTokenDatabase,
-                                           val tokenCodeUtil: TokenCodeUtil,
-                                           val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
+class TokenListAdapter @Inject constructor(@ActivityContext private val context: Context,
+                                           private val otpTokenDatabase: OtpTokenDatabase,
+                                           private val tokenCodeUtil: TokenCodeUtil,
+                                           private val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     private val tokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
@@ -40,9 +39,6 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
     }
 
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
-
-        val viewModel = ViewModelProvider(activity).get(MainViewModel::class.java)
-
         holder.bind(currentList[position])
         holder.tokenLayout.setOnClickListener { v ->
             activity.lifecycleScope.launch {
