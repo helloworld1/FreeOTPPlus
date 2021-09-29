@@ -7,11 +7,13 @@ import android.util.ArrayMap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
@@ -38,26 +40,31 @@ class TokenListAdapter @Inject constructor(@ActivityContext val context: Context
     }
 
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
-        val token = currentList[position]
 
-        holder.bind(token)
+        val viewModel = ViewModelProvider(activity).get(MainViewModel::class.java)
+
+        holder.bind(currentList[position])
         holder.tokenLayout.setOnClickListener { v ->
             activity.lifecycleScope.launch {
-                val codes = tokenCodeUtil.generateTokenCode(token)
+                // Fetch the token again to refresh the HOTP token. This is needed because
+                // incrementCounter will not refresh the token after HOTP update
+                otpTokenDatabase.otpTokenDao().get(currentList[position].id).first() ?.let { token ->
+                    val codes = tokenCodeUtil.generateTokenCode(token)
 
-                if (token.tokenType == OtpTokenType.HOTP) {
-                    otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+                    if (token.tokenType == OtpTokenType.HOTP) {
+                        otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+                    }
+
+                    if (settings.copyToClipboard) {
+                        // Copy code to clipboard.
+                        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, codes.currentCode))
+                        Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                    }
+
+                    tokenCodes[token.id] = codes
+
+                    (v as TokenLayout).start(token.tokenType, codes, true)
                 }
-
-                if (settings.copyToClipboard) {
-                    // Copy code to clipboard.
-                    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, codes.currentCode))
-                    Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
-                }
-
-                tokenCodes[token.id] = codes
-
-                (v as TokenLayout).start(token.tokenType, codes, true)
             }
         }
     }
