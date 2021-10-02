@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add">Add</string>
+    <string name="add">追加</string>
     <string name="invalid_token">無効なトークンです。</string>
     <string name="delete">削除</string>
     <string name="edit">編集</string>
@@ -10,16 +10,15 @@
     <string name="scan_qr_code">QRコードをスキャン</string>
     <string name="interval">Interval</string>
     <string name="counter">Counter</string>
-    <string name="issuer">Issuer</string>
+    <string name="issuer">発行者</string>
     <string name="account">アカウント</string>
     <string name="id">ID</string>
     <string name="secret">Secret</string>
     <string name="type">タイプ</string>
     <string name="algorithm">アルゴリズム</string>
     <string name="digits">Digits</string>
-    <string name="save">Save</string>
+    <string name="save">保存</string>
     <string name="code_copied">コードをクリップボードにコピーしました。</string>
-
     <string name="about_freeotp">FreeOTP+について</string>
     <string name="about_version">FreeOTP+のバージョン %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
@@ -27,11 +26,8 @@
     <string name="about_website">詳細はこちら %s.</string>
     <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有されているアイコンを利用したもので、クリエイティブコモンズライセンス表示 2.5 一般 に記載されている条件に基づいて使用さてています。</string>
-    <string name="link_apache2" translatable="false">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
     <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
-
     <string name="error_camera_open">カメラを開く際にエラーが発生しました。</string>
-
     <string name="delete_summary">これが最後のチャンスです。このトークンを削除すると、復元することは出来ません。サーバー上では無効化されません。</string>
     <string name="delete_question">このトークンを削除しますか？</string>
     <string name="import_text">インポート</string>
@@ -61,13 +57,6 @@
     <string name="authentication_dialog_title">認証が必要です</string>
     <string name="authentication_dialog_subtitle">生体認証またはPINでFreeOTP+の認証をしてください</string>
     <string name="unable_to_authenticate">認証が出来ません。PINまたは生体認証での画面ロックを有効にしていますか?</string>
-
-    <string name="five" translatable="false">5</string>
-    <string name="six" translatable="false">6</string>
-    <string name="seven" translatable="false">7</string>
-    <string name="eight" translatable="false">8</string>
-    <string name="issuer_hint" translatable="false">example@example.com</string>
-    <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
     <string name="remove_user_token_image">トークンの画像を削除しますか</string>
     <string name="fail_to_add_image">画像の追加に失敗しました。</string>
     <string name="launch_file_browser_failure">system\のファイルブラウザが起動できません。OSの問題と思われます。</string>
