@@ -25,7 +25,12 @@
     <string name="about_license">FreeOTP+ is licensed under %1$s.</string>
     <string name="about_website">詳細はこちら %s.</string>
     <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+<<<<<<< HEAD
     <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有されているアイコンを利用したもので、クリエイティブコモンズライセンス表示 2.5 一般 に記載されている条件に基づいて使用さてています。</string>
+=======
+    <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有されているアイコンを利用したもので、クリエイティブコモンズライセンス表示 2.5 一般 に記載されている条件に基づいて使用されています。</string>
+    <string name="link_apache2" translatable="false">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
+>>>>>>> 39c97c54c17625c81dacc1c2402f9a1b6642535a
     <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">カメラを開く際にエラーが発生しました。</string>
     <string name="delete_summary">これが最後のチャンスです。このトークンを削除すると、復元することは出来ません。サーバー上では無効化されません。</string>
