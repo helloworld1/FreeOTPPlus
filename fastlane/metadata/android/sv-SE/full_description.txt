@@ -1,0 +1,21 @@
+FreeOTP Plus förgrenade samma funktionalitet som FreeOTP från RedHat med följande förbättring:
+
+* Exportera inställningar till Google Drive eller andra dokumentleverantörer
+* Importera inställningar från Google Drive eller andra dokumentleverantörer
+* Mycket stabilitetsförbättring
+* Stöd för Android 6.0-behörigheter.
+* Förbättrat användargränssnitt med materialdesign med mörkt temastöd
+* Sökfält för att söka token
+* Tillhandahålla mer tokendetaljer för bättre interoperabilitet med andra appar
+* Använd modern kamerahårdvara för att skanna QR-kod snabbare
+* Alternativ för att kräva biometri/PIN-kod-autentisering för att starta appen
+* Heuristiskt baserad frånkopplad ikon för token från över 250+ webbplatser.
+* Fler inställningar för att anpassa appfunktionen
+
+FreeOTP är en tvåfaktorautentiseringsapplikation (2FA) för system som använder engångslösenordsprotokoll (OTP).
+Token kan enkelt läggas till genom att skanna en QR-kod eller genom att manuellt ange tokenkonfigurationen.
+
+FreeOTP implementerar öppna standarder. Detta innebär att ingen proprietär utvecklad komponent på serversidan är nödvändig:
+använd alla komponenter på serversidan som implementerar dessa standarder — till exempel FreeIPA, som använder TOTP.
+Alla implementeringar som uppfyller standarderna fungerar.
+För närvarande tillhandahåller FreeOTP implementeringar av HOTP (RFC 4226) och TOTP (RFC 6238).
