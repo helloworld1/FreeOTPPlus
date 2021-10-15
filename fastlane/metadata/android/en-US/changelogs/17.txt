@@ -1,0 +1,4 @@
+RELEASE-2.6
+ * Use better algorithm detection tablet vs phone mode
+ * Fix HOTP not refreshing after after reveraling
+ * Update translations
