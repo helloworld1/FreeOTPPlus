@@ -6,7 +6,6 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
-import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.token.TokenLayout
 
 class TokenViewHolder(private val activity: Activity,

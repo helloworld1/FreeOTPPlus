@@ -39,12 +39,13 @@ class TokenListAdapter @Inject constructor(@ActivityContext private val context:
     }
 
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
-        holder.bind(currentList[position])
+        val currentToken = currentList[position]
+        holder.bind(currentToken)
         holder.tokenLayout.setOnClickListener { v ->
             activity.lifecycleScope.launch {
                 // Fetch the token again to refresh the HOTP token. This is needed because
                 // incrementCounter will not refresh the token after HOTP update
-                otpTokenDatabase.otpTokenDao().get(currentList[position].id).first() ?.let { token ->
+                otpTokenDatabase.otpTokenDao().get(currentToken.id).first() ?.let { token ->
                     val codes = tokenCodeUtil.generateTokenCode(token)
 
                     if (token.tokenType == OtpTokenType.HOTP) {
