@@ -117,6 +117,21 @@ class MainActivityTest {
             .check(matches(hasDescendant(withText("248759"))))
     }
 
+    @Test
+    fun testSearchToken() {
+        populateTestData()
+        onView(withId(R.id.search_view))
+            .perform(click())
+        onView(withId(R.id.search_view))
+            .perform(SearchViewAction.typeSearchViewText("Microsoft"))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("microsoft.com"))))
+            .check(matches(hasDescendant(withText("microsoft account 1"))))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+    }
+
     private fun populateTestData() {
         activityRule.scenario.onActivity { activity ->
             runBlocking {
