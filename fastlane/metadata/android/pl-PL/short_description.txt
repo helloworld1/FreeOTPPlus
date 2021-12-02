@@ -1,0 +1,1 @@
+Bogata w opcje aplikacja do uwierzytelniania dwuetapowego 2FA, stworzona na bazie FreeOTP-Android
