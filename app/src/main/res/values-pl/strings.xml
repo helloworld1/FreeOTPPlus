@@ -39,17 +39,17 @@
     <string name="export_succeeded_text">Eksport zakończony sukcesem.</string>
     <string name="import_succeeded_text">Import zakończony sukcesem</string>
     <string name="import_json_failed_text">Błąd importu z JSON. Plik jest nieprawidłowy.</string>
-    <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
-    <string name="invalid_token_uri_received">Invalid token URI received</string>
+    <string name="import_key_uri_failed_text">Błąd importu kluczy URI. Plik jest nieprawidłowy.</string>
+    <string name="invalid_token_uri_received">Otrzymano nieprawidłowy token URI</string>
     <string name="import_json_file">Importuj plik JSON</string>
     <string name="import_json_file_warning">Wszystkie istniejące tokeny zostaną usunięte i nadpisane po imporcie.</string>
     <string name="camera_permission_denied_text">Brak uprawnień do użycia kamery</string>
     <string name="ok_text">Ok</string>
     <string name="cancel_text">Anuluj</string>
     <string name="import_json_format">Importuj z JSON</string>
-    <string name="import_key_uri_format">Import key URI format</string>
+    <string name="import_key_uri_format">Importuj z formatu URI</string>
     <string name="export_json_format">Eksportuj w formacie JSON</string>
-    <string name="export_key_uri_format">Export key URI format</string>
+    <string name="export_key_uri_format">Eksportuj w formacie kluczy URI</string>
     <string name="use_dark_theme">Użyj ciemnego motywu</string>
     <string name="add_token_success">Token dodany</string>
     <string name="copy_to_clipboard">Kopiuj do schowka</string>
@@ -59,7 +59,7 @@
     <string name="authentication_error">Błąd uwierzytelnienia:</string>
     <string name="authentication_failed">Uwierzytelnienie nie powiodło się</string>
     <string name="authentication_dialog_title">Wymagane uwierzytelnienie</string>
-    <string name="authentication_dialog_subtitle">Proszę użyć biometrii lub PIN do uwierzytelnienia w FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">Użyj biometrii lub PIN do uwierzytelnienia w FreeOTP+</string>
     <string name="unable_to_authenticate">Nie udało się uwierzytelnić. Czy ekran blokady jest chroniony kodem PIN / biometrią?</string>
 
     <string name="five" translatable="false">5</string>
