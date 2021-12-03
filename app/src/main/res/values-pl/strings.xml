@@ -32,12 +32,12 @@
 
     <string name="error_camera_open">Błąd podczas uruchamiania kamery!</string>
 
-    <string name="delete_summary">Ostatnie przypomnienie: token będzie usunięty bezpowrotnie. Nie zostanie anulowany na serwerze.</string>
-    <string name="delete_question">Usunąć token?</string>
+    <string name="delete_summary">Token zostanie usunięty z aplikacji. Token nie zostanie dezaktywowany na serwerze.</string>
+    <string name="delete_question">Usunąć ten token?</string>
     <string name="import_text">Importuj</string>
     <string name="export_text">Eksportuj</string>
     <string name="export_succeeded_text">Eksport zakończony sukcesem.</string>
-    <string name="import_succeeded_text">Import zakończony sukcesem</string>
+    <string name="import_succeeded_text">Import zakończony sukcesem.</string>
     <string name="import_json_failed_text">Błąd importu z JSON. Plik jest nieprawidłowy.</string>
     <string name="import_key_uri_failed_text">Błąd importu kluczy URI. Plik jest nieprawidłowy.</string>
     <string name="invalid_token_uri_received">Otrzymano nieprawidłowy token URI</string>
@@ -48,8 +48,8 @@
     <string name="cancel_text">Anuluj</string>
     <string name="import_json_format">Importuj z JSON</string>
     <string name="import_key_uri_format">Importuj z formatu URI</string>
-    <string name="export_json_format">Eksportuj w formacie JSON</string>
-    <string name="export_key_uri_format">Eksportuj w formacie kluczy URI</string>
+    <string name="export_json_format">Eksportuj jako JSON</string>
+    <string name="export_key_uri_format">Eksportuj jako klucze URI</string>
     <string name="use_dark_theme">Użyj ciemnego motywu</string>
     <string name="add_token_success">Token dodany</string>
     <string name="copy_to_clipboard">Kopiuj do schowka</string>
