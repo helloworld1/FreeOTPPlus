@@ -1,0 +1,5 @@
+RELEASE-2.7
+ * Fix crash when using search function
+ * Added Polish translations. Thanks @mrzeznik for the contribution
+ * Update translations
+
