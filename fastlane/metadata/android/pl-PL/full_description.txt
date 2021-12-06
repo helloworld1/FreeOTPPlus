@@ -1,21 +1,21 @@
-FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
+FreeOTP Plus oferuje funkcjonalność FreeOTP dostarczoną przez RedHat z następującymi ulepszeniami:
 
-* Export settings to Google Drive or other document providers
-* Import settings from Google Drive or other document providers
-* Lots of stability improvement
-* Support Android 6.0 permissions.
-* Enhanced UI with material design with dark theme support
-* Search bar to search token
-* Provide more token details for better interoperatibility with other apps
-* Utilize modern camera hardware to scan QR code faster
-* Option to require Biometric / PIN authentication to launch the app
-* Heuristic based offline icon for tokens of 250+ websites.
-* More settings to customize the app functionality
+* Eksport ustawień do Google Drive lub innych dostawców
+* Import ustawień z Google Drive lub innych dostawców
+* Dużo poprawek stabilności
+* Obsługa uprawnień Android 6.0
+* Ulepszony UI z Material Design z obsługą ciemnego motywu
+* Pasek wyszukiwania tokenów
+* Zapewnij więcej szczegółów tokena dla lepszej współpracy z innymi aplikacjami
+* Szybsze skanowanie kodów QR przy użyciu kamery
+* Zabezpieczenie aplikacji uwierzytelnianiem biometrycznym / PIN
+* Wykrywanie ikon offline dla 250+ stron internetowych
+* Więcej ustawień, aby dostosować funkcjonalność aplikacji
 
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
+FreeOTP jest aplikacją do uwierzytelniania dwuskładnikowego (2FA) dla systemów wykorzystujących hasła jednorazowe (OTP).
+Tokeny mogą być łatwo dodawane poprzez zeskanowanie kodu QR lub ręczne wprowadzenie konfiguracji tokena.
 
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
+FreeOTP implementuje otwarte standardy. Oznacza to, że nie jest wymagany żaden własnościowy komponent po stronie serwera:
+użyj dowolnego komponentu po stronie serwera, który implementuje te standardy - na przykład FreeIPA, który używa TOTP.
+Każda implementacja zgodna ze standardami będzie działać.
+Obecnie FreeOTP obsługuje implementacje HOTP (RFC 4226) i TOTP (RFC 6238).
