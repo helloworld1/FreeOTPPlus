@@ -58,6 +58,6 @@
     <string name="authentication_dialog_subtitle">Veuillez utiliser la biométrie ou un NIP pour vous authentifier sur FreeOTP+</string>
     <string name="unable_to_authenticate">Authentification impossible. Avez-vous activé le verrouillage de l’écran par NIP / biométrie ?</string>
     <string name="remove_user_token_image">Retirer l\'image du jeton utilisateur</string>
-    <string name="fail_to_add_image">Fail to add image</string>
-    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
+    <string name="fail_to_add_image">Impossible d’ajouter l’image</string>
+    <string name="launch_file_browser_failure">Impossible de lancer le navigateur de fichiers du système. Il s’agit probablement d’un problème du système d’exploitation.</string>
 </resources>

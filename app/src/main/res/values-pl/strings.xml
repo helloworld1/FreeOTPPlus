@@ -25,7 +25,7 @@
     <string name="about_license">FreeOTP+ jest dostępny na licencji %1$s.</string>
     <string name="about_website">Więcej informacji dostępne na %s.</string>
     <string name="about_feedback">Uwagi:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Niektóre ikony używane przez tę aplikację są stworzona na bazie stworzonej i udostępnionej przez Android Open Source Project i używane zgodnie z zasadami opisanymi w Creative Commons 2.5 Attribution License.</string>
+    <string name="about_icons">Niektóre z ikon w tej aplikacji są stworzone na bazie pracy udostępnionej przez Android Open Source Project i używane zgodnie z zasadami opisanymi w Creative Commons 2.5 Attribution License.</string>
     <string name="about_token_image">Miniaturki tokenów token_image_*.xml w bibliotece token-images pochodzą z andOTP na licencji &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Błąd podczas uruchamiania kamery!</string>
     <string name="delete_summary">Token zostanie usunięty z aplikacji. Token nie zostanie dezaktywowany na serwerze.</string>

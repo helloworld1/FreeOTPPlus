@@ -1,4 +1,4 @@
-FreeOTP Plus oferuje funkcjonalność FreeOTP dostarczoną przez RedHat z następującymi ulepszeniami:
+FreeOTP Plus rozwija funkcjonalność FreeOTP od RedHat z następującymi ulepszeniami:
 
 * Eksport ustawień do Google Drive lub innych dostawców
 * Import ustawień z Google Drive lub innych dostawców
@@ -13,7 +13,7 @@ FreeOTP Plus oferuje funkcjonalność FreeOTP dostarczoną przez RedHat z nastę
 * Więcej ustawień, aby dostosować funkcjonalność aplikacji
 
 FreeOTP jest aplikacją do uwierzytelniania dwuskładnikowego (2FA) dla systemów wykorzystujących hasła jednorazowe (OTP).
-Tokeny mogą być łatwo dodawane poprzez zeskanowanie kodu QR lub ręczne wprowadzenie konfiguracji tokena.
+Tokeny można łatwo dodać, skanując kod QR lub ręcznie wpisując konfigurację tokena.
 
 FreeOTP implementuje otwarte standardy. Oznacza to, że nie jest wymagany żaden własnościowy komponent po stronie serwera:
 użyj dowolnego komponentu po stronie serwera, który implementuje te standardy - na przykład FreeIPA, który używa TOTP.
