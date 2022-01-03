@@ -25,7 +25,7 @@
     <string name="about_license">FreeOTP+ jest dostępny na licencji %1$s.</string>
     <string name="about_website">Więcej informacji dostępne na %s.</string>
     <string name="about_feedback">Uwagi:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Some icons used by this application are reproduced from work created and shared by the Android Open Source Project and used according to terms described in the Creative Commons 2.5 Attribution License.</string>
+    <string name="about_icons">Niektóre z ikon w tej aplikacji są stworzone na bazie pracy udostępnionej przez Android Open Source Project i używane zgodnie z zasadami opisanymi w Creative Commons 2.5 Attribution License.</string>
     <string name="about_token_image">Miniaturki tokenów token_image_*.xml w bibliotece token-images pochodzą z andOTP na licencji &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Błąd podczas uruchamiania kamery!</string>
     <string name="delete_summary">Token zostanie usunięty z aplikacji. Token nie zostanie dezaktywowany na serwerze.</string>
@@ -49,10 +49,10 @@
     <string name="use_dark_theme">Użyj ciemnego motywu</string>
     <string name="add_token_success">Token dodany</string>
     <string name="copy_to_clipboard">Kopiuj do schowka</string>
-    <string name="require_authentication">Wymaga uwierzytelnienia</string>
+    <string name="require_authentication">Wymagaj uwierzytelnienia</string>
     <string name="quit_and_lock">Wyjdź i zablokuj</string>
     <string name="authentication_succeeded">Uwierzytelniono!</string>
-    <string name="authentication_error">Błąd uwierzytelnienia:</string>
+    <string name="authentication_error">Błąd uwierzytelniania:</string>
     <string name="authentication_failed">Uwierzytelnienie nie powiodło się</string>
     <string name="authentication_dialog_title">Wymagane uwierzytelnienie</string>
     <string name="authentication_dialog_subtitle">Użyj biometrii lub PIN do uwierzytelnienia w FreeOTP+</string>
