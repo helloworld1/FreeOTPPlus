@@ -27,6 +27,12 @@ class TokenViewHolder(private val activity: Activity,
                 i.putExtra(DeleteActivity.EXTRA_TOKEN_ID, token.id)
                 activity.startActivity(i)
             }
+
+            R.id.action_show_qrcode -> {
+                val i = Intent(tokenLayout.context, ShowQRCodeActivity::class.java)
+                i.putExtra(EditActivity.EXTRA_TOKEN_ID, token.id)
+                activity.startActivity(i)
+            }
         }
         true
     }
