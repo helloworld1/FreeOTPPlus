@@ -30,4 +30,10 @@
         android:icon="@android:drawable/ic_menu_delete"
         android:title="@string/delete"
         />
+
+    <item
+        android:id="@+id/action_show_qrcode"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/show_qrcode"
+        />
 </menu>

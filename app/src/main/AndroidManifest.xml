@@ -41,6 +41,9 @@
             android:name=".ui.EditActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".ui.ShowQRCodeActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".ui.MainActivity"
             android:clearTaskOnLaunch="true"
             android:label="@string/app_name"

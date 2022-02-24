@@ -4,6 +4,7 @@
     <string name="invalid_token">Der angegebene Token ist ungültig!</string>
     <string name="delete">Löschen</string>
     <string name="edit">Bearbeiten</string>
+    <string name="show_qrcode">Zeige QR-Code</string>
     <string name="restore_defaults">Standards wiederherstellen</string>
     <string name="no_keys">Keine OTP-Schlüssel installiert.</string>
     <string name="add_token">Token hinzufügen</string>
