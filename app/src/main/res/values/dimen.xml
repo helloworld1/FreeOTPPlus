@@ -3,4 +3,5 @@
     <dimen name="space_1">8dp</dimen>
     <dimen name="space_2">8dp</dimen>
     <dimen name="space_3">16dp</dimen>
+    <dimen name="qr_code_size">400dp</dimen>
 </resources>

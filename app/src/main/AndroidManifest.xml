@@ -40,8 +40,8 @@
             android:name=".ui.EditActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ui.ShowQRCodeActivity"
-            android:windowSoftInputMode="adjustResize" />
+            android:name=".ui.ShareQrCodeActivity"
+            android:theme="@style/DialogTheme" />
         <activity
             android:name=".ui.MainActivity"
             android:clearTaskOnLaunch="true"

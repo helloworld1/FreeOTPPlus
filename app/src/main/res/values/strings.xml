@@ -4,7 +4,6 @@
     <string name="invalid_token">The token specified was invalid!</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
-    <string name="show_qrcode">Show QR-Code</string>
     <string name="restore_defaults">Restore Defaults</string>
     <string name="no_keys">No OTP keys installed.</string>
     <string name="add_token">Add Token</string>
@@ -72,4 +71,5 @@
     <string name="remove_user_token_image">Remove user token image</string>
     <string name="fail_to_add_image">Fail to add image</string>
     <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
+    <string name="share_qr_code">Share QR Code</string>
 </resources>
