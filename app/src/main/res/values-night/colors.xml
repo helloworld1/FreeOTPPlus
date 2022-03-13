@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="token_background">#7F7F7F</color>
+    <color name="primary_dark">#222222</color>
 </resources>
 
