@@ -1,0 +1,15 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="screenshotMode"
+        android:enabled="true"
+        android:icon="@drawable/logo"
+        android:shortcutShortLabel="@string/screenshot_mode"
+        android:shortcutLongLabel="@string/launch_with_screenshot_enabled">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.liberty.android.freeotpplus.debug"
+            android:targetClass="org.fedorahosted.freeotp.ui.MainActivity">
+            <extra android:name="screenshot_mode" android:value="true" />
+        </intent>
+    </shortcut>
+</shortcuts>

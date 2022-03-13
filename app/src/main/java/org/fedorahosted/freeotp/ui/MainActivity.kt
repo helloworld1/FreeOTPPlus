@@ -158,8 +158,15 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ScanTokenActivity::class.java))
         }
 
-        // Don't permit screenshots since these might contain OTP codes.
-        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        // Don't permit screenshots since these might contain OTP codes unless explicitly
+        // launched with screenshot mode
+
+        if (intent.extras?.getBoolean(SCREENSHOT_MODE_EXTRA) != true) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
     }
 
     override fun onDestroy() {
@@ -447,5 +454,6 @@ class MainActivity : AppCompatActivity() {
         const val WRITE_JSON_REQUEST_CODE = 43
         const val READ_KEY_URI_REQUEST_CODE = 44
         const val WRITE_KEY_URI_REQUEST_CODE = 45
+        const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
     }
 }
