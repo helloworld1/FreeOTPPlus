@@ -1,0 +1,21 @@
+FreeOTP Plus jako fork FreeOTP nabízí stejnou funkcionalitu, kterou poskytuje RedHat s následujícím vylepšením:
+
+* Export nastavení na Disk Google nebo jiné poskytovatele dokumentů
+* Import nastavení z Disku Google nebo jiných poskytovatelů dokumentů
+* Spousta zlepšení stability
+* Podpora oprávnění Android 6.0.
+* Vylepšené uživatelské rozhraní s Material Design a podporou tmavého motivu
+* Vyhledávací lišta pro hledání tokenu
+* Poskytnutí více podrobností o tokenu pro lepší interoperabilitu s jinými aplikacemi
+* Využití moderního hardware fotoaparátu k rychlejšímu skenování QR kódu
+* Možnost vyžadovat biometrické / PIN ověření pro spuštění aplikace
+* Heuristická offline ikona pro tokeny více než 250 webů.
+* Další nastavení pro přizpůsobení funkcí aplikace
+
+FreeOTP je aplikace pro dvoufaktorovou autentizaci (2FA) pro systémy využívající protokoly jednorázového hesla (OTP).
+Tokeny lze snadno přidat naskenováním QR kódu nebo ručním zadáním konfigurace tokenu.
+
+FreeOTP implementuje otevřené standardy. To znamená, že není nutná žádná proprietární komponenta na straně serveru:
+použijte jakoukoli komponentu na straně serveru, která implementuje tyto standardy – například FreeIPA, která používá TOTP.
+Jakákoli implementace v souladu se standardy bude fungovat.
+V současné době poskytuje FreeOTP implementace HOTP (RFC 4226) a TOTP (RFC 6238).

@@ -4,7 +4,6 @@
     <string name="invalid_token">Der angegebene Token ist ungültig!</string>
     <string name="delete">Löschen</string>
     <string name="edit">Bearbeiten</string>
-    <string name="show_qrcode">Zeige QR-Code</string>
     <string name="restore_defaults">Standards wiederherstellen</string>
     <string name="no_keys">Keine OTP-Schlüssel installiert.</string>
     <string name="add_token">Token hinzufügen</string>
@@ -61,4 +60,8 @@
     <string name="remove_user_token_image">Benutzerdefiniertes Token Bild entfernen</string>
     <string name="fail_to_add_image">Fehler beim hinzufügen des Bildes</string>
     <string name="launch_file_browser_failure">Der Dateibrowser konnte nicht gestartet werden. Wahrscheinlich ist es ein Problem des Betriebssystems.</string>
+    <string name="share_qr_code">QR-Code teilen</string>
+    <string name="screenshot_mode">Screenshot-Modus</string>
+    <string name="launch_with_screenshot_enabled">Starte mit aktiviertem Screenshot</string>
+    <string name="token_details">Token-Details</string>
 </resources>

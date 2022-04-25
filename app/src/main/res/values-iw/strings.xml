@@ -59,5 +59,9 @@
     <string name="unable_to_authenticate">לא ניתן לאמת. האם נעילת מסך מופעלת כאשר PIN / ביומטריה מופעלת?</string>
     <string name="remove_user_token_image">הסרת תמונת האסימון של המשתמש</string>
     <string name="fail_to_add_image">כשלון בהוספת תמונה</string>
-    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
+    <string name="launch_file_browser_failure">לא ניתן להפעיל את סייר הקבצים של המערכת. כנראה שזו בעיה במערכת ההפעלה.</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
 </resources>

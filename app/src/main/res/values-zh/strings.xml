@@ -60,4 +60,8 @@
     <string name="remove_user_token_image">删除用户令牌图像</string>
     <string name="fail_to_add_image">添加图像失败</string>
     <string name="launch_file_browser_failure">无法启动系统的文件浏览器。这可能是一个操作系统问题。</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
 </resources>
