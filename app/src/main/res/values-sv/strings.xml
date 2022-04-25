@@ -60,4 +60,8 @@
     <string name="remove_user_token_image">Ta bort användartokenbild</string>
     <string name="fail_to_add_image">Det gick inte att lägga till bild</string>
     <string name="launch_file_browser_failure">Det gick inte att starta systemets webbläsare. Det är troligtvis ett OS-problem.</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
 </resources>

@@ -1,21 +1,21 @@
-FreeOTP Plus ha forkato le stesse funzionalità di FreeOTP offerto da RedHat con i seguenti miglioramenti:
+FreeOTP Plus è un fork dell'app FreeOTP di RedHat, con le stesse funzionalità e con in più i seguenti miglioramenti:
 
 * Esportazione delle impostazioni in Google Drive o in altri servizi di gestione dei documenti
-* Importazione delle impostazioni in Google Drive o in altri servizi di gestione dei documenti
-* Tanti miglioramenti della stabilità
+* Importazione delle impostazioni da Google Drive o da altri servizi di gestione dei documenti
+* Molti miglioramenti della stabilità
 * Supporto ai permessi di Android 6.0.
 * UI migliorata con il supporto al material design e alla modalità scura
-* Barra di ricerca a token di ricerca
-* Maggiori dettagli token per una migliore interoperabilità con altre app
-* Utilizzo dell'hardware moderno delle fotocamere per scansionare i codici QR più velocemente
-* Opzione per richiedere autenticazione Biometrica / PIN all'avvio dell'app
-* Heuristic based offline icon for tokens of 250+ websites.
-* More settings to customize the app functionality
+* Barra di ricerca per la ricerca dei token
+* Maggiori dettagli sui token per una migliore interoperabilità con altre app
+* Utilizzo delle moderne funzionalità hardware delle fotocamere per scansionare i codici QR più velocemente
+* Opzione per imporre l'autenticazione biometrica o un PIN all'avvio dell'app
+* Icone basate su euristica offline per token di più di 250 siti web.
+* Ulteriori impostazioni per personalizzare le funzionalità dell'app
 
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
+FreeOTP è un'applicazione di autenticazione a due fattori (2FA) per sistemi che utilizzano protocolli di password monouso (OTP).
+I token possono essere aggiunti semplicemente scansionando un codice QR oppure inserendo manualmente nella configurazione del token.
 
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
+FreeOTP implementa standard aperti. Questo significa che, lato server, non è necessario alcun componente proprietario:
+lato server è possibile utilizzare un qualsiasi componente che implementi questi standard — come ad esempio FreeIPA, che utilizza TOTP.
+È in grado di interoperare con qualsiasi implementazione conforme agli standard.
+Al momento FreeOTP è conforme agli standard HOTP (RFC 4226) e TOTP (RFC 6238).

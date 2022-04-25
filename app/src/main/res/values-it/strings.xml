@@ -29,13 +29,13 @@
     <string name="about_token_image">Le miniature dei token token_image_*.xml nella libreria di immagini token provengono da andOTP sotto &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;licenzia MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Impossibile aprire la fotocamera!</string>
     <string name="delete_summary">Questa è l\'ultima possibilità: se si elimina questo token, verrà perso per sempre. Non verrà disabilitato nel lato server.</string>
-    <string name="delete_question">Delete this token?</string>
+    <string name="delete_question">Eliminare questo token?</string>
     <string name="import_text">Importa</string>
     <string name="export_text">Esporta</string>
     <string name="export_succeeded_text">Esportazione completata.</string>
     <string name="import_succeeded_text">Importazione completata.</string>
-    <string name="import_json_failed_text">Importazione di JSON non riuscita. Il file è malformato.</string>
-    <string name="import_key_uri_failed_text">Importazione del file chiave uri non riuscita. Il file è malformato.</string>
+    <string name="import_json_failed_text">Importazione di JSON non riuscita. Il file è corrotto.</string>
+    <string name="import_key_uri_failed_text">Importazione del file chiave uri non riuscita. Il file è corrotto.</string>
     <string name="invalid_token_uri_received">Ricevuto URI token non valido</string>
     <string name="import_json_file">Importa file JSON</string>
     <string name="import_json_file_warning">Tutti i token attuali verranno cancellati e sovrascritti dopo l\'importazione.</string>
@@ -58,6 +58,10 @@
     <string name="authentication_dialog_subtitle">Si prega di utilizzare la biometria o un PIN per autenticare FreeOTP+</string>
     <string name="unable_to_authenticate">Impossibile autenticarsi. Hai abilitato il blocco schermo con PIN / biometrico?</string>
     <string name="remove_user_token_image">Rimuovi l\'immagine del token utente</string>
-    <string name="fail_to_add_image">Fail to add image</string>
-    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
+    <string name="fail_to_add_image">Impossibile aggiungere l\'immagine</string>
+    <string name="launch_file_browser_failure">Impossibile avviare il file explorer del sistema. Probabilmente è un problema del sistema operativo.</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
 </resources>

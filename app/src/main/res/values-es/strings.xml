@@ -55,9 +55,13 @@
     <string name="authentication_error">Error de autentificación:</string>
     <string name="authentication_failed">Autentificación fallida</string>
     <string name="authentication_dialog_title">Autentificación requerida</string>
-    <string name="authentication_dialog_subtitle">Por favor, utiliza el PIN o biométrico para autenticar FreeOTP+</string>
-    <string name="unable_to_authenticate">No se puede autenticar. ¿Tiene activado el bloqueo de pantalla con PIN / biométrico activado?</string>
+    <string name="authentication_dialog_subtitle">Por favor, utiliza el PIN o huella para autenticar FreeOTP+</string>
+    <string name="unable_to_authenticate">No se puede autenticar. ¿Tiene activado el bloqueo de pantalla con PIN / huella activado?</string>
     <string name="remove_user_token_image">Eliminar token de imagen de usuario</string>
-    <string name="fail_to_add_image">No se puedo agregar la imagen</string>
+    <string name="fail_to_add_image">No se pudo agregar la imagen</string>
     <string name="launch_file_browser_failure">No se puede iniciar el navegador de archivos del sistema. Probablemente es un problema del sistema operativo.</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
 </resources>
