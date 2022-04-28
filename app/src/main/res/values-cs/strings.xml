@@ -60,8 +60,8 @@
     <string name="remove_user_token_image">Odstranit obraz uživatelského tokenu</string>
     <string name="fail_to_add_image">Selhalo přidání obrazu</string>
     <string name="launch_file_browser_failure">Nelze spustit správce souborů systému. Pravděpodobně se jedná o problém OS.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
+    <string name="share_qr_code">Sdílet QR kód</string>
+    <string name="screenshot_mode">Režim snímku obrazovky</string>
+    <string name="launch_with_screenshot_enabled">Spustit s povoleným snímkem obrazovky</string>
+    <string name="token_details">Detaily tokenu</string>
 </resources>
