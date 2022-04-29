@@ -60,8 +60,8 @@
     <string name="remove_user_token_image">إزالة صورة رمز المستخدم</string>
     <string name="fail_to_add_image">فشل في إضافة صورة</string>
     <string name="launch_file_browser_failure">تعذر تشغيل مستعرض ملفات النظام. من المحتمل أن تكون مشكلة في نظام التشغيل.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
+    <string name="share_qr_code">مشاركة كود QR</string>
+    <string name="screenshot_mode">وضع لقطة الشاشة</string>
+    <string name="launch_with_screenshot_enabled">إطلاق مع تمكين لقطة الشاشة</string>
+    <string name="token_details">تفاصيل الرمز</string>
 </resources>
