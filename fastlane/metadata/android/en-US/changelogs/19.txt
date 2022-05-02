@@ -3,5 +3,4 @@ RELEASE-2.8
  * Dark mode improvemnet
  * Fix some layout issues
  * Add shortcut to launch the app with screenshot mode on
- * Polish Translation improvement
-
+ * Translation improvements
