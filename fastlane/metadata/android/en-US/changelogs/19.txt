@@ -1,6 +1,6 @@
 RELEASE-2.8
  * Share QR code of a token
- * Dark mode improvemnet
+ * Dark mode improvement
  * Fix some layout issues
  * Add shortcut to launch the app with screenshot mode on
  * Polish Translation improvement
