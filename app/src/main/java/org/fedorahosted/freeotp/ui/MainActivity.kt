@@ -70,6 +70,9 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.util.Settings
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -93,7 +96,9 @@ class MainActivity : AppCompatActivity() {
             binding.tokenList.scrollToPosition(positionStart)
         }
     }
-    
+
+    private val dateFormatter : DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -216,12 +221,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_json -> {
-                createFile("application/json", "freeotp-backup.json", WRITE_JSON_REQUEST_CODE)
+                createFile("application/json", "freeotp-backup","json", WRITE_JSON_REQUEST_CODE)
                 return true
             }
 
             R.id.action_export_key_uri -> {
-                createFile("text/plain", "freeotp-backup.txt", WRITE_KEY_URI_REQUEST_CODE)
+                createFile("text/plain", "freeotp-backup","txt", WRITE_KEY_URI_REQUEST_CODE)
                 return true
             }
 
@@ -372,7 +377,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createFile(mimeType: String, fileName: String, requestCode: Int) {
+    private fun createFile(mimeType: String, fileName: String, fileExtension: String, requestCode: Int, appendTimestamp: Boolean = true) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
         // Filter to only show results that can be "opened", such as
@@ -381,7 +386,7 @@ class MainActivity : AppCompatActivity() {
 
         // Create a file with the requested MIME type.
         intent.type = mimeType
-        intent.putExtra(Intent.EXTRA_TITLE, fileName)
+        intent.putExtra(Intent.EXTRA_TITLE, "$fileName${if(appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension")
 
         try {
             startActivityForResult(intent, requestCode)
