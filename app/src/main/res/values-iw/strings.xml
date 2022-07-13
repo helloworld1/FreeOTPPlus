@@ -60,8 +60,8 @@
     <string name="remove_user_token_image">הסרת תמונת האסימון של המשתמש</string>
     <string name="fail_to_add_image">כשלון בהוספת תמונה</string>
     <string name="launch_file_browser_failure">לא ניתן להפעיל את סייר הקבצים של המערכת. כנראה שזו בעיה במערכת ההפעלה.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
+    <string name="share_qr_code">שיתוף קוד QR</string>
+    <string name="screenshot_mode">מצב צילום מסך</string>
+    <string name="launch_with_screenshot_enabled">הפעלה כאשר צילום מסך מופעל</string>
+    <string name="token_details">פרטי אסימון</string>
 </resources>

@@ -4,10 +4,10 @@
     <string name="invalid_token">الرمز المميز المحدد غير صحيح ! </string>
     <string name="delete">حذف </string>
     <string name="edit">تحرير </string>
-    <string name="restore_defaults">استعادة القيم المفترضة </string>
+    <string name="restore_defaults">استعادة الافتراضي</string>
     <string name="no_keys">لم يتم تركيب مفاتيح OTP. </string>
     <string name="add_token">اضافة رمز مميز </string>
-    <string name="scan_qr_code">مسح كود QR </string>
+    <string name="scan_qr_code">قراءة رمز QR</string>
     <string name="interval">الفترة الزمنية </string>
     <string name="counter">أداة العد </string>
     <string name="issuer">وحدة اصدار </string>
@@ -29,7 +29,7 @@
     <string name="about_token_image">token thumbnails tokenn_image_ * .xml في مكتبة token-images هي من andOTP أسفل &lt;a href=\"https://github.com/andOTP/andOTP/blob/master/LICENSE.txt\"&gt;ترخيص MIT&lt;/a&gt;. حقوق النشر © 2017-2020 Jakob Nixdorf.  &lt;andotp @shalowice.org&gt; حقوق النشر © 2015 برونو Bierbaumer </string>
     <string name="error_camera_open">حدث خطأ أثناء فتح الكاميرا ! </string>
     <string name="delete_summary">هذه هي فرصتك الأخيرة : إذا قمت بحذف هذا الرمز ، فإنه سيختفي للأبد.  لن يتم الغاء اتاحتها على وحدة الخدمة. </string>
-    <string name="delete_question">حذف هذا الرمز المميز ? </string>
+    <string name="delete_question">حذف هذا الرمز المميز؟</string>
     <string name="import_text">استيراد</string>
     <string name="export_text">ارسال </string>
     <string name="export_succeeded_text">نجاح عملية التصدير. </string>
@@ -58,7 +58,7 @@
     <string name="authentication_dialog_subtitle">يرجى استخدام المقاييس الحيوية أو رقم التعريف الشخصي لمصادقة FreeOTP+</string>
     <string name="unable_to_authenticate">غير قادر على مصادقة. هل تم تمكين قفل الشاشة مع تمكين رقم التعريف الشخصي / المقاييس الحيوية؟</string>
     <string name="remove_user_token_image">إزالة صورة رمز المستخدم</string>
-    <string name="fail_to_add_image">فشل في إضافة صورة</string>
+    <string name="fail_to_add_image">فشل في إضافة الصورة</string>
     <string name="launch_file_browser_failure">تعذر تشغيل مستعرض ملفات النظام. من المحتمل أن تكون مشكلة في نظام التشغيل.</string>
     <string name="share_qr_code">مشاركة كود QR</string>
     <string name="screenshot_mode">وضع لقطة الشاشة</string>
