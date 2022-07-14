@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
                          private val adapter: TokenListAdapter,
@@ -17,7 +18,16 @@ class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
         or ItemTouchHelper.RIGHT, 0) {
 
     // List of all Token movements during drag (pair.first = sourceToken.id, pair.second = targetToken.id)
-    private val movePairs: MutableList<Pair<Long,Long>> = mutableListOf()
+    private val movePairs: MutableList<Pair<Long,Long>> = CopyOnWriteArrayList(mutableListOf())
+
+
+    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+        super.onSelectedChanged(viewHolder, actionState)
+        // Clear movePairs when drag starts
+        if(actionState ==  ItemTouchHelper.ACTION_STATE_DRAG){
+            movePairs.clear()
+        }
+    }
 
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
 
@@ -42,7 +52,6 @@ class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         lifecycleOwner.lifecycleScope.launch {
             optTokenDatabase.otpTokenDao().movePairs(movePairs)
-            movePairs.clear()
         }
         super.clearView(recyclerView, viewHolder)
     }

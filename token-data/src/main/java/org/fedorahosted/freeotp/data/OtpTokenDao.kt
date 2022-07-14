@@ -57,7 +57,7 @@ interface OtpTokenDao {
 
     @Transaction
     suspend fun movePairs(pairs : List<Pair<Long,Long>>){
-        for(pair in pairs) {
+        for(pair in pairs.listIterator()) {
             withContext(Dispatchers.IO) {
                 val token1 = get(pair.first).first()
                 val token2 = get(pair.second).first()
