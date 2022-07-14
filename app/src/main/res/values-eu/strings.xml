@@ -58,10 +58,10 @@
     <string name="authentication_dialog_subtitle">Mesedez erabili biometrika edo PINa FreeOTP+ autentifikatzeko</string>
     <string name="unable_to_authenticate">Ezin da autentifikatu. Pantaila blokeoa PIN / biometrikarekin duzu gaituta?</string>
     <string name="remove_user_token_image">Kendu erabiltzaile tokenaren irudia</string>
-    <string name="fail_to_add_image">Fail to add image</string>
-    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
+    <string name="fail_to_add_image">Ezin izan da irudia gehitu</string>
+    <string name="launch_file_browser_failure">Ezin izan da sistemaren fitxategi arakatzailea abiarazi. Ziurrenik SE-aren arazo bat da.</string>
+    <string name="share_qr_code">Partekatu QR kodea</string>
+    <string name="screenshot_mode">Pantaila-argazkia modua</string>
+    <string name="launch_with_screenshot_enabled">Abiarazi pantaila-argazkiak gaituz</string>
+    <string name="token_details">Token xehetasunak</string>
 </resources>
