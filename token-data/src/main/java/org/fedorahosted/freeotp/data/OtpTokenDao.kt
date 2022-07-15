@@ -56,17 +56,18 @@ interface OtpTokenDao {
     suspend fun incrementCounterRaw(query: SupportSQLiteQuery): Int
 
     @Transaction
-    suspend fun move(tokenId1: Long, tokenId2: Long) {
-        withContext(Dispatchers.IO) {
-            val token1 = get(tokenId1).first()
-            val token2 = get(tokenId2).first()
+    suspend fun movePairs(pairs : List<Pair<Long,Long>>){
+        for(pair in pairs.listIterator()) {
+            withContext(Dispatchers.IO) {
+                val token1 = get(pair.first).first()
+                val token2 = get(pair.second).first()
 
-            if (token1 == null || token2 == null) {
-                return@withContext
+                if (token1 == null || token2 == null) {
+                    return@withContext
+                }
+                updateOrdinal(pair.first, token2.ordinal)
+                updateOrdinal(pair.second, token1.ordinal)
             }
-
-            updateOrdinal(tokenId1, token2.ordinal)
-            updateOrdinal(tokenId2, token1.ordinal)
         }
     }
 }
