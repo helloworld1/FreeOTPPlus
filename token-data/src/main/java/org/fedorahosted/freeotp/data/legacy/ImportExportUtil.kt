@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.MigrationUtil
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import java.io.BufferedReader
@@ -30,8 +31,32 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                 reader.readText()
             } .let {
                 val savedTokens = gson.fromJson(it, SavedTokens::class.java)
-                val newTokens = migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens);
-                otpTokenDatabase.otpTokenDao().insertAll(newTokens)
+                var tokens = migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens);
+
+                // Check if token already exists, if yes only overwrite, else insert new token
+                tokens = tokens.map{ token ->
+                    val existingToken = otpTokenDatabase.otpTokenDao().getByIssuerAndLabelAndSecret(token.issuer, token.label, token.secret).first()
+                    if(existingToken != null) {
+                        OtpToken(
+                            id = existingToken.id,
+                            ordinal = existingToken.ordinal,
+                            issuer = token.issuer,
+                            label = token.label,
+                            imagePath = token.imagePath,
+                            tokenType = token.tokenType,
+                            algorithm = token.algorithm,
+                            secret = token.secret,
+                            digits = token.digits,
+                            counter = token.counter,
+                            period = token.period,
+                            encryptionType = token.encryptionType
+                        )
+                    }else{
+                        token
+                    }
+                }
+
+                otpTokenDatabase.otpTokenDao().insertAll(tokens)
             }
 
         }
