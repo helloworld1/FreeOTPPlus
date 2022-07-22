@@ -135,8 +135,8 @@ class MainActivityTest {
     private fun populateTestData() {
         activityRule.scenario.onActivity { activity ->
             runBlocking {
-                activity.otpTokenDatabase.otpTokenDao().insert(TestData.OTP_HOTP_TOKEN_1)
-                activity.otpTokenDatabase.otpTokenDao().insert(TestData.OTP_TOTP_TOKEN_2)
+                activity.otpTokenService.insertEncrypted(TestData.OTP_HOTP_TOKEN_1)
+                activity.otpTokenService.insertEncrypted(TestData.OTP_TOTP_TOKEN_2)
             }
         }
     }

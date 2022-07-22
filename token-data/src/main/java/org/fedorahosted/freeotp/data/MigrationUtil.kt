@@ -8,7 +8,7 @@ import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import javax.inject.Inject
 
 class MigrationUtil @Inject constructor(
-    private val optTokenDatabase: OtpTokenDatabase,
+    private val otpTokenService: OtpTokenService,
     private val tokenPersistence: TokenPersistence,
 ) {
     fun isMigrated(): Boolean = tokenPersistence.isLegacyTokenMigrated()
@@ -16,7 +16,7 @@ class MigrationUtil @Inject constructor(
     suspend fun migrate() {
         withContext(Dispatchers.IO) {
             val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens())
-            optTokenDatabase.otpTokenDao().insertAll(tokenList)
+            otpTokenService.insertAllEncrypted(tokenList)
             tokenPersistence.setLegacyTokenMigrated()
         }
     }

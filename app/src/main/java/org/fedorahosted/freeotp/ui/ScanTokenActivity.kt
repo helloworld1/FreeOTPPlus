@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
@@ -43,7 +44,7 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var tokenQRCodeDecoder: TokenQRCodeDecoder
 
-    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var otpTokenService: OtpTokenService
 
     @Inject lateinit var imageUtil: ImageUtil
 
@@ -144,7 +145,7 @@ class ScanTokenActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val token = try {
                 val t = OtpTokenFactory.createFromUri((Uri.parse(tokenString)))
-                otpTokenDatabase.otpTokenDao().insert(t)
+                otpTokenService.insertEncrypted(t)
                 t
             } catch (e: Throwable) {
                 Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()

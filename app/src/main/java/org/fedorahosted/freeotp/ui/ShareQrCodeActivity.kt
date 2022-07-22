@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
 import javax.inject.Inject
 
@@ -40,7 +41,7 @@ import javax.inject.Inject
 class ShareQrCodeActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var otpTokenDatabase: OtpTokenDatabase
+    lateinit var otpTokenService: OtpTokenService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +53,7 @@ class ShareQrCodeActivity : AppCompatActivity() {
             val tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)
 
             // Get token values.
-            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+            val token = otpTokenService.getDecrypted(tokenId).first() ?: return@launch
             title = token.issuer
 
             // Get references to widgets.

@@ -61,14 +61,14 @@ import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.databinding.MainBinding
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
+import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.util.Settings
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
-    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var otpTokenService: OtpTokenService
     @Inject lateinit var tokenListAdapter: TokenListAdapter
 
     private val viewModel: MainViewModel by viewModels()
@@ -101,7 +101,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         onNewIntent(intent)
 
         binding = MainBinding.inflate(layoutInflater)
@@ -117,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
 
 
-        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
+        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenService))
             .attachToRecyclerView(binding.tokenList)
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
@@ -282,7 +281,7 @@ class MainActivity : AppCompatActivity() {
         if (uri != null) {
             lifecycleScope.launch {
                 try {
-                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
+                    otpTokenService.insertEncrypted(OtpTokenFactory.createFromUri(uri))
                 } catch (e: Exception) {
                     Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
                             .show()

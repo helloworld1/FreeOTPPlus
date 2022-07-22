@@ -10,13 +10,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.databinding.DeleteBinding
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
-    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var otpTokenService: OtpTokenService
     private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,12 +39,12 @@ class DeleteActivity : AppCompatActivity() {
 
             binding.delete.setOnClickListener {
                 lifecycleScope.launch {
-                    otpTokenDatabase.otpTokenDao().deleteById(tokenId)
+                    otpTokenService.deleteById(tokenId)
                     setResult(RESULT_OK)
                 }
             }
 
-            otpTokenDatabase.otpTokenDao().get(tokenId).collect { token ->
+            otpTokenService.getDecrypted(tokenId).collect { token ->
                 if (token == null) {
                     finish()
                     return@collect

@@ -12,7 +12,7 @@ data class OtpToken (
     val imagePath: String?,
     val tokenType: OtpTokenType,
     val algorithm: String,
-    val secret: String,
+    var secret: String,
     val digits: Int,
     val counter: Long,
     val period: Int,

@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.util.ImageUtil
 import javax.inject.Inject
@@ -46,7 +47,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
-    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var otpTokenService: OtpTokenService
     @Inject lateinit var imageUtil: ImageUtil
 
     private lateinit var binding: EditBinding
@@ -94,7 +95,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)
 
             // Get token values.
-            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+            val token = otpTokenService.getDecrypted(tokenId).first() ?: return@launch
             mIssuerCurrent = token.issuer
             mLabelCurrent = token.label
             mImageCurrent = if (token.imagePath != null) Uri.parse(token.imagePath) else null
@@ -196,14 +197,14 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
             R.id.save -> {
                 lifecycleScope.launch {
-                    val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+                    val token = otpTokenService.getDecrypted(tokenId).first() ?: return@launch
                     val newToken = token.copy(
                         issuer = mIssuer.text.toString(),
                         label = mLabel.text.toString(),
                         imagePath = mImageDisplay?.toString()
                     )
 
-                    otpTokenDatabase.otpTokenDao().update(newToken)
+                    otpTokenService.update(newToken)
                     setResult(RESULT_OK)
                     finish()
                 }

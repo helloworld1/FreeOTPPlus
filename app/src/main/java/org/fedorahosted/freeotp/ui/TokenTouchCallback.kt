@@ -8,10 +8,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenService
 
 class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
                          private val adapter: TokenListAdapter,
-                         private val optTokenDatabase: OtpTokenDatabase)
+                         private val otpTokenService: OtpTokenService)
     : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
         or ItemTouchHelper.DOWN
         or ItemTouchHelper.LEFT
@@ -30,7 +31,7 @@ class TokenTouchCallback(private val lifecycleOwner: LifecycleOwner,
             lifecycleOwner.lifecycleScope.launch {
                 val sourceToken = adapter.currentList[viewHolder.adapterPosition] ?: return@launch
                 val targetToken = adapter.currentList[target.adapterPosition] ?: return@launch
-                optTokenDatabase.otpTokenDao().move(sourceToken.id, targetToken.id)
+                otpTokenService.move(sourceToken.id, targetToken.id)
             }
         }
 

@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenService
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -21,7 +22,7 @@ import javax.inject.Singleton
 class ImportExportUtil @Inject constructor(@ApplicationContext private val context: Context,
                                            private val migrationUtil: MigrationUtil,
                                            private val gson: Gson,
-                                           private val otpTokenDatabase: OtpTokenDatabase
+                                           private val otpTokenService: OtpTokenService
 ) {
     suspend fun importJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
@@ -31,7 +32,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
             } .let {
                 val savedTokens = gson.fromJson(it, SavedTokens::class.java)
                 val newTokens = migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens);
-                otpTokenDatabase.otpTokenDao().insertAll(newTokens)
+                otpTokenService.insertAllEncrypted(newTokens)
             }
 
         }
@@ -40,7 +41,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
     suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
-                val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first() ?: return@use
+                val otpTokens = otpTokenService.getAllDecrypted().first() ?: return@use
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
                 val tokenOrder = otpTokens.map {
                     if (it.issuer != null) {
@@ -59,7 +60,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
 
     suspend fun importKeyUriFile(fileUri: Uri) {
         withContext(Dispatchers.IO) {
-            val currentLastOrdinal = otpTokenDatabase.otpTokenDao().getLastOrdinal() ?: 0
+            val currentLastOrdinal = otpTokenService.getLastOrdinal() ?: 0
 
             context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
                 reader.readLines().filter {
@@ -71,7 +72,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                     )
                 }
             } ?.let { tokens ->
-                otpTokenDatabase.otpTokenDao().insertAll(tokens)
+                otpTokenService.insertAllEncrypted(tokens)
             }
         }
     }
@@ -80,7 +81,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(fileUri, "w")?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
-                    val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
+                    val tokens = otpTokenService.getAllDecrypted().first()
                     for (token in tokens) {
                         printWriter.println(OtpTokenFactory.toUri(token).toString())
                     }

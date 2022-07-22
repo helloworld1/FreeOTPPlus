@@ -10,13 +10,14 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val tokenMigrationUtil: MigrationUtil,
-    private val otpTokenDatabase: OtpTokenDatabase,
+    private val otpTokenService: OtpTokenService,
     private val settings: Settings
 ) : ViewModel() {
 
@@ -50,7 +51,7 @@ class MainViewModel @Inject constructor(
     fun getAuthState(): Flow<AuthState> = authState
 
     fun getTokenList(): Flow<List<OtpToken>> {
-        return combine(authState, tokenSearchQuery, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, tokens ->
+        return combine(authState, tokenSearchQuery, otpTokenService.getAllDecrypted()) { auth, searchQuery, tokens ->
             when {
                 auth != AuthState.AUTHENTICATED -> {
                     emptyList()

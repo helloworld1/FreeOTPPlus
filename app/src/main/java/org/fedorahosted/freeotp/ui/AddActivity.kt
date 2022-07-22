@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.util.ImageUtil
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
@@ -47,7 +48,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
-    @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var otpTokenService: OtpTokenService
     @Inject lateinit var imageUtil: ImageUtil
 
     private val SHA1_OFFSET = 1
@@ -141,7 +142,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
                 // Add the token
                 lifecycleScope.launch {
-                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(Uri.parse(uri)))
+                    otpTokenService.insertEncrypted(OtpTokenFactory.createFromUri(Uri.parse(uri)))
                     setResult(Activity.RESULT_OK)
                     finish()
                 }

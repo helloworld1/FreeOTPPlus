@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
@@ -26,7 +27,7 @@ import javax.inject.Inject
 
 @ActivityScoped
 class TokenListAdapter @Inject constructor(@ActivityContext private val context: Context,
-                                           private val otpTokenDatabase: OtpTokenDatabase,
+                                           private val otpTokenService: OtpTokenService,
                                            private val tokenCodeUtil: TokenCodeUtil,
                                            private val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
@@ -45,11 +46,11 @@ class TokenListAdapter @Inject constructor(@ActivityContext private val context:
             activity.lifecycleScope.launch {
                 // Fetch the token again to refresh the HOTP token. This is needed because
                 // incrementCounter will not refresh the token after HOTP update
-                otpTokenDatabase.otpTokenDao().get(currentToken.id).first() ?.let { token ->
+                otpTokenService.getDecrypted(currentToken.id).first() ?.let { token ->
                     val codes = tokenCodeUtil.generateTokenCode(token)
 
                     if (token.tokenType == OtpTokenType.HOTP) {
-                        otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+                        otpTokenService.incrementCounter(token.id)
                     }
 
                     if (settings.copyToClipboard) {
