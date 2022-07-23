@@ -30,6 +30,14 @@
         <activity android:name=".ui.ScanTokenActivity" />
         <activity android:name=".ui.AboutActivity" />
         <activity
+            android:name=".ui.SetupAuthenticationActivity"
+            android:label="Setup Authentication"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.UnlockActivity"
+            android:label="Unlock Database"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".ui.AddActivity"
             android:label="@string/add_token"
             android:windowSoftInputMode="adjustResize" />

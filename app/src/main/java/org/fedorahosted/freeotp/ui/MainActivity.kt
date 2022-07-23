@@ -48,6 +48,9 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -64,7 +67,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
-import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
@@ -78,11 +80,20 @@ import kotlin.math.max
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    @Inject lateinit var importFromUtil: ImportExportUtil
-    @Inject lateinit var settings: Settings
-    @Inject lateinit var tokenMigrationUtil: MigrationUtil
-    @Inject lateinit var otpTokenService: OtpTokenService
-    @Inject lateinit var tokenListAdapter: TokenListAdapter
+    @Inject
+    lateinit var importFromUtil: ImportExportUtil
+
+    @Inject
+    lateinit var settings: Settings
+
+    @Inject
+    lateinit var tokenMigrationUtil: MigrationUtil
+
+    @Inject
+    lateinit var otpTokenService: OtpTokenService
+
+    @Inject
+    lateinit var tokenListAdapter: TokenListAdapter
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
@@ -90,14 +101,17 @@ class MainActivity : AppCompatActivity() {
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
 
-    private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
+    private lateinit var authenticateResultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var setupAuthenticationResultLauncher: ActivityResultLauncher<Intent>
+
+    private val tokenListObserver: AdapterDataObserver = object : AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
             binding.tokenList.scrollToPosition(positionStart)
         }
     }
 
-    private val dateFormatter : DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
+    private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
         // Used GridlayoutManager to support tablet mode for multiple columns
         // Make sure one column has at least 320 DP
-        val columns =  max(1, resources.configuration.screenWidthDp / 320)
+        val columns = max(1, resources.configuration.screenWidthDp / 320)
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
 
 
@@ -134,17 +148,55 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        authenticateResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+            { result: ActivityResult ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    Log.e(TAG, "Authentication succeeded")
+                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    Toast.makeText(this, "Successfully unlocked the database", Toast.LENGTH_SHORT)
+                        .show()
+                }else{
+                    //TODO close app since not authenticated
+                    Log.e(TAG, "Authentication failed")
+                    Toast.makeText(
+                        applicationContext,
+                        "Authentication failed", Toast.LENGTH_LONG
+                    ).show();
+                }
+
+            }
+
+        setupAuthenticationResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+            { result: ActivityResult ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    refreshOptionMenu()
+                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+                    Toast.makeText(this, "Successfully updated your password", Toast.LENGTH_SHORT)
+                        .show()
+                }else{
+                    //TODO ?
+                }
+
+            }
+
         lifecycleScope.launch {
             viewModel.getAuthState().collect { authState ->
                 if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
-                    verifyAuthentication()
+                    if (settings.password == null) {
+                        setupAuthentication()
+                    } else {
+                        verifyAuthentication()
+                    }
                 }
             }
         }
 
         setSupportActionBar(binding.toolbar)
 
-        binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.setTokenSearchQuery(query ?: "")
                 return true
@@ -173,6 +225,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupAuthentication() {
+        setupAuthenticationResultLauncher.launch(Intent(this, SetupAuthenticationActivity::class.java))
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
@@ -184,7 +240,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.onSessionStart()
     }
-    
+
     override fun onStop() {
         super.onStop()
         viewModel.onSessionStop()
@@ -220,12 +276,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_json -> {
-                createFile("application/json", "freeotp-backup","json", WRITE_JSON_REQUEST_CODE)
+                createFile("application/json", "freeotp-backup", "json", WRITE_JSON_REQUEST_CODE)
                 return true
             }
 
             R.id.action_export_key_uri -> {
-                createFile("text/plain", "freeotp-backup","txt", WRITE_KEY_URI_REQUEST_CODE)
+                createFile("text/plain", "freeotp-backup", "txt", WRITE_KEY_URI_REQUEST_CODE)
                 return true
             }
 
@@ -260,6 +316,11 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
 
+            R.id.change_password -> {
+                setupAuthentication()
+                return true
+            }
+
             R.id.action_about -> {
                 startActivity(Intent(this, AboutActivity::class.java))
                 return true
@@ -283,15 +344,21 @@ class MainActivity : AppCompatActivity() {
                 try {
                     otpTokenService.insertEncrypted(OtpTokenFactory.createFromUri(uri))
                 } catch (e: Exception) {
-                    Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                            .show()
+                    Snackbar.make(
+                        binding.rootView,
+                        R.string.invalid_token_uri_received,
+                        Snackbar.LENGTH_SHORT
+                    )
+                        .show()
                 }
             }
         }
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int,
-                                         resultData: Intent?) {
+    public override fun onActivityResult(
+        requestCode: Int, resultCode: Int,
+        resultData: Intent?
+    ) {
         super.onActivityResult(requestCode, resultCode, resultData)
 
         if (resultCode != Activity.RESULT_OK) {
@@ -303,41 +370,57 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
-                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                    Snackbar.make(
+                        binding.rootView,
+                        R.string.export_succeeded_text,
+                        Snackbar.LENGTH_SHORT
+                    )
+                        .show()
                 }
             }
 
             READ_JSON_REQUEST_CODE -> {
                 val uri = resultData?.data ?: return
                 MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.import_json_file)
-                        .setMessage(R.string.import_json_file_warning)
-                        .setIcon(R.drawable.alert)
-                        .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                            lifecycleScope.launch {
-                                try {
-                                    importFromUtil.importJsonFile(uri)
-                                    Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                            .show()
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "Import JSON failed", e)
-                                    Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
-                                            .show()
-                                }
+                    .setTitle(R.string.import_json_file)
+                    .setMessage(R.string.import_json_file_warning)
+                    .setIcon(R.drawable.alert)
+                    .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
+                        lifecycleScope.launch {
+                            try {
+                                importFromUtil.importJsonFile(uri)
+                                Snackbar.make(
+                                    binding.rootView,
+                                    R.string.import_succeeded_text,
+                                    Snackbar.LENGTH_SHORT
+                                )
+                                    .show()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Import JSON failed", e)
+                                Snackbar.make(
+                                    binding.root,
+                                    R.string.import_json_failed_text,
+                                    Snackbar.LENGTH_SHORT
+                                )
+                                    .show()
                             }
-
                         }
-                        .setNegativeButton(R.string.cancel_text, null)
-                        .show()
+
+                    }
+                    .setNegativeButton(R.string.cancel_text, null)
+                    .show()
             }
 
             WRITE_KEY_URI_REQUEST_CODE -> {
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
-                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                    Snackbar.make(
+                        binding.rootView,
+                        R.string.export_succeeded_text,
+                        Snackbar.LENGTH_SHORT
+                    )
+                        .show()
                 }
             }
 
@@ -346,12 +429,20 @@ class MainActivity : AppCompatActivity() {
                     val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.importKeyUriFile(uri)
-                        Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                .show()
+                        Snackbar.make(
+                            binding.rootView,
+                            R.string.import_succeeded_text,
+                            Snackbar.LENGTH_SHORT
+                        )
+                            .show()
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
-                        Snackbar.make(binding.rootView, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
-                                .show()
+                        Snackbar.make(
+                            binding.rootView,
+                            R.string.import_key_uri_failed_text,
+                            Snackbar.LENGTH_SHORT
+                        )
+                            .show()
                     }
                 }
             }
@@ -371,12 +462,20 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext,
-                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
-    private fun createFile(mimeType: String, fileName: String, fileExtension: String, requestCode: Int, appendTimestamp: Boolean = true) {
+    private fun createFile(
+        mimeType: String,
+        fileName: String,
+        fileExtension: String,
+        requestCode: Int,
+        appendTimestamp: Boolean = true
+    ) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
         // Filter to only show results that can be "opened", such as
@@ -385,14 +484,19 @@ class MainActivity : AppCompatActivity() {
 
         // Create a file with the requested MIME type.
         intent.type = mimeType
-        intent.putExtra(Intent.EXTRA_TITLE, "$fileName${if(appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension")
+        intent.putExtra(
+            Intent.EXTRA_TITLE,
+            "$fileName${if (appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension"
+        )
 
         try {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext,
-                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
@@ -403,53 +507,69 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyAuthentication() {
-        val executor = ContextCompat.getMainExecutor(this)
-        val biometricPrompt = BiometricPrompt(this, executor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationError(errorCode: Int,
-                                                       errString: CharSequence) {
-                        super.onAuthenticationError(errorCode, errString)
-                        // Don't show error message toast if user pressed back button
-                        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                            Toast.makeText(applicationContext,
-                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+        when (BiometricManager.from(this).canAuthenticate()) {
+            BiometricManager.BIOMETRIC_SUCCESS -> {
+                val executor = ContextCompat.getMainExecutor(this)
+                val biometricPrompt = BiometricPrompt(this, executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationError(
+                            errorCode: Int,
+                            errString: CharSequence
+                        ) {
+                            super.onAuthenticationError(errorCode, errString)
+                            // Don't show error message toast if user pressed back button
+                            if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "${getString(R.string.authentication_error)} $errString",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+
+                            if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                                finish()
+                            }
+                        }
+
+                        override fun onAuthenticationSucceeded(
+                            result: BiometricPrompt.AuthenticationResult
+                        ) {
+                            super.onAuthenticationSucceeded(result)
+                            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+
+                            if (!settings.requireAuthentication) {
+                                settings.requireAuthentication = true
+                                refreshOptionMenu()
+                            }
+                        }
+
+                        override fun onAuthenticationFailed() {
+                            // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
+                            // error, so no need for FreeOTP to show one
+                            super.onAuthenticationFailed()
+
+                            Toast.makeText(
+                                applicationContext,
+                                R.string.unable_to_authenticate, Toast.LENGTH_SHORT
+                            )
                                 .show()
                         }
+                    })
 
-                        if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                            finish()
-                        }
-                    }
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(getString(R.string.authentication_dialog_title))
+                    .setSubtitle(getString(R.string.authentication_dialog_subtitle))
+                    .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                    .build()
 
-                    override fun onAuthenticationSucceeded(
-                            result: BiometricPrompt.AuthenticationResult) {
-                        super.onAuthenticationSucceeded(result)
-                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                biometricPrompt.authenticate(promptInfo)
+            }
+            else -> {
+                authenticateResultLauncher.launch(Intent(this, UnlockActivity::class.java))
+            }
+        }
 
-                        if (!settings.requireAuthentication) {
-                            settings.requireAuthentication = true
-                            refreshOptionMenu()
-                        }
-                    }
-
-                    override fun onAuthenticationFailed() {
-                        // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
-                        // error, so no need for FreeOTP to show one
-                        super.onAuthenticationFailed()
-
-                        Toast.makeText(applicationContext,
-                            R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                })
-
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(getString(R.string.authentication_dialog_title))
-                .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-                .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                .build()
-
-        biometricPrompt.authenticate(promptInfo)
     }
 
     companion object {

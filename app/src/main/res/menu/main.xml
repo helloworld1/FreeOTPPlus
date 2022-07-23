@@ -65,6 +65,9 @@
         android:title="@string/require_authentication"
         android:checkable="true"/>
     <item
+        android:id="@+id/change_password"
+        android:title="Change Password" />
+    <item
         android:id="@+id/action_about"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/about_freeotp" />
