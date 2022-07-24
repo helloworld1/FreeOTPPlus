@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.common.encryption.EncryptionType
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence

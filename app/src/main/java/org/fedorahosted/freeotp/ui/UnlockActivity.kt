@@ -34,7 +34,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -57,7 +57,6 @@ class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
         mPassword = findViewById(R.id.password)
 
         // Setup the buttons
-        findViewById<View>(R.id.fingerprint).setOnClickListener(this)
         mUnlock = findViewById(R.id.unlock)
         mUnlock.setOnClickListener(this)
         mUnlock.isEnabled = false
@@ -69,8 +68,6 @@ class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
     override fun onClick(view: View) {
         when (view.id) {
-
-            R.id.fingerprint -> finish()
 
             R.id.unlock -> {
                 if (settings.password == mPassword.text.toString()) {

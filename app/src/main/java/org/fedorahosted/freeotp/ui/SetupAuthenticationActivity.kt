@@ -32,7 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
 @AndroidEntryPoint

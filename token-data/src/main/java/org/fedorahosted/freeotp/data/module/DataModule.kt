@@ -10,7 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenService
-import org.fedorahosted.freeotp.data.encryption.EncryptDecrypt
+import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
 import javax.inject.Singleton
 
 @Module

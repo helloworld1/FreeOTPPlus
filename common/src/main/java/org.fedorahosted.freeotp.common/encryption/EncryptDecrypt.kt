@@ -1,10 +1,9 @@
-package org.fedorahosted.freeotp.data.encryption
+package org.fedorahosted.freeotp.common.encryption
 
 import android.content.Context
 import android.preference.PreferenceManager
 import android.util.Log
 import com.google.android.apps.authenticator.Base32String
-import org.fedorahosted.freeotp.data.EncryptionType
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -12,10 +11,6 @@ import java.io.ObjectOutputStream
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-
-
-// TODO as SINGLETON with DI
-// TODO Option to use PLAIN_TEXT or ENCRYPTED when adding Token
 
 class EncryptDecrypt(val context: Context) {
 

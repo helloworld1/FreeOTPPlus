@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.fedorahosted.freeotp.common.encryption.EncryptionType
 
 @Entity(tableName = "otp_tokens")
 data class OtpToken (

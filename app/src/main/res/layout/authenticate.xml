@@ -107,12 +107,6 @@
     <View style="@style/Divider" />
 
     <LinearLayout style="@style/DialogButtonLayout">
-
-        <Button
-            android:id="@+id/fingerprint"
-            style="@style/DialogButton"
-            android:text="Fingerprint" />
-
         <Button
             android:id="@+id/unlock"
             style="@style/DialogButton"

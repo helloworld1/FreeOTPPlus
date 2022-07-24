@@ -71,7 +71,7 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.databinding.MainBinding
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*

@@ -37,7 +37,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
 
     api("androidx.room:room-runtime:${Versions.ROOM}")
-    implementation(project(":common"))
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:${Versions.ROOM}")
     // optional - Kotlin Extensions and Coroutines support for Room
@@ -48,6 +47,5 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLINX_COROUTINES}")
-    implementation("com.google.code.gson:gson:${Versions.GSON}")
 
 }

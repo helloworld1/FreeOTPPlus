@@ -33,7 +33,6 @@ import javax.crypto.spec.SecretKeySpec;
 import android.net.Uri;
 
 import com.google.android.apps.authenticator.Base32String;
-import com.google.android.apps.authenticator.Base32String.DecodingException;
 
 public class Token {
     public static class TokenUriInvalidException extends Exception {
@@ -137,7 +136,7 @@ public class Token {
         try {
             String s = uri.getQueryParameter("secret");
             secret = Base32String.decode(s);
-        } catch (DecodingException e) {
+        } catch (Base32String.DecodingException e) {
             throw new TokenUriInvalidException();
         } catch (NullPointerException e) {
             throw new TokenUriInvalidException();

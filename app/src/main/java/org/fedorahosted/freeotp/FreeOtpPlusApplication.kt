@@ -3,7 +3,7 @@ package org.fedorahosted.freeotp
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.HiltAndroidApp
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
 @HiltAndroidApp

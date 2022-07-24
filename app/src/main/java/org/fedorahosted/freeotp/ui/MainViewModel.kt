@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
-import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenService
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
 @HiltViewModel

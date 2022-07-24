@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import org.fedorahosted.freeotp.data.encryption.EncryptDecrypt
-import javax.inject.Inject
+import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
 
 class OtpTokenService(val database: OtpTokenDatabase, val encryptDecrypt: EncryptDecrypt) {
 

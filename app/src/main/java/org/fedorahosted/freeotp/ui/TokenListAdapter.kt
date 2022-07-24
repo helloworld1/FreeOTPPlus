@@ -16,20 +16,20 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
-import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
 @ActivityScoped
 class TokenListAdapter @Inject constructor(@ActivityContext private val context: Context,
                                            private val otpTokenService: OtpTokenService,
                                            private val tokenCodeUtil: TokenCodeUtil,
-                                           private val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
+                                           private val settings: Settings
+) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     private val tokenCodes: MutableMap<Long, TokenCode> = ArrayMap()

@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp.data
+package org.fedorahosted.freeotp.common.encryption
 
 enum class EncryptionType {
     PLAIN_TEXT,
