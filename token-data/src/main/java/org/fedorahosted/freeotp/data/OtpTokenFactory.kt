@@ -6,7 +6,7 @@ import java.util.*
 import javax.crypto.Mac
 
 object OtpTokenFactory {
-    fun createFromUri(uri: Uri): OtpToken {
+    fun createFromUri(uri: Uri, encryptionType: EncryptionType): OtpToken {
         if (uri.scheme != "otpauth")
             throw IllegalArgumentException("URI does not starts with otpauth")
 
@@ -81,7 +81,7 @@ object OtpTokenFactory {
             digits = digits,
             counter = counter,
             period = period,
-            encryptionType = EncryptionType.AES
+            encryptionType = encryptionType
         )
     }
 

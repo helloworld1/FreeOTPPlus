@@ -11,9 +11,12 @@ import dagger.hilt.components.SingletonComponent
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
+import org.fedorahosted.freeotp.common.module.CommonModule
+import org.fedorahosted.freeotp.common.util.Settings
+import javax.inject.Inject
 import javax.inject.Singleton
 
-@Module
+@Module(includes = [CommonModule::class])
 @InstallIn(SingletonComponent::class)
 object DataModule {
     @Singleton
@@ -22,11 +25,6 @@ object DataModule {
         Room.databaseBuilder(context, OtpTokenDatabase::class.java, "otp-token-db")
             .build()
 
-
-    @Singleton
-    @Provides
-    fun otpTokenService(@ApplicationContext context: Context) =
-        OtpTokenService(database(context), EncryptDecrypt(context))
 
     @Singleton
     @Provides

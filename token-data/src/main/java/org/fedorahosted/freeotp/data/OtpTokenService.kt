@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.data
 
+import android.net.Uri
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
@@ -8,8 +9,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
+import org.fedorahosted.freeotp.common.encryption.EncryptionType
+import org.fedorahosted.freeotp.common.util.Settings
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class OtpTokenService(val database: OtpTokenDatabase, val encryptDecrypt: EncryptDecrypt) {
+@Singleton
+class OtpTokenService @Inject constructor(val database: OtpTokenDatabase, val encryptDecrypt: EncryptDecrypt, val settings: Settings) {
 
     suspend fun deleteById(id: Long) {
         database.otpTokenDao().deleteById(id)
@@ -79,14 +85,19 @@ class OtpTokenService(val database: OtpTokenDatabase, val encryptDecrypt: Encryp
 
     suspend fun decryptToken(otpToken: OtpToken): OtpToken {
         return otpToken.apply {
-            secret = encryptDecrypt.decrypt(secret, encryptionType)
+            secret = encryptDecrypt.decrypt(secret, encryptionType, settings.password)
         }
     }
 
     suspend fun encryptToken(otpToken: OtpToken): OtpToken {
         return otpToken.apply {
-            secret = encryptDecrypt.encrypt(secret, encryptionType)
+            secret = encryptDecrypt.encrypt(secret, encryptionType, settings.password)
         }
+    }
+
+    fun createFromUri(uri: Uri): OtpToken {
+        //TODO AES
+        return OtpTokenFactory.createFromUri(uri, if(settings.requireAuthentication) EncryptionType.AES else EncryptionType.PLAIN_TEXT)
     }
 
 }

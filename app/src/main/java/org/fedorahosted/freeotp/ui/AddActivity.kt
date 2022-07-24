@@ -142,7 +142,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
                 // Add the token
                 lifecycleScope.launch {
-                    otpTokenService.insertEncrypted(OtpTokenFactory.createFromUri(Uri.parse(uri)))
+                    otpTokenService.insertEncrypted(otpTokenService.createFromUri(Uri.parse(uri)))
                     setResult(Activity.RESULT_OK)
                     finish()
                 }

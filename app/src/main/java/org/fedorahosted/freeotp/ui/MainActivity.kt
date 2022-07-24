@@ -342,7 +342,7 @@ class MainActivity : AppCompatActivity() {
         if (uri != null) {
             lifecycleScope.launch {
                 try {
-                    otpTokenService.insertEncrypted(OtpTokenFactory.createFromUri(uri))
+                    otpTokenService.insertEncrypted(otpTokenService.createFromUri(uri))
                 } catch (e: Exception) {
                     Snackbar.make(
                         binding.rootView,

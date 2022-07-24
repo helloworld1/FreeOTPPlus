@@ -22,16 +22,20 @@ package org.fedorahosted.freeotp.ui
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
+import org.fedorahosted.freeotp.common.encryption.EncryptionType
 import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
 
@@ -40,6 +44,9 @@ class SetupAuthenticationActivity : AppCompatActivity(), View.OnClickListener, T
 
     @Inject
     lateinit var settings: Settings
+
+    @Inject
+    lateinit var encryptDecrypt: EncryptDecrypt
 
     private lateinit var mPassword: EditText
     private lateinit var mPasswordConfirm: EditText
@@ -76,7 +83,7 @@ class SetupAuthenticationActivity : AppCompatActivity(), View.OnClickListener, T
             R.id.save -> {
                 // Store password
                 lifecycleScope.launch {
-                    settings.password = mPassword.text.toString()
+                    settings.password = encryptDecrypt.generatePasswordHash(mPassword.text.toString())
                     settings.requireAuthentication = true
                     setResult(Activity.RESULT_OK)
                     finish()

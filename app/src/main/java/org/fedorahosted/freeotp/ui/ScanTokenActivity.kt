@@ -144,7 +144,7 @@ class ScanTokenActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val token = try {
-                val t = OtpTokenFactory.createFromUri((Uri.parse(tokenString)))
+                val t = otpTokenService.createFromUri((Uri.parse(tokenString)))
                 otpTokenService.insertEncrypted(t)
                 t
             } catch (e: Throwable) {

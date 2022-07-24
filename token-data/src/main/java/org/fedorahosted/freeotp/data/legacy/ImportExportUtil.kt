@@ -67,7 +67,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                     it.isNotBlank()
 
                 }.mapIndexed { index, line ->
-                    OtpTokenFactory.createFromUri(Uri.parse(line.trim())).copy(
+                    otpTokenService.createFromUri(Uri.parse(line.trim())).copy(
                         ordinal = currentLastOrdinal + index + 1
                     )
                 }
