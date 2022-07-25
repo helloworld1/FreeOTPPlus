@@ -1,6 +1,7 @@
 package org.fedorahosted.freeotp.data
 
 import android.net.Uri
+import android.util.Log
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
@@ -15,13 +16,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class OtpTokenService @Inject constructor(val database: OtpTokenDatabase, val encryptDecrypt: EncryptDecrypt, val settings: Settings) {
+class OtpTokenService @Inject constructor(
+    val database: OtpTokenDatabase,
+    val encryptDecrypt: EncryptDecrypt,
+    val settings: Settings
+) {
 
     suspend fun deleteById(id: Long) {
         database.otpTokenDao().deleteById(id)
     }
 
-    suspend fun update(otpTokenList: OtpToken) {
+    suspend fun update(otpToken: OtpToken) {
+        database.otpTokenDao().update(otpToken)
+    }
+
+    suspend fun update(otpTokenList: List<OtpToken>) {
         database.otpTokenDao().update(otpTokenList)
     }
 
@@ -32,26 +41,26 @@ class OtpTokenService @Inject constructor(val database: OtpTokenDatabase, val en
     fun getDecrypted(id: Long): Flow<OtpToken?> {
         return database.otpTokenDao().get(id).mapLatest { token ->
             if (token != null) {
-                decryptToken(token)
+                decryptToken(token, settings.password)
             }
             token
         }
     }
 
-    fun getAllDecrypted(): Flow<List<OtpToken>> {
+    fun getAllDecrypted(password: String? = null): Flow<List<OtpToken>> {
         return database.otpTokenDao().getAll().mapLatest { tokens ->
             tokens.map {
-                decryptToken(it)
+                decryptToken(it, password ?: settings.password)
             }
         }
     }
 
     suspend fun insertEncrypted(otpToken: OtpToken) {
-        database.otpTokenDao().insert(encryptToken(otpToken))
+        database.otpTokenDao().insert(encryptToken(otpToken, settings.password))
     }
 
-    suspend fun insertAllEncrypted(otpTokens: List<OtpToken>) {
-        database.otpTokenDao().insertAll(otpTokens.map { encryptToken(it) })
+    suspend fun insertAllEncrypted(otpTokens: List<OtpToken>, password: String?) {
+        database.otpTokenDao().insertAll(otpTokens.map { encryptToken(it, password) })
     }
 
     @Transaction
@@ -83,21 +92,47 @@ class OtpTokenService @Inject constructor(val database: OtpTokenDatabase, val en
     }
 
 
-    suspend fun decryptToken(otpToken: OtpToken): OtpToken {
+    suspend fun decryptToken(otpToken: OtpToken, password: String?): OtpToken {
         return otpToken.apply {
-            secret = encryptDecrypt.decrypt(secret, encryptionType, settings.password)
+            secret = encryptDecrypt.decrypt(secret, encryptionType, password)
         }
     }
 
-    suspend fun encryptToken(otpToken: OtpToken): OtpToken {
+    suspend fun encryptToken(otpToken: OtpToken, password: String?): OtpToken {
         return otpToken.apply {
-            secret = encryptDecrypt.encrypt(secret, encryptionType, settings.password)
+            secret = encryptDecrypt.encrypt(secret, encryptionType, password)
         }
     }
 
     fun createFromUri(uri: Uri): OtpToken {
         //TODO AES
-        return OtpTokenFactory.createFromUri(uri, if(settings.requireAuthentication) EncryptionType.AES else EncryptionType.PLAIN_TEXT)
+        return OtpTokenFactory.createFromUri(
+            uri,
+            if (settings.requireAuthentication) EncryptionType.AES else EncryptionType.PLAIN_TEXT
+        )
+    }
+
+    /**
+     * Called when require authentication is turned off
+     */
+    suspend fun decryptAndUpdateAllTokens(password: String?) {
+        val updatedTokens = getAllDecrypted(password).first().map { token ->
+            token.copy(encryptionType = EncryptionType.PLAIN_TEXT)
+        }
+        update(updatedTokens)
+    }
+
+    /**
+     * Called when password is changed
+     */
+    suspend fun reencryptAllTokens(oldPassword: String, newPassword: String) {
+        val oldTokens = getAllDecrypted(oldPassword).first()
+        val newTokens = oldTokens.map { token ->
+            val tok = token.copy(encryptionType = EncryptionType.AES)
+            encryptToken(tok, newPassword)
+        }
+        Log.d("test", "${oldTokens}")
+        update(newTokens)
     }
 
 }

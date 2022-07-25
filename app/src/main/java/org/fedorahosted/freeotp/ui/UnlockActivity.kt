@@ -22,25 +22,28 @@ package org.fedorahosted.freeotp.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView.OnEditorActionListener
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.common.encryption.EncryptDecrypt
-import org.fedorahosted.freeotp.common.encryption.EncryptionType
 import org.fedorahosted.freeotp.common.util.Settings
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
@@ -53,7 +56,7 @@ class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
     private lateinit var mPassword: EditText
     private lateinit var mUnlock: Button
-    private lateinit var mFingerprint: Button
+    private lateinit var mBiometric: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,24 +69,42 @@ class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
         // Setup the buttons
         mUnlock = findViewById(R.id.unlock)
+        mBiometric = findViewById(R.id.biometric)
         mUnlock.setOnClickListener(this)
+        mBiometric.setOnClickListener(this)
+        mBiometric.isEnabled = false
+        mBiometric.isVisible = false
         mUnlock.isEnabled = false
 
         // Set constraints on when the Save button is enabled
         mPassword.addTextChangedListener(this)
-        mPassword.requestFocus()
+        mPassword.setOnEditorActionListener { _, actionId, _ ->
+            var handled = false
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                onClick(mUnlock)
+                handled = true
+            }
+            handled
+        }
+
+        when (BiometricManager.from(this).canAuthenticate()) {
+            BiometricManager.BIOMETRIC_SUCCESS -> {
+                mBiometric.isVisible = true
+                mBiometric.isEnabled = true
+                showBiometricPrompt()
+            }
+            else -> mPassword.requestFocus()
+        }
     }
 
     override fun onClick(view: View) {
         when (view.id) {
-
             R.id.unlock -> {
                 if (encryptDecrypt.validatePassword(
                         mPassword.text.toString(),
                         settings.password!!
                     )
                 ) {
-                    // Add the token
                     lifecycleScope.launch {
                         setResult(Activity.RESULT_OK)
                         finish()
@@ -94,7 +115,64 @@ class UnlockActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
                         .show()
                 }
             }
+            R.id.biometric -> showBiometricPrompt()
         }
+    }
+
+    private fun showBiometricPrompt(){
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(
+                    errorCode: Int,
+                    errString: CharSequence
+                ) {
+                    super.onAuthenticationError(errorCode, errString)
+                    // Don't show error message toast if user pressed back button
+                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                        Toast.makeText(
+                            applicationContext,
+                            "${getString(R.string.authentication_error)} $errString",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+
+                    if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                        mPassword.requestFocus()
+                    }
+                }
+
+                override fun onAuthenticationSucceeded(
+                    result: BiometricPrompt.AuthenticationResult
+                ) {
+                    super.onAuthenticationSucceeded(result)
+                    lifecycleScope.launch {
+                        setResult(Activity.RESULT_OK)
+                        finish()
+                    }
+                }
+
+                override fun onAuthenticationFailed() {
+                    // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
+                    // error, so no need for FreeOTP to show one
+                    super.onAuthenticationFailed()
+
+                    Toast.makeText(
+                        applicationContext,
+                        R.string.unable_to_authenticate, Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.authentication_dialog_title))
+            .setSubtitle(getString(R.string.authentication_dialog_subtitle))
+            .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {

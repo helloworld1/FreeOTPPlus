@@ -67,11 +67,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
-import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.common.util.Settings
+import org.fedorahosted.freeotp.ui.SetupAuthenticationActivity.Companion.NEW_PASSWD_FIELD
+import org.fedorahosted.freeotp.ui.SetupAuthenticationActivity.Companion.OLD_PASSWD_FIELD
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -156,13 +157,8 @@ class MainActivity : AppCompatActivity() {
                     viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                     Toast.makeText(this, "Successfully unlocked the database", Toast.LENGTH_SHORT)
                         .show()
-                }else{
-                    //TODO close app since not authenticated
-                    Log.e(TAG, "Authentication failed")
-                    Toast.makeText(
-                        applicationContext,
-                        "Authentication failed", Toast.LENGTH_LONG
-                    ).show();
+                } else {
+                    finish()
                 }
 
             }
@@ -171,11 +167,22 @@ class MainActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult())
             { result: ActivityResult ->
                 if (result.resultCode == Activity.RESULT_OK) {
-                    refreshOptionMenu()
-                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
-                    Toast.makeText(this, "Successfully updated your password", Toast.LENGTH_SHORT)
-                        .show()
-                }else{
+                    lifecycleScope.launch {
+                        otpTokenService.reencryptAllTokens(
+                            result.data!!.getStringExtra(OLD_PASSWD_FIELD)!!,
+                            result.data!!.getStringExtra(NEW_PASSWD_FIELD)!!
+                        )
+                        settings.password = result.data!!.getStringExtra(NEW_PASSWD_FIELD)
+                        settings.requireAuthentication = true
+                        refreshOptionMenu()
+                        viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Successfully updated your password",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
                     //TODO ?
                 }
 
@@ -226,24 +233,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAuthentication() {
-        setupAuthenticationResultLauncher.launch(Intent(this, SetupAuthenticationActivity::class.java))
+        setupAuthenticationResultLauncher.launch(
+            Intent(
+                this,
+                SetupAuthenticationActivity::class.java
+            )
+        )
     }
 
     override fun onDestroy() {
         super.onDestroy()
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
-        lastSessionEndTimestamp = 0L;
+        lastSessionEndTimestamp = 0L
     }
 
     override fun onStart() {
         super.onStart()
-
         viewModel.onSessionStart()
     }
 
     override fun onStop() {
         super.onStop()
         viewModel.onSessionStop()
+    }
+
+    override fun onBackPressed() {
+        if (settings.requireAuthentication) {
+            viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -303,15 +320,30 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.require_authentication -> {
-                // Make sure we also verify authentication before turning on the settings
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Turn ${if(settings.requireAuthentication) "off" else "on"} authentication")
+                    .setMessage(if(settings.requireAuthentication) "Be aware that if you turn off authentication, all tokens be stored unencrypted on your device!"
+                    else "Be aware that if you turn on authentication, all tokens will be encrypted with a user-set password, which has to be entered when trying to access the tokens!")
+                    .setIcon(R.drawable.alert)
+                    .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
+                        lifecycleScope.launch {
+                                // Make sure we also verify authentication before turning on the settings
+                                if (!settings.requireAuthentication) {
+                                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+                                } else {
+                                    lifecycleScope.launch {
+                                        otpTokenService.decryptAndUpdateAllTokens(settings.password)
+                                        settings.password = null
+                                        settings.requireAuthentication = false
+                                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                                        refreshOptionMenu()
+                                    }
+                                }
+                        }
 
-                if (!settings.requireAuthentication) {
-                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
-                } else {
-                    settings.requireAuthentication = false
-                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    refreshOptionMenu()
-                }
+                    }
+                    .setNegativeButton(R.string.cancel_text, null)
+                    .show()
 
                 return true
             }
@@ -504,72 +536,11 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
+        this.menu?.findItem(R.id.change_password)?.isVisible = settings.requireAuthentication
     }
 
     private fun verifyAuthentication() {
-        when (BiometricManager.from(this).canAuthenticate()) {
-            BiometricManager.BIOMETRIC_SUCCESS -> {
-                val executor = ContextCompat.getMainExecutor(this)
-                val biometricPrompt = BiometricPrompt(this, executor,
-                    object : BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationError(
-                            errorCode: Int,
-                            errString: CharSequence
-                        ) {
-                            super.onAuthenticationError(errorCode, errString)
-                            // Don't show error message toast if user pressed back button
-                            if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "${getString(R.string.authentication_error)} $errString",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            }
-
-                            if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                                finish()
-                            }
-                        }
-
-                        override fun onAuthenticationSucceeded(
-                            result: BiometricPrompt.AuthenticationResult
-                        ) {
-                            super.onAuthenticationSucceeded(result)
-                            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-
-                            if (!settings.requireAuthentication) {
-                                settings.requireAuthentication = true
-                                refreshOptionMenu()
-                            }
-                        }
-
-                        override fun onAuthenticationFailed() {
-                            // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
-                            // error, so no need for FreeOTP to show one
-                            super.onAuthenticationFailed()
-
-                            Toast.makeText(
-                                applicationContext,
-                                R.string.unable_to_authenticate, Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        }
-                    })
-
-                val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(getString(R.string.authentication_dialog_title))
-                    .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-                    .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                    .build()
-
-                biometricPrompt.authenticate(promptInfo)
-            }
-            else -> {
-                authenticateResultLauncher.launch(Intent(this, UnlockActivity::class.java))
-            }
-        }
-
+        authenticateResultLauncher.launch(Intent(this, UnlockActivity::class.java))
     }
 
     companion object {

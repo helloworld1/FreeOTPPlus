@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.common.util.Settings
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenService
 import org.fedorahosted.freeotp.databinding.DeleteBinding
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenService: OtpTokenService
+    @Inject lateinit var settings: Settings
     private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

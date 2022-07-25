@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Base64
 import java.math.BigInteger
 import java.nio.charset.Charset
-import java.security.AlgorithmParameters
 import java.security.SecureRandom
 import java.security.spec.KeySpec
 import javax.crypto.Cipher
@@ -15,18 +14,17 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-
+/**
+ * Helper for AES encryption/decryption + PBKDF2 hashing
+ */
 class EncryptDecrypt(val context: Context) {
-
-    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    private val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    private val iterationCount = 1024
+    private val keyStrength = 256
     private var salt: ByteArray = "12345678".toByteArray()
-    var iterationCount = 1024
-    var keyStrength = 256
-    lateinit var iv: ByteArray
-
+    private var iv: ByteArray = "1234567890234126".toByteArray()
 
     // Source: https://gist.github.com/scotttam/874426/e5a0e1317995e9388083eb455c5bb160ec2e1afd
-
     private fun strToPBKDF2Hash(str: String): SecretKey {
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
         val spec: KeySpec = PBEKeySpec(str.toCharArray(), salt, iterationCount, keyStrength)
@@ -46,6 +44,10 @@ class EncryptDecrypt(val context: Context) {
         )
     }
 
+    /**
+     * Encrypt given string
+     * @param secretKey needed if 'encryptionType' == AES
+     */
     private fun encrypt(
         strToEncrypt: String,
         encryptionType: EncryptionType,
@@ -55,9 +57,7 @@ class EncryptDecrypt(val context: Context) {
             EncryptionType.AES -> {
                 if (secretKey == null)
                     throw java.lang.IllegalArgumentException("Need to provide 'secretKey' for AES!")
-                cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-                val params: AlgorithmParameters = cipher.parameters
-                iv = params.getParameterSpec(IvParameterSpec::class.java).iv
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
                 val utf8EncryptedData: ByteArray = cipher.doFinal(strToEncrypt.toByteArray())
                 return Base64.encodeToString(utf8EncryptedData, Base64.DEFAULT)
             }
@@ -65,7 +65,10 @@ class EncryptDecrypt(val context: Context) {
         }
     }
 
-
+    /**
+     * Encrypt given string
+     * @param secretKey needed if 'encryptionType' == AES
+     */
     fun decrypt(
         dataToDecrypt: String,
         encryptionType: EncryptionType,
@@ -75,7 +78,7 @@ class EncryptDecrypt(val context: Context) {
             EncryptionType.AES -> {
                 if (secretKey == null)
                     throw java.lang.IllegalArgumentException("Need to provide 'secretKey' for AES!")
-                cipher.init(Cipher.DECRYPT_MODE, strToPBKDF2Hash(secretKey), IvParameterSpec(iv))
+                cipher.init(Cipher.DECRYPT_MODE, strToPBKDF2Hash(secretKey),IvParameterSpec(iv))
                 val decryptedData: ByteArray = Base64.decode(dataToDecrypt, Base64.DEFAULT)
                 val utf8: ByteArray = cipher.doFinal(decryptedData)
                 return String(utf8, Charset.forName("UTF8"))
@@ -141,6 +144,13 @@ class EncryptDecrypt(val context: Context) {
             bytes[i] = hex.substring(2 * i, 2 * i + 2).toInt(16).toByte()
         }
         return bytes
+    }
+
+    // Random byte[] with length numBytes
+    private fun getRandomNonce(numBytes: Int): ByteArray {
+        val nonce = ByteArray(numBytes)
+        SecureRandom().nextBytes(nonce)
+        return nonce
     }
 
 

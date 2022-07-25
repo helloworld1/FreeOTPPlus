@@ -36,6 +36,7 @@ import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.common.util.Settings
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenService
@@ -46,10 +47,15 @@ import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+class AddActivity : AppCompatActivity(), View.OnClickListener,
+    CompoundButton.OnCheckedChangeListener {
 
-    @Inject lateinit var otpTokenService: OtpTokenService
-    @Inject lateinit var imageUtil: ImageUtil
+    @Inject
+    lateinit var otpTokenService: OtpTokenService
+    @Inject
+    lateinit var imageUtil: ImageUtil
+    @Inject
+    lateinit var settings: Settings
 
     private val SHA1_OFFSET = 1
     private lateinit var mImage: ImageButton
@@ -100,8 +106,12 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.image -> startActivityForResult(Intent(Intent.ACTION_PICK,
-                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 0)
+            R.id.image -> startActivityForResult(
+                Intent(
+                    Intent.ACTION_PICK,
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                ), 0
+            )
 
             R.id.cancel -> finish()
 
@@ -120,10 +130,12 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 // Create the URI
-                var uri = String.format(Locale.US,
-                        "otpauth://%sotp/%s:%s?secret=%s&algorithm=%s&digits=%d&period=%d",
-                        if (mHOTP.isChecked) "h" else "t", issuer, label,
-                        secret, algorithm, digits, interval)
+                var uri = String.format(
+                    Locale.US,
+                    "otpauth://%sotp/%s:%s?secret=%s&algorithm=%s&digits=%d&period=%d",
+                    if (mHOTP.isChecked) "h" else "t", issuer, label,
+                    secret, algorithm, digits, interval
+                )
 
                 // Add optional parameters.
                 if (mHOTP.isChecked) {
@@ -142,7 +154,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
                 // Add the token
                 lifecycleScope.launch {
-                    otpTokenService.insertEncrypted(otpTokenService.createFromUri(Uri.parse(uri)))
+                    otpTokenService.insertEncrypted(
+                        otpTokenService.createFromUri(Uri.parse(uri))
+                    )
                     setResult(Activity.RESULT_OK)
                     finish()
                 }
@@ -164,9 +178,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 }
 
                 Glide.with(this@AddActivity)
-                        .load(mImageURL)
-                        .placeholder(R.drawable.logo)
-                        .into(mImage)
+                    .load(mImageURL)
+                    .placeholder(R.drawable.logo)
+                    .into(mImage)
 
             }
         }

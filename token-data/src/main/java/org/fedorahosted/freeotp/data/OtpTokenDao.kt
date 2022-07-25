@@ -31,7 +31,10 @@ abstract class OtpTokenDao(val database: OtpTokenDatabase) {
     abstract suspend fun insert(otpToken: OtpToken)
 
     @Update
-    abstract suspend fun update(otpTokenList: OtpToken)
+    abstract suspend fun update(otpToken: OtpToken)
+
+    @Update
+    abstract suspend fun update(otpTokenList: List<OtpToken>)
 
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
     abstract suspend fun updateOrdinal(id: Long, ordinal: Long)

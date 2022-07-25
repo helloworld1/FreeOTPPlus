@@ -7,6 +7,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.common.util.Settings
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
@@ -22,7 +23,8 @@ import javax.inject.Singleton
 class ImportExportUtil @Inject constructor(@ApplicationContext private val context: Context,
                                            private val migrationUtil: MigrationUtil,
                                            private val gson: Gson,
-                                           private val otpTokenService: OtpTokenService
+                                           private val otpTokenService: OtpTokenService,
+                                           private val settings: Settings
 ) {
     suspend fun importJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
@@ -32,7 +34,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
             } .let {
                 val savedTokens = gson.fromJson(it, SavedTokens::class.java)
                 val newTokens = migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens);
-                otpTokenService.insertAllEncrypted(newTokens)
+                otpTokenService.insertAllEncrypted(newTokens, settings.password)
             }
 
         }
@@ -41,7 +43,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
     suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
-                val otpTokens = otpTokenService.getAllDecrypted().first() ?: return@use
+                val otpTokens = otpTokenService.getAllDecrypted(settings.password).first() ?: return@use
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
                 val tokenOrder = otpTokens.map {
                     if (it.issuer != null) {
@@ -72,7 +74,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                     )
                 }
             } ?.let { tokens ->
-                otpTokenService.insertAllEncrypted(tokens)
+                otpTokenService.insertAllEncrypted(tokens, settings.password)
             }
         }
     }
@@ -81,7 +83,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(fileUri, "w")?.use { outputStream ->
                 PrintWriter(outputStream).use { printWriter ->
-                    val tokens = otpTokenService.getAllDecrypted().first()
+                    val tokens = otpTokenService.getAllDecrypted(settings.password).first()
                     for (token in tokens) {
                         printWriter.println(OtpTokenFactory.toUri(token).toString())
                     }

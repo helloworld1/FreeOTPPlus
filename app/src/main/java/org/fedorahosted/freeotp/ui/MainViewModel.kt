@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,6 +51,7 @@ class MainViewModel @Inject constructor(
     fun getAuthState(): Flow<AuthState> = authState
 
     fun getTokenList(): Flow<List<OtpToken>> {
+        Log.d("TOKENLISTTEST",settings.password ?: "null")
         return combine(authState, tokenSearchQuery, otpTokenService.getAllDecrypted()) { auth, searchQuery, tokens ->
             when {
                 auth != AuthState.AUTHENTICATED -> {

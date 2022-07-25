@@ -3,6 +3,7 @@ package org.fedorahosted.freeotp.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.common.encryption.EncryptionType
+import org.fedorahosted.freeotp.common.util.Settings
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
@@ -11,13 +12,14 @@ import javax.inject.Inject
 class MigrationUtil @Inject constructor(
     private val otpTokenService: OtpTokenService,
     private val tokenPersistence: TokenPersistence,
+    private val settings: Settings,
 ) {
     fun isMigrated(): Boolean = tokenPersistence.isLegacyTokenMigrated()
 
     suspend fun migrate() {
         withContext(Dispatchers.IO) {
             val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens())
-            otpTokenService.insertAllEncrypted(tokenList)
+            otpTokenService.insertAllEncrypted(tokenList, settings.password)
             tokenPersistence.setLegacyTokenMigrated()
         }
     }

@@ -99,6 +99,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:inputType="textPassword|textNoSuggestions"
+                    android:imeOptions="actionSend"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </TableRow>
         </TableLayout>
@@ -107,6 +108,10 @@
     <View style="@style/Divider" />
 
     <LinearLayout style="@style/DialogButtonLayout">
+        <Button
+            android:id="@+id/biometric"
+            style="@style/DialogButton"
+            android:text="Biometric" />
         <Button
             android:id="@+id/unlock"
             style="@style/DialogButton"
