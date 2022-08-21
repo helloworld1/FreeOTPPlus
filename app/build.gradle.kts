@@ -70,7 +70,7 @@ dependencies {
     implementation("androidx.camera:camera-core:${Versions.CAMERAX}")
     implementation("androidx.camera:camera-camera2:${Versions.CAMERAX}")
     implementation("androidx.camera:camera-lifecycle:${Versions.CAMERAX}")
-    implementation("androidx.camera:camera-view:${Versions.CAMERAX_VIEW}")
+    implementation("androidx.camera:camera-view:${Versions.CAMERAX}")
     implementation("androidx.biometric:biometric:${Versions.BIOMETRIC}")
 
     implementation("com.google.dagger:hilt-android:${Versions.HILT}")
