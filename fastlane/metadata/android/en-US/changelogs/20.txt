@@ -1,0 +1,4 @@
+RELEASE-2.9
+ * Smooth token re-arrangement by long pressing token and move. (Thanks to PhilKes' contribution)
+ * Default export token file name now contains date (Thanks to PhilKes' contribution)
+ * Upgrade Camera dependencies
