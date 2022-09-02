@@ -1,0 +1,1 @@
+Zengin özelliklere sahip bir 2FA kimlik doğrulayıcı sağlayan gelişmiş FreeOTP-Android alternatifi
