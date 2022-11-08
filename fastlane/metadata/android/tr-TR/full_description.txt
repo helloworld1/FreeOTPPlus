@@ -1,0 +1,21 @@
+FreeOTP Plus, RedHat tarafından sağlanan FreeOTP'nin aynı işlevselliğini aşağıdaki geliştirmeyle birlikte alternatifleştirdi:
+
+* Ayarları Google Drive'a veya diğer belge sağlayıcılara aktarma
+* Ayarları Google Drive'dan veya diğer belge sağlayıcılardan içe aktarma
+* Bir sürü kararlılık iyileştirmeleri
+* Android 6.0 izinlerini destekleme.
+* Koyu tema desteği ile material design tasarımı geliştirilmiş kullanıcı arayüzü
+* Token aramak için arama çubuğu
+* Diğer uygulamalarla daha iyi birlikte çalışabilirlik için daha fazla token ayrıntısı sağlama
+* QR kodunu daha hızlı taramak için modern kamera donanımını kullanma
+* Uygulamayı başlatmak için Biyometrik / PIN kimlik doğrulaması gerektirme seçeneği
+* 250'den fazla web sitesinin tokenları için buluşsal tabanlı çevrimdışı simge.
+* Uygulama işlevselliğini özelleştirmek için daha fazla ayar
+
+FreeOTP, tek kullanımlık parola protokollerini (OTP) kullanan sistemler için iki faktörlü bir kimlik doğrulama (2FA) uygulamasıdır.
+Tokenlar, bir QR kodunu tarayarak veya token yapılandırmasını manuel olarak girerek kolayca eklenebilir.
+
+FreeOTP açık kaynak standartları kullanır. Bu, hiçbir özel sunucu tarafı bileşeninin gerekli olmadığı anlamına gelir:
+bu standartları uygulayan herhangi bir sunucu tarafı bileşeni kullanan - örneğin, TOTP kullanan FreeIPA.
+Standartlarla uyumlu herhangi bir uygulama çalışacaktır.
+Şu anda FreeOTP, HOTP (RFC 4226) ve TOTP (RFC 6238) uygulamalarını sağlar.
