@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    compileSdk = AppConfigs.COMPILE_SDK_VERSION
+    compileSdk = rootProject.extra["compileSdkVersion"] as Int
     defaultConfig {
         testInstrumentationRunnerArguments += mapOf("clearPackageData" to "true")
-        versionCode = AppConfigs.VERSION_CODE
-        versionName = AppConfigs.VERSION_NAME
-        minSdk = AppConfigs.MIN_SDK_VERSION
-        targetSdk = AppConfigs.TARGET_SDK_VERSION
+        versionCode = rootProject.extra["versionCode"] as Int
+        versionName = rootProject.extra["versionName"] as String
+        minSdk = rootProject.extra["minSdkVersion"] as Int
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
         applicationId = "org.liberty.android.freeotpplus"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -53,42 +53,26 @@ dependencies {
     implementation(project(":token-images"))
     implementation(project(":text-drawable"))
     implementation(project(":token-data"))
-    implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
-    implementation("com.google.android.material:material:${Versions.MATERIAL}")
+    implementation(libs.appCompat)
+    implementation(libs.material)
+    implementation(libs.zxing)
+    implementation(libs.gson)
+    implementation(libs.glide)
+    implementation(libs.coreKtx)
+    implementation(libs.activityKtx)
+    implementation(libs.bundles.kotlinxCoroutines)
+    implementation(kotlin("stdlib-jdk8"))
 
-    // Version 3.4.0 contains a crashing bug before api level 24
-    implementation("com.google.zxing:core:${Versions.ZXING}")
-    implementation("com.google.code.gson:gson:${Versions.GSON}")
-    implementation("com.github.bumptech.glide:glide:${Versions.GLIDE}")
-    implementation("androidx.core:core-ktx:${Versions.CORE_KTX}")
-    implementation("androidx.activity:activity-ktx:${Versions.ACTIVITY_KTX}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLINX_COROUTINES}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE_KTX}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.LIFECYCLE_KTX}")
-    implementation(kotlin("stdlib-jdk8", Versions.KOTLIN))
-    implementation("androidx.camera:camera-core:${Versions.CAMERAX}")
-    implementation("androidx.camera:camera-camera2:${Versions.CAMERAX}")
-    implementation("androidx.camera:camera-lifecycle:${Versions.CAMERAX}")
-    implementation("androidx.camera:camera-view:${Versions.CAMERAX}")
-    implementation("androidx.biometric:biometric:${Versions.BIOMETRIC}")
+    implementation(libs.bundles.cameraX)
+    implementation(libs.biometric)
 
-    implementation("com.google.dagger:hilt-android:${Versions.HILT}")
-    kapt("com.google.dagger:hilt-android-compiler:${Versions.HILT}")
+    implementation(libs.hiltAndroid)
+    kapt(libs.hiltAndroidCompiler)
 
-    androidTestImplementation("androidx.test:core:${Versions.ANDROIDX_TEST_CORE}")
-    androidTestImplementation("androidx.test:core-ktx:${Versions.ANDROIDX_TEST_CORE}")
-    androidTestImplementation("androidx.test:rules:${Versions.ANDROIDX_TEST_CORE}")
-    androidTestImplementation("androidx.test:runner:${Versions.ANDROIDX_TEST_CORE}")
-    androidTestUtil("androidx.test:orchestrator:${Versions.ANDROIDX_TEST_CORE}")
+    androidTestImplementation(libs.bundles.androidxTest)
+    androidTestUtil(libs.androidxTestOrchestrator)
 
-    androidTestImplementation("androidx.test.ext:junit:${Versions.ANDROIDX_JUNIT}")
-    androidTestImplementation("androidx.test.ext:junit-ktx:${Versions.ANDROIDX_JUNIT}")
-    androidTestImplementation("androidx.test.ext:truth:${Versions.ANDROIDX_TRUTH}")
-
-    androidTestImplementation("androidx.test.espresso:espresso-core:${Versions.ESPRESSO}")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:${Versions.ESPRESSO}")
-
-
-
+    androidTestImplementation(libs.bundles.androidxJunit)
+    androidTestImplementation(libs.androidxTruth)
+    androidTestImplementation(libs.bundles.espresso)
 }

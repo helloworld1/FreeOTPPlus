@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(AppConfigs.COMPILE_SDK_VERSION)
+    compileSdk = rootProject.extra["compileSdkVersion"] as Int
 
     defaultConfig {
-        minSdkVersion(AppConfigs.MIN_SDK_VERSION)
-        targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
+        minSdk = rootProject.extra["minSdkVersion"] as Int
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8", Versions.KOTLIN))
-    implementation("androidx.core:core-ktx:${Versions.CORE_KTX}")
-    implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.coreKtx)
+    implementation(libs.appCompat)
 }

@@ -7,8 +7,8 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:7.3.1")
-        classpath(kotlin("gradle-plugin", version = Versions.KOTLIN))
-        classpath("com.google.dagger:hilt-android-gradle-plugin:${Versions.HILT}")
+        classpath(kotlin("gradle-plugin", "1.6.10"))
+        classpath(libs.hiltPlugin)
     }
 }
 
@@ -18,3 +18,10 @@ allprojects {
         google()
     }
 }
+
+extra["compileSdkVersion"] = 33
+extra["targetSdkVersion"] = 33
+extra["minSdkVersion"] = 21
+extra["versionCode"] = 20
+extra["versionName"] = "2.9"
+

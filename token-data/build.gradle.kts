@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(AppConfigs.COMPILE_SDK_VERSION)
+    compileSdk = rootProject.extra["compileSdkVersion"] as Int
 
     defaultConfig {
-        minSdkVersion(AppConfigs.MIN_SDK_VERSION)
-        targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
+        minSdk = rootProject.extra["minSdkVersion"] as Int
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -32,21 +32,19 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8", Versions.KOTLIN))
-    implementation("androidx.core:core-ktx:${Versions.CORE_KTX}")
-    implementation("androidx.appcompat:appcompat:${Versions.APP_COMPAT}")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.coreKtx)
+    implementation(libs.appCompat)
 
-    api("androidx.room:room-runtime:${Versions.ROOM}")
+    api(libs.roomRuntime)
     // To use Kotlin annotation processing tool (kapt)
-    kapt("androidx.room:room-compiler:${Versions.ROOM}")
+    kapt(libs.roomCompiler)
     // optional - Kotlin Extensions and Coroutines support for Room
-    implementation("androidx.room:room-ktx:${Versions.ROOM}")
+    implementation(libs.roomKtx)
 
-    implementation("com.google.dagger:hilt-android:${Versions.HILT}")
-    kapt("com.google.dagger:hilt-android-compiler:${Versions.HILT}")
+    implementation(libs.hiltAndroid)
+    kapt(libs.hiltAndroidCompiler)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLINX_COROUTINES}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLINX_COROUTINES}")
-    implementation("com.google.code.gson:gson:${Versions.GSON}")
-
+    implementation(libs.bundles.kotlinxCoroutines)
+    implementation(libs.gson)
 }
