@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:7.2.1")
+        classpath("com.android.tools.build:gradle:7.3.1")
         classpath(kotlin("gradle-plugin", version = Versions.KOTLIN))
         classpath("com.google.dagger:hilt-android-gradle-plugin:${Versions.HILT}")
     }

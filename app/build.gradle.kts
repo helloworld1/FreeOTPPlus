@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion(AppConfigs.COMPILE_SDK_VERSION)
+    compileSdk = AppConfigs.COMPILE_SDK_VERSION
     defaultConfig {
         testInstrumentationRunnerArguments += mapOf("clearPackageData" to "true")
         versionCode = AppConfigs.VERSION_CODE
         versionName = AppConfigs.VERSION_NAME
-        minSdkVersion(AppConfigs.MIN_SDK_VERSION)
-        targetSdkVersion(AppConfigs.TARGET_SDK_VERSION)
+        minSdk = AppConfigs.MIN_SDK_VERSION
+        targetSdk = AppConfigs.TARGET_SDK_VERSION
         applicationId = "org.liberty.android.freeotpplus"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
