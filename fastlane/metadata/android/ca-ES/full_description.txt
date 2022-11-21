@@ -1,0 +1,21 @@
+FreeOTP Plus es va bifurcar de FreeOTP de RedHat amb la mateixa funcionalitat i les millores següents:
+
+* Exporta la configuració a Google Drive o a altres proveïdors de documents
+* Importa la configuració de Google Drive o d'altres proveïdors de documents
+* Moltes millores d'estabilitat
+* Admet els permisos d'Android 6.0.
+* Interfície d'usuari millorada amb "material design" i suport de temes foscos
+* Barra de cerca d'entrades OTP
+* Proporcioneu més detalls del OTP per a una millor interoperabilitat amb altres aplicacions
+* Utilitza maquinari de càmera modern per escanejar el codi QR més ràpidament
+* Opció per requerir l'autenticació biomètrica / PIN per iniciar l'aplicació
+* Mètodes heurístics fora de línia per icones dels OTPs de més de 250 llocs web.
+* Més configuracions per personalitzar la funcionalitat de l'aplicació
+
+FreeOTP és una aplicació d'autenticació de dos factors (2FA) per a sistemes que utilitzen protocols de contrasenya única (OTP).
+Entrades OTP es poden afegir fàcilment escanejant un codi QR o introduint manualment la seva configuració.
+
+FreeOTP implementa estàndards oberts. Això vol dir que no cal cap component propietari del costat del servidor:
+utilitza qualsevol component del servidor que implementi aquests estàndards, per exemple FreeIPA, que utilitza TOTP.
+Qualsevol implementació que compleixi els estàndards funcionarà.
+Actualment, FreeOTP ofereix implementacions de HOTP (RFC 4226) i TOTP (RFC 6238).

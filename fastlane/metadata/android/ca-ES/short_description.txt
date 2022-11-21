@@ -1,0 +1,1 @@
+Bifurcació millorada de FreeOTP-Android que proporciona un autenticador 2FA ric en funcions
