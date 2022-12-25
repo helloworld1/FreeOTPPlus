@@ -30,6 +30,10 @@
         android:icon="@android:drawable/ic_menu_delete"
         android:title="@string/delete"
         />
+    <item
+        android:id="@+id/action_share"
+        android:icon="@android:drawable/ic_menu_share"
+        android:title="@string/share_to_other_apps" />
 
     <item
         android:id="@+id/action_share_qr_code"
