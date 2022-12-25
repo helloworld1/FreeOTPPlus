@@ -19,7 +19,8 @@
    - limitations under the License.
    -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_scan"
         android:icon="@drawable/qrcode"
@@ -71,5 +72,6 @@
     <item
         android:id="@+id/quit_and_lock"
         android:icon="@android:drawable/ic_lock_power_off"
-        android:title="@string/quit_and_lock" />
+        android:title="@string/quit_and_lock"
+        app:showAsAction="ifRoom" />
 </menu>
