@@ -2,5 +2,6 @@
 <resources>
     <color name="token_background">#7F7F7F</color>
     <color name="primary_dark">#222222</color>
+    <color name="overflow_menu">#A0A0A0</color>
 </resources>
 

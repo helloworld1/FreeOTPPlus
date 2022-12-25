@@ -85,6 +85,6 @@
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
         android:src="@drawable/menu"
-        app:tint="?android:textColorSecondary"
-        />
+        app:tint="@color/overflow_menu"
+        android:tintMode="add" />
 </org.fedorahosted.freeotp.token.TokenLayout>
