@@ -278,6 +278,11 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
+        if (packageName == intent.extras?.getString(SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA)) {
+            Log.i(TAG, "Intent shared from the same package name. Ignoring the intent and do not add the token")
+            return
+        }
+
         val uri = intent.data
         if (uri != null) {
             lifecycleScope.launch {
@@ -460,5 +465,6 @@ class MainActivity : AppCompatActivity() {
         const val READ_KEY_URI_REQUEST_CODE = 44
         const val WRITE_KEY_URI_REQUEST_CODE = 45
         const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
+        const val SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA = "shareFromPackageName"
     }
 }

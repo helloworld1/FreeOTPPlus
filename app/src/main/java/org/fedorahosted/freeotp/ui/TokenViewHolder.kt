@@ -32,6 +32,7 @@ class TokenViewHolder(private val activity: Activity,
 
             R.id.action_share -> {
                 val i = Intent(Intent.ACTION_VIEW, Uri.parse(OtpTokenFactory.toUri(token).toString()))
+                i.putExtra(MainActivity.SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA, activity.packageName)
                 activity.startActivity(Intent.createChooser(i, null))
             }
 
