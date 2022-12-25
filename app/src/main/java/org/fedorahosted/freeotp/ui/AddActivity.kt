@@ -109,7 +109,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 val issuer = Uri.encode(mIssuer.text.toString())
                 val label = Uri.encode(mLabel.text.toString())
                 val secret = Uri.encode(mSecret.text.toString())
-                val algorithm = mAlgorithm.selectedItem.toString().toLowerCase(Locale.US)
+                val algorithm = mAlgorithm.selectedItem.toString().lowercase(Locale.US)
                 val interval = Integer.parseInt(mInterval.text.toString())
                 val digits = when {
                     findViewById<RadioButton>(R.id.digits5).isChecked -> 5

@@ -265,12 +265,12 @@ enum class TokenImage(val resource: Int,
 fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
     val issuerToMatch = this.issuer ?: this.name
 
-    val issuerMatched = issuer?.toLowerCase(Locale.getDefault())
-            ?.contains(issuerToMatch.toLowerCase(Locale.getDefault())) ?: false
+    val issuerMatched = issuer?.lowercase(Locale.getDefault())
+            ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
 
     return if (!issuerMatched && this.alsoMatchLabel) {
         label?.toLowerCase(Locale.getDefault())
-                ?.contains(issuerToMatch.toLowerCase(Locale.getDefault())) ?: false
+                ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
     } else {
         issuerMatched
     }

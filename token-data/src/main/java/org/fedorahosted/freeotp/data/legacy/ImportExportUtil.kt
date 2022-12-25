@@ -40,7 +40,8 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
     suspend fun exportJsonFile(uri: Uri) {
         withContext(Dispatchers.IO) {
             context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
-                val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first() ?: return@use
+                val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first()
+
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
                 val tokenOrder = otpTokens.map {
                     if (it.issuer != null) {
