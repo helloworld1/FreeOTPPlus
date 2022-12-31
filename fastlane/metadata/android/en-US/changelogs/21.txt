@@ -1,0 +1,6 @@
+RELEASE-3.0
+* Sharing token to other apps
+* Lock and exit is a button on the toolbar now
+* Follow system light / dark theme
+* Better constrast for some buttons for some devices
+* Add ING issuer icon
