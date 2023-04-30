@@ -64,5 +64,5 @@
     <string name="screenshot_mode">Screenshot-Modus</string>
     <string name="launch_with_screenshot_enabled">Starte mit aktiviertem Screenshot</string>
     <string name="token_details">Token-Details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">Mit anderen Apps teilen</string>
 </resources>
