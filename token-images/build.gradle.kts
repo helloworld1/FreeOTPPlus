@@ -27,6 +27,7 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    namespace = "org.liberty.android.freeotp.token_images"
 }
 
 dependencies {

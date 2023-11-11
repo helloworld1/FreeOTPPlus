@@ -47,6 +47,8 @@ android {
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
         animationsDisabled = true
     }
+    namespace = "org.fedorahosted.freeotp"
+    testNamespace = "org.fedorahosted.freeotp.uitest"
 }
 
 dependencies {
