@@ -6,10 +6,10 @@ include(":token-data")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("hilt", "2.44")
-            version("appCompat", "1.5.1")
-            version("activityKtx", "1.6.1")
-            version("material", "1.7.0")
+            version("hilt", "2.48.1")
+            version("appCompat", "1.6.1")
+            version("activityKtx", "1.8.0")
+            version("material", "1.10.0")
             version("coreKtx", "1.9.0")
             version("kotlinxCoroutines", "1.6.4")
             version("lifecycleKtx", "2.5.1")
@@ -19,7 +19,7 @@ dependencyResolutionManagement {
             version("zxing", "3.3.3") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.9.0")
             version("glide", "4.13.1")
-            version("room", "2.4.0")
+            version("room", "2.6.0")
             version("androidxTestCore", "1.5.0")
             version("androidxTestOrchestrator", "1.4.2")
             version("androidxJunit", "1.1.4")
