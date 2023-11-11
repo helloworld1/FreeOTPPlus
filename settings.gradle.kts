@@ -10,10 +10,10 @@ dependencyResolutionManagement {
             version("appCompat", "1.6.1")
             version("activityKtx", "1.8.0")
             version("material", "1.10.0")
-            version("coreKtx", "1.9.0")
-            version("kotlinxCoroutines", "1.6.4")
-            version("lifecycleKtx", "2.5.1")
-            version("cameraX", "1.1.0")
+            version("coreKtx", "1.12.0")
+            version("kotlinxCoroutines", "1.7.3")
+            version("lifecycleKtx", "2.6.2")
+            version("cameraX", "1.3.0")
             version("biometric", "1.1.0")
 
             version("zxing", "3.3.3") // Version 3.4.0 contains a crashing bug before api level 24
@@ -22,9 +22,9 @@ dependencyResolutionManagement {
             version("room", "2.6.0")
             version("androidxTestCore", "1.5.0")
             version("androidxTestOrchestrator", "1.4.2")
-            version("androidxJunit", "1.1.4")
+            version("androidxJunit", "1.1.5")
             version("androidxTruth", "1.5.0")
-            version("espresso", "3.5.0")
+            version("espresso", "3.5.1")
 
             library("appCompat", "androidx.appcompat","appcompat").versionRef("appCompat")
             library("material", "com.google.android.material", "material").versionRef("material")
