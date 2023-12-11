@@ -22,5 +22,5 @@ allprojects {
 extra["compileSdkVersion"] = 34
 extra["targetSdkVersion"] = 34
 extra["minSdkVersion"] = 21
-extra["versionCode"] = 21
-extra["versionName"] = "3.0"
+extra["versionCode"] = 22
+extra["versionName"] = "3.1"
