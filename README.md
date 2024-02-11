@@ -20,12 +20,16 @@ Most part of the code is re-written with modern Jetpack libraries and Kotlin lan
 <a href="https://play.google.com/store/apps/details?id=org.liberty.android.freeotpplus" target="_blank">
 <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"/></a>
 
+## Requirements
+
+* Android 5.0+
+
 ## Screenshots
 
 <div>
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/001.png" width="33%">
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/002.png" width="33%">
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/003.png" width="33%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/001.png" width="30%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/002.png" width="30%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/003.png" width="30%">
 </div>
 
 ## Build Dependencies
