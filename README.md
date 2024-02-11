@@ -10,7 +10,7 @@ FreeOTP Plus forked the same functionality of [FreeOTP](https://github.com/freeo
 * Provide more token details for better interoperatibility with other apps
 * Utilize modern camera hardware to scan QR code faster
 * Option to require Biometric / PIN authentication to launch the app
-* Heuristic based offline icon for tokens of 250+ websites.
+* Heuristic based offline icon for tokens of 250+ websites
 * More settings to customize the app functionality
 
 Most part of the code is re-written with modern Jetpack libraries and Kotlin language.
