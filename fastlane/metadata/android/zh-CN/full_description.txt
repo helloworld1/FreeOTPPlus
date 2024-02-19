@@ -1,21 +1,21 @@
-FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
+FreeOTP+ 是基于RedHat的FreeOTP的一个增强分叉，在保留原项目功能的同时增加了以下功能：
 
-* Export settings to Google Drive or other document providers
-* Import settings from Google Drive or other document providers
-* Lots of stability improvement
-* Support Android 6.0 permissions.
-* Enhanced UI with material design with dark theme support
-* Search bar to search token
-* Provide more token details for better interoperatibility with other apps
-* Utilize modern camera hardware to scan QR code faster
-* Option to require Biometric / PIN authentication to launch the app
-* Heuristic based offline icon for tokens of 250+ websites.
-* More settings to customize the app functionality
+* 导出设置到Google Drive或其他云文档储存服务
+* 导入从Google Drive或其他云文档储存服务中保存的设置
+* 稳定性大量提高
+* 支持 Android 6.0 权限
+* 使用Material Design的增强界面 + 暗色主题支持
+* 搜索栏搜索令牌功能
+* 可提供更多令牌详细信息以提高与其他应用的兼容性
+* 可利用现代相机硬件更快地扫描二维码
+* 可设置需要生物测定/PIN身份验证启动应用程序
+* 自发式检测250多个网站的离线图标
+* 设置更多的自定义应用功能
 
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
+FreeOTP 是使用一次性密码协议(OTP)系统的双重身份验证(2FA)应用程序。
+可以通过扫描QR码或手动输入令牌配置轻松添加令牌。
 
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
+FreeOTP 实施开源标准。 这意味着不需要任何专有服务器组件：
+使用任何服务器端组件来实现这些标准 — 例如使用 TOTP的FreeIPA系统。
+任何符合标准的执行都将起作用。
+目前，FreeOTP兼容HOTP (RFC 4226)和TOTP (RFC 6238)。

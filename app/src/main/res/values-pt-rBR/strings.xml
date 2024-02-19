@@ -60,9 +60,9 @@
     <string name="remove_user_token_image">Remover imagem do token</string>
     <string name="fail_to_add_image">Falha ao adicionar imagem</string>
     <string name="launch_file_browser_failure">Não foi possível iniciar o navegador de arquivos do sistema. Provavelmente é um problema do SO.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_qr_code">Compartilhar código QR</string>
+    <string name="screenshot_mode">Modo Captura de Tela</string>
+    <string name="launch_with_screenshot_enabled">Iniciar com captura de tela ativada</string>
+    <string name="token_details">Detalhes do token</string>
+    <string name="share_to_other_apps">Compartilhar com outros apps</string>
 </resources>

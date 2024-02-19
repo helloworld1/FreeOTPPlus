@@ -60,9 +60,9 @@
     <string name="remove_user_token_image">Rimuovi l\'immagine del token utente</string>
     <string name="fail_to_add_image">Impossibile aggiungere l\'immagine</string>
     <string name="launch_file_browser_failure">Impossibile avviare il file explorer del sistema. Probabilmente è un problema del sistema operativo.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_qr_code">Condividi il codice QR</string>
+    <string name="screenshot_mode">Modalità screenshot</string>
+    <string name="launch_with_screenshot_enabled">Usa con gli screenshot abilitati</string>
+    <string name="token_details">Dettagli del token</string>
+    <string name="share_to_other_apps">Condividi con altre app</string>
 </resources>
