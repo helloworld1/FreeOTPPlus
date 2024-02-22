@@ -58,11 +58,11 @@
     <string name="authentication_dialog_subtitle">Пожалуйста, используйте биометрические данные или PIN-код для авторизации FreeOTP+</string>
     <string name="unable_to_authenticate">Невозможно пройти авторизацию. Включена ли у вас блокировка экрана с требованием PIN / биометрическим кодом?</string>
     <string name="remove_user_token_image">Удалить изображение токена</string>
-    <string name="fail_to_add_image">Fail to add image</string>
-    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="fail_to_add_image">Не удалось добавить изображение</string>
+    <string name="launch_file_browser_failure">Невозможно запустить системный файловый менеджер. Возможно, это проблема операционной системы.</string>
+    <string name="share_qr_code">Поделиться QR-кодом</string>
+    <string name="screenshot_mode">Режим скриншота</string>
+    <string name="launch_with_screenshot_enabled">Запуск с включённым режимом скриншота</string>
+    <string name="token_details">Детали токена</string>
+    <string name="share_to_other_apps">Поделиться с другими приложениями</string>
 </resources>

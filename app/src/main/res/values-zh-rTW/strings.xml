@@ -64,5 +64,5 @@
     <string name="screenshot_mode">截圖模式</string>
     <string name="launch_with_screenshot_enabled">啟用螢幕截圖啟動</string>
     <string name="token_details">權杖詳細資訊</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">分享給其他應用程式</string>
 </resources>

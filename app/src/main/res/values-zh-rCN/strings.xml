@@ -64,5 +64,5 @@
     <string name="screenshot_mode">屏幕截图模式</string>
     <string name="launch_with_screenshot_enabled">启动时允许屏幕截图</string>
     <string name="token_details">令牌详细信息</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">分享到其他应用</string>
 </resources>

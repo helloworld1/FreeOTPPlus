@@ -64,5 +64,5 @@
     <string name="screenshot_mode">Ekran görüntüsü alma modu</string>
     <string name="launch_with_screenshot_enabled">Ekran görüntüsü aktifken başlat</string>
     <string name="token_details">Token ayrıntıları</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">Diğer uygulamalarla paylaş</string>
 </resources>

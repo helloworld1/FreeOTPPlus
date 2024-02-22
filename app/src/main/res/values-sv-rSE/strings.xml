@@ -55,7 +55,7 @@
     <string name="authentication_error">Autentiseringsfel:</string>
     <string name="authentication_failed">Autentisering misslyckades</string>
     <string name="authentication_dialog_title">Autentisering krävs</string>
-    <string name="authentication_dialog_subtitle">Vänligen använd biometri eller PIN-kod för att autentisera FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">Använd biometri eller PIN-kod för att autentisera FreeOTP+</string>
     <string name="unable_to_authenticate">Det gick inte att autentisera. Har du skärmlås aktiverat med PIN-kod/biometri aktiverad?</string>
     <string name="remove_user_token_image">Ta bort användartokenbild</string>
     <string name="fail_to_add_image">Det gick inte att lägga till bild</string>
@@ -64,5 +64,5 @@
     <string name="screenshot_mode">Skärmdumpsläge</string>
     <string name="launch_with_screenshot_enabled">Starta med skärmdump aktiverad</string>
     <string name="token_details">Tokendetaljer</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">Dela med andra appar</string>
 </resources>

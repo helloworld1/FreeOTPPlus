@@ -64,5 +64,5 @@
     <string name="screenshot_mode">Mode Capture d\'écran</string>
     <string name="launch_with_screenshot_enabled">Lancer avec capture d\'écran activée</string>
     <string name="token_details">Détails du jeton</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">Partager avec d\'autres applications</string>
 </resources>

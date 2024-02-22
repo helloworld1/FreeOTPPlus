@@ -64,5 +64,5 @@
     <string name="screenshot_mode">מצב צילום מסך</string>
     <string name="launch_with_screenshot_enabled">הפעלה כאשר צילום מסך מופעל</string>
     <string name="token_details">פרטי אסימון</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_to_other_apps">שיתוף עם יישומים אחרים</string>
 </resources>

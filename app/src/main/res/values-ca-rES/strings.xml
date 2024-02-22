@@ -63,6 +63,6 @@
     <string name="share_qr_code">Comparteix el codi QR</string>
     <string name="screenshot_mode">Mode de captura de pantalla</string>
     <string name="launch_with_screenshot_enabled">Inicia amb la captura de pantalla activada</string>
-    <string name="token_details">Detalls del OTP</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="token_details">Detalls de l\'OTP</string>
+    <string name="share_to_other_apps">Envia a una altra app</string>
 </resources>
