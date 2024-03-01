@@ -15,7 +15,7 @@ class MigrationUtil @Inject constructor(
 
     suspend fun migrate() {
         withContext(Dispatchers.IO) {
-            val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens())
+            val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens(), true)
             optTokenDatabase.otpTokenDao().insertAll(tokenList)
             tokenPersistence.setLegacyTokenMigrated()
         }
@@ -30,13 +30,13 @@ class MigrationUtil @Inject constructor(
             tokenMap[tokenKey]
         }
 
-        convertLegacyTokensToOtpTokens(legacyTokens)
+        convertLegacyTokensToOtpTokens(legacyTokens, false)
     }
 
-    suspend fun convertLegacyTokensToOtpTokens(legacyTokens: List<Token>): List<OtpToken> = withContext(Dispatchers.IO) {
+    suspend fun convertLegacyTokensToOtpTokens(legacyTokens: List<Token>, idAsIndex: Boolean): List<OtpToken> = withContext(Dispatchers.IO) {
         legacyTokens.mapIndexed{ index, legacyToken ->
             OtpToken(
-                id = index.toLong() + 1,
+                id = if (idAsIndex) index.toLong() + 1 else 0,
                 ordinal = index.toLong() + 1,
                 issuer = legacyToken.issuer,
                 label = legacyToken.label,

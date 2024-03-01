@@ -23,6 +23,9 @@ interface OtpTokenDao {
     @Query("select * from otp_tokens where id = :id")
     fun get(id: Long): Flow<OtpToken?>
 
+    @Query("select * from otp_tokens where issuer = :issuer and label = :label and LOWER(secret) = LOWER(:secret)")
+    fun getByIssuerAndLabelAndSecret(issuer: String?, label: String, secret: String): Flow<OtpToken?>
+
     @Query("select ordinal from otp_tokens order by ordinal desc limit 1")
     fun getLastOrdinal(): Long?
 
