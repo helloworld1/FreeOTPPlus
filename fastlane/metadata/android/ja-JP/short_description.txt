@@ -1,1 +1,1 @@
-Enhanced fork of FreeOTP-Android providing a feature-rich 2FA authenticator
+機能豊富な2FA (2段階認証) 機能を提供するFreeOTP-Androidの拡張フォーク
