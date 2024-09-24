@@ -8,25 +8,25 @@
     <string name="no_keys">OTPキーがインストールされていません。</string>
     <string name="add_token">トークンを追加</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
-    <string name="interval">Interval</string>
-    <string name="counter">Counter</string>
+    <string name="interval">間隔</string>
+    <string name="counter">カウンター</string>
     <string name="issuer">発行者</string>
     <string name="account">アカウント</string>
     <string name="id">ID</string>
-    <string name="secret">Secret</string>
+    <string name="secret">秘密鍵</string>
     <string name="type">タイプ</string>
     <string name="algorithm">アルゴリズム</string>
-    <string name="digits">Digits</string>
+    <string name="digits">桁数</string>
     <string name="save">保存</string>
     <string name="code_copied">コードをクリップボードにコピーしました。</string>
     <string name="about_freeotp">FreeOTP+について</string>
     <string name="about_version">FreeOTP+のバージョン %1$s (%2$d)</string>
-    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
-    <string name="about_license">FreeOTP+ is licensed under %1$s.</string>
+    <string name="about_copyright">©️ 2013 - Red Hat, Inc. et al.\n©️ 2016 - Liberty</string>
+    <string name="about_license">FreeOTP+ は %1$s の下でライセンスされています。</string>
     <string name="about_website">詳細はこちら %s.</string>
-    <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+    <string name="about_feedback">フィードバックを歓迎します：&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有されているアイコンを利用したもので、クリエイティブコモンズライセンス表示 2.5 一般 に記載されている条件に基づいて使用さてています。</string>
-    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">トークンイメージライブラリにあるトークンサムネイル token_image_*.xml は、&lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;の下でandOTPから提供されています。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer.</string>
     <string name="error_camera_open">カメラを開く際にエラーが発生しました。</string>
     <string name="delete_summary">これが最後のチャンスです。このトークンを削除すると、復元することは出来ません。サーバー上では無効化されません。</string>
     <string name="delete_question">このトークンを削除しますか？</string>
@@ -40,7 +40,7 @@
     <string name="import_json_file">JSONファイルのインポート</string>
     <string name="import_json_file_warning">インポート後に現在のトークンはクリアされ上書きされます。</string>
     <string name="camera_permission_denied_text">カメラの権限がありません</string>
-    <string name="ok_text">Ok</string>
+    <string name="ok_text">OK</string>
     <string name="cancel_text">キャンセル</string>
     <string name="import_json_format">JSONファイルのインポート</string>
     <string name="import_key_uri_format">key URIのインポート</string>
@@ -50,7 +50,7 @@
     <string name="add_token_success">トークンの追加に成功しました。</string>
     <string name="copy_to_clipboard">クリップボードにコピーする</string>
     <string name="require_authentication">認証を要求する</string>
-    <string name="quit_and_lock">終了</string>
+    <string name="quit_and_lock">終了してロック</string>
     <string name="authentication_succeeded">認証に成功しました!</string>
     <string name="authentication_error">認証にエラーが発生しました:</string>
     <string name="authentication_failed">認証に失敗しました</string>
@@ -59,10 +59,10 @@
     <string name="unable_to_authenticate">認証が出来ません。PINまたは生体認証での画面ロックを有効にしていますか?</string>
     <string name="remove_user_token_image">トークンの画像を削除しますか</string>
     <string name="fail_to_add_image">画像の追加に失敗しました。</string>
-    <string name="launch_file_browser_failure">system\のファイルブラウザが起動できません。OSの問題と思われます。</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="launch_file_browser_failure">システムのファイルブラウザを起動できません。おそらくOSの問題です。</string>
+    <string name="share_qr_code">QRコードを共有</string>
+    <string name="screenshot_mode">スクリーンショットモード</string>
+    <string name="launch_with_screenshot_enabled">スクリーンショットを有効にして起動</string>
+    <string name="token_details">トークンの詳細</string>
+    <string name="share_to_other_apps">他のアプリと共有する</string>
 </resources>

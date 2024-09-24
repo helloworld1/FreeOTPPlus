@@ -60,9 +60,9 @@
     <string name="remove_user_token_image">Usuń miniaturę tokenu</string>
     <string name="fail_to_add_image">Nie udało się dodać miniaturki</string>
     <string name="launch_file_browser_failure">Nie udało uruchomić się eksploratora plików. Prawdopodobnie jest to błąd systemu.</string>
-    <string name="share_qr_code">Share QR Code</string>
-    <string name="screenshot_mode">Screenshot mode</string>
-    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
-    <string name="token_details">Token details</string>
-    <string name="share_to_other_apps">Share to other apps</string>
+    <string name="share_qr_code">Udostępnij kod QR</string>
+    <string name="screenshot_mode">Tryb zrzutu ekranu</string>
+    <string name="launch_with_screenshot_enabled">Uruchom z włączonym zrzutem ekranu</string>
+    <string name="token_details">Szczegóły tokenu</string>
+    <string name="share_to_other_apps">Udostępnij innym aplikacjom</string>
 </resources>

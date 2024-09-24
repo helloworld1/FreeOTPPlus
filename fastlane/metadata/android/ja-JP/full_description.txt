@@ -1,4 +1,4 @@
-FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
+FreeOTP Plus は、RedHat が提供する同様な機能を持った FreeOTP を以下のように拡張しました。
 
 * 設定を Google ドライブやその他のドキュメントプロバイダにエクスポート
 * Google ドライブまたはその他のドキュメントプロバイダから設定をインポート
