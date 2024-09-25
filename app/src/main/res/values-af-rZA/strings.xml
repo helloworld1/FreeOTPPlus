@@ -26,7 +26,7 @@
     <string name="about_website">Vir meer inligting, sien ons %s.</string>
     <string name="about_feedback">Ons verwelkom jou terugvoer:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Sommige ikone wat deur hierdie toepassing gebruik word is herproduseer van werk wat gemaak en gedeel word deur die Android Open Source Project en gebruik diensooreenkomstige termse soos beskryf in die Creative Commons 2.5 Attribution License.</string>
-    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Fout tydens oopmaak van kamera!</string>
     <string name="delete_summary">Hierdie is jou laaste kans: indien jy hierdie kenteken verwyder, sal dit vir altyd verlore wees, maar dit sal nie gedeaktiveer wees op die bedienaar nie.</string>
     <string name="delete_question">Verwyder hierdie kenteken?</string>
@@ -40,7 +40,7 @@
     <string name="import_json_file">Voer JSON leêr in</string>
     <string name="import_json_file_warning">Al die huidige kentekens sal verwyder en oor geskryf word na invoer.</string>
     <string name="camera_permission_denied_text">Kamera toegang afgekeur</string>
-    <string name="ok_text">Ok</string>
+    <string name="ok_text">OK</string>
     <string name="cancel_text">Kanselleer</string>
     <string name="import_json_format">Voer JSON formaat in</string>
     <string name="import_key_uri_format">Voer sleutel URI formaat in</string>
