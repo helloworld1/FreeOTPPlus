@@ -1,2 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="add_token">Legg til symbol</string>
+    <string name="type">Type</string>
+    <string name="algorithm">Algoritme</string>
+    <string name="digits">Siffer</string>
+    <string name="save">Lagre</string>
+    <string name="code_copied">Kode kopiert til utklippstavle</string>
+    <string name="about_freeotp">Om FreeOTP+</string>
+    <string name="about_version">FreeOTP+-versjon %1$s (%2$d)</string>
+    <string name="about_license">FreeOTP+ er lisensiert %1$s.</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.
+\n© 2016 - Liberty</string>
+    <string name="about_website">Mer info er å finne i %s.</string>
+    <string name="about_feedback">Tilbakemeldinger ønskes sendt til:<br/>• %1$s<br/>• %2$s</string>
+    <string name="error_camera_open">Klarte ikke å åpne kamera.</string>
+    <string name="about_token_image">Symbolminiatyrbildet token_image_*.xml er et symbolbildebibliotek fra andOTP under &lt;a href=https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&gt;MIT-lisens&lt;/a&gt;. Opphavsrett © 2017–2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Opphavsrett © 2015 Bruno Bierbaumer</string>
+    <string name="import_json_file">Importer JSON-fil</string>
+    <string name="invalid_token_uri_received">Ugyldig symbol-URI mottatt</string>
+    <string name="import_key_uri_failed_text">Klarte ikke å importere nøkkel-URI-fil. Filen er feilformatert.</string>
+    <string name="import_json_file_warning">Alle nåværende symboler vil bli tømt og overskrevet etter import.</string>
+    <string name="import_key_uri_format">Importer nøkkel-URI-format</string>
+    <string name="export_key_uri_format">Eksporter nøkkel-URI-format</string>
+    <string name="add_token_success">Symbol tillagt</string>
+    <string name="fail_to_add_image">Klarte ikke å legge til bilde</string>
+    <string name="share_qr_code">Del QR-kode</string>
+    <string name="remove_user_token_image">Fjern brukersymbolbilde</string>
+    <string name="launch_file_browser_failure">Kunne ikke starte systemets filbehandler. Det er antagelig et problem med operativsystemet.</string>
+    <string name="authentication_succeeded">Identitetsbekreftet</string>
+    <string name="authentication_dialog_subtitle">Bruk biometri eller PIN for å identitetsbekrefte i FreeOTP+.</string>
+    <string name="unable_to_authenticate">Kunne ikke identitetsbekrefte. Har du skjermlås påskrudd med PIN/biometri påslått?</string>
+    <string name="token_details">Symboldetaljer</string>
+    <string name="share_to_other_apps">Del til andre programmer</string>
+    <string name="invalid_token">Symbolet du angav er ugyldig.</string>
+    <string name="restore_defaults">Gjenopprett forvalg</string>
+    <string name="issuer">Utsteder</string>
+    <string name="add">Legg til</string>
+    <string name="delete">Slett</string>
+    <string name="counter">Telleverk</string>
+    <string name="account">Konto</string>
+    <string name="interval">Intervall</string>
+    <string name="edit">Rediger</string>
+    <string name="scan_qr_code">Skann QR-kode</string>
+    <string name="no_keys">Ingen OTP-nøkler installert.</string>
+    <string name="id">ID</string>
+    <string name="secret">Hemmelighet</string>
+    <string name="delete_question">Slett dette symbolet?</string>
+    <string name="export_text">Eksporter</string>
+    <string name="screenshot_mode">Skjermavbildningsmodus</string>
+    <string name="import_text">Importer</string>
+    <string name="ok_text">OK</string>
+    <string name="export_succeeded_text">Eksport fullført.</string>
+    <string name="import_succeeded_text">Importert.</string>
+    <string name="export_json_format">Eksporter JSON-format</string>
+    <string name="use_dark_theme">Bruk mørk drakt</string>
+    <string name="copy_to_clipboard">Kopier til utklippstavle</string>
+    <string name="import_json_failed_text">Klarte ikke å importere JSON. Filen er feilformatert.</string>
+    <string name="cancel_text">Avbryt</string>
+    <string name="import_json_format">Importer JSON-format</string>
+    <string name="quit_and_lock">Avslutt og lås</string>
+    <string name="camera_permission_denied_text">Kameratilgang nektet</string>
+    <string name="launch_with_screenshot_enabled">Start med skjermavbildninger tillatt</string>
+    <string name="delete_summary">Detter er siste sjanse. Hvis du sletter dette symbolet er det tapt for alltid. Det vil ikke kun bli avskrudd på tjeneren.</string>
+    <string name="authentication_error">Problem med identitetsbekreftelse:</string>
+    <string name="authentication_dialog_title">Identitetsbekreftelse kreves</string>
+    <string name="authentication_failed">Identitetsbekreftelse mislyktes</string>
+    <string name="require_authentication">Krev identitetsbekreftelse</string>
+    <string name="about_icons">Noen ikoner i programmet er reprodusert fra arbeid laget og delt av Android AOSP, brukt med hensyn til vilkår beskrevet i CC 2.5 BY-lisensen.</string>
+</resources>
