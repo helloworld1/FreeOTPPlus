@@ -26,7 +26,7 @@
     <string name="about_website">További információkért nézze meg: %s.</string>
     <string name="about_feedback">Szívesen vesszük a visszajelzését:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Az alkalmazás által használt egyes ikonok az Android Open Source Project által létrehozott és megosztott munkából származnak, és a Creative Commons 2.5 Nevezd meg! licencben leírt feltételek szerint kerülnek felhasználásra.</string>
-    <string name="about_token_image">A tokenképek programkönyvtárában lévő token_image_*.xml tokenbélyegképek az andOTP programból származnak &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT licenc&lt;/a&gt; szerint. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">A tokenképek programkönyvtárában lévő token_image_*.xml tokenbélyegképek az andOTP programból származnak &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT licenc&lt;/a&gt; szerint. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Hiba a kamera megnyitása közben!</string>
     <string name="delete_summary">Ez az utolsó esélye: ha törli ezt a tokent, akkor az örökre elvész. Nem lesz letiltva a kiszolgálón.</string>
     <string name="delete_question">Törli ezt a tokent?</string>
