@@ -26,7 +26,7 @@
     <string name="about_website">Для получения дополнительной информации см. наш %s.</string>
     <string name="about_feedback">Мы будем рады вашим отзывам:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Некоторые значки, используемые в этом приложении, воспроизводятся из работ, созданных и распространенных проектом Android с открытым исходным кодом, и используются в соответствии с условиями, описанными в лицензии Creative Commons 2.5 с указанием авторства.</string>
-    <string name="about_token_image">Миниатюры токенов token_image _ *.xml в библиотеке изображений токенов взяты из andOTP под &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;Лицензия MIT&lt;/a&gt;. Авторские права © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Авторские права © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Миниатюры токенов token_image _ *.xml в библиотеке изображений токенов взяты из andOTP под &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;Лицензия MIT&lt;/a&gt;. Авторские права © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Авторские права © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Ошибка при открытии камеры!</string>
     <string name="delete_summary">Это ваш последний шанс: если вы удалите этот токен, он исчезнет навсегда. Он не будет отключен на сервере.</string>
     <string name="delete_question">Удалить этот токен?</string>
