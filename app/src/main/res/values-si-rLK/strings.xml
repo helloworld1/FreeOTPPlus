@@ -26,7 +26,7 @@
     <string name="about_website">වැඩි විස්තර සඳහා, අපගේ %sබලන්න.</string>
     <string name="about_feedback">අපි ඔබගේ ප්‍රතිපෝෂණය සාදරයෙන් පිළිගනිමු:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">මෙම යෙදුම මගින් භාවිතා කරන සමහර අයිකන Android විවෘත මූලාශ්‍ර ව්‍යාපෘතිය විසින් නිර්මාණය කරන ලද සහ බෙදාගත් වැඩ වලින් ප්‍රතිනිෂ්පාදනය කර ඇති අතර Creative Commons 2.5 Attribution බලපත්‍රයේ විස්තර කර ඇති නියමයන්ට අනුව භාවිතා වේ.</string>
-    <string name="about_token_image">ටෝකන්-රූප පුස්තකාලයේ ඇති ටෝකන් සිඟිති රූ ටෝකන්_image_*.xml &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT බලපත්‍රය&lt;/a&gt;යටතේ සහ OTP වෙතින් වේ. ප්‍රකාශන හිමිකම © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; ප්‍රකාශන හිමිකම © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">ටෝකන්-රූප පුස්තකාලයේ ඇති ටෝකන් සිඟිති රූ ටෝකන්_image_*.xml &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT බලපත්‍රය&lt;/a&gt;යටතේ සහ OTP වෙතින් වේ. ප්‍රකාශන හිමිකම © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; ප්‍රකාශන හිමිකම © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">කැමරාව විවෘත කිරීමේදී දෝෂයක්!</string>
     <string name="delete_summary">මෙය ඔබගේ අවසාන අවස්ථාවයි: ඔබ මෙම ටෝකනය මකා දැමුවහොත්, එය සදහටම නැති වී යනු ඇත. එය සේවාදායකයේ අක්‍රිය නොවනු ඇත.</string>
     <string name="delete_question">මෙම ටෝකනය මකන්නද?</string>
