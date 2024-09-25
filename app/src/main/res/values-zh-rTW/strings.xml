@@ -26,7 +26,7 @@
     <string name="about_website">更多資訊，請見我們的 %s。</string>
     <string name="about_feedback">我們歡迎您的回饋：&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">此應用程式使用的部份圖示是從 Android 開放原始碼專案製作並分享的，並根據創用 CC 2.5 署名中描述的授權條款使用。</string>
-    <string name="about_token_image">token-images 媒體庫中的權杖縮圖 token_image_*.xml 來自使用 &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT 授權條款&lt;/a&gt;的 andOTP。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">token-images 媒體庫中的權杖縮圖 token_image_*.xml 來自使用 &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT 授權條款&lt;/a&gt;的 andOTP。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">開啟相機時發生錯誤！</string>
     <string name="delete_summary">這是您最後的機會：若您刪除此權杖，其將會永遠消失。且不會在伺服器上停用。</string>
     <string name="delete_question">刪除此權杖？</string>
