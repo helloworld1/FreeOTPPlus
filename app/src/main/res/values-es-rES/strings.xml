@@ -25,7 +25,7 @@
     <string name="about_license">FreeOTP+ tiene licencia bajo %1$s.</string>
     <string name="about_website">Para más información, vea nuestra %s.</string>
     <string name="about_feedback">Sus comentarios son bienvenidos:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Algunos iconos usados por esta aplicación son reproducidos a partir de trabajos creados y compartidos por Android Open Source Project y utilizados de acuerdo a los términos descritos en la licencia Creative Commons 2.5 Attribution.</string>
+    <string name="about_icons">Algunos iconos utilizados en esta aplicación se han reproducido a partir de trabajos creados y compartidos por la AOSP, y se utilizan de acuerdo con los términos descritos en la licencia CC-BY 2.5.</string>
     <string name="about_token_image">Las miniaturas del token token_image_*.xml en la biblioteca de imágenes de tokens son de andOTP bajo &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">¡Error al abrir la cámara!</string>
     <string name="delete_summary">Esta es tu última oportunidad: si eliminas este token, será olvidado para siempre. No será desactivado en el servidor.</string>
@@ -34,20 +34,20 @@
     <string name="export_text">Exportar</string>
     <string name="export_succeeded_text">Exportación correcta.</string>
     <string name="import_succeeded_text">Importación correcta</string>
-    <string name="import_json_failed_text">Error al importar JSON. El archivo está estropeado.</string>
-    <string name="import_key_uri_failed_text">Error al importar el archivo uri de clave. El archivo está estropeado.</string>
+    <string name="import_json_failed_text">No se pudo importar JSON. El archivo está mal formado.</string>
+    <string name="import_key_uri_failed_text">No se pudo importar el archivo URI de clave. El archivo tiene un formato incorrecto.</string>
     <string name="invalid_token_uri_received">La URI de token recibida es inválida</string>
     <string name="import_json_file">Importar archivo JSON</string>
     <string name="import_json_file_warning">Todos los tokens actuales serán borrados y sobrescritos después de la importación.</string>
     <string name="camera_permission_denied_text">Se ha denegado el permiso para acceder a la cámara</string>
-    <string name="ok_text">Aceptar</string>
+    <string name="ok_text">De acuerdo</string>
     <string name="cancel_text">Cancelar</string>
     <string name="import_json_format">Importar formato JSON</string>
     <string name="import_key_uri_format">Importar clave de formato URI</string>
     <string name="export_json_format">Exportar a formato JSON</string>
     <string name="export_key_uri_format">Exportar clave a formato URI</string>
     <string name="use_dark_theme">Usar tema oscuro</string>
-    <string name="add_token_success">El token se ha añadido correctamente</string>
+    <string name="add_token_success">Token añadido</string>
     <string name="copy_to_clipboard">Copiar al portapapeles</string>
     <string name="require_authentication">Requerir autenticación</string>
     <string name="quit_and_lock">Salir y bloquear</string>
