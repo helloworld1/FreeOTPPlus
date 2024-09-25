@@ -32,7 +32,7 @@
     <string name="delete_question">删除此令牌？</string>
     <string name="import_text">导入</string>
     <string name="export_text">导出</string>
-    <string name="export_succeeded_text">导出成功</string>
+    <string name="export_succeeded_text">导出成功.</string>
     <string name="import_succeeded_text">导入成功</string>
     <string name="import_json_failed_text">导入 JSON 失败。文件格式不正确。</string>
     <string name="import_key_uri_failed_text">导入密钥 uri 文件失败。文件格式不正确。</string>
