@@ -26,7 +26,7 @@
     <string name="about_website">למידע נוסף, ניתן לראות את %s שלנו.</string>
     <string name="about_feedback">נשמח למשוב שלך:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">סמלים מסוימים המשמשים יישום זה משוחזרים מעבודות שנוצרו ושותפו על ידי פרויקט הקוד הפתוח של אנדרואיד ומשמשים בהתאם למונחים המתוארים ברישיון ייחוס Creative Commons 2.5.</string>
-    <string name="about_token_image">התמונות הממוזערות של האסימונים token_image_*.xml בספריית תמונות האסימונים הם מ- andOTP תחת &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;רשיון MIT&lt;/a&gt;. זכויות יוצרים © 2017-2020 יעקב ניקסדורף. &lt;andotp@shadowice.org&gt; זכויות יוצרים © 2015 ברונו בירבאומר</string>
+    <string name="about_token_image">התמונות הממוזערות של האסימונים token_image_*.xml בספריית תמונות האסימונים הם מ- andOTP תחת &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;רשיון MIT&lt;/a&gt;. זכויות יוצרים © 2017-2020 יעקב ניקסדורף. &lt;andotp@shadowice.org&gt; זכויות יוצרים © 2015 ברונו בירבאומר</string>
     <string name="error_camera_open">תקלה בפתיחת מצלמה!</string>
     <string name="delete_summary">זו ההזדמנות האחרונה שלך: בעת מחיקת האסימון הזה, הוא ייעלם לנצח. זה לא יושבת בשרת.</string>
     <string name="delete_question">למחוק את האסימון הזה?</string>
