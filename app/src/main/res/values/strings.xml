@@ -19,39 +19,36 @@
     <string name="digits">Digits</string>
     <string name="save">Save</string>
     <string name="code_copied">Code copied to clipboard.</string>
-
     <string name="about_freeotp">About FreeOTP+</string>
     <string name="about_version">FreeOTP+ Version %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
     <string name="about_license">FreeOTP+ is licensed under %1$s.</string>
     <string name="about_website">For more information, see our %s.</string>
     <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Some icons used by this application are reproduced from work created and shared by the Android Open Source Project and used according to terms described in the Creative Commons 2.5 Attribution License.</string>
-    <string name="link_apache2" translatable="false">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
-    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
-
+    <string name="about_icons">Some icons used by this app are reproduced from work created and shared by AOSP, used according to terms described in the CC-BY 2.5 license.</string>
+    <string name="link_apache2" translatable="false">&lt;a href="http://www.apache.org/licenses/LICENSE-2.0.html"&gt;Apache 2.0&lt;/a&gt;</string>
+    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Error while opening camera!</string>
-
     <string name="delete_summary">This is your last chance: if you delete this token, it will be gone forever. It will not be disabled on the server.</string>
     <string name="delete_question">Delete this token?</string>
     <string name="import_text">Import</string>
     <string name="export_text">Export</string>
     <string name="export_succeeded_text">Export succeeded.</string>
     <string name="import_succeeded_text">Import succeeded</string>
-    <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
-    <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
+    <string name="import_json_failed_text">Could not import JSON. The file is malformed.</string>
+    <string name="import_key_uri_failed_text">Klarte ikke å import key URI file. The file is malformed.</string>
     <string name="invalid_token_uri_received">Invalid token URI received</string>
     <string name="import_json_file">Import JSON file</string>
     <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
     <string name="camera_permission_denied_text">Camera permission denied</string>
-    <string name="ok_text">Ok</string>
+    <string name="ok_text">OK</string>
     <string name="cancel_text">Cancel</string>
     <string name="import_json_format">Import JSON format</string>
     <string name="import_key_uri_format">Import key URI format</string>
     <string name="export_json_format">Export JSON format</string>
     <string name="export_key_uri_format">Export key URI format</string>
     <string name="use_dark_theme">Use dark theme</string>
-    <string name="add_token_success">The token was successfully added</string>
+    <string name="add_token_success">Token added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="require_authentication">Require authentication</string>
     <string name="quit_and_lock">Quit and lock</string>
@@ -61,7 +58,6 @@
     <string name="authentication_dialog_title">Authentication required</string>
     <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
     <string name="unable_to_authenticate">Unable to authenticate. Do you have screen lock enabled with PIN / biometric enabled?</string>
-
     <string name="five" translatable="false">5</string>
     <string name="six" translatable="false">6</string>
     <string name="seven" translatable="false">7</string>
