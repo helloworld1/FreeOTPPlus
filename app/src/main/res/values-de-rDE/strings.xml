@@ -26,7 +26,7 @@
     <string name="about_website">Weitere Informationen finden Sie in unserem %s.</string>
     <string name="about_feedback">Wir freuen uns über Ihr Feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Einige Symbole, die in dieser App genutzt werden, wurden vom Android Open Source Projekt erstellt bzw. daraus generiert. Die Symbole werden gemäß der Creative Commons 2.5 Namensnennungs Lizenz benutzt.</string>
-    <string name="about_token_image">Die Token Thumbnails token_image_*.xml in der Token-Bilder-Bibliothek sind von andOTP und stehen unter &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Die Token Thumbnails token_image_*.xml in der Token-Bilder-Bibliothek sind von andOTP und stehen unter &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Fehler beim Öffnen der Kamera!</string>
     <string name="delete_summary">Dies ist deine letzte Chance: Wenn du dieses Token löschst, wird er für immer gelöscht sein. Er wird jedoch nicht auf dem Server deaktiviert.</string>
     <string name="delete_question">Diesen Token löschen?</string>
@@ -40,7 +40,7 @@
     <string name="import_json_file">JSON-Datei importieren</string>
     <string name="import_json_file_warning">Alle aktuellen Token werden nach dem Import gelöscht und überschrieben.</string>
     <string name="camera_permission_denied_text">Kamera-Berechtigung verweigert</string>
-    <string name="ok_text">Ok</string>
+    <string name="ok_text">OK</string>
     <string name="cancel_text">Abbrechen</string>
     <string name="import_json_format">JSON-Format importieren</string>
     <string name="import_key_uri_format">Import Schlüssel-Url-Format</string>
