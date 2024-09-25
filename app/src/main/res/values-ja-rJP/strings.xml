@@ -26,7 +26,7 @@
     <string name="about_website">詳細はこちら %s.</string>
     <string name="about_feedback">フィードバックを歓迎します：&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有されているアイコンを利用したもので、クリエイティブコモンズライセンス表示 2.5 一般 に記載されている条件に基づいて使用さてています。</string>
-    <string name="about_token_image">トークンイメージライブラリにあるトークンサムネイル token_image_*.xml は、&lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;の下でandOTPから提供されています。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer.</string>
+    <string name="about_token_image">トークンイメージライブラリにあるトークンサムネイル token_image_*.xml は、&lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;の下でandOTPから提供されています。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer.</string>
     <string name="error_camera_open">カメラを開く際にエラーが発生しました。</string>
     <string name="delete_summary">これが最後のチャンスです。このトークンを削除すると、復元することは出来ません。サーバー上では無効化されません。</string>
     <string name="delete_question">このトークンを削除しますか？</string>
