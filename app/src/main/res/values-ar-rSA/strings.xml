@@ -25,7 +25,7 @@
     <string name="about_license">تم ترخيص FreeOTP + تحت %1$s. </string>
     <string name="about_website">للحصول على مزيد من المعلومات ، ارجع الى %s. </string>
     <string name="about_feedback">نحن نرحب بتعليقاتك :&lt;br/&gt;%1$s&lt;br/&gt;%2$s </string>
-    <string name="about_icons">بعض الشارات التي يتم استخدامها بواسطة هذا التطبيق يتم نسخها من العمل الذي تم تكوينه ومشاركته بواسطة مشروع مصدر Andrid Open Source والذي يتم استخدامه وفقا للمصطلحات التي تم وصفها في ترخيص Attributative Commons 2.5 Attribution License. </string>
+    <string name="about_icons">بعض الشارات التي يتم استخدامها بواسطة هذا التطبيق يتم نسخها من العمل الذي تم تكوينه ومشاركته بواسطة مشروع مصدر Andrid Open Source والذي يتم استخدامه وفقا للمصطلحات التي تم وصفها في ترخيص Attributative Commons 2.5 Attribution License.</string>
     <string name="about_token_image">token thumbnails tokenn_image_ * .xml في مكتبة token-images هي من andOTP أسفل &lt;a href=\"https://github.com/andOTP/andOTP/blob/master/LICENSE.txt\"&gt;ترخيص MIT&lt;/a&gt;. حقوق النشر © 2017-2020 Jakob Nixdorf.  &lt;andotp @shalowice.org&gt; حقوق النشر © 2015 برونو Bierbaumer </string>
     <string name="error_camera_open">حدث خطأ أثناء فتح الكاميرا ! </string>
     <string name="delete_summary">هذه هي فرصتك الأخيرة : إذا قمت بحذف هذا الرمز ، فإنه سيختفي للأبد.  لن يتم الغاء اتاحتها على وحدة الخدمة. </string>
@@ -34,8 +34,8 @@
     <string name="export_text">ارسال </string>
     <string name="export_succeeded_text">نجاح عملية التصدير. </string>
     <string name="import_succeeded_text">تم الاستيراد بنجاح</string>
-    <string name="import_json_failed_text">فشل في استيراد JSON.  الملف غير صحيح. </string>
-    <string name="import_key_uri_failed_text">فشل استيراد ملف uri للرموز.  الملف غير صحيح. </string>
+    <string name="import_json_failed_text">فشل في استيراد JSON. الملف غير صحيح.</string>
+    <string name="import_key_uri_failed_text">فشل استيراد ملف uri للرموز. الملف غير صحيح.</string>
     <string name="invalid_token_uri_received">تم استلام رمز مميز URI غير صحيح </string>
     <string name="import_json_file">استقبال ملف JSON </string>
     <string name="import_json_file_warning">سيتم محو كل الرموز المميزة الحالية وسيتم احلالها بعد الاستقبال. </string>
@@ -47,7 +47,7 @@
     <string name="export_json_format">تصدير بتنسيق JSON</string>
     <string name="export_key_uri_format">تصدير بتنسيق URI للمفتاح </string>
     <string name="use_dark_theme">إستخدام المظهر الغامق</string>
-    <string name="add_token_success">تم اضافة الرمز المميز بنجاح </string>
+    <string name="add_token_success">تم اضافة الرمز المميز بنجاح</string>
     <string name="copy_to_clipboard">انسخ إلى الحافظة</string>
     <string name="require_authentication">يتطلب المصادقة</string>
     <string name="quit_and_lock">الخروج والإقفال </string>
