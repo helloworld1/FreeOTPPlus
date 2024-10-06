@@ -25,7 +25,7 @@
     <string name="about_license">FreeOTP+ är licensierad under %1$s.</string>
     <string name="about_website">För mer information, se vår %s.</string>
     <string name="about_feedback">Vi välkomnar din återkoppling:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Vissa ikoner som används av denna applikation återges från arbete som skapats och delats av Android Open Source Project och används enligt termer som beskrivs i Creative Commons 2.5 Attribution License.</string>
+    <string name="about_icons">Vissa ikoner som används av denna app återges från arbete som skapats och delats av AOSP, och används enligt termer som beskrivs i CC-BY 2.5 licens.</string>
     <string name="about_token_image">Tokens miniatyrbilder token_image_*.xml i biblioteket token-images är från andOTP under &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT-licens&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Fel vid öppning av kamera!</string>
     <string name="delete_summary">Detta är din sista chans: om du tar bort denna token kommer den att vara borta för alltid. Det kommer inte att inaktiveras på servern.</string>
@@ -34,8 +34,8 @@
     <string name="export_text">Exportera</string>
     <string name="export_succeeded_text">Exporten lyckades.</string>
     <string name="import_succeeded_text">Importen lyckades</string>
-    <string name="import_json_failed_text">Det gick inte att importera JSON. Filen är felformad.</string>
-    <string name="import_key_uri_failed_text">Det gick inte att importera nyckel-uri-filen. Filen är felformad.</string>
+    <string name="import_json_failed_text">Kunde inte importera JSON. Filen är felaktigt formaterad.</string>
+    <string name="import_key_uri_failed_text">Det gick inte att importera nyckel-URI-fil. Filen är felaktigt formaterad.</string>
     <string name="invalid_token_uri_received">Ogiltig token-URI mottagen</string>
     <string name="import_json_file">Importera JSON-fil</string>
     <string name="import_json_file_warning">Alla nuvarande tokens kommer att rensas och skrivas över efter import.</string>
