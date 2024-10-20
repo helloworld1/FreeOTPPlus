@@ -25,7 +25,7 @@
     <string name="about_license">FreeOTP+ est sous licence %1$s.</string>
     <string name="about_website">Pour plus d’informations, voir notre %s.</string>
     <string name="about_feedback">Vos remarques sont les bienvenues :&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
-    <string name="about_icons">Certaines icônes utilisées par cette application sont reproduites à partir de travaux créés et partagés par le projet à code source ouvert Android et utilisées selon les termes décrits dans la licence d’attribution Creative Commons 2.5.</string>
+    <string name="about_icons">Certaines icônes utilisées par cette application sont reproduites à partir de travaux créés et partagés par AOSP, utilisés selon les termes décrits dans la licence CC-BY 2.5.</string>
     <string name="about_token_image">Les aperçus des jetons token_image_*.xml dans la bibliothèque d’images de jetons proviennent d’andOTP sous &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;licence MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Erreur lors de l’activation de l’appareil photo !</string>
     <string name="delete_summary">Ceci est votre dernière chance : si vous supprimez ce jeton, il sera supprimé pour toujours. Il ne sera pas désactivé sur le serveur.</string>
@@ -34,20 +34,20 @@
     <string name="export_text">Exporter</string>
     <string name="export_succeeded_text">Exportation réussie.</string>
     <string name="import_succeeded_text">Importation réussie</string>
-    <string name="import_json_failed_text">Échec de l’importation du JSON. Le fichier est malformé.</string>
+    <string name="import_json_failed_text">Impossible d\'importer JSON. Le fichier est malformé.</string>
     <string name="import_key_uri_failed_text">Échec de l’importation du fichier de la clé URI. Le fichier est malformé.</string>
     <string name="invalid_token_uri_received">Jeton URI invalide reçu</string>
     <string name="import_json_file">Importer le fichier JSON</string>
     <string name="import_json_file_warning">Tous les jetons actuels seront effacés et remplacés après l’importation.</string>
     <string name="camera_permission_denied_text">Autorisation d’accès à l’appareil photo refusée</string>
-    <string name="ok_text">OK</string>
+    <string name="ok_text">D\'accord</string>
     <string name="cancel_text">Annuler</string>
     <string name="import_json_format">Importer le format JSON</string>
     <string name="import_key_uri_format">Importer le format de clé URI</string>
     <string name="export_json_format">Exporter le format JSON</string>
     <string name="export_key_uri_format">Exporter le format de clé URI</string>
     <string name="use_dark_theme">Utiliser le thème sombre</string>
-    <string name="add_token_success">Le jeton a été ajouté avec succès</string>
+    <string name="add_token_success">Jeton ajouté</string>
     <string name="copy_to_clipboard">Copier dans le presse-papier</string>
     <string name="require_authentication">Authentification nécessaire</string>
     <string name="quit_and_lock">Quitter et verrouiller</string>
