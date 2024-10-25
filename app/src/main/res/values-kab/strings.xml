@@ -1,2 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="counter">Amsiḍen</string>
+    <string name="account">Amiḍan</string>
+    <string name="id">ID</string>
+    <string name="scan_qr_code">Semḍen tangalt QR</string>
+    <string name="delete">Kkes</string>
+    <string name="type">Anaw</string>
+    <string name="add_token">Rnu tiddest</string>
+    <string name="save">Sekles</string>
+    <string name="about_freeotp">Ɣef FreeOTP+</string>
+    <string name="about_version">FreeOTP+ lqem %1$s (%2$d)</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
+    <string name="delete_question">Tebɣiḍ ad tekkseḍ tiddest-a?</string>
+    <string name="ok_text">IH</string>
+    <string name="add_token_success">Tiddest tettwarna</string>
+    <string name="import_json_file">Kter afaylu JSON</string>
+    <string name="export_json_format">Sifeḍ afaylu JSON</string>
+    <string name="token_details">Talqayt n tiddest</string>
+    <string name="share_qr_code">Bḍu tangalt QR</string>
+    <string name="share_to_other_apps">Bḍu-t akked yisnasen nniḍen</string>
+    <string name="add">Rnu</string>
+    <string name="secret">Alugen</string>
+    <string name="edit">Beddel</string>
+    <string name="digits">Izwilen</string>
+    <string name="algorithm">Awarzim</string>
+    <string name="export_text">Sifeḍ</string>
+    <string name="import_text">Kter</string>
+    <string name="cancel_text">Sefsex</string>
+    <string name="use_dark_theme">Seqdec asentel ubrik</string>
+    <string name="copy_to_clipboard">Nɣel ɣef afus</string>
+    <string name="quit_and_lock">Ffeɣ seg-s rnu sekkeṛ-it</string>
+    <string name="remove_user_token_image">Kkes tugna n tiddest n useqdac</string>
+</resources>
