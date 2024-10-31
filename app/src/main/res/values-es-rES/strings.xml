@@ -5,7 +5,7 @@
     <string name="delete">Borrar</string>
     <string name="edit">Editar</string>
     <string name="restore_defaults">Restaurar valores por defecto</string>
-    <string name="no_keys">No hay claves OTP instaladas.</string>
+    <string name="no_keys">No hay nada que mostrar.</string>
     <string name="add_token">Añadir Token</string>
     <string name="scan_qr_code">Escanear código QR</string>
     <string name="interval">Intervalo</string>
@@ -18,7 +18,7 @@
     <string name="algorithm">Algoritmo</string>
     <string name="digits">Dígitos</string>
     <string name="save">Guardar</string>
-    <string name="code_copied">Texto copiado al portapapeles.</string>
+    <string name="code_copied">Código copiado al portapapeles.</string>
     <string name="about_freeotp">Acerca de FreeOTP+</string>
     <string name="about_version">Versión %1$s de FreeOTP+ (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
@@ -28,14 +28,14 @@
     <string name="about_icons">Algunos iconos utilizados en esta aplicación se han reproducido a partir de trabajos creados y compartidos por la AOSP, y se utilizan de acuerdo con los términos descritos en la licencia CC-BY 2.5.</string>
     <string name="about_token_image">Las miniaturas del token token_image_*.xml en la biblioteca de imágenes de tokens son de andOTP bajo &lt;a href="https://github.com/andOTP/andOTP/blob/master/LICENSE.txt"&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">¡Error al abrir la cámara!</string>
-    <string name="delete_summary">Esta es tu última oportunidad: si eliminas este token, será olvidado para siempre. No será desactivado en el servidor.</string>
+    <string name="delete_summary">Última oportunidad: si elimina este token, desaparecerá para siempre. No se desactivará en el servidor.</string>
     <string name="delete_question">¿Eliminar este token?</string>
     <string name="import_text">Importar</string>
     <string name="export_text">Exportar</string>
     <string name="export_succeeded_text">Exportación correcta.</string>
     <string name="import_succeeded_text">Importación correcta</string>
-    <string name="import_json_failed_text">No se pudo importar JSON. El archivo está mal formado.</string>
-    <string name="import_key_uri_failed_text">No se pudo importar el archivo URI de clave. El archivo tiene un formato incorrecto.</string>
+    <string name="import_json_failed_text">No se pudo importar el archivo en formato JSON. El archivo está mal formado.</string>
+    <string name="import_key_uri_failed_text">No se pudo importar el archivo en formato key URI. El archivo está mal formado.</string>
     <string name="invalid_token_uri_received">La URI de token recibida es inválida</string>
     <string name="import_json_file">Importar archivo JSON</string>
     <string name="import_json_file_warning">Todos los tokens actuales serán borrados y sobrescritos después de la importación.</string>
@@ -43,9 +43,9 @@
     <string name="ok_text">De acuerdo</string>
     <string name="cancel_text">Cancelar</string>
     <string name="import_json_format">Importar formato JSON</string>
-    <string name="import_key_uri_format">Importar clave de formato URI</string>
+    <string name="import_key_uri_format">Importar en formato key URI</string>
     <string name="export_json_format">Exportar a formato JSON</string>
-    <string name="export_key_uri_format">Exportar clave a formato URI</string>
+    <string name="export_key_uri_format">Exportar en formato key URI</string>
     <string name="use_dark_theme">Usar tema oscuro</string>
     <string name="add_token_success">Token añadido</string>
     <string name="copy_to_clipboard">Copiar al portapapeles</string>
@@ -55,9 +55,9 @@
     <string name="authentication_error">Error de autentificación:</string>
     <string name="authentication_failed">Autentificación fallida</string>
     <string name="authentication_dialog_title">Autentificación requerida</string>
-    <string name="authentication_dialog_subtitle">Por favor, utiliza el PIN o huella para autenticar FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">Utilice el PIN o huella para acceder a FreeOTP+</string>
     <string name="unable_to_authenticate">No se puede autenticar. ¿Tiene activado el bloqueo de pantalla con PIN / huella activado?</string>
-    <string name="remove_user_token_image">Eliminar imagen de usuario del token</string>
+    <string name="remove_user_token_image">Eliminar la imagen del token</string>
     <string name="fail_to_add_image">No se pudo agregar la imagen</string>
     <string name="launch_file_browser_failure">No se puede iniciar el navegador de archivos del sistema. Probablemente es un problema del sistema operativo.</string>
     <string name="share_qr_code">Compartir código QR</string>
