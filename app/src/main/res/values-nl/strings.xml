@@ -1,2 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="no_keys">Geen OTP sleutels geïnstalleerd.</string>
+    <string name="add">Voeg toe</string>
+    <string name="invalid_token">Gespecificeerd token was ongeldig!</string>
+    <string name="delete">Verwijder</string>
+    <string name="edit">Wijzig</string>
+    <string name="restore_defaults">Herstel standaardwaarden</string>
+    <string name="interval">Interval</string>
+    <string name="counter">Teller</string>
+    <string name="issuer">uitgever</string>
+    <string name="secret">Geheim</string>
+    <string name="algorithm">Algoritme</string>
+    <string name="save">Sla op</string>
+    <string name="about_version">FreeOTP+ versie %1$s (%2$d)</string>
+    <string name="about_freeotp">Over FreeOTP+</string>
+    <string name="about_license">FreeOTP+ valt onder %1$s licentie.</string>
+    <string name="about_website">Voor meer informatie, zie onze %s.</string>
+    <string name="about_feedback">We verwelkomen jouw terugkoppeling:<br/>• %1$s<br/>• %2$s</string>
+    <string name="import_succeeded_text">Succesvol geïmporteerd</string>
+    <string name="import_json_failed_text">Kan JSON niet importeren. Het bestand is beschadigd.</string>
+    <string name="import_json_file">Importeer JSON bestand</string>
+    <string name="cancel_text">Annuleer</string>
+    <string name="import_json_format">Importeer JSON formaat</string>
+    <string name="import_key_uri_format">Importeer URI sleutel formaat</string>
+    <string name="export_json_format">Exporteer JSON formaat</string>
+    <string name="export_key_uri_format">Exporteer URI sleutel formaat</string>
+    <string name="add_token_success">Token toegevoegd</string>
+    <string name="copy_to_clipboard">Kopieer naar klembord</string>
+    <string name="code_copied">Code gekopieerd naar klembord.</string>
+    <string name="scan_qr_code">Scan QR code</string>
+    <string name="delete_question">Verwijder dit token?</string>
+    <string name="export_succeeded_text">Succesvol geëxporteerd.</string>
+    <string name="import_json_file_warning">Alle huidige tokens worden verwijderd en overschreven na het importeren.</string>
+    <string name="invalid_token_uri_received">Ongeldig token URI ontvangen</string>
+    <string name="use_dark_theme">Gebruik donker thema</string>
+    <string name="camera_permission_denied_text">Camera toegang geweigerd</string>
+    <string name="require_authentication">Vereist authenticatie</string>
+    <string name="add_token">Voeg token toe</string>
+    <string name="type">Type</string>
+    <string name="digits">Cijfers</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
+</resources>
