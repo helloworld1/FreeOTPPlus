@@ -36,7 +36,7 @@
     <string name="export_succeeded_text">Export succeeded.</string>
     <string name="import_succeeded_text">Import succeeded</string>
     <string name="import_json_failed_text">Could not import JSON. The file is malformed.</string>
-    <string name="import_key_uri_failed_text">Klarte ikke å import key URI file. The file is malformed.</string>
+    <string name="import_key_uri_failed_text">Error importing the key URI file. The file is malformed.</string>
     <string name="invalid_token_uri_received">Invalid token URI received</string>
     <string name="import_json_file">Import JSON file</string>
     <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
