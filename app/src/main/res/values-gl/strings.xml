@@ -64,4 +64,5 @@
     <string name="unable_to_authenticate">Non se puido autenticar. Ten o bloqueo de pantalla activado con PIN / biometría?</string>
     <string name="remove_user_token_image">Retirar imaxe do token de usuaria</string>
     <string name="launch_file_browser_failure">Non se puido iniciar o navegador de ficheiros do sistema. Probablemente é problema do SO.</string>
+    <string name="import_key_uri_failed_text">Erro ao importar o ficheiro de chave URI, ten un formato incorrecto.</string>
 </resources>
