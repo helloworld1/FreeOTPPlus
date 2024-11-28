@@ -35,7 +35,7 @@
     <string name="export_succeeded_text">Exportación correcta.</string>
     <string name="import_succeeded_text">Importación correcta</string>
     <string name="import_json_failed_text">No se pudo importar el archivo en formato JSON. El archivo está mal formado.</string>
-    <string name="import_key_uri_failed_text">No se pudo importar el archivo en formato key URI. El archivo está mal formado.</string>
+    <string name="import_key_uri_failed_text">Error al importar el archivo URI de claves. El archivo está mal creado.</string>
     <string name="invalid_token_uri_received">La URI de token recibida es inválida</string>
     <string name="import_json_file">Importar archivo JSON</string>
     <string name="import_json_file_warning">Todos los tokens actuales serán borrados y sobrescritos después de la importación.</string>
