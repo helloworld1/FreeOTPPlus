@@ -35,7 +35,7 @@
     <string name="export_succeeded_text">Exporten lyckades.</string>
     <string name="import_succeeded_text">Importen lyckades</string>
     <string name="import_json_failed_text">Kunde inte importera JSON. Filen är felaktigt formaterad.</string>
-    <string name="import_key_uri_failed_text">Det gick inte att importera nyckel-URI-fil. Filen är felaktigt formaterad.</string>
+    <string name="import_key_uri_failed_text">Fel vid import av nyckel-URI-fil. Filen är felaktig.</string>
     <string name="invalid_token_uri_received">Ogiltig token-URI mottagen</string>
     <string name="import_json_file">Importera JSON-fil</string>
     <string name="import_json_file_warning">Alla nuvarande tokens kommer att rensas och skrivas över efter import.</string>
