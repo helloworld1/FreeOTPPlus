@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add">Add</string>
+    <string name="invalid_token">توکن مشخص شده نامعتبر بود !</string>
+    <string name="delete">حذف</string>
+    <string name="edit">ویرایش</string>
+    <string name="restore_defaults">بازگرداندن به حالت پیش فرض</string>
+    <string name="no_keys">هیچ کلید OTP نصب نشده است.</string>
+    <string name="add_token">اضافه کردن Token</string>
+    <string name="scan_qr_code">اسکن  QR Code</string>
+    <string name="interval">فاصله</string>
+    <string name="counter">شمارنده</string>
+    <string name="issuer">Issuer</string>
+    <string name="account">Account</string>
+    <string name="id">ID</string>
+    <string name="secret">مخفی</string>
+    <string name="type">نوع</string>
+    <string name="algorithm">الگوریتم</string>
+    <string name="digits">ارقام</string>
+    <string name="save">ذخیره</string>
+    <string name="code_copied">کد در کلیپ بورد ذخیره شد.</string>
+
+    <string name="about_freeotp">درباره ی  +FreeOTP</string>
+    <string name="about_version">FreeOTP+ نسخه ی %1$s (%2$d)</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
+    <string name="about_license">FreeOTP+ is licensed under %1$s.</string>
+    <string name="about_website">برای اطلاعت بیشتر, مارا ببینید %s.</string><!--    <string name="about_website">For more information, see our %s.</string>-->
+    <string name="about_feedback">We welcome your feedback:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+    <string name="about_icons">برخی از نمادهای مورد استفاده توسط این برنامه از کار ایجاد شده و به اشتراک گذاشته شده توسط پروژه منبع باز آندروید تکثیر می شوند و طبق اصطلاحاتی که در مجوز Attribution در Creative Commons 2.5 شرح داده شده است ، استفاده می شوند.</string>
+    <string name="link_apache2" translatable="false">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
+    <string name="about_token_image">The token thumbnails token_image_*.xml in token-images library are from andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+
+    <string name="error_camera_open">خطا هنگام باز کردن دوربین!</string>
+
+    <string name="delete_summary">این آخرین فرصت شماست: اگر این نشانه را حذف کنید ، برای همیشه از بین خواهد رفت. در سرور غیرفعال نخواهد شد.</string>
+    <string name="delete_question">حذف توکن ؟</string>
+    <string name="import_text">Import</string>
+    <string name="export_text">Export</string>
+    <string name="export_succeeded_text">Export succeeded.</string>
+    <string name="import_succeeded_text">Import succeeded</string>
+    <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
+    <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>
+    <string name="invalid_token_uri_received">Invalid token URI received</string>
+    <string name="import_json_file">Import JSON file</string>
+    <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
+    <string name="camera_permission_denied_text">Camera permission denied</string>
+    <string name="ok_text">Ok</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="import_json_format">Import JSON format</string>
+    <string name="import_key_uri_format">Import key URI format</string>
+    <string name="export_json_format">Export JSON format</string>
+    <string name="export_key_uri_format">Export key URI format</string>
+    <string name="use_dark_theme">Use dark theme</string>
+    <string name="add_token_success">The token was successfully added</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="require_authentication">Require authentication</string>
+    <string name="quit_and_lock">Quit and lock</string>
+    <string name="authentication_succeeded">Authentication succeeded!</string>
+    <string name="authentication_error">Authentication error:</string>
+    <string name="authentication_failed">Authentication failed</string>
+    <string name="authentication_dialog_title">Authentication required</string>
+    <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
+    <string name="unable_to_authenticate">Unable to authenticate. Do you have screen lock enabled with PIN / biometric enabled?</string>
+
+    <string name="five" translatable="false">5</string>
+    <string name="six" translatable="false">6</string>
+    <string name="seven" translatable="false">7</string>
+    <string name="eight" translatable="false">8</string>
+    <string name="issuer_hint" translatable="false">example@example.com</string>
+    <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
+    <string name="remove_user_token_image">Remove user token image</string>
+    <string name="fail_to_add_image">Fail to add image</string>
+    <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="screenshot_mode">Screenshot mode</string>
+    <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
+    <string name="token_details">Token details</string>
+    <string name="share_to_other_apps">Share to other apps</string>
+</resources>
