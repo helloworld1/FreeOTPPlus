@@ -1,3 +1,13 @@
+FreeOTP+ adds a second layer of security for your online accounts.
+This works by generating one-time passwords (OTP) on your mobile devices which can be used in conjunction with your normal password to make your login nearly impossible to hack.
+These passwords can be generated even when your phone is in airplane mode.
+Tokens can be added easily by scanning a QR-code or by manually entering the token configuration.
+This is called two-factor authentication (2FA).
+
+FreeOTP works with many of the great online services you already use, including Google, Facebook, Evernote, GitHub and many more!
+FreeOTP also may work for your private corporate security if they implement the standardized TOTP or HOTP protocols.
+This includes great enterprise solutions like FreeIPA.
+
 FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
 
 * Export settings to Google Drive or other document providers
@@ -11,11 +21,3 @@ FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with th
 * Option to require Biometric / PIN authentication to launch the app
 * Heuristic based offline icon for tokens of 250+ websites.
 * More settings to customize the app functionality
-
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
-
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
