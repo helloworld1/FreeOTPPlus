@@ -8,18 +8,16 @@ FreeOTP works with many of the great online services you already use, including 
 FreeOTP also may work for your private corporate security if they implement the standardized <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> or <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> protocols.
 This includes great enterprise solutions like <a href="https://www.freeipa.org/">FreeIPA</a>.
 
-FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
-
+<b>Features:</b>
 <ul>
-<li>Export settings to Google Drive or other document providers.</li>
-<li>Import settings from Google Drive or other document providers.</li>
-<li>Lots of stability improvement.</li>
-<li>Support Android 6.0 permissions.</li>
-<li>Enhanced UI with material design with dark theme support.</li>
+<li>Scan QR code.</li>
+<li>Export and import settings to Google Drive or other document providers.</li>
+<li>Material design with dark theme support.</li>
 <li>Search bar to search token.</li>
-<li>Provide more token details for better interoperability with other apps.</li>
-<li>Utilize modern camera hardware to scan QR code faster.</li>
+<li>See token details.</li>
 <li>Option to require Biometric / PIN authentication to launch the app.</li>
 <li>Heuristic based offline icon for tokens of 250+ websites.</li>
-<li>More settings to customize the app functionality.</li>
+<li>Many settings to customize the app functionality.</li>
 </ul>
+
+The FreeOTP Plus is fork of the FreeOTP.
