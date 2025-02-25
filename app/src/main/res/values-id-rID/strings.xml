@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add">Tambah</string>
+    <string name="invalid_token">Token yang ditentukan tidak valid!</string>
+    <string name="delete">Hapus</string>
+    <string name="edit">Edit</string>
+    <string name="restore_defaults">Kembalikan ke Pengaturan Awal</string>
+    <string name="no_keys">Tidak ada kunci OTP yang terpasang.</string>
+    <string name="add_token">Tambah Token</string>
+    <string name="scan_qr_code">Pindai Kode QR</string>
+    <string name="interval">Interval</string>
+    <string name="counter">Counter</string>
+    <string name="issuer">Penerbit</string>
+    <string name="account">Akun</string>
+    <string name="id">ID</string>
+    <string name="secret">Kunci Rahasia</string>
+    <string name="type">Tipe</string>
+    <string name="algorithm">Algoritma</string>
+    <string name="digits">Digit</string>
+    <string name="save">Simpan</string>
+    <string name="code_copied">Kode telah disalin ke papan klip.</string>
+
+    <string name="about_freeotp">Tentang FreeOTP+</string>
+    <string name="about_version">Versi FreeOTP+ %1$s (%2$d)</string>
+    <string name="about_copyright">© 2013 - Red Hat, Inc., dan lainnya.\n© 2016 - Liberty</string>
+    <string name="about_license">FreeOTP+ dilisensikan di bawah %1$s.</string>
+    <string name="about_website">Untuk informasi lebih lanjut, kunjungi %s kami.</string>
+    <string name="about_feedback">Kami menyambut umpan balik Anda:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+    <string name="about_icons">Beberapa ikon yang digunakan oleh aplikasi ini diambil dari karya yang dibuat dan dibagikan oleh Proyek Sumber Terbuka Android dan digunakan sesuai dengan syarat yang dijelaskan dalam Lisensi Creative Commons 2.5 Attribution.</string>
+    <string name="link_apache2" translatable="false">&lt;a href=&quot;http://www.apache.org/licenses/LICENSE-2.0.html&quot;&gt;Apache 2.0&lt;/a&gt;</string>
+    <string name="about_token_image">Gambar thumbnail token token_image_*.xml dalam pustaka token-images berasal dari andOTP di bawah &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;Lisensi MIT&lt;/a&gt;. Hak Cipta © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Hak Cipta © 2015 Bruno Bierbaumer</string>
+
+    <string name="error_camera_open">Terjadi kesalahan saat membuka kamera!</string>
+
+    <string name="delete_summary">Ini adalah kesempatan terakhir Anda: jika Anda menghapus token ini, itu akan hilang selamanya. Itu tidak akan dinonaktifkan di server.</string>
+    <string name="delete_question">Hapus token ini?</string>
+    <string name="import_text">Impor</string>
+    <string name="export_text">Ekspor</string>
+    <string name="export_succeeded_text">Ekspor berhasil.</string>
+    <string name="import_succeeded_text">Impor berhasil</string>
+    <string name="import_json_failed_text">Gagal mengimpor JSON. File rusak.</string>
+    <string name="import_key_uri_failed_text">Gagal mengimpor file key uri. File rusak.</string>
+    <string name="invalid_token_uri_received">Token URI yang diterima tidak valid</string>
+    <string name="import_json_file">Impor file JSON</string>
+    <string name="import_json_file_warning">Semua token yang ada akan dihapus dan digantikan setelah impor.</string>
+    <string name="camera_permission_denied_text">Izin kamera ditolak</string>
+    <string name="ok_text">Ok</string>
+    <string name="cancel_text">Batal</string>
+    <string name="import_json_format">Format file JSON untuk impor</string>
+    <string name="import_key_uri_format">Format file URI key untuk impor</string>
+    <string name="export_json_format">Format file JSON untuk ekspor</string>
+    <string name="export_key_uri_format">Format file URI key untuk ekspor</string>
+    <string name="use_dark_theme">Gunakan tema gelap</string>
+    <string name="add_token_success">Token berhasil ditambahkan</string>
+    <string name="copy_to_clipboard">Salin ke papan klip</string>
+    <string name="require_authentication">Memerlukan autentikasi</string>
+    <string name="quit_and_lock">Keluar dan kunci</string>
+    <string name="authentication_succeeded">Autentikasi berhasil!</string>
+    <string name="authentication_error">Kesalahan autentikasi:</string>
+    <string name="authentication_failed">Autentikasi gagal</string>
+    <string name="authentication_dialog_title">Autentikasi diperlukan</string>
+    <string name="authentication_dialog_subtitle">Harap gunakan biometrik atau PIN untuk mengautentikasi FreeOTP+</string>
+    <string name="unable_to_authenticate">Tidak dapat mengautentikasi. Apakah Anda mengaktifkan kunci layar dengan PIN / biometrik?</string>
+
+    <string name="five" translatable="false">5</string>
+    <string name="six" translatable="false">6</string>
+    <string name="seven" translatable="false">7</string>
+    <string name="eight" translatable="false">8</string>
+    <string name="issuer_hint" translatable="false">contoh@contoh.com</string>
+    <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
+    <string name="remove_user_token_image">Hapus gambar token pengguna</string>
+    <string name="fail_to_add_image">Gagal menambahkan gambar</string>
+    <string name="launch_file_browser_failure">Tidak dapat meluncurkan penjelajah file sistem. Kemungkinan masalah OS.</string>
+    <string name="share_qr_code">Bagikan Kode QR</string>
+    <string name="screenshot_mode">Mode tangkapan layar</string>
+    <string name="launch_with_screenshot_enabled">Luncurkan dengan tangkapan layar aktif</string>
+    <string name="token_details">Detail Token</string>
+    <string name="share_to_other_apps">Bagikan ke aplikasi lain</string>
+</resources>
