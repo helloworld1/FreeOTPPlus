@@ -1,0 +1,4 @@
+RELEASE-3.3
+* Make tokens layout adaptable
+* Fix issues with font size not changing with system
+* Upgrade multiple dependencies
