@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version("hilt", "2.59.2")
             version("appCompat", "1.7.1")
             version("activityKtx", "1.13.0")
-            version("material", "1.13.0")
+            version("material", "1.14.0")
             version("coreKtx", "1.18.0")
             version("kotlinxCoroutines", "1.10.2")
             version("lifecycleKtx", "2.10.0")

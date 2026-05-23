@@ -126,6 +126,20 @@ class MainActivity : AppCompatActivity() {
             windowInsets
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.addTokenFab) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val marginParams = view.layoutParams as android.view.ViewGroup.MarginLayoutParams
+            marginParams.bottomMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.bottom
+            if (view.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+                marginParams.leftMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.left
+            } else {
+                marginParams.rightMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.right
+            }
+            view.layoutParams = marginParams
+            windowInsets
+        }
+
+
         viewModel.migrateOldData()
 
         binding.tokenList.adapter = tokenListAdapter
