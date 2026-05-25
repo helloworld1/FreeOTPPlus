@@ -97,10 +97,6 @@ class MainActivity : AppCompatActivity() {
     private var lastSessionEndTimestamp = 0L;
     private var categories: List<String> = emptyList()
 
-    // Tracks whether binding is fully initialized so onNewIntent
-    // can safely reference binding.rootView without NPE
-    private var isBindingReady = false
-
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
@@ -114,14 +110,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // NOTE: onNewIntent(intent) is intentionally NOT called here before binding
-        // is initialized. It is instead called after binding is ready, at the
-        // bottom of onCreate, so that Snackbar references to binding.rootView
-        // are safe.
+        onNewIntent(intent)
 
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        isBindingReady = true
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.tokenList) { view, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -134,14 +126,29 @@ class MainActivity : AppCompatActivity() {
             windowInsets
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.addTokenFab) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val marginParams = view.layoutParams as android.view.ViewGroup.MarginLayoutParams
+            marginParams.bottomMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.bottom
+            if (view.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+                marginParams.leftMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.left
+            } else {
+                marginParams.rightMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.right
+            }
+            view.layoutParams = marginParams
+            windowInsets
+        }
+
+
         viewModel.migrateOldData()
 
         binding.tokenList.adapter = tokenListAdapter
 
         // Used GridlayoutManager to support tablet mode for multiple columns
         // Make sure one column has at least 320 DP
-        val columns = max(1, resources.configuration.screenWidthDp / 320)
+        val columns =  max(1, resources.configuration.screenWidthDp / 320)
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
+
 
         ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
             .attachToRecyclerView(binding.tokenList)
@@ -193,6 +200,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setTokenSearchQuery(query ?: "")
                 return true
             }
+
         })
 
         binding.addTokenFab.setOnClickListener {
@@ -201,29 +209,27 @@ class MainActivity : AppCompatActivity() {
 
         // Don't permit screenshots since these might contain OTP codes unless explicitly
         // launched with screenshot mode
+
         if (intent.extras?.getBoolean(SCREENSHOT_MODE_EXTRA) != true) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE
             )
         }
-
-        // Now that binding is fully ready, handle the launch intent safely
-        handleOtpAuthIntent(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
-        lastSessionEndTimestamp = 0L
-        isBindingReady = false
+        lastSessionEndTimestamp = 0L;
     }
 
     override fun onStart() {
         super.onStart()
+
         viewModel.onSessionStart()
     }
-
+    
     override fun onStop() {
         super.onStop()
         viewModel.onSessionStop()
@@ -287,12 +293,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_json -> {
-                createFile("application/json", "freeotp-backup", "json", WRITE_JSON_REQUEST_CODE)
+                createFile("application/json", "freeotp-backup","json", WRITE_JSON_REQUEST_CODE)
                 return true
             }
 
             R.id.action_export_key_uri -> {
-                createFile("text/plain", "freeotp-backup", "txt", WRITE_KEY_URI_REQUEST_CODE)
+                createFile("text/plain", "freeotp-backup","txt", WRITE_KEY_URI_REQUEST_CODE)
                 return true
             }
 
@@ -315,11 +321,13 @@ class MainActivity : AppCompatActivity() {
 
             R.id.require_authentication -> {
                 // Make sure we also verify authentication before turning on or off the settings
+
                 if (!settings.requireAuthentication) {
                     verifyAuthentication(isEnabling = true)
                 } else {
                     verifyAuthentication(isDisabling = true)
                 }
+
                 return true
             }
 
@@ -337,88 +345,45 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    /**
-     * SECURITY FIX: onNewIntent no longer directly inserts tokens.
-     * All otpauth:// intent handling is routed through handleOtpAuthIntent()
-     * which requires explicit user confirmation before saving any token.
-     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleOtpAuthIntent(intent)
-    }
 
-    /**
-     * Handles an incoming otpauth:// intent safely.
-     *
-     * Security properties:
-     * - Rejects intents originating from the same package (internal share flows).
-     * - Only processes URIs with scheme == "otpauth". All other schemes are ignored.
-     * - Requires explicit user confirmation via a dialog before inserting any token,
-     *   preventing silent injection by malicious apps or phishing webpages.
-     * - Displays the parsed issuer and account to the user so they can evaluate
-     *   whether the token is from a trusted source before accepting.
-     * - Guarded by isBindingReady so this is safe to call from both onCreate
-     *   (after binding is inflated) and onNewIntent.
-     */
-    private fun handleOtpAuthIntent(intent: Intent) {
-        // Reject intents explicitly shared from within the same package
         if (packageName == intent.extras?.getString(SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA)) {
-            Log.i(TAG, "Intent shared from the same package name. Ignoring.")
+            Log.i(TAG, "Intent shared from the same package name. Ignoring the intent and do not add the token")
             return
         }
 
-        val uri = intent.data ?: return
+        val uri = intent.data
+        if (uri != null) {
+            // Security fix: show confirmation dialog before importing any externally supplied
+            // otpauth:// URI. Previously, tokens were silently inserted, allowing a malicious
+            // app or phishing webpage to inject arbitrary OTP profiles via a crafted intent.
+            val rawPath = uri.path?.trimStart('/') ?: ""
+            val issuer = uri.getQueryParameter("issuer")
+                ?: rawPath.substringBefore(":").ifEmpty { getString(R.string.unknown_issuer) }
+            val account = rawPath.substringAfter(":", "").ifEmpty { getString(R.string.unknown_account) }
 
-        // Only handle otpauth:// URIs; ignore all other schemes
-        if (uri.scheme != "otpauth") return
-
-        // Guard: binding must be ready before we reference binding.rootView
-        if (!isBindingReady) {
-            Log.w(TAG, "handleOtpAuthIntent called before binding was ready. Ignoring intent.")
-            return
-        }
-
-        // Parse display fields from URI for the confirmation dialog.
-        // URI format: otpauth://totp/<issuer>:<account>?secret=...&issuer=...
-        val rawPath = uri.path?.trimStart('/') ?: ""
-        val issuer = uri.getQueryParameter("issuer")
-            ?: rawPath.substringBefore(":").ifEmpty { getString(R.string.unknown_issuer) }
-        val account = rawPath.substringAfter(":", "").ifEmpty { getString(R.string.unknown_account) }
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.add_token_confirmation_title)
-            .setMessage(
-                getString(R.string.add_token_confirmation_message, issuer, account)
-            )
-            .setIcon(R.drawable.alert)
-            .setPositiveButton(R.string.ok_text) { _, _ ->
-                lifecycleScope.launch {
-                    try {
-                        otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
-                        Snackbar.make(
-                            binding.rootView,
-                            R.string.token_added_successfully,
-                            Snackbar.LENGTH_SHORT
-                        ).show()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to add token from external intent", e)
-                        Snackbar.make(
-                            binding.rootView,
-                            R.string.invalid_token_uri_received,
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+            MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.add_token_confirmation_title)
+                    .setMessage(getString(R.string.add_token_confirmation_message, issuer, account))
+                    .setIcon(R.drawable.alert)
+                    .setPositiveButton(R.string.ok_text) { _, _ ->
+                        lifecycleScope.launch {
+                            try {
+                                otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
+                            } catch (e: Exception) {
+                                Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                                        .show()
+                            }
+                        }
                     }
-                }
-            }
-            .setNegativeButton(R.string.cancel_text, null)
-            .show()
+                    .setNegativeButton(R.string.cancel_text, null)
+                    .show()
+        }
     }
 
-    public override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        resultData: Intent?
-    ) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int,
+                                         resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
 
         if (resultCode != Activity.RESULT_OK) {
@@ -431,31 +396,32 @@ class MainActivity : AppCompatActivity() {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportJsonFile(uri)
                     Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                        .show()
+                            .show()
                 }
             }
 
             READ_JSON_REQUEST_CODE -> {
                 val uri = resultData?.data ?: return
                 MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.import_json_file)
-                    .setMessage(R.string.import_json_file_warning)
-                    .setIcon(R.drawable.alert)
-                    .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                        lifecycleScope.launch {
-                            try {
-                                importFromUtil.importJsonFile(uri)
-                                Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                    .show()
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Import JSON failed", e)
-                                Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
-                                    .show()
+                        .setTitle(R.string.import_json_file)
+                        .setMessage(R.string.import_json_file_warning)
+                        .setIcon(R.drawable.alert)
+                        .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
+                            lifecycleScope.launch {
+                                try {
+                                    importFromUtil.importJsonFile(uri)
+                                    Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                                            .show()
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Import JSON failed", e)
+                                    Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
+                                            .show()
+                                }
                             }
+
                         }
-                    }
-                    .setNegativeButton(R.string.cancel_text, null)
-                    .show()
+                        .setNegativeButton(R.string.cancel_text, null)
+                        .show()
             }
 
             WRITE_KEY_URI_REQUEST_CODE -> {
@@ -463,7 +429,7 @@ class MainActivity : AppCompatActivity() {
                     val uri = resultData?.data ?: return@launch
                     importFromUtil.exportKeyUriFile(uri)
                     Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                        .show()
+                            .show()
                 }
             }
 
@@ -473,15 +439,16 @@ class MainActivity : AppCompatActivity() {
                     try {
                         importFromUtil.importKeyUriFile(uri)
                         Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                                .show()
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
                         Snackbar.make(binding.rootView, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                                .show()
                     }
                 }
             }
         }
+
     }
 
     /**
@@ -496,21 +463,12 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(
-                applicationContext,
-                getString(R.string.launch_file_browser_failure),
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(applicationContext,
+                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private fun createFile(
-        mimeType: String,
-        fileName: String,
-        fileExtension: String,
-        requestCode: Int,
-        appendTimestamp: Boolean = true
-    ) {
+    private fun createFile(mimeType: String, fileName: String, fileExtension: String, requestCode: Int, appendTimestamp: Boolean = true) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
         // Filter to only show results that can be "opened", such as
@@ -519,20 +477,14 @@ class MainActivity : AppCompatActivity() {
 
         // Create a file with the requested MIME type.
         intent.type = mimeType
-        intent.putExtra(
-            Intent.EXTRA_TITLE,
-            "$fileName${if (appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension"
-        )
+        intent.putExtra(Intent.EXTRA_TITLE, "$fileName${if(appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension")
 
         try {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(
-                applicationContext,
-                getString(R.string.launch_file_browser_failure),
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(applicationContext,
+                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -545,62 +497,52 @@ class MainActivity : AppCompatActivity() {
     private fun verifyAuthentication(isEnabling: Boolean = false, isDisabling: Boolean = false) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationError(
-                    errorCode: Int,
-                    errString: CharSequence
-                ) {
-                    super.onAuthenticationError(errorCode, errString)
-                    // Don't show error message toast if user pressed back button
-                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                        Toast.makeText(
-                            applicationContext,
-                            "${getString(R.string.authentication_error)} $errString",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationError(errorCode: Int,
+                                                       errString: CharSequence) {
+                        super.onAuthenticationError(errorCode, errString)
+                        // Don't show error message toast if user pressed back button
+                        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                            Toast.makeText(applicationContext,
+                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        if (!isEnabling && !isDisabling && errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                            finish()
+                        }
                     }
 
-                    if (!isEnabling && !isDisabling && errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                        finish()
+                    override fun onAuthenticationSucceeded(
+                            result: BiometricPrompt.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+
+                        if (isEnabling) {
+                            settings.requireAuthentication = true
+                            refreshOptionMenu()
+                        } else if (isDisabling) {
+                            settings.requireAuthentication = false
+                            refreshOptionMenu()
+                        }
                     }
-                }
 
-                override fun onAuthenticationSucceeded(
-                    result: BiometricPrompt.AuthenticationResult
-                ) {
-                    super.onAuthenticationSucceeded(result)
-                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    override fun onAuthenticationFailed() {
+                        // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
+                        // error, so no need for FreeOTP to show one
+                        super.onAuthenticationFailed()
 
-                    if (isEnabling) {
-                        settings.requireAuthentication = true
-                        refreshOptionMenu()
-                    } else if (isDisabling) {
-                        settings.requireAuthentication = false
-                        refreshOptionMenu()
+                        Toast.makeText(applicationContext,
+                            R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
+                            .show()
                     }
-                }
-
-                override fun onAuthenticationFailed() {
-                    // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
-                    // error, so no need for FreeOTP to show one
-                    super.onAuthenticationFailed()
-
-                    Toast.makeText(
-                        applicationContext,
-                        R.string.unable_to_authenticate,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            })
+                })
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(getString(R.string.authentication_dialog_title))
-            .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-            .setAllowedAuthenticators(
-                BiometricManager.Authenticators.DEVICE_CREDENTIAL or
-                BiometricManager.Authenticators.BIOMETRIC_WEAK
-            )
-            .build()
+                .setTitle(getString(R.string.authentication_dialog_title))
+                .setSubtitle(getString(R.string.authentication_dialog_subtitle))
+                .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
+                .build()
 
         biometricPrompt.authenticate(promptInfo)
     }
