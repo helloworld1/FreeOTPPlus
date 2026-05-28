@@ -61,12 +61,8 @@
     <string name="authentication_dialog_title">Authentication required</string>
     <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
     <string name="unable_to_authenticate">Unable to authenticate. Do you have screen lock enabled with PIN / biometric enabled?</string>
-
-    <!-- Confirmation dialog shown when an external app or webpage supplies an otpauth:// URI -->
     <string name="add_token_confirmation_title">Add OTP Account?</string>
     <string name="add_token_confirmation_message">An external source wants to add an OTP account:\n\nIssuer: %1$s\nAccount: %2$s\n\nOnly proceed if you trust this source.</string>
-    <string name="unknown_issuer">Unknown</string>
-    <string name="unknown_account">Unknown</string>
 
     <string name="five" translatable="false">5</string>
     <string name="six" translatable="false">6</string>
