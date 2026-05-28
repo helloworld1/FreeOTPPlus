@@ -355,13 +355,13 @@ class MainActivity : AppCompatActivity() {
 
         val uri = intent.data
         if (uri != null) {
-            // Security fix: show confirmation dialog before importing any externally supplied
-            // otpauth:// URI. Previously, tokens were silently inserted, allowing a malicious
-            // app or phishing webpage to inject arbitrary OTP profiles via a crafted intent.
             val rawPath = uri.path?.trimStart('/') ?: ""
-            val issuer = uri.getQueryParameter("issuer")
-                ?: rawPath.substringBefore(":").ifEmpty { getString(R.string.unknown_issuer) }
-            val account = rawPath.substringAfter(":", "").ifEmpty { getString(R.string.unknown_account) }
+
+            // Account is required; reject the intent silently if absent
+            val account = rawPath.substringAfter(":", "").ifEmpty { null } ?: return
+
+            // Issuer is optional; can be empty
+            val issuer = uri.getQueryParameter("issuer") ?: rawPath.substringBefore(":")
 
             MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.add_token_confirmation_title)
