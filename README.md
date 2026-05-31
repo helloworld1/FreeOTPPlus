@@ -42,8 +42,16 @@ Most part of the code is re-written with modern Jetpack libraries and Kotlin lan
 
 ## Translate
 
-[Crowdin](https://crowdin.com/project/freeotpplus) can be used for translation if you are uncomfortable working with strings.xml files.  
-If your language is not listed, please open an issue so we can add it.  
+[Crowdin](https://crowdin.com/project/freeotpplus) can be used for translation if you are uncomfortable working with strings.xml files.
+If your language is not listed, please open an issue so we can add it.
 If you don't like to use Crowdin feel free to submit a pull with the updated/added locales.
 
 Link: https://crowdin.com/project/freeotpplus
+
+## Import Notes
+
+When importing from JSON.
+
+  * Both `issuerExt` and `label` are required, if missing the entry will be silently ignored
+  * `secret` is required and needs to be an array/list of unsigned char integer values
+  * `tokenOrder` is required, any tokens NOT listed will be silently ignored
