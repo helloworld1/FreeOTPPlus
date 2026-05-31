@@ -1,0 +1,2 @@
+RELEASE-3.4
+* Fix edge-to-edge UI and fab issues
