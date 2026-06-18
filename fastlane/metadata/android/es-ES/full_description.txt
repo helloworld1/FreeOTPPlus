@@ -3,8 +3,8 @@ Fork de FreeOTP Plus con la misma funcionalidad del FreeOTP proporcionado por Re
 * Exportar ajustes a Google Drive u otros proveedores de documentos
 * Importar ajustes de Google Drive u otros proveedores de documentos
 * Muchas mejoras de estabilidad
-* Soporte para permisos Android 6.0.
-* UI mejorada con material design y soporte de tema oscuro
+* Utiliza el sistema de permisos Android 6.0.
+* Interfaz de usuario mejorada con «material design» y añade opción de tema oscuro
 * Barra de búsqueda de tokens
 * Proporciona más detalles del token para una mejor interoperatividad con otras aplicaciones
 * Utiliza hardware de cámara moderno para escanear códigos QR más rápido
