@@ -84,22 +84,24 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mImage.setTokenImage(token)
 
         // Set the labels.
-        mLabel.text = token.label
+        val category = token.category?.trim()?.takeIf { it.isNotEmpty() }
+        val accountLabel = if (category == null) {
+            token.label
+        } else {
+            "${token.label} ($category)"
+        }
+        mLabel.text = accountLabel
         mIssuer.text = token.issuer
         mCode.text = mPlaceholder
         if (mIssuer.text.isEmpty()) {
-            mIssuer.text = token.label
+            mIssuer.text = accountLabel
             mLabel.visibility = View.GONE
         } else {
             mLabel.visibility = View.VISIBLE
         }
 
-        if (token.category.isNullOrBlank()) {
-            mCategory.visibility = View.GONE
-        } else {
-            mCategory.visibility = View.VISIBLE
-            mCategory.text = token.category
-        }
+        mCategory.visibility = View.GONE
+        mCategory.text = ""
     }
 
     private fun animate(view: View, anim: Int, animate: Boolean) {
