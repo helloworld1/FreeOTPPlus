@@ -12,6 +12,8 @@
     <string name="counter">Számláló</string>
     <string name="issuer">Kibocsátó</string>
     <string name="account">Fiók</string>
+    <string name="alias">Álnév</string>
+    <string name="icon">Ikon</string>
     <string name="id">Azonosító</string>
     <string name="secret">Titok</string>
     <string name="type">Típus</string>

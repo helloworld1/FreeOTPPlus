@@ -12,6 +12,8 @@
     <string name="counter">Counter</string>
     <string name="issuer">Penerbit</string>
     <string name="account">Akun</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Ikon</string>
     <string name="id">ID</string>
     <string name="secret">Kunci Rahasia</string>
     <string name="type">Tipe</string>

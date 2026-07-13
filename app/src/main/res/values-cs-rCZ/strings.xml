@@ -12,6 +12,8 @@
     <string name="counter">Počítadlo</string>
     <string name="issuer">Vydavatel</string>
     <string name="account">Účet</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Ikona</string>
     <string name="id">ID</string>
     <string name="secret">Tajný</string>
     <string name="type">Typ</string>

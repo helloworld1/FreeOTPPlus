@@ -12,6 +12,8 @@
     <string name="counter">කවුන්ටරය</string>
     <string name="issuer">නිකුත් කරන්නා</string>
     <string name="account">ගැන</string>
+    <string name="alias">අන්වර්ථ නාමය</string>
+    <string name="icon">නිරූපකය</string>
     <string name="id">හැඳුනුම්පත</string>
     <string name="secret">රහස</string>
     <string name="type">ටයිප් කරන්න</string>

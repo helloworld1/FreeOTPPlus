@@ -12,6 +12,8 @@
     <string name="counter">Лічильник</string>
     <string name="issuer">Видавець</string>
     <string name="account">Обліковий запис</string>
+    <string name="alias">Псевдонім</string>
+    <string name="icon">Значок</string>
     <string name="id">ІД</string>
     <string name="secret">Секрет</string>
     <string name="type">Тип</string>

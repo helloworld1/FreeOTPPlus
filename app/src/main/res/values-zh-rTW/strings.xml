@@ -12,6 +12,8 @@
     <string name="counter">計數器</string>
     <string name="issuer">發行者</string>
     <string name="account">帳號</string>
+    <string name="alias">別名</string>
+    <string name="icon">圖示</string>
     <string name="id">ID</string>
     <string name="secret">金鑰</string>
     <string name="type">類型</string>

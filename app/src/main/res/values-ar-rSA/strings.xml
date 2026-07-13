@@ -12,6 +12,8 @@
     <string name="counter">أداة العد </string>
     <string name="issuer">وحدة اصدار </string>
     <string name="account">الحساب </string>
+    <string name="alias">الاسم المستعار</string>
+    <string name="icon">الأيقونة</string>
     <string name="id">الكود </string>
     <string name="secret">السر </string>
     <string name="type">النوع </string>

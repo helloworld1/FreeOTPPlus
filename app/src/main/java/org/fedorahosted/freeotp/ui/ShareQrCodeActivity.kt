@@ -37,6 +37,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
+import org.fedorahosted.freeotp.util.displayName
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,7 +69,7 @@ class ShareQrCodeActivity : AppCompatActivity() {
 
             // Get token values.
             val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
-            title = token.issuer
+            title = token.displayName()
 
             // Get references to widgets.
             val qrcodeWriter = QRCodeWriter();

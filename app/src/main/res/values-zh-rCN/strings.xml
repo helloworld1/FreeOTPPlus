@@ -12,6 +12,8 @@
     <string name="counter">计数器</string>
     <string name="issuer">发布人</string>
     <string name="account">帐户</string>
+    <string name="alias">别名</string>
+    <string name="icon">图标</string>
     <string name="id">ID</string>
     <string name="secret">密钥</string>
     <string name="type">类型</string>

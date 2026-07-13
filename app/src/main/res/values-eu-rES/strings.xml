@@ -12,6 +12,8 @@
     <string name="counter">Kontagailua</string>
     <string name="issuer">Igorlea</string>
     <string name="account">Kontua</string>
+    <string name="alias">Aliasa</string>
+    <string name="icon">Ikonoa</string>
     <string name="id">ID</string>
     <string name="secret">Sekretua</string>
     <string name="type">Mota</string>

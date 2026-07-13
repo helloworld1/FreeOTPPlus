@@ -16,6 +16,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
+import org.fedorahosted.freeotp.util.displayName
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
@@ -85,7 +86,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
 
         // Set the labels.
         mLabel.text = token.label
-        mIssuer.text = token.issuer
+        mIssuer.text = token.displayName()
         mCode.text = mPlaceholder
         if (mIssuer.text.isEmpty()) {
             mIssuer.text = token.label
