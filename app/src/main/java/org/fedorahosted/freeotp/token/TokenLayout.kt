@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
 
@@ -16,7 +17,6 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
-import org.fedorahosted.freeotp.util.displayName
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
@@ -28,6 +28,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private lateinit var mIssuer: TextView
     private lateinit var mLabel: TextView
     private lateinit var mCategory: TextView
+    private lateinit var mTitlesContainer: LinearLayout
     private lateinit var mMenu: ImageView
     private lateinit var mPopupMenu: PopupMenu
 
@@ -52,6 +53,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mIssuer = findViewById<View>(R.id.issuer) as TextView
         mLabel = findViewById<View>(R.id.label) as TextView
         mCategory = findViewById<View>(R.id.category) as TextView
+        mTitlesContainer = findViewById<View>(R.id.titles_container) as LinearLayout
         mMenu = findViewById<View>(R.id.menu) as ImageView
 
         mPopupMenu = PopupMenu(context, mMenu)
@@ -74,6 +76,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mProgressOuter.clearAnimation()
         mProgressInner.visibility = View.GONE
         mProgressOuter.visibility = View.GONE
+        setCodeOverlayVisible(false)
 
         // Get the code placeholder.
         val placeholder = CharArray(token.digits)
@@ -85,22 +88,26 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mImage.setTokenImage(token)
 
         // Set the labels.
-        mLabel.text = token.label
-        mIssuer.text = token.displayName()
-        mCode.text = mPlaceholder
+        val category = token.category?.trim()?.takeIf { it.isNotEmpty() }
+        val accountLabel = if (category == null) {
+            token.label
+        } else {
+            "${token.label} ($category)"
+        }
+        val issuerLabel = token.alias?.trim()?.takeIf { it.isNotEmpty() }
+            ?: token.issuer
+        mLabel.text = accountLabel
+        mIssuer.text = issuerLabel
+        mCode.text = ""
         if (mIssuer.text.isEmpty()) {
-            mIssuer.text = token.label
+            mIssuer.text = accountLabel
             mLabel.visibility = View.GONE
         } else {
             mLabel.visibility = View.VISIBLE
         }
 
-        if (token.category.isNullOrBlank()) {
-            mCategory.visibility = View.GONE
-        } else {
-            mCategory.visibility = View.VISIBLE
-            mCategory.text = token.category
-        }
+        mCategory.visibility = View.GONE
+        mCategory.text = ""
     }
 
     private fun animate(view: View, anim: Int, animate: Boolean) {
@@ -108,6 +115,11 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         if (!animate)
             a.duration = 0
         view.startAnimation(a)
+    }
+
+    private fun setCodeOverlayVisible(visible: Boolean) {
+        mCode.visibility = if (visible) View.VISIBLE else View.GONE
+        mTitlesContainer.alpha = if (visible) 0.28f else 1.0f
     }
 
     fun start(type: OtpTokenType, codes: TokenCode, animate: Boolean) {
@@ -129,6 +141,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         }
 
         mStartTime = System.currentTimeMillis()
+        setCodeOverlayVisible(true)
         post(this)
     }
 
@@ -139,7 +152,8 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     override fun run() {
         // Get the current data
         val code = mCodes?.currentCode?: run {
-            mCode.text = mPlaceholder
+            mCode.text = ""
+            setCodeOverlayVisible(false)
             mProgressInner.visibility = View.GONE
             mProgressOuter.visibility = View.GONE
             animate(mImage, R.anim.token_image_fadein, true)
