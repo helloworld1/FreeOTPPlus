@@ -67,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">إطلاق مع تمكين لقطة الشاشة</string>
     <string name="token_details">تفاصيل الرمز</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">الكل</string>
+    <string name="category_tab_none">لا شيء</string>
 </resources>

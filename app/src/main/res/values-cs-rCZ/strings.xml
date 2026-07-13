@@ -67,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Spustit s povoleným snímkem obrazovky</string>
     <string name="token_details">Detaily tokenu</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">Vše</string>
+    <string name="category_tab_none">Žádné</string>
 </resources>

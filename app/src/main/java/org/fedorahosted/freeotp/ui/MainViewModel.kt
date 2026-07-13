@@ -56,6 +56,8 @@ class MainViewModel @Inject constructor(
 
     fun getAllCategories(): Flow<List<String>> = otpTokenDatabase.otpTokenDao().getAllCategories()
 
+    fun hasUncategorizedTokens(): Flow<Boolean> = otpTokenDatabase.otpTokenDao().hasUncategorizedTokens()
+
     fun getTokenList(): Flow<List<OtpToken>> {
         return combine(authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, category, tokens ->
             if (auth != AuthState.AUTHENTICATED) {

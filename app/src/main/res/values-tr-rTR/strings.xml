@@ -67,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Ekran görüntüsü aktifken başlat</string>
     <string name="token_details">Token ayrıntıları</string>
     <string name="share_to_other_apps">Diğer uygulamalarla paylaş</string>
+    <string name="category_tab_all">Tümü</string>
+    <string name="category_tab_none">Yok</string>
 </resources>

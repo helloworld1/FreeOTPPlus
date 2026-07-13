@@ -67,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Abiarazi pantaila-argazkiak gaituz</string>
     <string name="token_details">Token xehetasunak</string>
     <string name="share_to_other_apps">Partekatu beste aplikazioekin</string>
+    <string name="category_tab_all">Denak</string>
+    <string name="category_tab_none">Bat ere ez</string>
 </resources>

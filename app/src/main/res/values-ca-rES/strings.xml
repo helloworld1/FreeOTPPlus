@@ -67,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Inicia amb la captura de pantalla activada</string>
     <string name="token_details">Detalls de l\'OTP</string>
     <string name="share_to_other_apps">Envia a una altra app</string>
+    <string name="category_tab_all">Tot</string>
+    <string name="category_tab_none">Cap</string>
 </resources>
