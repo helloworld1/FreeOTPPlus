@@ -65,4 +65,6 @@
     <string name="launch_with_screenshot_enabled">තිර රුවක් සබල කර දියත් කරන්න</string>
     <string name="token_details">ටෝකන් විස්තර</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">සියල්ල</string>
+    <string name="category_tab_none">නැත</string>
 </resources>

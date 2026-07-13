@@ -65,4 +65,6 @@
     <string name="launch_with_screenshot_enabled">Запуск с включённым режимом скриншота</string>
     <string name="token_details">Детали токена</string>
     <string name="share_to_other_apps">Поделиться с другими приложениями</string>
+    <string name="category_tab_all">Все</string>
+    <string name="category_tab_none">Нет</string>
 </resources>

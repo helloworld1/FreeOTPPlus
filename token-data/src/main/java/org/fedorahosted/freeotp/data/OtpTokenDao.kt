@@ -29,6 +29,9 @@ interface OtpTokenDao {
     @Query("select distinct category from otp_tokens where category is not null and category != ''")
     fun getAllCategories(): Flow<List<String>>
 
+    @Query("select exists(select 1 from otp_tokens where category is null or category = '')")
+    fun hasUncategorizedTokens(): Flow<Boolean>
+
     @Query("delete from otp_tokens where id = :id")
     suspend fun deleteById(id: Long)
 

@@ -65,4 +65,6 @@
     <string name="launch_with_screenshot_enabled">Iniciar con captura de pantalla activada</string>
     <string name="token_details">Detalles del token</string>
     <string name="share_to_other_apps">Enviar a otras aplicaciones</string>
+    <string name="category_tab_all">Todo</string>
+    <string name="category_tab_none">Ninguna</string>
 </resources>

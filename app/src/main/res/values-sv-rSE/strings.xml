@@ -65,4 +65,6 @@
     <string name="launch_with_screenshot_enabled">Starta med skärmdump aktiverad</string>
     <string name="token_details">Tokendetaljer</string>
     <string name="share_to_other_apps">Dela med andra appar</string>
+    <string name="category_tab_all">Alla</string>
+    <string name="category_tab_none">Ingen</string>
 </resources>

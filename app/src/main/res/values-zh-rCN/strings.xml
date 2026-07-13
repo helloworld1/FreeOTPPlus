@@ -65,4 +65,6 @@
     <string name="launch_with_screenshot_enabled">启动时允许屏幕截图</string>
     <string name="token_details">令牌详细信息</string>
     <string name="share_to_other_apps">分享到其他应用</string>
+    <string name="category_tab_all">全部</string>
+    <string name="category_tab_none">无</string>
 </resources>

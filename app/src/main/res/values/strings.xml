@@ -80,4 +80,6 @@
     <string name="category">Category</string>
     <string name="all_categories">All categories</string>
     <string name="uncategorized">Uncategorized</string>
+    <string name="category_tab_all">All</string>
+    <string name="category_tab_none">None</string>
 </resources>
