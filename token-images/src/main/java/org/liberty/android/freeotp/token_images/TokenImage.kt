@@ -103,6 +103,7 @@ enum class TokenImage(val resource: Int,
     GoDaddy(R.drawable.token_image_godaddy),
     Gogs(R.drawable.token_image_gogs),
     Google(R.drawable.token_image_google),
+    GroupOffice(R.drawable.token_image_group_office, "Group Office"),
     GovUK(R.drawable.token_image_govuk),
     Grav(R.drawable.token_image_grav),
     Greenhost(R.drawable.token_image_greenhost),
@@ -268,14 +269,18 @@ enum class TokenImage(val resource: Int,
 }
 
 fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
-    val issuerToMatch = this.issuer ?: this.name
+    val issuersToMatch = listOfNotNull(this.issuer, this.name).distinct()
 
-    val issuerMatched = issuer?.lowercase(Locale.getDefault())
-            ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+    val issuerMatched = issuersToMatch.any { issuerToMatch ->
+        issuer?.lowercase(Locale.getDefault())
+                ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+    }
 
     return if (!issuerMatched && this.alsoMatchLabel) {
-        label?.lowercase(Locale.getDefault())
-                ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+        issuersToMatch.any { issuerToMatch ->
+            label?.lowercase(Locale.getDefault())
+                    ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+        }
     } else {
         issuerMatched
     }
