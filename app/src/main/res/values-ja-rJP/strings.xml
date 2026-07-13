@@ -12,6 +12,8 @@
     <string name="counter">カウンター</string>
     <string name="issuer">発行者</string>
     <string name="account">アカウント</string>
+    <string name="alias">エイリアス</string>
+    <string name="icon">アイコン</string>
     <string name="id">ID</string>
     <string name="secret">秘密鍵</string>
     <string name="type">タイプ</string>

@@ -12,6 +12,8 @@
     <string name="counter">Counter</string>
     <string name="issuer">வழங்குபவர்</string>
     <string name="account">கணக்கு</string>
+    <string name="alias">மாற்றுப்பெயர்</string>
+    <string name="icon">ஐகான்</string>
     <string name="id">ID</string>
     <string name="secret">இரகசிய கடவு</string>
     <string name="type">வகை</string>

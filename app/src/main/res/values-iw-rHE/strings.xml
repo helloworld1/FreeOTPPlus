@@ -12,6 +12,8 @@
     <string name="counter">מונה</string>
     <string name="issuer">מנפיק</string>
     <string name="account">חשבון</string>
+    <string name="alias">כינוי</string>
+    <string name="icon">סמל</string>
     <string name="id">מזהה</string>
     <string name="secret">סוד</string>
     <string name="type">סוג</string>

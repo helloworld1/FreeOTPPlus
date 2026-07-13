@@ -66,7 +66,9 @@ class MainViewModel @Inject constructor(
             if (searchQuery.isNotEmpty()) {
                 filteredTokens = filteredTokens.filter { token ->
                     token.label.contains(searchQuery, true)
-                            || token.issuer?.contains(searchQuery, true) ?: false
+                            || (token.issuer?.contains(searchQuery, true) ?: false)
+                            || (token.alias?.contains(searchQuery, true) ?: false)
+                            || (token.iconKey?.contains(searchQuery, true) ?: false)
                 }
             }
 

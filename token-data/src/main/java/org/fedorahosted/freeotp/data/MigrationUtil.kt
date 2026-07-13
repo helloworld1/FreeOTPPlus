@@ -38,6 +38,8 @@ class MigrationUtil @Inject constructor(
                 ordinal = index.toLong() + 1,
                 issuer = legacyToken.issuer,
                 label = legacyToken.label,
+                alias = legacyToken.alias,
+                iconKey = legacyToken.iconKey,
                 imagePath = legacyToken.image?.toString(),
                 tokenType = if (legacyToken.type == Token.TokenType.HOTP) OtpTokenType.HOTP else OtpTokenType.TOTP,
                 algorithm = legacyToken.algorithm ?: "sha1",
@@ -56,6 +58,8 @@ class MigrationUtil @Inject constructor(
             val uri = OtpTokenFactory.toUri(otpToken)
             Token(uri).apply {
                 category = otpToken.category
+                alias = otpToken.alias
+                iconKey = otpToken.iconKey
             }
         }
     }

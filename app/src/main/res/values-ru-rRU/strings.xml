@@ -12,6 +12,8 @@
     <string name="counter">Счетчик</string>
     <string name="issuer">Издатель</string>
     <string name="account">Аккаунт</string>
+    <string name="alias">Псевдоним</string>
+    <string name="icon">Значок</string>
     <string name="id">ID</string>
     <string name="secret">Секретный ключ</string>
     <string name="type">Тип</string>

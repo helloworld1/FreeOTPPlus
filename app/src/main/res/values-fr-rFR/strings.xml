@@ -12,6 +12,8 @@
     <string name="counter">Compteur</string>
     <string name="issuer">Émetteur</string>
     <string name="account">Compte</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Icône</string>
     <string name="id">ID</string>
     <string name="secret">Secret</string>
     <string name="type">Type</string>

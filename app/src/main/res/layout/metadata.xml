@@ -74,6 +74,28 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical|right"
                 android:paddingRight="8dp"
+                android:text="@string/alias"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/alias"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="4dp"
+                android:hint="@string/alias"
+                android:inputType="textNoSuggestions"
+                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:paddingRight="8dp"
                 android:text="@string/category"
                 android:textStyle="bold" />
 
@@ -83,6 +105,29 @@
                 android:layout_height="48dp"
                 android:layout_marginBottom="4dp"
                 android:hint="@string/category"
+                android:inputType="textNoSuggestions"
+                android:completionThreshold="1"
+                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:paddingRight="8dp"
+                android:text="@string/icon"
+                android:textStyle="bold" />
+
+            <AutoCompleteTextView
+                android:id="@+id/icon_key"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="4dp"
+                android:hint="@string/icon"
                 android:inputType="textNoSuggestions"
                 android:completionThreshold="1"
                 android:textAppearance="?android:attr/textAppearanceSmallInverse" />

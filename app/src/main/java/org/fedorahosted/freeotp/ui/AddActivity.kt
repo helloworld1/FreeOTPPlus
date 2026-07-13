@@ -44,7 +44,10 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.util.blankToNull
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.liberty.android.freeotp.token_images.TokenImage
+import org.liberty.android.freeotp.token_images.displayKey
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.*
@@ -60,7 +63,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
     private lateinit var mImage: ImageButton
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
+    private lateinit var mAlias: EditText
     private lateinit var mCategory: AutoCompleteTextView
+    private lateinit var mIconKey: AutoCompleteTextView
     private lateinit var mSecret: EditText
     private lateinit var mInterval: EditText
     private lateinit var mCounter: EditText
@@ -91,7 +96,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         mImage = findViewById(R.id.image)
         mIssuer = findViewById(R.id.issuer)
         mLabel = findViewById(R.id.label)
+        mAlias = findViewById(R.id.alias)
         mCategory = findViewById(R.id.category)
+        mIconKey = findViewById(R.id.icon_key)
         mSecret = findViewById(R.id.secret)
         mInterval = findViewById(R.id.interval)
         mCounter = findViewById(R.id.counter)
@@ -114,9 +121,13 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         val tw = AddTextWatcher(this)
         mIssuer.addTextChangedListener(tw)
         mLabel.addTextChangedListener(tw)
+        mAlias.addTextChangedListener(tw)
         mCategory.addTextChangedListener(tw)
+        mIconKey.addTextChangedListener(tw)
         mSecret.addTextChangedListener(AddSecretTextWatcher(this))
         mInterval.addTextChangedListener(tw)
+
+        setupIconKeyAdapter()
 
         lifecycleScope.launch {
             val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first().toMutableList()
@@ -185,7 +196,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 // Add the token
                 lifecycleScope.launch {
                     val token = OtpTokenFactory.createFromUri(Uri.parse(uri)).copy(
-                        category = mCategory.text.toString()
+                        alias = mAlias.text.toString().blankToNull(),
+                        category = mCategory.text.toString().blankToNull(),
+                        iconKey = mIconKey.text.toString().blankToNull()
                     )
                     otpTokenDatabase.otpTokenDao().insert(token)
                     setResult(Activity.RESULT_OK)
@@ -213,6 +226,21 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                         .placeholder(R.drawable.logo)
                         .into(mImage)
 
+            }
+        }
+    }
+
+    private fun setupIconKeyAdapter() {
+        val iconKeys = TokenImage.values().map { it.displayKey() }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, iconKeys)
+        mIconKey.setAdapter(adapter)
+        mIconKey.threshold = 0
+        mIconKey.setOnClickListener {
+            mIconKey.showDropDown()
+        }
+        mIconKey.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                mIconKey.showDropDown()
             }
         }
     }

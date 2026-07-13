@@ -12,6 +12,8 @@
     <string name="counter">Sayaç</string>
     <string name="issuer">Yayınlayan</string>
     <string name="account">Hesap</string>
+    <string name="alias">Takma ad</string>
+    <string name="icon">Simge</string>
     <string name="id">Kimlik</string>
     <string name="secret">Gizli Anahtar</string>
     <string name="type">Tip</string>

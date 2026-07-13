@@ -48,8 +48,11 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.EditBinding
+import org.fedorahosted.freeotp.util.blankToNull
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
+import org.liberty.android.freeotp.token_images.TokenImage
+import org.liberty.android.freeotp.token_images.displayKey
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -62,7 +65,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private lateinit var binding: EditBinding
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
+    private lateinit var mAlias: EditText
     private lateinit var mCategory: AutoCompleteTextView
+    private lateinit var mIconKey: AutoCompleteTextView
     private lateinit var mImage: ImageButton
     private lateinit var mRestore: Button
     private lateinit var mSave: Button
@@ -71,8 +76,12 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private var mIssuerDefault: String? = null
     private var mLabelCurrent: String? = null
     private var mLabelDefault: String? = null
+    private var mAliasCurrent: String? = null
+    private var mAliasDefault: String? = null
     private var mCategoryCurrent: String? = null
     private var mCategoryDefault: String? = null
+    private var mIconKeyCurrent: String? = null
+    private var mIconKeyDefault: String? = null
 
     private var mImageCurrent: Uri? = null
     private var mImageDefault: Uri? = null
@@ -123,17 +132,23 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
             mIssuerCurrent = token.issuer
             mLabelCurrent = token.label
+            mAliasCurrent = token.alias ?: ""
             mCategoryCurrent = token.category ?: ""
+            mIconKeyCurrent = token.iconKey ?: ""
             mImageCurrent = if (token.imagePath != null) Uri.parse(token.imagePath) else null
             mIssuerDefault = token.issuer
             mLabelDefault = token.label
+            mAliasDefault = mAliasCurrent
             mCategoryDefault = mCategoryCurrent
+            mIconKeyDefault = mIconKeyCurrent
             mImageDefault = mImageCurrent
 
             // Get references to widgets.
             mIssuer = findViewById<View>(R.id.issuer) as EditText
             mLabel = findViewById<View>(R.id.label) as EditText
+            mAlias = findViewById<View>(R.id.alias) as EditText
             mCategory = findViewById<View>(R.id.category) as AutoCompleteTextView
+            mIconKey = findViewById<View>(R.id.icon_key) as AutoCompleteTextView
             mImage = findViewById<View>(R.id.image) as ImageButton
             mRestore = findViewById<View>(R.id.restore) as Button
             mSave = findViewById<View>(R.id.save) as Button
@@ -142,7 +157,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             // Setup text changed listeners.
             mIssuer.addTextChangedListener(this@EditActivity)
             mLabel.addTextChangedListener(this@EditActivity)
+            mAlias.addTextChangedListener(this@EditActivity)
             mCategory.addTextChangedListener(this@EditActivity)
+            mIconKey.addTextChangedListener(this@EditActivity)
 
             // Setup click callbacks.
             findViewById<View>(R.id.cancel).setOnClickListener(this@EditActivity)
@@ -157,7 +174,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
             mLabel.setText(mLabelCurrent)
             mIssuer.setText(mIssuerCurrent)
+            mAlias.setText(mAliasCurrent)
             mCategory.setText(mCategoryCurrent)
+            mIconKey.setText(mIconKeyCurrent)
             mIssuer.setSelection(mIssuer.text.length)
 
             // Token details
@@ -233,6 +252,8 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     mCategory.setText("")
                 }
             }
+
+            setupIconKeyAdapter()
         }
     }
 
@@ -261,9 +282,11 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
         val label = mLabel.text.toString()
         val issuer = mIssuer.text.toString()
+        val alias = mAlias.text.toString()
         val category = mCategory.text.toString()
-        mSave.isEnabled = label != mLabelCurrent || issuer != mIssuerCurrent || category != mCategoryCurrent || !imageIs(mImageCurrent)
-        mRestore.isEnabled = label != mLabelDefault || issuer != mIssuerDefault || category != mCategoryDefault || !imageIs(mImageDefault)
+        val iconKey = mIconKey.text.toString()
+        mSave.isEnabled = label != mLabelCurrent || issuer != mIssuerCurrent || alias != mAliasCurrent || category != mCategoryCurrent || iconKey != mIconKeyCurrent || !imageIs(mImageCurrent)
+        mRestore.isEnabled = label != mLabelDefault || issuer != mIssuerDefault || alias != mAliasDefault || category != mCategoryDefault || iconKey != mIconKeyDefault || !imageIs(mImageDefault)
     }
 
     override fun afterTextChanged(s: Editable) {
@@ -281,11 +304,11 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             R.id.restore -> {
                 mLabel.setText(mLabelDefault)
                 mIssuer.setText(mIssuerDefault)
+                mAlias.setText(mAliasDefault)
                 mCategory.setText(mCategoryDefault)
+                mIconKey.setText(mIconKeyDefault)
                 mIssuer.setSelection(mIssuer.text.length)
-                mImageDefault?.let {
-                    showImage(it)
-                }
+                showImage(mImageDefault)
             }
 
             R.id.save -> {
@@ -294,7 +317,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     val newToken = token.copy(
                         issuer = mIssuer.text.toString(),
                         label = mLabel.text.toString(),
-                        category = mCategory.text.toString(),
+                        alias = mAlias.text.toString().blankToNull(),
+                        category = mCategory.text.toString().blankToNull(),
+                        iconKey = mIconKey.text.toString().blankToNull(),
                         imagePath = mImageDisplay?.toString()
                     )
 
@@ -309,6 +334,21 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             }
 
             R.id.cancel -> finish()
+        }
+    }
+
+    private fun setupIconKeyAdapter() {
+        val iconKeys = TokenImage.values().map { it.displayKey() }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, iconKeys)
+        mIconKey.setAdapter(adapter)
+        mIconKey.threshold = 0
+        mIconKey.setOnClickListener {
+            mIconKey.showDropDown()
+        }
+        mIconKey.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                mIconKey.showDropDown()
+            }
         }
     }
 
