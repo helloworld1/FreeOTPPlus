@@ -39,6 +39,7 @@ dependencyResolutionManagement {
             version("androidxTruth", "1.7.0")
             version("espresso", "3.7.0")
             version("guava", "33.4.0-android")
+            version("desugar_jdk_libs", "2.1.5")
 
             library("appCompat", "androidx.appcompat","appcompat").versionRef("appCompat")
             library("material", "com.google.android.material", "material").versionRef("material")
@@ -87,6 +88,7 @@ dependencyResolutionManagement {
             library("roomKtx", "androidx.room", "room-ktx").versionRef("room")
 
             library("guava", "com.google.guava", "guava").versionRef("guava")
+            library("desugarJdkLibs", "com.android.tools", "desugar_jdk_libs").versionRef("desugar_jdk_libs")
 
             plugin("ksp", "com.google.devtools.ksp").versionRef("ksp")
             plugin("hilt", "com.google.dagger.hilt.android").versionRef("hilt")
