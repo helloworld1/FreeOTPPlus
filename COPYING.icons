@@ -13,6 +13,19 @@ The token thumbnails token_image_*.xml in token-images library are from andOTP
 Copyright (C) 2017-2020 Jakob Nixdorf <andotp@shadowice.org>
 Copyright (C) 2015 Bruno Bierbaumer
 
+The token thumbnail token_image_forgejo.xml in token-images library is adapted
+from the Forgejo logo by Caesar Schinas, licensed under Creative Commons
+Attribution-ShareAlike 4.0 International.
+
+ * https://commons.wikimedia.org/wiki/File:Forgejo_logo.svg
+ * https://creativecommons.org/licenses/by-sa/4.0/
+
+The token thumbnail token_image_group_office.xml in token-images library is
+adapted from the GroupOffice logo published by Intermesh on the official
+GroupOffice website.
+
+ * https://www.group-office.com/assets/ico/group-office.svg
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in the
 Software without restriction, including without limitation the rights to
@@ -29,5 +42,3 @@ PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
-
-
