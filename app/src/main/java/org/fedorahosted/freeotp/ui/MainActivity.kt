@@ -355,13 +355,33 @@ class MainActivity : AppCompatActivity() {
 
         val uri = intent.data
         if (uri != null) {
-            lifecycleScope.launch {
-                try {
-                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
-                } catch (e: Exception) {
-                    Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                            .show()
-                }
+            val rawPath = uri.path?.trimStart('/') ?: ""
+
+            // Account is required; reject the intent silently if absent
+            val account = rawPath.substringAfter(":", "").ifEmpty { null } ?: return
+
+            // Issuer is optional; can be empty
+            val issuer = uri.getQueryParameter("issuer") ?: rawPath.substringBefore(":")
+
+            // Post to ensure the window is attached before showing the dialog.
+            // onNewIntent may be called from onCreate before setContentView completes.
+            window.decorView.post {
+                MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.add_token_confirmation_title)
+                        .setMessage(getString(R.string.add_token_confirmation_message, issuer, account))
+                        .setIcon(R.drawable.alert)
+                        .setPositiveButton(R.string.ok_text) { _, _ ->
+                            lifecycleScope.launch {
+                                try {
+                                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
+                                } catch (e: Exception) {
+                                    Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                                            .show()
+                                }
+                            }
+                        }
+                        .setNegativeButton(R.string.cancel_text, null)
+                        .show()
             }
         }
     }
