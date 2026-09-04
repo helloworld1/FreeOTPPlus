@@ -12,6 +12,8 @@
     <string name="counter">Comptador</string>
     <string name="issuer">Emissor</string>
     <string name="account">Compte</string>
+    <string name="alias">Àlies</string>
+    <string name="icon">Icona</string>
     <string name="id">Identificador</string>
     <string name="secret">Clau secreta</string>
     <string name="type">Tipus</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Inicia amb la captura de pantalla activada</string>
     <string name="token_details">Detalls de l\'OTP</string>
     <string name="share_to_other_apps">Envia a una altra app</string>
+    <string name="category_tab_all">Tot</string>
+    <string name="category_tab_none">Cap</string>
 </resources>

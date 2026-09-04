@@ -65,6 +65,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -96,6 +97,9 @@ class MainActivity : AppCompatActivity() {
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
     private var categories: List<String> = emptyList()
+    private var hasUncategorizedTokens = false
+    private var selectedCategoryFilter: String? = null
+    private var updatingCategoryTabs = false
 
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -181,6 +185,15 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     viewModel.getAllCategories().collect {
                         categories = it
+                        updateCategoryTabs()
+                        invalidateOptionsMenu()
+                    }
+                }
+
+                launch {
+                    viewModel.hasUncategorizedTokens().collect {
+                        hasUncategorizedTokens = it
+                        updateCategoryTabs()
                         invalidateOptionsMenu()
                     }
                 }
@@ -201,6 +214,20 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
 
+        })
+
+        binding.categoryTabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                if (!updatingCategoryTabs) {
+                    selectCategoryFilter(tab.tag as? String, updateTabs = false)
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+            }
         })
 
         binding.addTokenFab.setOnClickListener {
@@ -245,14 +272,19 @@ class MainActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val filterItem = menu.findItem(R.id.action_filter)
         val filterMenu = filterItem?.subMenu ?: return super.onPrepareOptionsMenu(menu)
+        filterItem.isVisible = categories.isNotEmpty() || hasUncategorizedTokens
         filterMenu.clear()
 
-        filterMenu.add(Menu.NONE, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
-        filterMenu.add(Menu.NONE, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
+        if (categories.isNotEmpty()) {
+            filterMenu.add(Menu.NONE, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
+        }
+        if (hasUncategorizedTokens) {
+            filterMenu.add(Menu.NONE, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
+        }
 
         for (category in categories) {
             filterMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, category).setOnMenuItemClickListener {
-                viewModel.setCategoryFilter(category)
+                selectCategoryFilter(category)
                 true
             }
         }
@@ -273,12 +305,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_filter_all -> {
-                viewModel.setCategoryFilter(null)
+                selectCategoryFilter(null)
                 return true
             }
 
             R.id.action_filter_uncategorized -> {
-                viewModel.setCategoryFilter(MainViewModel.CATEGORY_UNCATEGORIZED)
+                selectCategoryFilter(MainViewModel.CATEGORY_UNCATEGORIZED)
                 return true
             }
 
@@ -476,6 +508,74 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
+    }
+
+    private fun selectCategoryFilter(category: String?, updateTabs: Boolean = true) {
+        selectedCategoryFilter = category
+        viewModel.setCategoryFilter(category)
+
+        if (updateTabs) {
+            selectCategoryTab(category)
+        }
+    }
+
+    private fun updateCategoryTabs() {
+        normalizeCategoryFilter()
+
+        updatingCategoryTabs = true
+        binding.categoryTabs.removeAllTabs()
+        if (categories.isEmpty() && !hasUncategorizedTokens) {
+            binding.categoryTabs.visibility = View.GONE
+            updatingCategoryTabs = false
+            return
+        }
+
+        binding.categoryTabs.visibility = View.VISIBLE
+        if (categories.isNotEmpty()) {
+            addCategoryTab(getString(R.string.category_tab_all), null)
+        }
+        if (hasUncategorizedTokens) {
+            addCategoryTab(getString(R.string.category_tab_none), MainViewModel.CATEGORY_UNCATEGORIZED)
+        }
+        categories.forEach { category ->
+            addCategoryTab(category, category)
+        }
+        selectCategoryTab(selectedCategoryFilter)
+        updatingCategoryTabs = false
+    }
+
+    private fun normalizeCategoryFilter() {
+        val normalizedCategory = when {
+            categories.isEmpty() && !hasUncategorizedTokens -> null
+            categories.isEmpty() && hasUncategorizedTokens -> MainViewModel.CATEGORY_UNCATEGORIZED
+            selectedCategoryFilter == MainViewModel.CATEGORY_UNCATEGORIZED && !hasUncategorizedTokens -> null
+            selectedCategoryFilter != null &&
+                    selectedCategoryFilter != MainViewModel.CATEGORY_UNCATEGORIZED &&
+                    !categories.contains(selectedCategoryFilter) -> null
+            else -> selectedCategoryFilter
+        }
+
+        if (selectedCategoryFilter != normalizedCategory) {
+            selectedCategoryFilter = normalizedCategory
+            viewModel.setCategoryFilter(normalizedCategory)
+        }
+    }
+
+    private fun addCategoryTab(title: String, category: String?) {
+        val tab = binding.categoryTabs.newTab()
+            .setText(title)
+        tab.tag = category
+        binding.categoryTabs.addTab(tab, category == selectedCategoryFilter)
+    }
+
+    private fun selectCategoryTab(category: String?) {
+        for (index in 0 until binding.categoryTabs.tabCount) {
+            val tab = binding.categoryTabs.getTabAt(index) ?: continue
+            if (tab.tag == category) {
+                tab.select()
+                return
+            }
+        }
     }
 
     private fun verifyAuthentication(isEnabling: Boolean = false, isDisabling: Boolean = false) {

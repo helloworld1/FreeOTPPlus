@@ -56,6 +56,8 @@ class MainViewModel @Inject constructor(
 
     fun getAllCategories(): Flow<List<String>> = otpTokenDatabase.otpTokenDao().getAllCategories()
 
+    fun hasUncategorizedTokens(): Flow<Boolean> = otpTokenDatabase.otpTokenDao().hasUncategorizedTokens()
+
     fun getTokenList(): Flow<List<OtpToken>> {
         return combine(authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, category, tokens ->
             if (auth != AuthState.AUTHENTICATED) {
@@ -66,7 +68,9 @@ class MainViewModel @Inject constructor(
             if (searchQuery.isNotEmpty()) {
                 filteredTokens = filteredTokens.filter { token ->
                     token.label.contains(searchQuery, true)
-                            || token.issuer?.contains(searchQuery, true) ?: false
+                            || (token.issuer?.contains(searchQuery, true) ?: false)
+                            || (token.alias?.contains(searchQuery, true) ?: false)
+                            || (token.iconKey?.contains(searchQuery, true) ?: false)
                 }
             }
 

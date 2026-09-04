@@ -12,6 +12,8 @@
     <string name="counter">Counter</string>
     <string name="issuer">Issuer</string>
     <string name="account">Account</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Icon</string>
     <string name="id">ID</string>
     <string name="secret">Secret</string>
     <string name="type">Type</string>
@@ -80,4 +82,6 @@
     <string name="category">Category</string>
     <string name="all_categories">All categories</string>
     <string name="uncategorized">Uncategorized</string>
+    <string name="category_tab_all">All</string>
+    <string name="category_tab_none">None</string>
 </resources>

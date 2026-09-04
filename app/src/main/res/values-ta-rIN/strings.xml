@@ -12,6 +12,8 @@
     <string name="counter">Counter</string>
     <string name="issuer">வழங்குபவர்</string>
     <string name="account">கணக்கு</string>
+    <string name="alias">மாற்றுப்பெயர்</string>
+    <string name="icon">ஐகான்</string>
     <string name="id">ID</string>
     <string name="secret">இரகசிய கடவு</string>
     <string name="type">வகை</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
     <string name="token_details">Token details</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">அனைத்தும்</string>
+    <string name="category_tab_none">எதுவுமில்லை</string>
 </resources>

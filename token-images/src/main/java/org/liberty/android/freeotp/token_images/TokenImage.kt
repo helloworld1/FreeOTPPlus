@@ -279,3 +279,11 @@ fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
         issuerMatched
     }
 }
+
+fun TokenImage.displayKey(): String = issuer ?: name
+
+fun matchTokenImage(query: String?, label: String? = null): TokenImage? {
+    return TokenImage.values().firstOrNull {
+        it.matchToken(query, label)
+    }
+}

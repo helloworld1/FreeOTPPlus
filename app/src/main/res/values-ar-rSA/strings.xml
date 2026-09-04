@@ -12,6 +12,8 @@
     <string name="counter">أداة العد </string>
     <string name="issuer">وحدة اصدار </string>
     <string name="account">الحساب </string>
+    <string name="alias">الاسم المستعار</string>
+    <string name="icon">الأيقونة</string>
     <string name="id">الكود </string>
     <string name="secret">السر </string>
     <string name="type">النوع </string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">إطلاق مع تمكين لقطة الشاشة</string>
     <string name="token_details">تفاصيل الرمز</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">الكل</string>
+    <string name="category_tab_none">لا شيء</string>
 </resources>

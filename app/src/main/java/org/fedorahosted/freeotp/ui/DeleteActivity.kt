@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.DeleteBinding
+import org.fedorahosted.freeotp.util.displayName
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
 
@@ -65,7 +66,7 @@ class DeleteActivity : AppCompatActivity() {
                     return@collect
                 }
 
-                (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
+                (findViewById<View>(R.id.issuer) as TextView).text = token.displayName()
                 (findViewById<View>(R.id.label) as TextView).text = token.label
                 binding.imageView.setTokenImage(token)
             }

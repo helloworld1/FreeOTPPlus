@@ -12,6 +12,8 @@
     <string name="counter">Contatore</string>
     <string name="issuer">Emittente</string>
     <string name="account">Conto</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Icona</string>
     <string name="id">ID</string>
     <string name="secret">Segreto</string>
     <string name="type">Tipo</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Usa con gli screenshot abilitati</string>
     <string name="token_details">Dettagli del token</string>
     <string name="share_to_other_apps">Condividi con altre app</string>
+    <string name="category_tab_all">Tutti</string>
+    <string name="category_tab_none">Nessuna</string>
 </resources>

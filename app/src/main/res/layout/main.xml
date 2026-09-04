@@ -39,6 +39,12 @@
 				android:layout_marginEnd="@dimen/space_2"
 				android:iconifiedByDefault="true"/>
 		</com.google.android.material.appbar.MaterialToolbar>
+		<com.google.android.material.tabs.TabLayout
+			android:id="@+id/category_tabs"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			app:tabGravity="start"
+			app:tabMode="scrollable" />
 	</com.google.android.material.appbar.AppBarLayout>
 	<androidx.core.widget.NestedScrollView
 		android:layout_width="match_parent"

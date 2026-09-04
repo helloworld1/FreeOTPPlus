@@ -12,6 +12,8 @@
     <string name="counter">කවුන්ටරය</string>
     <string name="issuer">නිකුත් කරන්නා</string>
     <string name="account">ගැන</string>
+    <string name="alias">අන්වර්ථ නාමය</string>
+    <string name="icon">නිරූපකය</string>
     <string name="id">හැඳුනුම්පත</string>
     <string name="secret">රහස</string>
     <string name="type">ටයිප් කරන්න</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">තිර රුවක් සබල කර දියත් කරන්න</string>
     <string name="token_details">ටෝකන් විස්තර</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">සියල්ල</string>
+    <string name="category_tab_none">නැත</string>
 </resources>

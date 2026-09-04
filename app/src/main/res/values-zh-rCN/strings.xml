@@ -12,6 +12,8 @@
     <string name="counter">计数器</string>
     <string name="issuer">发布人</string>
     <string name="account">帐户</string>
+    <string name="alias">别名</string>
+    <string name="icon">图标</string>
     <string name="id">ID</string>
     <string name="secret">密钥</string>
     <string name="type">类型</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">启动时允许屏幕截图</string>
     <string name="token_details">令牌详细信息</string>
     <string name="share_to_other_apps">分享到其他应用</string>
+    <string name="category_tab_all">全部</string>
+    <string name="category_tab_none">无</string>
 </resources>

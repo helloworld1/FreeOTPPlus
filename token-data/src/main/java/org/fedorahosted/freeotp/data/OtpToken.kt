@@ -9,6 +9,8 @@ data class OtpToken (
     val ordinal: Long,
     val issuer: String?,
     val label: String,
+    val alias: String? = null,
+    val iconKey: String? = null,
     val imagePath: String?,
     val tokenType: OtpTokenType,
     val algorithm: String,

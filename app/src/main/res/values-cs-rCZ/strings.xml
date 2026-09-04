@@ -12,6 +12,8 @@
     <string name="counter">Počítadlo</string>
     <string name="issuer">Vydavatel</string>
     <string name="account">Účet</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Ikona</string>
     <string name="id">ID</string>
     <string name="secret">Tajný</string>
     <string name="type">Typ</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Spustit s povoleným snímkem obrazovky</string>
     <string name="token_details">Detaily tokenu</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">Vše</string>
+    <string name="category_tab_none">Žádné</string>
 </resources>

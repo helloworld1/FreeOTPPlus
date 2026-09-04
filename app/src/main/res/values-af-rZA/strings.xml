@@ -12,6 +12,8 @@
     <string name="counter">Teller</string>
     <string name="issuer">Uitreiker</string>
     <string name="account">Rekening</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Ikoon</string>
     <string name="id">ID</string>
     <string name="secret">Geheim</string>
     <string name="type">Tipe</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
     <string name="token_details">Token details</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">Alles</string>
+    <string name="category_tab_none">Geen</string>
 </resources>

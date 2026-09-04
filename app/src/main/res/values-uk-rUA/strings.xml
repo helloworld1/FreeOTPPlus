@@ -12,6 +12,8 @@
     <string name="counter">Лічильник</string>
     <string name="issuer">Видавець</string>
     <string name="account">Обліковий запис</string>
+    <string name="alias">Псевдонім</string>
+    <string name="icon">Значок</string>
     <string name="id">ІД</string>
     <string name="secret">Секрет</string>
     <string name="type">Тип</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Запустити з дозволеним знімком екрана</string>
     <string name="token_details">Деталі ключа</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">Усі</string>
+    <string name="category_tab_none">Немає</string>
 </resources>

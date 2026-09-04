@@ -12,6 +12,8 @@
     <string name="counter">Räknare</string>
     <string name="issuer">Utfärdare</string>
     <string name="account">Konto</string>
+    <string name="alias">Alias</string>
+    <string name="icon">Ikon</string>
     <string name="id">ID</string>
     <string name="secret">Hemlighet</string>
     <string name="type">Typ</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Starta med skärmdump aktiverad</string>
     <string name="token_details">Tokendetaljer</string>
     <string name="share_to_other_apps">Dela med andra appar</string>
+    <string name="category_tab_all">Alla</string>
+    <string name="category_tab_none">Ingen</string>
 </resources>

@@ -12,6 +12,8 @@
     <string name="counter">Számláló</string>
     <string name="issuer">Kibocsátó</string>
     <string name="account">Fiók</string>
+    <string name="alias">Álnév</string>
+    <string name="icon">Ikon</string>
     <string name="id">Azonosító</string>
     <string name="secret">Titok</string>
     <string name="type">Típus</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
     <string name="token_details">Token details</string>
     <string name="share_to_other_apps">Share to other apps</string>
+    <string name="category_tab_all">Mind</string>
+    <string name="category_tab_none">Nincs</string>
 </resources>

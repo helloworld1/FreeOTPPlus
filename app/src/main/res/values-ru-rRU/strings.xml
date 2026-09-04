@@ -12,6 +12,8 @@
     <string name="counter">Счетчик</string>
     <string name="issuer">Издатель</string>
     <string name="account">Аккаунт</string>
+    <string name="alias">Псевдоним</string>
+    <string name="icon">Значок</string>
     <string name="id">ID</string>
     <string name="secret">Секретный ключ</string>
     <string name="type">Тип</string>
@@ -65,4 +67,6 @@
     <string name="launch_with_screenshot_enabled">Запуск с включённым режимом скриншота</string>
     <string name="token_details">Детали токена</string>
     <string name="share_to_other_apps">Поделиться с другими приложениями</string>
+    <string name="category_tab_all">Все</string>
+    <string name="category_tab_none">Нет</string>
 </resources>
