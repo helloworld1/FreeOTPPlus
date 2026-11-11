@@ -39,5 +39,4 @@ The following behaviors are intentional design trade-offs for usability and inte
 
 - **Rooted devices / physical debug access**: FreeOTP+ relies on the Android OS application sandbox and device encryption to protect app-private storage (`Room` database). Attacks requiring `root` privileges, unlocked bootloaders, custom ROMs, or authenticated `adb` access are out of scope.
 - **Unencrypted backups and exports**: JSON and Key URI exports—as well as Android system backup (`allowBackup="true"`)—store token secrets without additional app-layer encryption so users can back up, restore, and migrate their tokens across devices and authenticator apps. Users are responsible for securing exported backup files.
-- **Screenshot mode shortcut**: Screenshots are blocked by default via `FLAG_SECURE`, except when the user explicitly launches the app using the **Screenshot mode** launcher shortcut.
 - **Optional authentication**: App-launch and secret-display authentication (`Require authentication`) is opt-in in settings.

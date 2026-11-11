@@ -45,7 +45,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -205,16 +204,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.addTokenFab.setOnClickListener {
             startActivity(Intent(this, ScanTokenActivity::class.java))
-        }
-
-        // Don't permit screenshots since these might contain OTP codes unless explicitly
-        // launched with screenshot mode
-
-        if (intent.extras?.getBoolean(SCREENSHOT_MODE_EXTRA) != true) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-            )
         }
 
         if (savedInstanceState == null) {
