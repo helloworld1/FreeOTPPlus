@@ -1,6 +1,9 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.content.Intent
+import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.click
@@ -10,6 +13,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -19,6 +23,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.not
 import org.junit.Rule
 import org.junit.Test
@@ -210,6 +215,54 @@ class MainActivityTest {
             .check(matches(hasDescendant(withText("microsoft account 1"))))
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+    }
+
+    @Test
+    fun testExternalTokenLinkConfirmationAccept() {
+        val context = getInstrumentation().targetContext
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("otpauth://totp/GitHub:alice@example.com?secret=JBSWY3DPEHPK3PXP")
+        ).setClass(context, MainActivity::class.java)
+
+        ActivityScenario.launch<MainActivity>(intent).use {
+            onView(withId(R.id.token_list))
+                .check(RecyclerViewAssertion.childrenCount(0))
+
+            onView(withText(containsString("GitHub")))
+                .check(matches(isDisplayed()))
+            onView(withText(containsString("alice@example.com")))
+                .check(matches(isDisplayed()))
+
+            onView(withText(R.string.add))
+                .perform(click())
+
+            onView(withId(R.id.token_list))
+                .check(RecyclerViewAssertion.childrenCount(1))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+                .check(matches(hasDescendant(withText("GitHub"))))
+                .check(matches(hasDescendant(withText("alice@example.com"))))
+        }
+    }
+
+    @Test
+    fun testExternalTokenLinkConfirmationCancel() {
+        val context = getInstrumentation().targetContext
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("otpauth://totp/bob@example.com?secret=JBSWY3DPEHPK3PXP")
+        ).setClass(context, MainActivity::class.java)
+
+        ActivityScenario.launch<MainActivity>(intent).use {
+            onView(withText(containsString("bob@example.com")))
+                .check(matches(isDisplayed()))
+
+            onView(withText(R.string.cancel_text))
+                .perform(click())
+
+            onView(withId(R.id.token_list))
+                .check(RecyclerViewAssertion.childrenCount(0))
+        }
     }
 
     private fun populateTestData() {

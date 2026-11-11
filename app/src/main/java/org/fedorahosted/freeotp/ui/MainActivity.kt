@@ -50,6 +50,7 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricManager
@@ -96,6 +97,7 @@ class MainActivity : AppCompatActivity() {
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
     private var categories: List<String> = emptyList()
+    private var confirmAddTokenDialog: AlertDialog? = null
 
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -109,8 +111,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        onNewIntent(intent)
 
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -216,10 +216,16 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_SECURE
             )
         }
+
+        if (savedInstanceState == null) {
+            onNewIntent(intent)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        confirmAddTokenDialog?.dismiss()
+        confirmAddTokenDialog = null
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
         lastSessionEndTimestamp = 0L;
     }
@@ -353,17 +359,35 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val uri = intent.data
-        if (uri != null) {
-            lifecycleScope.launch {
-                try {
-                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(uri))
-                } catch (e: Exception) {
-                    Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                            .show()
-                }
-            }
+        val uri = intent.data ?: return
+        intent.data = null
+
+        val token = try {
+            OtpTokenFactory.createFromUri(uri)
+        } catch (e: Exception) {
+            Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
+                    .show()
+            return
         }
+
+        val tokenDetails = if (token.issuer.isNullOrBlank()) {
+            "${getString(R.string.account)}: ${token.label}"
+        } else {
+            "${getString(R.string.issuer)}: ${token.issuer}\n${getString(R.string.account)}: ${token.label}"
+        }
+
+        confirmAddTokenDialog?.dismiss()
+        confirmAddTokenDialog = MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.add_token)
+                .setMessage(getString(R.string.add_token_confirmation_message, tokenDetails))
+                .setIcon(R.drawable.alert)
+                .setPositiveButton(R.string.add) { _, _ ->
+                    lifecycleScope.launch {
+                        otpTokenDatabase.otpTokenDao().insert(token)
+                    }
+                }
+                .setNegativeButton(R.string.cancel_text, null)
+                .show()
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
