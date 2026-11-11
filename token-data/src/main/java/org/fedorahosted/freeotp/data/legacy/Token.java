@@ -80,7 +80,7 @@ public class Token {
             throw new TokenUriInvalidException();
 
         // Strip the path of its leading '/'
-        for (int i = 0; path.charAt(i) == '/'; i++)
+        while (path.startsWith("/"))
             path = path.substring(1);
         if (path.length() == 0)
             throw new TokenUriInvalidException();
@@ -103,13 +103,13 @@ public class Token {
         try {
             String d = uri.getQueryParameter("digits");
             if (d == null) {
-                if (issuerExt.equals("Steam"))
+                if (Objects.equals(issuerExt, "Steam"))
                     d = "5";
                 else
                     d = "6";
             }
             digits = Integer.parseInt(d);
-            if (!issuerExt.equals("Steam") && digits != 6 && digits != 7 && digits != 8 && digits != 5)
+            if (!Objects.equals(issuerExt, "Steam") && digits != 6 && digits != 7 && digits != 8 && digits != 5)
                 throw new TokenUriInvalidException();
         } catch (NumberFormatException e) {
             throw new TokenUriInvalidException();
@@ -183,7 +183,7 @@ public class Token {
             binary |= (digest[off + 3] & 0xff);
 
             String hotp = "";
-            if (issuerExt.equals("Steam")) {
+            if (Objects.equals(issuerExt, "Steam")) {
                 for (int i = 0; i < digits; i++) {
                     hotp += STEAMCHARS[binary % STEAMCHARS.length];
                     binary /= STEAMCHARS.length;
@@ -287,14 +287,19 @@ public class Token {
     }
 
     public Uri toUri() {
-        String issuerLabel = !issuerExt.equals("") ? issuerExt + ":" + label : label;
+        boolean hasIssuerExt = issuerExt != null && !issuerExt.equals("");
+        String issuerLabel = hasIssuerExt ? issuerExt + ":" + label : label;
 
         Uri.Builder builder = new Uri.Builder().scheme("otpauth").path(issuerLabel)
                 .appendQueryParameter("secret", Base32String.encode(secret))
-                .appendQueryParameter("issuer", issuerInt == null ? issuerExt : issuerInt)
                 .appendQueryParameter("algorithm", algo)
                 .appendQueryParameter("digits", Integer.toString(digits))
                 .appendQueryParameter("period", Integer.toString(period));
+
+        String issuerParam = issuerInt != null ? issuerInt : issuerExt;
+        if (issuerParam != null && !issuerParam.equals("")) {
+            builder.appendQueryParameter("issuer", issuerParam);
+        }
 
         switch (type) {
         case HOTP:

@@ -52,5 +52,7 @@ dependencies {
     implementation(libs.bundles.kotlinxCoroutines)
     implementation(libs.gson)
 
+    testImplementation(libs.bundles.androidxJunit)
+    testImplementation(libs.androidxTruth)
     androidTestImplementation(libs.bundles.androidxTest)
 }

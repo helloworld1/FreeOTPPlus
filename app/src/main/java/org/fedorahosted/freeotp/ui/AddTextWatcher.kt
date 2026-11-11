@@ -31,7 +31,6 @@ import android.widget.EditText
 
 open class AddTextWatcher(activity: Activity) : TextWatcher {
     private val mButton: Button = activity.findViewById(R.id.add)
-    private val mIssuer: EditText = activity.findViewById(R.id.issuer)
     private val mLabel: EditText = activity.findViewById(R.id.label)
     private val mSecret: EditText = activity.findViewById(R.id.secret)
     private val mInterval: EditText = activity.findViewById(R.id.interval)
@@ -42,9 +41,6 @@ open class AddTextWatcher(activity: Activity) : TextWatcher {
 
     override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
         mButton.isEnabled = false
-
-        if (mIssuer.text.isEmpty())
-            return
 
         if (mLabel.text.isEmpty())
             return

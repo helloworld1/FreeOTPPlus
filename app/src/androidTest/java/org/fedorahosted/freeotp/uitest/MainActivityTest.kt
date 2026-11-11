@@ -19,6 +19,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.hamcrest.Matchers.not
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,6 +60,57 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("issuer1"))))
             .check(matches(hasDescendant(withText("account1"))))
+    }
+
+    @Test
+    fun testInsertTokenWithoutIssuer() {
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+        onView(withText(R.string.add_token))
+            .perform(click())
+        onView(withId(R.id.label))
+            .perform(replaceText("account_no_issuer"), closeSoftKeyboard())
+        onView(withId(R.id.secret))
+            .perform(replaceText("abcd5432"), closeSoftKeyboard())
+        onView(withId(R.id.add))
+            .check(matches(isEnabled()))
+            .perform(click())
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("account_no_issuer"))))
+    }
+
+    @Test
+    fun testEditTokenRemoveIssuer() {
+        populateTestData()
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+
+        onView(withId(R.id.issuer))
+            .perform(replaceText(""), closeSoftKeyboard())
+        onView(withId(R.id.save))
+            .check(matches(isEnabled()))
+            .perform(click())
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("github account 1"))))
+
+        // Reopen EditActivity and verify Save/Restore start disabled for null issuer
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+        onView(withId(R.id.issuer))
+            .check(matches(withText("")))
+        onView(withId(R.id.save))
+            .check(matches(not(isEnabled())))
+        onView(withId(R.id.restore))
+            .check(matches(not(isEnabled())))
     }
 
     @Test
@@ -104,6 +156,33 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("microsoft.com"))))
             .check(matches(hasDescendant(withText("microsoft account 1"))))
+    }
+
+    @Test
+    fun testDeleteTokenWithoutIssuer() {
+        activityRule.scenario.onActivity { activity ->
+            runBlocking {
+                activity.otpTokenDatabase.otpTokenDao().insert(
+                    TestData.OTP_TOTP_TOKEN_2.copy(id = 1, ordinal = 1, issuer = null)
+                )
+            }
+        }
+
+        onView(withId(R.id.token_list))
+            .check(RecyclerViewAssertion.childrenCount(1))
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.delete))
+            .perform(click())
+        onView(withId(R.id.issuer))
+            .check(matches(withText("microsoft account 1")))
+        onView(withId(R.id.delete))
+            .perform(click())
+
+        onView(withId(R.id.token_list))
+            .check(RecyclerViewAssertion.childrenCount(0))
     }
 
     @Test

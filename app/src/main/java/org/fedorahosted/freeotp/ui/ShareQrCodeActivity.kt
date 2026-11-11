@@ -68,7 +68,7 @@ class ShareQrCodeActivity : AppCompatActivity() {
 
             // Get token values.
             val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
-            title = token.issuer
+            title = if (token.issuer.isNullOrBlank()) token.label else token.issuer
 
             // Get references to widgets.
             val qrcodeWriter = QRCodeWriter();

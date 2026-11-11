@@ -18,17 +18,10 @@ object OtpTokenFactory {
                 else -> throw IllegalArgumentException("URI does not contain totp or hotp type")
             }
 
-        var path = uri.path
-        if (path == null) {
-            throw IllegalArgumentException("Token path is null")
-        }
+        var path = uri.path ?: throw IllegalArgumentException("Token path is null")
 
         // Strip the path of its leading '/'
-        var j = 0
-        while (path!![j] == '/') {
-            path = path.substring(1)
-            j++
-        }
+        path = path.trimStart('/')
 
         if (path.isEmpty()) {
             throw IllegalArgumentException("Token path is empty")
@@ -38,8 +31,15 @@ object OtpTokenFactory {
         val issuerExt = if (i < 0) "" else path.substring(0, i)
         val issuerInt = uri.getQueryParameter("issuer")
 
-        val issuer = if (issuerInt != null && issuerInt.isNotBlank()) issuerInt else issuerExt
+        val issuer = when {
+            !issuerInt.isNullOrBlank() -> issuerInt
+            issuerExt.isNotBlank() -> issuerExt
+            else -> null
+        }
         val label = path.substring(if (i >= 0) i + 1 else 0)
+        if (issuer == null && label.isEmpty()) {
+            throw IllegalArgumentException("Token label is empty")
+        }
 
         var algo = uri.getQueryParameter("algorithm")
         if (algo == null) algo = "sha1"
@@ -47,12 +47,13 @@ object OtpTokenFactory {
 
         Mac.getInstance("Hmac$algo")
 
+        val isSteam = issuer == "Steam" || issuerExt == "Steam"
         var d = uri.getQueryParameter("digits")
         if (d == null) {
-            d = if (issuerExt == "Steam") "5" else "6"
+            d = if (isSteam) "5" else "6"
         }
         val digits = d.toInt()
-        if (issuerExt != "Steam" && digits != 6 && digits != 7 && digits != 8 && digits != 5)
+        if (!isSteam && digits != 6 && digits != 7 && digits != 8 && digits != 5)
             throw IllegalArgumentException("Digits must be 5 to 8")
 
         var p = uri.getQueryParameter("period")
@@ -87,10 +88,11 @@ object OtpTokenFactory {
     }
 
     fun toUri(token: OtpToken): Uri {
-        val labelAndIssuer = if (token.issuer != null && token.issuer.isNotBlank()) {
-            "${token.issuer}:${token.label}"
-        } else {
-            token.label
+        val hasIssuer = !token.issuer.isNullOrBlank()
+        val labelAndIssuer = when {
+            hasIssuer -> "${token.issuer}:${token.label}"
+            token.label.contains(':') -> ":${token.label}"
+            else -> token.label
         }
 
         val builder = Uri.Builder().scheme("otpauth").path(labelAndIssuer)
@@ -98,6 +100,10 @@ object OtpTokenFactory {
             .appendQueryParameter("algorithm", token.algorithm)
             .appendQueryParameter("digits", token.digits.toString())
             .appendQueryParameter("period", token.period.toString())
+
+        if (hasIssuer) {
+            builder.appendQueryParameter("issuer", token.issuer)
+        }
 
         when (token.tokenType) {
             OtpTokenType.HOTP -> {

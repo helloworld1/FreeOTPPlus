@@ -84,13 +84,13 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mImage.setTokenImage(token)
 
         // Set the labels.
-        mLabel.text = token.label
-        mIssuer.text = token.issuer
         mCode.text = mPlaceholder
-        if (mIssuer.text.isEmpty()) {
+        if (token.issuer.isNullOrBlank()) {
             mIssuer.text = token.label
             mLabel.visibility = View.GONE
         } else {
+            mIssuer.text = token.issuer
+            mLabel.text = token.label
             mLabel.visibility = View.VISIBLE
         }
 

@@ -52,6 +52,6 @@ Link: https://crowdin.com/project/freeotpplus
 
 When importing from JSON.
 
-  * Both `issuerExt` and `label` are required, if missing the entry will be silently ignored
+  * `label` is required (`issuerExt` is optional), if `label` is missing the entry will be silently ignored
   * `secret` is required and needs to be an array/list of unsigned char integer values
   * `tokenOrder` is required, any tokens NOT listed will be silently ignored

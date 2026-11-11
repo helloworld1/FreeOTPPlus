@@ -43,13 +43,7 @@ class ImportExportUtil @Inject constructor(@ApplicationContext private val conte
                 val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first()
 
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(otpTokens)
-                val tokenOrder = otpTokens.map {
-                    if (it.issuer != null) {
-                        "${it.issuer}:${it.label}"
-                    } else {
-                        it.label
-                    }
-                }.toList()
+                val tokenOrder = legacyTokens.map { it.id }
 
                 val jsonString = gson.toJson(SavedTokens(legacyTokens, tokenOrder))
 

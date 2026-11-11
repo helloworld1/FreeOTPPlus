@@ -149,8 +149,10 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
             R.id.add -> {
                 // Get the fields
-                val issuer = Uri.encode(mIssuer.text.toString())
-                val label = Uri.encode(mLabel.text.toString())
+                val rawIssuer = mIssuer.text.toString()
+                val rawLabel = mLabel.text.toString()
+                val issuer = Uri.encode(rawIssuer)
+                val label = Uri.encode(rawLabel)
                 val secret = Uri.encode(mSecret.text.toString())
                 val algorithm = mAlgorithm.selectedItem.toString().lowercase(Locale.US)
                 val interval = Integer.parseInt(mInterval.text.toString())
@@ -161,13 +163,22 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                     else -> 6
                 }
 
+                val path = when {
+                    rawIssuer.isNotBlank() -> "$issuer:$label"
+                    rawLabel.contains(':') -> ":$label"
+                    else -> label
+                }
+
                 // Create the URI
                 var uri = String.format(Locale.US,
-                        "otpauth://%sotp/%s:%s?secret=%s&algorithm=%s&digits=%d&period=%d",
-                        if (mHOTP.isChecked) "h" else "t", issuer, label,
+                        "otpauth://%sotp/%s?secret=%s&algorithm=%s&digits=%d&period=%d",
+                        if (mHOTP.isChecked) "h" else "t", path,
                         secret, algorithm, digits, interval)
 
                 // Add optional parameters.
+                if (rawIssuer.isNotBlank()) {
+                    uri += String.format("&issuer=%s", issuer)
+                }
                 if (mHOTP.isChecked) {
                     val counter = Integer.parseInt(mCounter.text.toString())
                     uri += String.format("&counter=%d", counter)
@@ -185,6 +196,8 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                 // Add the token
                 lifecycleScope.launch {
                     val token = OtpTokenFactory.createFromUri(Uri.parse(uri)).copy(
+                        issuer = rawIssuer.takeIf { it.isNotBlank() },
+                        label = rawLabel,
                         category = mCategory.text.toString()
                     )
                     otpTokenDatabase.otpTokenDao().insert(token)

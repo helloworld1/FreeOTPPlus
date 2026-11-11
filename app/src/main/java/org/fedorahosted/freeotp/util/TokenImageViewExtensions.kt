@@ -10,26 +10,27 @@ import org.liberty.android.freeotp.token_images.TokenImage
 import org.liberty.android.freeotp.token_images.matchToken
 
 fun ImageView.setTokenImage(token: OtpToken) {
-    when {
-        token.imagePath != null -> {
-            Glide.with(this)
-                .load(token.imagePath)
-                .placeholder(R.drawable.logo)
-                .into(this)
-        }
-        !token.issuer.isNullOrBlank() -> {
-            matchIssuerWithTokenThumbnail(token)?.let {
-                setImageResource(it)
-            } ?: run {
-                val tokenText = token.issuer?.substring(0, 1) ?: ""
-                val color = ColorGenerator.MATERIAL.getColor(tokenText)
-                val tokenTextDrawable = TextDrawable.builder().buildRoundRect(tokenText, color, 10)
-                setImageDrawable(tokenTextDrawable)
-            }
-        }
-        else -> {
-            setImageResource(R.drawable.logo)
-        }
+    if (token.imagePath != null) {
+        Glide.with(this)
+            .load(token.imagePath)
+            .placeholder(R.drawable.logo)
+            .into(this)
+        return
+    }
+
+    matchIssuerWithTokenThumbnail(token)?.let {
+        setImageResource(it)
+        return
+    }
+
+    val textSource = if (!token.issuer.isNullOrBlank()) token.issuer else token.label
+    if (!textSource.isNullOrBlank()) {
+        val tokenText = textSource.substring(0, 1)
+        val color = ColorGenerator.MATERIAL.getColor(tokenText)
+        val tokenTextDrawable = TextDrawable.builder().buildRoundRect(tokenText, color, 10)
+        setImageDrawable(tokenTextDrawable)
+    } else {
+        setImageResource(R.drawable.logo)
     }
 }
 

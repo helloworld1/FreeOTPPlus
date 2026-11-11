@@ -121,11 +121,11 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
             // Get token values.
             val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
-            mIssuerCurrent = token.issuer
+            mIssuerCurrent = token.issuer ?: ""
             mLabelCurrent = token.label
             mCategoryCurrent = token.category ?: ""
             mImageCurrent = if (token.imagePath != null) Uri.parse(token.imagePath) else null
-            mIssuerDefault = token.issuer
+            mIssuerDefault = mIssuerCurrent
             mLabelDefault = token.label
             mCategoryDefault = mCategoryCurrent
             mImageDefault = mImageCurrent
@@ -262,7 +262,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
         val label = mLabel.text.toString()
         val issuer = mIssuer.text.toString()
         val category = mCategory.text.toString()
-        mSave.isEnabled = label != mLabelCurrent || issuer != mIssuerCurrent || category != mCategoryCurrent || !imageIs(mImageCurrent)
+        mSave.isEnabled = label.isNotEmpty() && (label != mLabelCurrent || issuer != mIssuerCurrent || category != mCategoryCurrent || !imageIs(mImageCurrent))
         mRestore.isEnabled = label != mLabelDefault || issuer != mIssuerDefault || category != mCategoryDefault || !imageIs(mImageDefault)
     }
 
@@ -292,7 +292,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                 lifecycleScope.launch {
                     val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
                     val newToken = token.copy(
-                        issuer = mIssuer.text.toString(),
+                        issuer = mIssuer.text.toString().takeIf { it.isNotBlank() },
                         label = mLabel.text.toString(),
                         category = mCategory.text.toString(),
                         imagePath = mImageDisplay?.toString()

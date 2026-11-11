@@ -65,8 +65,26 @@ class DeleteActivity : AppCompatActivity() {
                     return@collect
                 }
 
-                (findViewById<View>(R.id.issuer) as TextView).text = token.issuer
-                (findViewById<View>(R.id.label) as TextView).text = token.label
+                val issuerView = findViewById<TextView>(R.id.issuer)
+                val labelView = findViewById<TextView>(R.id.label)
+                val categoryView = findViewById<TextView>(R.id.category)
+
+                if (token.issuer.isNullOrBlank()) {
+                    issuerView.text = token.label
+                    labelView.visibility = View.GONE
+                } else {
+                    issuerView.text = token.issuer
+                    labelView.text = token.label
+                    labelView.visibility = View.VISIBLE
+                }
+
+                if (token.category.isNullOrBlank()) {
+                    categoryView.visibility = View.GONE
+                } else {
+                    categoryView.visibility = View.VISIBLE
+                    categoryView.text = token.category
+                }
+
                 binding.imageView.setTokenImage(token)
             }
 
