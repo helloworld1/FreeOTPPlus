@@ -6,8 +6,8 @@ Security fixes are applied to the latest release on the `master` branch. Please 
 
 | Version | Supported          |
 | ------- | ------------------ |
-| >= 3.4  | Yes                |
-| < 3.4   | No                 |
+| >= 3.5  | Yes                |
+| < 3.5   | No                 |
 
 ## Reporting a Vulnerability
 
