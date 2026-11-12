@@ -1,5 +1,6 @@
 RELEASE-3.5
 * Make token issuer optional
 * Add confirmation dialog when importing external token links
+* Block screenshots across all screens and restrict screenshot mode to debug builds
 * Fix compatibility issue on Android 6.0 devices
 * Update translations for all supported languages
