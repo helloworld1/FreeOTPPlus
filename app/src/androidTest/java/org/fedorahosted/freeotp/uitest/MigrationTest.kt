@@ -73,6 +73,8 @@ class MigrationTest {
         onView(withId(R.id.digits))
             .check(matches(withText("6")))
         onView(withId(R.id.secret))
+            .check(matches(withText(R.string.click_to_display)))
+            .perform(click())
             .check(matches(withText("AAAA2345")))
     }
 
@@ -92,6 +94,8 @@ class MigrationTest {
         onView(withId(R.id.digits))
             .check(matches(withText("6")))
         onView(withId(R.id.secret))
+            .check(matches(withText(R.string.click_to_display)))
+            .perform(click())
             .check(matches(withText("BBBB2345")))
     }
 

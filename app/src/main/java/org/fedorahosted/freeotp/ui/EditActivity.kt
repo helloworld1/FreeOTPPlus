@@ -35,9 +35,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -48,8 +45,8 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.databinding.EditBinding
+import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -57,7 +54,6 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var imageUtil: ImageUtil
-    @Inject lateinit var settings: Settings
 
     private lateinit var binding: EditBinding
     private lateinit var mIssuer: EditText
@@ -168,48 +164,14 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             digitsTextView.text = token.digits.toString()
 
             val secretTextView = findViewById<TextView>(R.id.secret)
-            if (settings.requireAuthentication) {
-                secretTextView.text = getString(R.string.click_to_display)
-                secretTextView.setOnClickListener {
-                    val executor = ContextCompat.getMainExecutor(this@EditActivity)
-                    val biometricPrompt = BiometricPrompt(this@EditActivity, executor,
-                            object : BiometricPrompt.AuthenticationCallback() {
-                                override fun onAuthenticationError(errorCode: Int,
-                                                                   errString: CharSequence) {
-                                    super.onAuthenticationError(errorCode, errString)
-                                    // Don't show error message toast if user pressed back button
-                                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                                        Toast.makeText(applicationContext,
-                                            "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
-                                            .show()
-                                    }
-                                }
-
-                                override fun onAuthenticationSucceeded(
-                                        result: BiometricPrompt.AuthenticationResult) {
-                                    super.onAuthenticationSucceeded(result)
-                                    secretTextView.text = token.secret
-                                    secretTextView.setOnClickListener(null)
-                                }
-
-                                override fun onAuthenticationFailed() {
-                                    super.onAuthenticationFailed()
-                                    Toast.makeText(applicationContext,
-                                        R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
-                                        .show()
-                                }
-                            })
-
-                    val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                            .setTitle(getString(R.string.authentication_dialog_title))
-                            .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-                            .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                            .build()
-
-                    biometricPrompt.authenticate(promptInfo)
+            secretTextView.setTextIsSelectable(false)
+            secretTextView.text = getString(R.string.click_to_display)
+            secretTextView.setOnClickListener {
+                AuthenticationUtil.authenticateIfScreenLockEnabled(this@EditActivity) {
+                    secretTextView.setOnClickListener(null)
+                    secretTextView.setTextIsSelectable(true)
+                    secretTextView.text = token.secret
                 }
-            } else {
-                secretTextView.text = token.secret
             }
 
             val intervalTextView = findViewById<TextView>(R.id.interval)

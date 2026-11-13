@@ -75,6 +75,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
+import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -288,12 +289,16 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_json -> {
-                createFile("application/json", "freeotp-backup","json", WRITE_JSON_REQUEST_CODE)
+                AuthenticationUtil.authenticateIfScreenLockEnabled(this) {
+                    createFile("application/json", "freeotp-backup", "json", WRITE_JSON_REQUEST_CODE)
+                }
                 return true
             }
 
             R.id.action_export_key_uri -> {
-                createFile("text/plain", "freeotp-backup","txt", WRITE_KEY_URI_REQUEST_CODE)
+                AuthenticationUtil.authenticateIfScreenLockEnabled(this) {
+                    createFile("text/plain", "freeotp-backup", "txt", WRITE_KEY_URI_REQUEST_CODE)
+                }
                 return true
             }
 
