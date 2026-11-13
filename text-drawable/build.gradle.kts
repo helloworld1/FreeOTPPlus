@@ -27,10 +27,10 @@ android {
     }
     namespace = "com.amulyakhare.textdrawable"
     lint {
-        targetSdk = 35
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
     }
     testOptions {
-        targetSdk = 35
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
     }
 }
 

@@ -29,10 +29,10 @@ android {
     }
     namespace = "org.liberty.android.freeotp.token_data"
     lint {
-        targetSdk = 35
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
     }
     testOptions {
-        targetSdk = 35
+        targetSdk = rootProject.extra["targetSdkVersion"] as Int
     }
 }
 
