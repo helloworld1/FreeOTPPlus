@@ -1,0 +1,23 @@
+FreeOTP+ menambahkan lapisan keamanan kedua untuk akun online Anda.
+Aplikasi ini bekerja dengan menghasilkan kata sandi sekali pakai (OTP) di perangkat seluler Anda yang digunakan bersama kata sandi biasa sehingga akun Anda hampir mustahil diretas.
+Kata sandi ini tetap dapat dibuat meskipun ponsel Anda berada dalam mode pesawat.
+Token dapat ditambahkan dengan mudah melalui pemindaian kode QR atau dengan memasukkan konfigurasi token secara manual.
+Metode ini disebut autentikasi dua faktor (2FA).
+
+FreeOTP berfungsi dengan berbagai layanan online populer yang sudah Anda gunakan, termasuk Google, Facebook, Evernote, GitHub, dan banyak lagi!
+FreeOTP juga dapat digunakan untuk keamanan perusahaan Anda jika menerapkan protokol standar <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> atau <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a>.
+Ini mencakup solusi kelas perusahaan seperti <a href="https://www.freeipa.org/">FreeIPA</a>.
+
+<b>Fitur:</b>
+<ul>
+<li>Pindai kode QR.</li>
+<li>Ekspor dan impor pengaturan ke Google Drive atau penyedia dokumen lainnya.</li>
+<li>Material Design dengan dukungan tema gelap.</li>
+<li>Bilah pencarian untuk mencari token.</li>
+<li>Lihat detail token.</li>
+<li>Opsi untuk mewajibkan autentikasi Biometrik / PIN saat membuka aplikasi.</li>
+<li>Ikon offline berbasis heuristik untuk token dari 250+ situs web.</li>
+<li>Banyak pengaturan untuk menyesuaikan fungsi aplikasi.</li>
+</ul>
+
+FreeOTP Plus adalah fork dari FreeOTP.

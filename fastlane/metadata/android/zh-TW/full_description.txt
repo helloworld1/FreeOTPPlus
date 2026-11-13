@@ -1,21 +1,23 @@
-FreeOTP Plus 分支自紅帽公司提供的 FreeOTP，功能類似，但有以下的強化功能：
+FreeOTP+ 為您的線上帳號提供第二層安全防護。
+它會在行動裝置上產生一次性密碼 (OTP)，並與您平時使用的密碼搭配使用，讓帳號登入幾乎無法被破解。
+即使手機處於飛航模式，也能正常產生這些密碼。
+只需掃描 QR Code 或手動輸入權杖設定，即可輕鬆新增權杖。
+這稱為兩步驟驗證 (2FA)。
 
-* 匯出設定至 Google 雲端硬碟或其他文件提供商
-* 從 Google 雲端硬碟或其他文件提供商匯入設定
-* 大量的穩定性改進
-* 支援 Android 6.0 的權限。
-* 使用包含深色主題支援的 Material Design 強化使用者介面
-* 可用來搜尋權杖的搜尋列
-* 提供更多權杖的詳細資訊以與其他應用程式有更好的互操作性
-* 利用現代相機硬體更快地掃描 QR code
-* 使用生物特徵/PIN 身份驗證來啟動應用程式
-* 250 個以上的網站的啟發式離線圖示
-* 更多用來自訂應用程式功能的設定
+FreeOTP 支援許多您經常使用的線上服務，包括 Google、Facebook、Evernote、GitHub 等！
+若您的企業內部安全系統實作了標準化的 <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> 或 <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> 協定，FreeOTP 同樣能搭配運作。
+其中包含 <a href="https://www.freeipa.org/">FreeIPA</a> 等優秀的企業級解決方案。
 
-FreeOTP 是一套兩步驟驗證 (2FA) 應用程式，適用於使用動態密碼協定 (OTP) 的系統。
-可以透過掃描 QR code 或手動輸入權杖設定輕鬆新增權杖。
+<b>功能特色：</b>
+<ul>
+<li>掃描 QR Code。</li>
+<li>透過 Google 雲端硬碟或其他文件提供者匯出與匯入設定。</li>
+<li>支援深色主題的 Material Design 介面。</li>
+<li>提供搜尋列以快速搜尋權杖。</li>
+<li>檢視權杖詳細資訊。</li>
+<li>可設定啟動應用程式時需要生物辨識 / PIN 身分驗證。</li>
+<li>採用啟發式比對，內建超過 250 個網站的離線權杖圖示。</li>
+<li>提供豐富的設定選項以自訂應用程式功能。</li>
+</ul>
 
-FreeOTP 實作了開放標準。 這代表了不需要專有的伺服器端元件：
-使用任何實作這些標準的伺服器端元件 — 例如使用 TOTP 的 FreeIPA。
-任何符合標準的實作都能運作。
-目前，FreeOTP 提供 HOTP (RFC 4226) 與 TOTP (RFC 6238) 的實作。
+FreeOTP Plus 是衍生自 FreeOTP 的分支版本。

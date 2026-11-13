@@ -1,1 +1,1 @@
-A funkciógazdag androidos FreeOTP 2FA hitelesítő továbbfejlesztett változata
+Kétfaktoros hitelesítő (2FA) egyszer használatos jelszóprotokollokkal (OTP)

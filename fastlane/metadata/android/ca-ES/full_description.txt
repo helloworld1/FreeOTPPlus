@@ -1,21 +1,23 @@
-FreeOTP Plus es va bifurcar de FreeOTP de RedHat amb la mateixa funcionalitat i les millores següents:
+FreeOTP+ afegeix una segona capa de seguretat als vostres comptes en línia.
+Funciona generant contrasenyes d'un sol ús (OTP) als vostres dispositius mòbils que es poden utilitzar conjuntament amb la vostra contrasenya habitual per fer que l'inici de sessió sigui gairebé impossible de piratejar.
+Aquestes contrasenyes es poden generar fins i tot quan el telèfon està en mode d'avió.
+Els OTP es poden afegir fàcilment escanejant un codi QR o introduint-ne manualment la configuració.
+Això s'anomena autenticació de dos factors (2FA).
 
-* Exporta la configuració a Google Drive o a altres proveïdors de documents
-* Importa la configuració de Google Drive o d'altres proveïdors de documents
-* Moltes millores d'estabilitat
-* Admet els permisos d'Android 6.0.
-* Interfície d'usuari millorada amb "material design" i suport de temes foscos
-* Barra de cerca d'entrades OTP
-* Proporcioneu més detalls del OTP per a una millor interoperabilitat amb altres aplicacions
-* Utilitza maquinari de càmera modern per escanejar el codi QR més ràpidament
-* Opció per requerir l'autenticació biomètrica / PIN per iniciar l'aplicació
-* Mètodes heurístics fora de línia per icones dels OTPs de més de 250 llocs web.
-* Més configuracions per personalitzar la funcionalitat de l'aplicació
+FreeOTP funciona amb molts dels serveis en línia que ja utilitzeu, com ara Google, Facebook, Evernote, GitHub i molts més!
+FreeOTP també pot funcionar per a la seguretat corporativa privada si s'implementen els protocols estandarditzats <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> o <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a>.
+Això inclou grans solucions empresarials com <a href="https://www.freeipa.org/">FreeIPA</a>.
 
-FreeOTP és una aplicació d'autenticació de dos factors (2FA) per a sistemes que utilitzen protocols de contrasenya única (OTP).
-Entrades OTP es poden afegir fàcilment escanejant un codi QR o introduint manualment la seva configuració.
+<b>Característiques:</b>
+<ul>
+<li>Escaneig de codis QR.</li>
+<li>Exportació i importació de la configuració a Google Drive o a altres proveïdors de documents.</li>
+<li>Material Design amb compatibilitat per al tema fosc.</li>
+<li>Barra de cerca per trobar entrades OTP.</li>
+<li>Visualització dels detalls de l'OTP.</li>
+<li>Opció per requerir autenticació biomètrica / PIN per iniciar l'aplicació.</li>
+<li>Icones fora de línia basades en heurística per a més de 250 llocs web.</li>
+<li>Moltes opcions de configuració per personalitzar el funcionament de l'aplicació.</li>
+</ul>
 
-FreeOTP implementa estàndards oberts. Això vol dir que no cal cap component propietari del costat del servidor:
-utilitza qualsevol component del servidor que implementi aquests estàndards, per exemple FreeIPA, que utilitza TOTP.
-Qualsevol implementació que compleixi els estàndards funcionarà.
-Actualment, FreeOTP ofereix implementacions de HOTP (RFC 4226) i TOTP (RFC 6238).
+FreeOTP Plus és una bifurcació de FreeOTP.

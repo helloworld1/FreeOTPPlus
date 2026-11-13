@@ -1,0 +1,1 @@
+Autentikator dua faktor (2FA) dengan protokol kata sandi sekali pakai (OTP)

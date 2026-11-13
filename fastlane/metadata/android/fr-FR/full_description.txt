@@ -1,21 +1,23 @@
-FreeOTP Plus a repris les mêmes fonctionnalités que FreeOTP, fournies par RedHat, avec les améliorations suivantes :
+FreeOTP+ ajoute une deuxième couche de sécurité à vos comptes en ligne.
+L'application génère sur vos appareils mobiles des mots de passe à usage unique (OTP) utilisables en complément de votre mot de passe habituel pour rendre vos connexions quasiment impossibles à pirater.
+Ces mots de passe peuvent être générés même lorsque votre téléphone est en mode avion.
+Les jetons s'ajoutent facilement en scannant un code QR ou en saisissant manuellement leur configuration.
+C'est ce qu'on appelle l'authentification à deux facteurs (A2F / 2FA).
 
-* Exporter les paramètres vers Google Drive ou d'autres fournisseurs de documents
-* Importer les paramètres de Google Drive ou d'autres fournisseurs de documents
-* Beaucoup d'améliorations pour la stabilité
-* Prise en charge des autorisations Android 6.0.
-* Amélioration de l'interface utilisateur avec le design material avec la prise en charge du thème sombre
-* Barre de recherche pour le jeton de recherche
-* Fournissez plus de détails sur les jetons pour une meilleure interopérabilité avec d'autres applications
-* Utilise les appareils photo modernes pour scanner les codes QR plus rapidement
-* Possibilité d'exiger une authentification biométrique / NIP pour lancer l'application
-* Icône hors ligne heuristique pour les jetons de plus de 250 sites web.
-* Plus de paramètres pour personnaliser la fonctionnalité de l'application
+FreeOTP fonctionne avec de nombreux services en ligne que vous utilisez déjà, notamment Google, Facebook, Evernote, GitHub et bien d'autres !
+FreeOTP peut également être utilisé pour la sécurité de votre entreprise si celle-ci implémente les protocoles standardisés <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> ou <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a>.
+Cela inclut d'excellentes solutions d'entreprise telles que <a href="https://www.freeipa.org/">FreeIPA</a>.
 
-FreeOTP est une application d'authentification à deux facteurs (A2F) pour les systèmes utilisant des protocoles à mot de passe unique.
-Les jetons peuvent être ajoutés facilement en scannant un code QR ou en entrant manuellement dans la configuration du jeton.
+<b>Fonctionnalités :</b>
+<ul>
+<li>Scan de code QR.</li>
+<li>Exportation et importation des paramètres vers Google Drive ou d'autres fournisseurs de documents.</li>
+<li>Interface Material Design avec prise en charge du thème sombre.</li>
+<li>Barre de recherche pour trouver rapidement un jeton.</li>
+<li>Affichage des détails du jeton.</li>
+<li>Option permettant d'exiger une authentification biométrique / code PIN au lancement de l'application.</li>
+<li>Icônes hors ligne basées sur l'heuristique pour les jetons de plus de 250 sites web.</li>
+<li>Nombreux paramètres pour personnaliser le fonctionnement de l'application.</li>
+</ul>
 
-FreeOTP implémente les standards ouverts. Ceci signifie qu'aucun composant propriétaire du serveur n'est nécessaire :
-utilise n'importe quel composant côté serveur qui implémente ces standards — par exemple FreeIPA, qui utilise TOTP.
-Toute mise en œuvre conforme aux normes fonctionnera.
-Actuellement, FreeOTP fournit des implémentations de HOTP (RFC 4226) et de TOTP (RFC 6238).
+FreeOTP Plus est un fork de FreeOTP.

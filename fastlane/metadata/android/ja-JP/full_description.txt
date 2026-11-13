@@ -1,21 +1,23 @@
-FreeOTP Plus は、RedHat が提供する同様な機能を持った FreeOTP を以下のように拡張しました。
+FreeOTP+ は、オンラインアカウントに第2のセキュリティ層を追加します。
+モバイル端末上でワンタイムパスワード (OTP) を生成し、通常のパスワードと併用することで、不正ログインをほぼ不可能にします。
+これらのパスワードは、スマートフォンが機内モードのときでも生成できます。
+トークンは、QRコードのスキャンまたはトークン設定の手動入力によって簡単に追加できます。
+これは二要素認証 (2FA) と呼ばれます。
 
-* 設定を Google ドライブやその他のドキュメントプロバイダにエクスポート
-* Google ドライブまたはその他のドキュメントプロバイダから設定をインポート
-* 安定性の向上
-* Support Android 6.0 permissions.
-* ダークテーマに対応したマテリアルデザインでUIを強化
-* Search bar to search token
-* Provide more token details for better interoperatibility with other apps
-* Utilize modern camera hardware to scan QR code faster
-* Option to require Biometric / PIN authentication to launch the app
-* Heuristic based offline icon for tokens of 250+ websites.
-* More settings to customize the app functionality
+FreeOTP は、Google、Facebook、Evernote、GitHub など、普段お使いの多くのオンラインサービスで利用できます！
+また、標準化された <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> または <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> プロトコルを実装している社内セキュリティ環境でも利用可能です。
+これには <a href="https://www.freeipa.org/">FreeIPA</a> などの優れたエンタープライズソリューションも含まれます。
 
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
+<b>主な機能:</b>
+<ul>
+<li>QRコードのスキャン。</li>
+<li>Google ドライブやその他のドキュメントプロバイダーへの設定のエクスポートとインポート。</li>
+<li>ダークテーマに対応したマテリアルデザイン。</li>
+<li>トークンを検索できる検索バー。</li>
+<li>トークンの詳細表示。</li>
+<li>アプリ起動時に生体認証 / PIN 認証を要求するオプション。</li>
+<li>250以上のウェブサイトに対応したヒューリスティックベースのオフラインアイコン。</li>
+<li>アプリの機能をカスタマイズできる豊富な設定。</li>
+</ul>
 
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
+FreeOTP Plus は FreeOTP のフォークです。

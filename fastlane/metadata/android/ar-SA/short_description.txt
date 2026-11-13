@@ -1,1 +1,1 @@
-Enhanced fork of FreeOTP-Android providing a feature-rich 2FA authenticator
+تطبيق مصادقة ثنائية (2FA) يعمل ببروتوكولات كلمات المرور لمرة واحدة (OTP)

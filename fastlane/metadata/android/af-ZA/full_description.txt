@@ -1,21 +1,23 @@
-FreeOTP Plus forked the same functionality of FreeOTP provided by RedHat with the following enhancement:
+FreeOTP+ voeg 'n tweede laag sekuriteit by vir jou aanlyn rekeninge.
+Dit werk deur eenmalige wagwoorde (OTP) op jou mobiele toestelle te genereer wat saam met jou gewone wagwoord gebruik kan word om jou aanmelding byna onmoontlik te maak om te kraak.
+Hierdie wagwoorde kan selfs gegenereer word wanneer jou foon in vliegtuigmodus is.
+Kentekens kan maklik bygevoeg word deur 'n QR-kode te skandeer of deur die kentekenopstelling handmatig in te voer.
+Dit word tweefaktor-verifikasie (2FA) genoem.
 
-* Export settings to Google Drive or other document providers
-* Import settings from Google Drive or other document providers
-* Lots of stability improvement
-* Support Android 6.0 permissions.
-* Enhanced UI with material design with dark theme support
-* Search bar to search token
-* Provide more token details for better interoperatibility with other apps
-* Utilize modern camera hardware to scan QR code faster
-* Option to require Biometric / PIN authentication to launch the app
-* Heuristic based offline icon for tokens of 250+ websites.
-* More settings to customize the app functionality
+FreeOTP werk met baie van die gewilde aanlyn dienste wat jy reeds gebruik, insluitend Google, Facebook, Evernote, GitHub en vele meer!
+FreeOTP kan ook vir jou privaat korporatiewe sekuriteit werk as hulle die gestandaardiseerde <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a>- of <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a>-protokolle implementeer.
+Dit sluit uitstekende ondernemingsoplossings soos <a href="https://www.freeipa.org/">FreeIPA</a> in.
 
-FreeOTP is a two-factor authentication (2FA) application for systems utilizing one-time password protocols (OTP).
-Tokens can be added easily by scanning a QR-code or by manually entering in the token configuration.
+<b>Kenmerke:</b>
+<ul>
+<li>Skandeer QR-kode.</li>
+<li>Voer instellings uit na en voer dit in vanaf Google Drive of ander dokumentverskaffers.</li>
+<li>Material Design met ondersteuning vir donker tema.</li>
+<li>Soekbalk om kentekens te soek.</li>
+<li>Bekyk kentekenbesonderhede.</li>
+<li>Opsie om biometriese / PIN-verifikasie te vereis om die toepassing te open.</li>
+<li>Heuristiek-gebaseerde vanlyn ikone vir kentekens van meer as 250 webwerwe.</li>
+<li>Baie instellings om die toepassingsfunksionaliteit aan te pas.</li>
+</ul>
 
-FreeOTP implements open standards. This means that no proprietary server-side component is necessary:
-use any server-side component that implements these standards — for example FreeIPA, which uses TOTP.
-Any standards-compliant implementation will work.
-Currently, FreeOTP provides implementations of HOTP (RFC 4226) and TOTP (RFC 6238).
+FreeOTP Plus is 'n afsplitsing (fork) van FreeOTP.

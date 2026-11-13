@@ -1,1 +1,1 @@
-Fork mejorado de FreeOTP-Android que proporciona un autenticador 2FA con muchas funciones
+Autenticador de dos factores (2FA) con contraseñas de un solo uso (OTP)

@@ -1,21 +1,23 @@
-FreeOTP Plus hat das von RedHat zur Verfügung gestellte FreeOTP um folgende Funktionen erweiter:
+FreeOTP+ fügt Ihren Online-Konten eine zweite Sicherheitsebene hinzu.
+Dazu werden auf Ihren Mobilgeräten Einmalpasswörter (OTP) generiert, die zusammen mit Ihrem regulären Passwort verwendet werden, sodass Ihre Anmeldung nahezu unmöglich zu knacken ist.
+Diese Passwörter können selbst dann generiert werden, wenn sich Ihr Telefon im Flugmodus befindet.
+Tokens lassen sich ganz einfach durch Scannen eines QR-Codes oder durch manuelle Eingabe der Token-Konfiguration hinzufügen.
+Dies wird als Zwei-Faktor-Authentifizierung (2FA) bezeichnet.
 
-* Exportiere Einstellungen zu Google Drive oder anderen Cloud Anbietern
-* Importiere Einstellungen von Google Drive oder anderen Cloud Anbietern
-* Viele Verbesserungen der Stabilität
-* Unterstützung für Android 6.0 Berechtigungen.
-* Verbesserte Benutzeroberfläche mit Material Design und Dark-Theme Unterstützung
-* Suchleiste zum Suchen von Tokens
-* Zeigt mehr Details zu Tokens für eine bessere Interoperabilität mit anderen Apps
-* Benutzt moderne Kamera-Hardware, um QR-Codes schneller zu scannen
-* Option, für eine biometrische / PIN-Authentifizierung, um die App zu starten
-* Heuristisch ausgewählte Offline-Icons für Tokens von 250+ Websites.
-* Weitere Einstellungen zum Anpassen von Funktionen der App
+FreeOTP funktioniert mit vielen bekannten Online-Diensten, die Sie bereits nutzen, darunter Google, Facebook, Evernote, GitHub und viele mehr!
+FreeOTP eignet sich auch für die interne Unternehmenssicherheit, sofern die standardisierten Protokolle <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> oder <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> eingesetzt werden.
+Dazu gehören bewährte Unternehmenslösungen wie <a href="https://www.freeipa.org/">FreeIPA</a>.
 
-FreeOTP ist eine Anwendung zur Zwei-Faktor-Authentifizierung (2FA) für Systeme, die das Einmal-Passwort-Protokolle (OTP) verwenden.
-Tokens können ganz einfach durch Scannen eines QR-Codes oder manuelles Eingeben hinzugefügt werden.
+<b>Funktionen:</b>
+<ul>
+<li>QR-Code scannen.</li>
+<li>Exportieren und Importieren von Einstellungen über Google Drive oder andere Dokumentenanbieter.</li>
+<li>Material Design mit Unterstützung für das dunkle Design.</li>
+<li>Suchleiste zum Durchsuchen von Tokens.</li>
+<li>Token-Details anzeigen.</li>
+<li>Option, beim Starten der App eine biometrische oder PIN-Authentifizierung zu verlangen.</li>
+<li>Heuristikbasierte Offline-Icons für Tokens von über 250 Websites.</li>
+<li>Zahlreiche Einstellungen zur Anpassung der App-Funktionen.</li>
+</ul>
 
-FreeOTP implementiert offene Standards. Das bedeutet, dass keine proprietäre serverseitige Komponente erforderlich ist:
-du kannst jede Dienst nutzen, der diesen Standards implementiert — zum Beispiel FreeIPA (TOTP).
-Jede standardkonforme Implementierung wird funktionieren.
-Derzeit hat FreeOTP Plus HOTP (RFC 4226) und TOTP (RFC 6238) implementiert.
+FreeOTP Plus ist ein Fork von FreeOTP.

@@ -1,1 +1,1 @@
-Ulepszony fork FreeOTP-Android, aplikacji do obsługi uwierzytelniania 2FA
+Uwierzytelnianie dwuskładnikowe (2FA) z hasłami jednorazowymi (OTP)

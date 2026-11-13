@@ -1,21 +1,23 @@
-FreeOTP+ 是基于RedHat的FreeOTP的一个增强分叉，在保留原项目功能的同时增加了以下功能：
+FreeOTP+ 为您的在线账户提供第二层安全保护。
+它通过在移动设备上生成一次性密码 (OTP)，与您的常规密码配合使用，使账户登录几乎无法被破解。
+即使手机处于飞行模式，也能正常生成这些密码。
+只需扫描二维码或手动输入令牌配置即可轻松添加令牌。
+这就是双重身份验证 (2FA)。
 
-* 导出设置到Google Drive或其他云文档储存服务
-* 导入从Google Drive或其他云文档储存服务中保存的设置
-* 稳定性大量提高
-* 支持 Android 6.0 权限
-* 使用Material Design的增强界面 + 暗色主题支持
-* 搜索栏搜索令牌功能
-* 可提供更多令牌详细信息以提高与其他应用的兼容性
-* 可利用现代相机硬件更快地扫描二维码
-* 可设置需要生物测定/PIN身份验证启动应用程序
-* 自发式检测250多个网站的离线图标
-* 设置更多的自定义应用功能
+FreeOTP 支持您日常使用的众多主流在线服务，包括 Google、Facebook、Evernote、GitHub 等！
+如果您的企业内部安全系统实现了标准化的 <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> 或 <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> 协议，FreeOTP 同样适用。
+其中包括 <a href="https://www.freeipa.org/">FreeIPA</a> 等优秀的企业级解决方案。
 
-FreeOTP 是使用一次性密码协议(OTP)系统的双重身份验证(2FA)应用程序。
-可以通过扫描QR码或手动输入令牌配置轻松添加令牌。
+<b>功能特性：</b>
+<ul>
+<li>扫描二维码。</li>
+<li>通过 Google 云端硬盘或其他文档提供程序导出和导入设置。</li>
+<li>支持深色主题的 Material Design 界面。</li>
+<li>提供搜索栏以便快速搜索令牌。</li>
+<li>查看令牌详情。</li>
+<li>支持在启动应用时要求生物识别 / PIN 身份验证。</li>
+<li>基于启发式匹配内置超过 250 个网站的离线令牌图标。</li>
+<li>提供丰富的设置选项以自定义应用功能。</li>
+</ul>
 
-FreeOTP 实施开源标准。 这意味着不需要任何专有服务器组件：
-使用任何服务器端组件来实现这些标准 — 例如使用 TOTP的FreeIPA系统。
-任何符合标准的执行都将起作用。
-目前，FreeOTP兼容HOTP (RFC 4226)和TOTP (RFC 6238)。
+FreeOTP Plus 是衍生自 FreeOTP 的分支版本。
