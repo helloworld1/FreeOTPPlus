@@ -639,7 +639,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAuthenticationModeDialog() {
         val modes = arrayOf(AuthMode.NONE, AuthMode.APP_LAUNCH, AuthMode.TOKEN_ENCRYPTED)
         val labels = arrayOf(
-            getString(R.string.auth_mode_no_encryption),
+            getString(R.string.auth_mode_none),
             getString(R.string.auth_mode_app_launch),
             getString(R.string.auth_mode_token_encrypted)
         )

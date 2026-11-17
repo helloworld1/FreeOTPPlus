@@ -396,10 +396,10 @@ class TokenEncryptionTest {
                 assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isTrue()
             }
 
-            // Switch back to "No encryption" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
+            // Switch back to "None" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_no_encryption)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_none)).inRoot(isDialog()).perform(click())
 
             onView(withText(R.string.disable_token_encryption_warning)).inRoot(isDialog())
                 .check(matches(isDisplayed()))

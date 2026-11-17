@@ -9,7 +9,7 @@ FreeOTP Plus forked the same functionality of [FreeOTP](https://github.com/freeo
 * Search bar to search token
 * Provide more token details for better interoperatibility with other apps
 * Utilize modern camera hardware to scan QR code faster
-* Three authentication modes: **No encryption**, **App launch** (Biometric / PIN), and **Token encrypted** (AES-256-GCM encrypted token secrets unlocked via biometric or manual key)
+* Three authentication modes: **None**, **App launch** (Biometric / PIN), and **Token encrypted** (AES-256-GCM encrypted token secrets unlocked via biometric or manual key)
 * Heuristic based offline icon for tokens of 250+ websites
 * Categorize tokens and filter by category
 * More settings to customize the app functionality
@@ -52,7 +52,7 @@ Link: https://crowdin.com/project/freeotpplus
 
 Under **Authentication mode** in the menu, FreeOTP+ supports three modes:
 
-* **No encryption**: Default mode without an authentication prompt on launch; token secrets are stored unencrypted in app-private storage.
+* **None**: Default mode without an authentication prompt on launch; token secrets are stored unencrypted in app-private storage.
 * **App launch**: Prompts for Biometric or device PIN/credential when opening the app, without encrypting token secrets in storage.
 * **Token encrypted**: Encrypts token secrets at rest with AES-256-GCM using a user-supplied key (minimum 6 characters, derived via PBKDF2-HMAC-SHA256). The key is encrypted with `AndroidKeyStore` strong biometrics when available so launching the app with biometrics automatically unlocks your tokens. If biometrics are not enrolled or become invalidated (e.g., new biometric enrolled or app restored to a new phone), you will be prompted to enter your key manually with the option to enable/re-enable biometric unlock.
   * To rotate your encryption key, switch out of **Token encrypted** mode (which decrypts stored secrets after confirmation) and switch back into **Token encrypted** mode with a new key.
