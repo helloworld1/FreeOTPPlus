@@ -24,6 +24,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -375,6 +376,11 @@ class TokenEncryptionTest {
                 }
             }
 
+            scenario.onActivity { activity ->
+                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
+                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isFalse()
+            }
+
             // Enable Token encrypted mode
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
@@ -384,6 +390,11 @@ class TokenEncryptionTest {
             onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
                 .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
             onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+
+            scenario.onActivity { activity ->
+                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
+                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isTrue()
+            }
 
             // Switch back to "No encryption" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
@@ -400,6 +411,8 @@ class TokenEncryptionTest {
 
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
+                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isFalse()
                 runBlocking {
                     val tokens = activity.otpTokenDatabase.otpTokenDao().getAll().first()
                     assertThat(tokens).hasSize(2)

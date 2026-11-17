@@ -86,7 +86,7 @@
         android:title="@string/about_freeotp" />
     <item
         android:id="@+id/quit_and_lock"
-        android:icon="@drawable/power_settings_new_24px"
+        android:icon="@drawable/lock_24px"
         android:title="@string/quit_and_lock"
         app:showAsAction="ifRoom" />
 </menu>

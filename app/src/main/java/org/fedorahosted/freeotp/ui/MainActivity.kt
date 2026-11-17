@@ -241,6 +241,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         viewModel.onSessionStart()
+        refreshOptionMenu()
     }
 
     override fun onStop() {
@@ -256,6 +257,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
+
         val filterItem = menu.findItem(R.id.action_filter)
         val filterMenu = filterItem?.subMenu ?: return super.onPrepareOptionsMenu(menu)
         filterMenu.clear()
@@ -630,6 +633,7 @@ class MainActivity : AppCompatActivity() {
     private fun refreshOptionMenu() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
+        this.menu?.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
     }
 
     private fun showAuthenticationModeDialog() {
