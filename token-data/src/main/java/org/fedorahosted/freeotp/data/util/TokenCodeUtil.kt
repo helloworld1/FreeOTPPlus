@@ -1,8 +1,10 @@
 package org.fedorahosted.freeotp.data.util
 
 import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.EncryptionType
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import java.nio.ByteBuffer
 import java.security.InvalidKeyException
@@ -11,7 +13,15 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
-class TokenCodeUtil @Inject constructor() {
+class TokenCodeUtil private constructor(
+    private val tokenCryptoManager: TokenCryptoManager?,
+    @Suppress("UNUSED_PARAMETER") unused: Unit
+) {
+    @Inject
+    constructor(tokenCryptoManager: TokenCryptoManager) : this(tokenCryptoManager, Unit)
+
+    constructor() : this(null, Unit)
+
     fun generateTokenCode(otpToken: OtpToken): TokenCode {
         val cur = System.currentTimeMillis()
 
@@ -43,10 +53,18 @@ class TokenCodeUtil @Inject constructor() {
         var div = 1
         for (i in otpToken.digits downTo 1) div *= 10
 
+        val plaintextSecret = if (otpToken.encryptionType == EncryptionType.ENCRYPTED) {
+            val manager = tokenCryptoManager
+                ?: throw IllegalStateException("TokenCryptoManager is required to generate code for encrypted token")
+            manager.decryptSecret(otpToken)
+        } else {
+            otpToken.secret
+        }
+
         // Create the HMAC
         try {
             val mac = Mac.getInstance("Hmac${otpToken.algorithm}")
-            mac.init(SecretKeySpec(Base32String.decode(otpToken.secret), "Hmac${otpToken.algorithm}"))
+            mac.init(SecretKeySpec(Base32String.decode(plaintextSecret), "Hmac${otpToken.algorithm}"))
 
             // Do the hashing
             val digest = mac.doFinal(bb.array())

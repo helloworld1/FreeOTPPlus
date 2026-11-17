@@ -2,12 +2,45 @@ package org.fedorahosted.freeotp.data
 
 import android.net.Uri
 import com.google.android.apps.authenticator.Base32String
-import org.fedorahosted.freeotp.data.legacy.Token.TokenType
+import org.fedorahosted.freeotp.data.util.CryptoEngine
 import java.util.*
 import javax.crypto.Mac
 
 object OtpTokenFactory {
+    const val QUERY_ENCRYPTION = "encryption"
+    const val ENCRYPTION_AES_GCM = "AES_GCM"
+    const val QUERY_KDF_SALT = "kdfSalt"
+    const val QUERY_KDF_ITERATIONS = "kdfIterations"
+    const val QUERY_KEY_VERIFIER = "keyVerifier"
+    const val QUERY_CATEGORY = "category"
+
+    fun isEncryptedUri(uri: Uri): Boolean {
+        return uri.getQueryParameter(QUERY_ENCRYPTION) == ENCRYPTION_AES_GCM ||
+            CryptoEngine.isEncryptedPayload(uri.getQueryParameter("secret"))
+    }
+
     fun createFromUri(uri: Uri): OtpToken {
+        if (isEncryptedUri(uri)) {
+            throw IllegalArgumentException("Encrypted token URI requires decryption key")
+        }
+        val secret = uri.getQueryParameter("secret") ?: throw IllegalArgumentException("Secret is null")
+        return parseTokenUri(uri, secret, includeCategoryFromQuery = false)
+    }
+
+    fun createFromEncryptedUri(uri: Uri, decryptedSecret: String): OtpToken {
+        try {
+            Base32String.decode(decryptedSecret)
+        } catch (e: Base32String.DecodingException) {
+            throw IllegalArgumentException("Decrypted secret is not valid Base32", e)
+        }
+        return parseTokenUri(uri, decryptedSecret, includeCategoryFromQuery = true)
+    }
+
+    private fun parseTokenUri(
+        uri: Uri,
+        plaintextSecret: String,
+        includeCategoryFromQuery: Boolean
+    ): OtpToken {
         if (uri.scheme != "otpauth")
             throw IllegalArgumentException("URI does not starts with otpauth")
 
@@ -68,10 +101,14 @@ object OtpTokenFactory {
             0
         }
 
-        val secret = uri.getQueryParameter("secret") ?: throw IllegalArgumentException("Secret is null")
         val image = uri.getQueryParameter("image")
+        val category = if (includeCategoryFromQuery) {
+            uri.getQueryParameter(QUERY_CATEGORY)?.takeIf { it.isNotBlank() }
+        } else {
+            null
+        }
 
-        return OtpToken (
+        return OtpToken(
             id = 0,
             ordinal = -System.currentTimeMillis(), // One way to make the token to the top of the list
             issuer = issuer,
@@ -79,15 +116,40 @@ object OtpTokenFactory {
             imagePath = image,
             tokenType = type,
             algorithm = algo,
-            secret = secret,
+            secret = plaintextSecret,
             digits = digits,
             counter = counter,
             period = period,
-            encryptionType = EncryptionType.PLAIN_TEXT
+            encryptionType = EncryptionType.PLAIN_TEXT,
+            category = category
         )
     }
 
     fun toUri(token: OtpToken): Uri {
+        return buildBaseUriBuilder(token).build()
+    }
+
+    fun toEncryptedUri(token: OtpToken, metadata: EncryptionMetadata): Uri {
+        require(token.encryptionType == EncryptionType.ENCRYPTED) {
+            "Token must be encrypted before building encrypted URI"
+        }
+        val builder = buildBaseUriBuilder(token)
+            .appendQueryParameter(QUERY_ENCRYPTION, ENCRYPTION_AES_GCM)
+            .appendQueryParameter(QUERY_KDF_SALT, metadata.kdfSalt)
+            .appendQueryParameter(QUERY_KDF_ITERATIONS, metadata.kdfIterations.toString())
+            .appendQueryParameter(QUERY_KEY_VERIFIER, metadata.keyVerifier)
+
+        if (!token.category.isNullOrBlank()) {
+            builder.appendQueryParameter(QUERY_CATEGORY, token.category)
+        }
+        if (!token.imagePath.isNullOrBlank()) {
+            builder.appendQueryParameter("image", token.imagePath)
+        }
+
+        return builder.build()
+    }
+
+    private fun buildBaseUriBuilder(token: OtpToken): Uri.Builder {
         val hasIssuer = !token.issuer.isNullOrBlank()
         val labelAndIssuer = when {
             hasIssuer -> "${token.issuer}:${token.label}"
@@ -113,6 +175,6 @@ object OtpTokenFactory {
             OtpTokenType.TOTP -> builder.authority("totp")
         }
 
-        return builder.build()
+        return builder
     }
 }

@@ -40,41 +40,46 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.AuthMode
+import org.fedorahosted.freeotp.data.InvalidEncryptionKeyException
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.databinding.MainBinding
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
+import org.fedorahosted.freeotp.data.util.CryptoEngine
+import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.text.DateFormat
@@ -89,28 +94,36 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var tokenListAdapter: TokenListAdapter
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
     private var searchQuery = ""
     private var menu: Menu? = null
-    private var lastSessionEndTimestamp = 0L;
     private var categories: List<String> = emptyList()
     private var confirmAddTokenDialog: AlertDialog? = null
+    private var activeAuthDialog: AlertDialog? = null
+    private var isAuthPromptInProgress = false
+    private var pendingDeepLinkUri: Uri? = null
+    private var pendingExportEncrypted = false
 
-    private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
+    private val tokenListObserver: AdapterDataObserver = object : AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
             binding.tokenList.scrollToPosition(positionStart)
         }
     }
 
-    private val dateFormatter : DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
+    private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (savedInstanceState != null) {
+            pendingExportEncrypted = savedInstanceState.getBoolean(STATE_PENDING_EXPORT_ENCRYPTED, false)
+        }
 
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -139,16 +152,14 @@ class MainActivity : AppCompatActivity() {
             windowInsets
         }
 
-
         viewModel.migrateOldData()
 
         binding.tokenList.adapter = tokenListAdapter
 
         // Used GridlayoutManager to support tablet mode for multiple columns
         // Make sure one column has at least 320 DP
-        val columns =  max(1, resources.configuration.screenWidthDp / 320)
+        val columns = max(1, resources.configuration.screenWidthDp / 320)
         binding.tokenList.layoutManager = GridLayoutManager(this, columns)
-
 
         ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
             .attachToRecyclerView(binding.tokenList)
@@ -174,6 +185,8 @@ class MainActivity : AppCompatActivity() {
                     viewModel.getAuthState().collect { authState ->
                         if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
                             verifyAuthentication()
+                        } else {
+                            processPendingDeepLinkIfAny()
                         }
                     }
                 }
@@ -189,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        binding.searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.setTokenSearchQuery(query ?: "")
                 return true
@@ -200,7 +213,6 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setTokenSearchQuery(query ?: "")
                 return true
             }
-
         })
 
         binding.addTokenFab.setOnClickListener {
@@ -212,20 +224,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_PENDING_EXPORT_ENCRYPTED, pendingExportEncrypted)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         confirmAddTokenDialog?.dismiss()
         confirmAddTokenDialog = null
+        activeAuthDialog?.dismiss()
+        activeAuthDialog = null
         tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
-        lastSessionEndTimestamp = 0L;
     }
 
     override fun onStart() {
         super.onStart()
-
         viewModel.onSessionStart()
     }
-    
+
     override fun onStop() {
         super.onStop()
         viewModel.onSessionStop()
@@ -289,16 +306,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_export_json -> {
-                AuthenticationUtil.authenticateIfScreenLockEnabled(this) {
-                    createFile("application/json", "freeotp-backup", "json", WRITE_JSON_REQUEST_CODE)
-                }
+                handleExportAction(isJson = true)
                 return true
             }
 
             R.id.action_export_key_uri -> {
-                AuthenticationUtil.authenticateIfScreenLockEnabled(this) {
-                    createFile("text/plain", "freeotp-backup", "txt", WRITE_KEY_URI_REQUEST_CODE)
-                }
+                handleExportAction(isJson = false)
                 return true
             }
 
@@ -319,15 +332,8 @@ class MainActivity : AppCompatActivity() {
                 refreshOptionMenu()
             }
 
-            R.id.require_authentication -> {
-                // Make sure we also verify authentication before turning on or off the settings
-
-                if (!settings.requireAuthentication) {
-                    verifyAuthentication(isEnabling = true)
-                } else {
-                    verifyAuthentication(isDisabling = true)
-                }
-
+            R.id.authentication_mode -> {
+                showAuthenticationModeDialog()
                 return true
             }
 
@@ -337,6 +343,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.quit_and_lock -> {
+                viewModel.lockSession()
                 finish()
                 return true
             }
@@ -356,11 +363,29 @@ class MainActivity : AppCompatActivity() {
         val uri = intent.data ?: return
         intent.data = null
 
+        if (!viewModel.isAuthenticated() || !tokenCryptoManager.isUnlocked()) {
+            pendingDeepLinkUri = uri
+            return
+        }
+
+        showAddTokenDeepLinkConfirmation(uri)
+    }
+
+    private fun processPendingDeepLinkIfAny() {
+        if (!viewModel.isAuthenticated() || !tokenCryptoManager.isUnlocked()) {
+            return
+        }
+        val uri = pendingDeepLinkUri ?: return
+        pendingDeepLinkUri = null
+        showAddTokenDeepLinkConfirmation(uri)
+    }
+
+    private fun showAddTokenDeepLinkConfirmation(uri: Uri) {
         val token = try {
             OtpTokenFactory.createFromUri(uri)
         } catch (e: Exception) {
             Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                    .show()
+                .show()
             return
         }
 
@@ -372,21 +397,63 @@ class MainActivity : AppCompatActivity() {
 
         confirmAddTokenDialog?.dismiss()
         confirmAddTokenDialog = MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.add_token)
-                .setMessage(getString(R.string.add_token_confirmation_message, tokenDetails))
-                .setIcon(R.drawable.alert)
-                .setPositiveButton(R.string.add) { _, _ ->
-                    lifecycleScope.launch {
-                        otpTokenDatabase.otpTokenDao().insert(token)
-                    }
+            .setTitle(R.string.add_token)
+            .setMessage(getString(R.string.add_token_confirmation_message, tokenDetails))
+            .setIcon(R.drawable.alert)
+            .setPositiveButton(R.string.add) { _, _ ->
+                lifecycleScope.launch {
+                    otpTokenDatabase.otpTokenDao().insert(
+                        tokenCryptoManager.encryptTokenForStorage(token)
+                    )
                 }
-                .setNegativeButton(R.string.cancel_text, null)
-                .show()
+            }
+            .setNegativeButton(R.string.cancel_text, null)
+            .show()
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int,
-                                         resultData: Intent?) {
+    private fun handleExportAction(isJson: Boolean) {
+        AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
+            if (settings.authMode == AuthMode.TOKEN_ENCRYPTED) {
+                showExportEncryptionChoiceDialog(isJson)
+            } else {
+                pendingExportEncrypted = false
+                launchExportCreateFile(isJson)
+            }
+        }
+    }
+
+    private fun showExportEncryptionChoiceDialog(isJson: Boolean) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.export_encryption_choice_title)
+            .setMessage(R.string.export_encryption_choice_message)
+            .setPositiveButton(R.string.export_encrypted) { _, _ ->
+                pendingExportEncrypted = true
+                launchExportCreateFile(isJson)
+            }
+            .setNegativeButton(R.string.export_decrypted) { _, _ ->
+                pendingExportEncrypted = false
+                launchExportCreateFile(isJson)
+            }
+            .setNeutralButton(R.string.cancel_text, null)
+            .show()
+    }
+
+    private fun launchExportCreateFile(isJson: Boolean) {
+        val baseFileName = exportBaseFileName(encrypted = pendingExportEncrypted)
+        if (isJson) {
+            createFile("application/json", baseFileName, "json", WRITE_JSON_REQUEST_CODE)
+        } else {
+            createFile("text/plain", baseFileName, "txt", WRITE_KEY_URI_REQUEST_CODE)
+        }
+    }
+
+    public override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        resultData: Intent?
+    ) {
         super.onActivityResult(requestCode, resultCode, resultData)
+        viewModel.keepSessionAliveForResult()
 
         if (resultCode != Activity.RESULT_OK) {
             return
@@ -394,44 +461,49 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
+                val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.exportJsonFile(uri)
+                    importFromUtil.exportJsonFile(uri, encrypt = encryptExport)
                     Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                        .show()
                 }
             }
 
             READ_JSON_REQUEST_CODE -> {
                 val uri = resultData?.data ?: return
                 MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.import_json_file)
-                        .setMessage(R.string.import_json_file_warning)
-                        .setIcon(R.drawable.alert)
-                        .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                            lifecycleScope.launch {
-                                try {
+                    .setTitle(R.string.import_json_file)
+                    .setMessage(R.string.import_json_file_warning)
+                    .setIcon(R.drawable.alert)
+                    .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
+                        lifecycleScope.launch {
+                            try {
+                                if (importFromUtil.isJsonFileEncrypted(uri)) {
+                                    showImportEncryptedBackupDialog(uri, isJson = true)
+                                } else {
                                     importFromUtil.importJsonFile(uri)
                                     Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                            .show()
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "Import JSON failed", e)
-                                    Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
-                                            .show()
+                                        .show()
                                 }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Import JSON failed", e)
+                                Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
+                                    .show()
                             }
-
                         }
-                        .setNegativeButton(R.string.cancel_text, null)
-                        .show()
+                    }
+                    .setNegativeButton(R.string.cancel_text, null)
+                    .show()
             }
 
             WRITE_KEY_URI_REQUEST_CODE -> {
+                val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.exportKeyUriFile(uri)
+                    importFromUtil.exportKeyUriFile(uri, encrypt = encryptExport)
                     Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                        .show()
                 }
             }
 
@@ -439,18 +511,73 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
                     try {
-                        importFromUtil.importKeyUriFile(uri)
-                        Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                        if (importFromUtil.isKeyUriFileEncrypted(uri)) {
+                            showImportEncryptedBackupDialog(uri, isJson = false)
+                        } else {
+                            importFromUtil.importKeyUriFile(uri)
+                            Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                                 .show()
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
                         Snackbar.make(binding.rootView, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
-                                .show()
+                            .show()
                     }
                 }
             }
         }
+    }
 
+    private fun showImportEncryptedBackupDialog(uri: Uri, isJson: Boolean) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
+        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
+        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+
+        messageView.setText(R.string.import_encrypted_backup_message)
+        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.import_encrypted_backup_title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.import_text, null)
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val passphrase = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
+                if (passphrase.isEmpty()) {
+                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                    return@setOnClickListener
+                }
+                positiveButton.isEnabled = false
+                lifecycleScope.launch {
+                    try {
+                        if (isJson) {
+                            importFromUtil.importJsonFile(uri, passphrase)
+                        } else {
+                            importFromUtil.importKeyUriFile(uri, passphrase)
+                        }
+                        dialog.dismiss()
+                        Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
+                            .show()
+                    } catch (_: InvalidEncryptionKeyException) {
+                        positiveButton.isEnabled = true
+                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Encrypted import failed", e)
+                        dialog.dismiss()
+                        val errRes = if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text
+                        Snackbar.make(binding.rootView, errRes, Snackbar.LENGTH_SHORT).show()
+                    } finally {
+                        passphrase.fill('\u0000')
+                    }
+                }
+            }
+        }
+        dialog.show()
     }
 
     /**
@@ -465,88 +592,523 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext,
-                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.launch_file_browser_failure),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    private fun createFile(mimeType: String, fileName: String, fileExtension: String, requestCode: Int, appendTimestamp: Boolean = true) {
+    private fun createFile(
+        mimeType: String,
+        fileName: String,
+        fileExtension: String,
+        requestCode: Int,
+        appendTimestamp: Boolean = true
+    ) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-
-        // Filter to only show results that can be "opened", such as
-        // a file (as opposed to a list of contacts or timezones).
         intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-        // Create a file with the requested MIME type.
         intent.type = mimeType
-        intent.putExtra(Intent.EXTRA_TITLE, "$fileName${if(appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension")
+        intent.putExtra(
+            Intent.EXTRA_TITLE,
+            "$fileName${if (appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension"
+        )
 
         try {
             startActivityForResult(intent, requestCode)
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext,
-                    getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.launch_file_browser_failure),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
     private fun refreshOptionMenu() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
-        this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
     }
 
-    private fun verifyAuthentication(isEnabling: Boolean = false, isDisabling: Boolean = false) {
-        val executor = ContextCompat.getMainExecutor(this)
-        val biometricPrompt = BiometricPrompt(this, executor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationError(errorCode: Int,
-                                                       errString: CharSequence) {
-                        super.onAuthenticationError(errorCode, errString)
-                        // Don't show error message toast if user pressed back button
-                        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                            Toast.makeText(applicationContext,
-                                "${getString(R.string.authentication_error)} $errString", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+    private fun showAuthenticationModeDialog() {
+        val modes = arrayOf(AuthMode.NONE, AuthMode.APP_LAUNCH, AuthMode.TOKEN_ENCRYPTED)
+        val labels = arrayOf(
+            getString(R.string.auth_mode_no_encryption),
+            getString(R.string.auth_mode_app_launch),
+            getString(R.string.auth_mode_token_encrypted)
+        )
+        val currentMode = settings.authMode
+        val currentIndex = modes.indexOf(currentMode).coerceAtLeast(0)
 
-                        if (!isEnabling && !isDisabling && errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                            finish()
-                        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.authentication_mode)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                dialog.dismiss()
+                val selectedMode = modes[which]
+                if (selectedMode == currentMode) {
+                    return@setSingleChoiceItems
+                }
+                handleAuthModeSelection(currentMode, selectedMode)
+            }
+            .setNegativeButton(R.string.cancel_text, null)
+            .show()
+    }
+
+    private fun handleAuthModeSelection(currentMode: AuthMode, targetMode: AuthMode) {
+        when {
+            targetMode == AuthMode.TOKEN_ENCRYPTED -> {
+                showSetEncryptionKeyDialog()
+            }
+            currentMode == AuthMode.TOKEN_ENCRYPTED -> {
+                showDisableEncryptionWarningDialog(targetMode)
+            }
+            else -> {
+                // Switching between NONE and APP_LAUNCH
+                AuthenticationUtil.authenticateAppLaunch(this, finishOnCancel = false) {
+                    settings.authMode = targetMode
+                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    refreshOptionMenu()
+                }
+            }
+        }
+    }
+
+    private fun showSetEncryptionKeyDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_set_encryption_key, null)
+        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
+        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+        val confirmKeyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.confirm_key_input_layout)
+        val confirmKeyEditText = dialogView.findViewById<TextInputEditText>(R.id.confirm_key_edit_text)
+
+        messageView.text = getString(R.string.set_encryption_key_message, CryptoEngine.MIN_KEY_LENGTH)
+        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
+        confirmKeyEditText.doAfterTextChanged { confirmKeyInputLayout.error = null }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.set_encryption_key_title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.ok_text, null)
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val key = keyEditText.text?.toString().orEmpty()
+                val confirmKey = confirmKeyEditText.text?.toString().orEmpty()
+
+                if (key.length < CryptoEngine.MIN_KEY_LENGTH) {
+                    keyInputLayout.error = getString(R.string.encryption_key_too_short, CryptoEngine.MIN_KEY_LENGTH)
+                    return@setOnClickListener
+                }
+                if (key != confirmKey) {
+                    confirmKeyInputLayout.error = getString(R.string.encryption_keys_do_not_match)
+                    return@setOnClickListener
+                }
+
+                positiveButton.isEnabled = false
+                val passphraseChars = key.toCharArray()
+                lifecycleScope.launch {
+                    val setupMaterial = try {
+                        tokenCryptoManager.deriveSetupMaterial(passphraseChars)
+                    } finally {
+                        passphraseChars.fill('\u0000')
                     }
+                    completeTokenEncryptionSetup(setupMaterial, dialog)
+                }
+            }
+        }
+        dialog.show()
+    }
 
-                    override fun onAuthenticationSucceeded(
-                            result: BiometricPrompt.AuthenticationResult) {
-                        super.onAuthenticationSucceeded(result)
-                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+    private suspend fun completeTokenEncryptionSetup(
+        setupMaterial: TokenCryptoManager.SetupMaterial,
+        setupDialog: AlertDialog
+    ) {
+        if (!AuthenticationUtil.canAuthenticateStrongBiometric(this)) {
+            try {
+                tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+                setupDialog.dismiss()
+                onAuthCompleted()
+                refreshOptionMenu()
+                Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+                    .show()
+            } finally {
+                setupMaterial.clear()
+            }
+            return
+        }
 
-                        if (isEnabling) {
-                            settings.requireAuthentication = true
-                            refreshOptionMenu()
-                        } else if (isDisabling) {
-                            settings.requireAuthentication = false
-                            refreshOptionMenu()
-                        }
-                    }
+        val encryptCipher = try {
+            tokenCryptoManager.createBiometricEncryptCipher()
+        } catch (e: Exception) {
+            Log.w(TAG, "Unable to initialize biometric encryption cipher, falling back to manual key", e)
+            try {
+                tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+                setupDialog.dismiss()
+                onAuthCompleted()
+                refreshOptionMenu()
+                Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+                    .show()
+            } finally {
+                setupMaterial.clear()
+            }
+            return
+        }
 
-                    override fun onAuthenticationFailed() {
-                        // Invalid authentication, e.g. wrong fingerprint. Android auth UI shows an
-                        // error, so no need for FreeOTP to show one
-                        super.onAuthenticationFailed()
-
-                        Toast.makeText(applicationContext,
-                            R.string.unable_to_authenticate, Toast.LENGTH_SHORT)
+        setupDialog.dismiss()
+        AuthenticationUtil.authenticateBiometricCrypto(
+            activity = this,
+            title = getString(R.string.encrypt_key_with_biometric_title),
+            subtitle = getString(R.string.encrypt_key_with_biometric_subtitle),
+            negativeButtonText = getString(R.string.use_manual_key_only),
+            cipher = encryptCipher,
+            onSuccess = { authenticatedCipher ->
+                lifecycleScope.launch {
+                    try {
+                        val wrappedBlob = tokenCryptoManager.wrapKeyWithBiometricCipher(
+                            authenticatedCipher,
+                            setupMaterial.keyBytes
+                        )
+                        tokenCryptoManager.enableTokenEncryption(setupMaterial, wrappedBlob)
+                        onAuthCompleted()
+                        refreshOptionMenu()
+                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled, Snackbar.LENGTH_SHORT)
                             .show()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Biometric key wrapping failed, falling back to manual key", e)
+                        tokenCryptoManager.cancelPendingBiometricKeySetup()
+                        tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+                        onAuthCompleted()
+                        refreshOptionMenu()
+                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+                            .show()
+                    } finally {
+                        setupMaterial.clear()
                     }
-                })
+                }
+            },
+            onFallbackToManual = { _ ->
+                tokenCryptoManager.cancelPendingBiometricKeySetup()
+                lifecycleScope.launch {
+                    try {
+                        tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+                        onAuthCompleted()
+                        refreshOptionMenu()
+                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+                            .show()
+                    } finally {
+                        setupMaterial.clear()
+                    }
+                }
+            },
+            onCancel = {
+                tokenCryptoManager.cancelPendingBiometricKeySetup()
+                setupMaterial.clear()
+            }
+        )
+    }
 
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(getString(R.string.authentication_dialog_title))
-                .setSubtitle(getString(R.string.authentication_dialog_subtitle))
-                .setAllowedAuthenticators(BiometricManager.Authenticators.DEVICE_CREDENTIAL or BiometricManager.Authenticators.BIOMETRIC_WEAK)
-                .build()
+    private fun showDisableEncryptionWarningDialog(targetMode: AuthMode) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.disable_token_encryption_title)
+            .setMessage(R.string.disable_token_encryption_warning)
+            .setIcon(R.drawable.alert)
+            .setPositiveButton(R.string.ok_text) { _, _ ->
+                authenticateAndDisableEncryption(targetMode)
+            }
+            .setNegativeButton(R.string.cancel_text, null)
+            .show()
+    }
 
-        biometricPrompt.authenticate(promptInfo)
+    private fun authenticateAndDisableEncryption(targetMode: AuthMode) {
+        val canBio = AuthenticationUtil.canAuthenticateStrongBiometric(this)
+        val prep = if (canBio) tokenCryptoManager.prepareBiometricDecryptCipher() else null
+        val decryptCipher = prep?.cipher
+
+        if (canBio && prep?.status == TokenCryptoManager.BiometricKeyStatus.READY && decryptCipher != null) {
+            AuthenticationUtil.authenticateBiometricCrypto(
+                activity = this,
+                title = getString(R.string.authentication_dialog_title),
+                subtitle = getString(R.string.unlock_tokens_biometric_subtitle),
+                negativeButtonText = getString(R.string.enter_key_manually),
+                cipher = decryptCipher,
+                onSuccess = { authenticatedCipher ->
+                    if (tokenCryptoManager.unlockWithBiometricCipher(authenticatedCipher)) {
+                        performDisableEncryption(targetMode)
+                    } else {
+                        showVerifyKeyToDisableDialog(targetMode)
+                    }
+                },
+                onFallbackToManual = { _ ->
+                    showVerifyKeyToDisableDialog(targetMode)
+                },
+                onCancel = {}
+            )
+        } else {
+            showVerifyKeyToDisableDialog(targetMode)
+        }
+    }
+
+    private fun showVerifyKeyToDisableDialog(targetMode: AuthMode) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
+        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
+        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+
+        messageView.setText(R.string.verify_encryption_key_message)
+        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.verify_encryption_key_title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.ok_text, null)
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
+                if (chars.isEmpty()) {
+                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                    return@setOnClickListener
+                }
+                positiveButton.isEnabled = false
+                lifecycleScope.launch {
+                    val unlocked = try {
+                        tokenCryptoManager.unlockWithPassphrase(chars)
+                    } finally {
+                        chars.fill('\u0000')
+                    }
+                    if (unlocked) {
+                        tokenCryptoManager.disableTokenEncryption(targetMode)
+                        dialog.dismiss()
+                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                        refreshOptionMenu()
+                        Snackbar.make(binding.rootView, R.string.token_encryption_disabled, Snackbar.LENGTH_SHORT)
+                            .show()
+                    } else {
+                        positiveButton.isEnabled = true
+                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                    }
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun performDisableEncryption(targetMode: AuthMode) {
+        lifecycleScope.launch {
+            tokenCryptoManager.disableTokenEncryption(targetMode)
+            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+            refreshOptionMenu()
+            Snackbar.make(binding.rootView, R.string.token_encryption_disabled, Snackbar.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    private fun verifyAuthentication() {
+        if (isAuthPromptInProgress || activeAuthDialog?.isShowing == true) {
+            return
+        }
+
+        when (settings.authMode) {
+            AuthMode.NONE -> {
+                onAuthCompleted()
+            }
+            AuthMode.APP_LAUNCH -> {
+                isAuthPromptInProgress = true
+                AuthenticationUtil.authenticateAppLaunch(this, finishOnCancel = true) {
+                    isAuthPromptInProgress = false
+                    onAuthCompleted()
+                }
+            }
+            AuthMode.TOKEN_ENCRYPTED -> {
+                verifyTokenEncryptedLaunch()
+            }
+        }
+    }
+
+    private fun verifyTokenEncryptedLaunch() {
+        val canBio = AuthenticationUtil.canAuthenticateStrongBiometric(this)
+        val prep = tokenCryptoManager.prepareBiometricDecryptCipher()
+        val decryptCipher = prep.cipher
+
+        if (canBio && prep.status == TokenCryptoManager.BiometricKeyStatus.READY && decryptCipher != null) {
+            isAuthPromptInProgress = true
+            AuthenticationUtil.authenticateBiometricCrypto(
+                activity = this,
+                title = getString(R.string.unlock_tokens_title),
+                subtitle = getString(R.string.unlock_tokens_biometric_subtitle),
+                negativeButtonText = getString(R.string.enter_key_manually),
+                cipher = decryptCipher,
+                onSuccess = { authenticatedCipher ->
+                    isAuthPromptInProgress = false
+                    if (tokenCryptoManager.unlockWithBiometricCipher(authenticatedCipher)) {
+                        onAuthCompleted()
+                    } else {
+                        showManualKeyUnlockDialog(isLaunchGate = true, biometricInvalidated = true)
+                    }
+                },
+                onFallbackToManual = { _ ->
+                    isAuthPromptInProgress = false
+                    showManualKeyUnlockDialog(isLaunchGate = true, biometricInvalidated = false)
+                },
+                onCancel = {
+                    isAuthPromptInProgress = false
+                    finish()
+                }
+            )
+        } else {
+            val wasInvalidated = prep.status == TokenCryptoManager.BiometricKeyStatus.INVALIDATED ||
+                tokenCryptoManager.wasBiometricInvalidated()
+            showManualKeyUnlockDialog(isLaunchGate = true, biometricInvalidated = wasInvalidated)
+        }
+    }
+
+    private fun showManualKeyUnlockDialog(
+        isLaunchGate: Boolean,
+        biometricInvalidated: Boolean
+    ) {
+        activeAuthDialog?.dismiss()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
+        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
+        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+        val enableBiometricCheckbox = dialogView.findViewById<MaterialCheckBox>(R.id.enable_biometric_checkbox)
+
+        messageView.setText(
+            if (biometricInvalidated) {
+                R.string.biometric_invalidated_enter_key_message
+            } else {
+                R.string.enter_encryption_key_to_unlock_message
+            }
+        )
+        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
+
+        val canOfferBiometric = (!tokenCryptoManager.isBiometricKeyConfigured() || biometricInvalidated) &&
+            AuthenticationUtil.canAuthenticateStrongBiometric(this)
+        if (canOfferBiometric) {
+            enableBiometricCheckbox.visibility = View.VISIBLE
+            enableBiometricCheckbox.isChecked = true
+            enableBiometricCheckbox.setText(
+                if (biometricInvalidated) {
+                    R.string.reenable_biometric_unlock
+                } else {
+                    R.string.enable_biometric_unlock
+                }
+            )
+        } else {
+            enableBiometricCheckbox.visibility = View.GONE
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.unlock_tokens_title)
+            .setView(dialogView)
+            .setCancelable(!isLaunchGate)
+            .setPositiveButton(R.string.unlock_text, null)
+            .setNegativeButton(R.string.cancel_text) { _, _ ->
+                activeAuthDialog = null
+                if (isLaunchGate) {
+                    finish()
+                }
+            }
+            .setOnCancelListener {
+                activeAuthDialog = null
+                if (isLaunchGate) {
+                    finish()
+                }
+            }
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
+                if (chars.isEmpty()) {
+                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                    return@setOnClickListener
+                }
+                positiveButton.isEnabled = false
+                lifecycleScope.launch {
+                    val unlocked = try {
+                        tokenCryptoManager.unlockWithPassphrase(chars)
+                    } finally {
+                        chars.fill('\u0000')
+                    }
+                    if (!unlocked) {
+                        positiveButton.isEnabled = true
+                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
+                        return@launch
+                    }
+
+                    val shouldEnableBiometric = canOfferBiometric && enableBiometricCheckbox.isChecked
+                    dialog.dismiss()
+                    activeAuthDialog = null
+
+                    if (shouldEnableBiometric) {
+                        promptReenableBiometricAfterManualUnlock()
+                    } else {
+                        onAuthCompleted()
+                    }
+                }
+            }
+        }
+
+        activeAuthDialog = dialog
+        dialog.show()
+    }
+
+    private fun promptReenableBiometricAfterManualUnlock() {
+        val encryptCipher = try {
+            tokenCryptoManager.createBiometricEncryptCipher()
+        } catch (e: Exception) {
+            Log.w(TAG, "Unable to create biometric cipher during re-enable", e)
+            tokenCryptoManager.cancelPendingBiometricKeySetup()
+            onAuthCompleted()
+            return
+        }
+
+        isAuthPromptInProgress = true
+        AuthenticationUtil.authenticateBiometricCrypto(
+            activity = this,
+            title = getString(R.string.encrypt_key_with_biometric_title),
+            subtitle = getString(R.string.encrypt_key_with_biometric_subtitle),
+            negativeButtonText = getString(R.string.cancel_text),
+            cipher = encryptCipher,
+            onSuccess = { authenticatedCipher ->
+                isAuthPromptInProgress = false
+                try {
+                    tokenCryptoManager.saveBiometricEncryptedCurrentKey(authenticatedCipher)
+                    Snackbar.make(binding.rootView, R.string.biometric_unlock_enabled, Snackbar.LENGTH_SHORT)
+                        .show()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed saving re-enabled biometric key", e)
+                    tokenCryptoManager.cancelPendingBiometricKeySetup()
+                }
+                onAuthCompleted()
+            },
+            onFallbackToManual = { _ ->
+                isAuthPromptInProgress = false
+                tokenCryptoManager.cancelPendingBiometricKeySetup()
+                onAuthCompleted()
+            },
+            onCancel = {
+                isAuthPromptInProgress = false
+                tokenCryptoManager.cancelPendingBiometricKeySetup()
+                onAuthCompleted()
+            }
+        )
+    }
+
+    private fun onAuthCompleted() {
+        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+        processPendingDeepLinkIfAny()
     }
 
     companion object {
@@ -557,5 +1119,10 @@ class MainActivity : AppCompatActivity() {
         const val WRITE_KEY_URI_REQUEST_CODE = 45
         const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
         const val SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA = "shareFromPackageName"
+        private const val STATE_PENDING_EXPORT_ENCRYPTED = "pending_export_encrypted"
+
+        internal fun exportBaseFileName(encrypted: Boolean): String {
+            return if (encrypted) "freeotp-backup-encrypted" else "freeotp-backup"
+        }
     }
 }

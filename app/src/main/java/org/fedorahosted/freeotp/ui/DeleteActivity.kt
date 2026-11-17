@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.DeleteBinding
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
@@ -20,10 +21,15 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!tokenCryptoManager.isUnlocked()) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
 
         binding = DeleteBinding.inflate(layoutInflater)

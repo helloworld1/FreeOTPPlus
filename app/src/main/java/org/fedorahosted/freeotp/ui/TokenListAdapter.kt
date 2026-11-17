@@ -18,24 +18,28 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenType
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.legacy.TokenCode
-import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
+import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @ActivityScoped
-class TokenListAdapter @Inject constructor(@ActivityContext private val context: Context,
-                                           private val otpTokenDatabase: OtpTokenDatabase,
-                                           private val tokenCodeUtil: TokenCodeUtil,
-                                           private val settings: Settings) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
+class TokenListAdapter @Inject constructor(
+    @ActivityContext private val context: Context,
+    private val otpTokenDatabase: OtpTokenDatabase,
+    private val tokenCodeUtil: TokenCodeUtil,
+    private val settings: Settings,
+    private val tokenCryptoManager: TokenCryptoManager
+) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
     val activity = context as AppCompatActivity
     private val clipboardManager: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     private val tokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenViewHolder {
         val tokenLayout = LayoutInflater.from(activity).inflate(R.layout.token, parent, false) as TokenLayout
-        return TokenViewHolder(activity, tokenLayout)
+        return TokenViewHolder(activity, tokenLayout, settings, tokenCryptoManager)
     }
 
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
@@ -45,7 +49,7 @@ class TokenListAdapter @Inject constructor(@ActivityContext private val context:
             activity.lifecycleScope.launch {
                 // Fetch the token again to refresh the HOTP token. This is needed because
                 // incrementCounter will not refresh the token after HOTP update
-                otpTokenDatabase.otpTokenDao().get(currentToken.id).first() ?.let { token ->
+                otpTokenDatabase.otpTokenDao().get(currentToken.id).first()?.let { token ->
                     val codes = tokenCodeUtil.generateTokenCode(token)
 
                     if (token.tokenType == OtpTokenType.HOTP) {

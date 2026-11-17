@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
 import javax.inject.Inject
 
@@ -45,8 +46,15 @@ class ShareQrCodeActivity : AppCompatActivity() {
     @Inject
     lateinit var otpTokenDatabase: OtpTokenDatabase
 
+    @Inject
+    lateinit var tokenCryptoManager: TokenCryptoManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!tokenCryptoManager.isUnlocked()) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
 
         val binding = ShareQrcodeBinding.inflate(layoutInflater)
@@ -66,12 +74,12 @@ class ShareQrCodeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)
 
-            // Get token values.
-            val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+            // Get token values and decrypt secret in memory so shared QR is always standard unencrypted otpauth URI.
+            val storedToken = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+            val token = tokenCryptoManager.decryptToken(storedToken)
             title = if (token.issuer.isNullOrBlank()) token.label else token.issuer
 
-            // Get references to widgets.
-            val qrcodeWriter = QRCodeWriter();
+            val qrcodeWriter = QRCodeWriter()
 
             val qrCodeSize = resources.getDimensionPixelSize(R.dimen.qr_code_size)
             val encoded = qrcodeWriter.encode(
@@ -79,20 +87,20 @@ class ShareQrCodeActivity : AppCompatActivity() {
                 BarcodeFormat.QR_CODE,
                 qrCodeSize,
                 qrCodeSize
-            );
+            )
             val pixels = IntArray(qrCodeSize * qrCodeSize)
             for (x in 0 until qrCodeSize) {
                 for (y in 0 until qrCodeSize) {
                     if (encoded.get(x, y)) {
-                        pixels[x * qrCodeSize + y] = Color.BLACK;
+                        pixels[x * qrCodeSize + y] = Color.BLACK
                     } else {
-                        pixels[x * qrCodeSize + y] = Color.WHITE;
+                        pixels[x * qrCodeSize + y] = Color.WHITE
                     }
                 }
             }
             val qrcode =
-                Bitmap.createBitmap(pixels, qrCodeSize, qrCodeSize, Bitmap.Config.RGB_565);
-            binding.qrcode.setImageBitmap(qrcode);
+                Bitmap.createBitmap(pixels, qrCodeSize, qrCodeSize, Bitmap.Config.RGB_565)
+            binding.qrcode.setImageBitmap(qrcode)
         }
     }
 

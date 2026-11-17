@@ -44,15 +44,19 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
+    @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var settings: Settings
     @Inject lateinit var imageUtil: ImageUtil
 
     private lateinit var binding: EditBinding
@@ -95,6 +99,10 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!tokenCryptoManager.isUnlocked()) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
 
         binding = EditBinding.inflate(layoutInflater)
@@ -167,10 +175,15 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             secretTextView.setTextIsSelectable(false)
             secretTextView.text = getString(R.string.click_to_display)
             secretTextView.setOnClickListener {
-                AuthenticationUtil.authenticateIfScreenLockEnabled(this@EditActivity) {
+                AuthenticationUtil.authenticateForSensitiveAction(
+                    this@EditActivity,
+                    settings,
+                    tokenCryptoManager
+                ) {
+                    val plaintextSecret = tokenCryptoManager.decryptSecret(token)
                     secretTextView.setOnClickListener(null)
                     secretTextView.setTextIsSelectable(true)
-                    secretTextView.text = token.secret
+                    secretTextView.text = plaintextSecret
                 }
             }
 

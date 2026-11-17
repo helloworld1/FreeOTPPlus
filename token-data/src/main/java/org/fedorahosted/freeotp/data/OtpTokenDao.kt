@@ -41,6 +41,9 @@ interface OtpTokenDao {
     @Update
     suspend fun update(otpTokenList: OtpToken)
 
+    @Update
+    suspend fun updateAll(otpTokenList: List<OtpToken>)
+
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
     suspend fun updateOrdinal(id: Long, ordinal: Long)
 

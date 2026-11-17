@@ -78,9 +78,8 @@
         android:title="@string/copy_to_clipboard"
         android:checkable="true"/>
     <item
-        android:id="@+id/require_authentication"
-        android:title="@string/require_authentication"
-        android:checkable="true"/>
+        android:id="@+id/authentication_mode"
+        android:title="@string/authentication_mode"/>
     <item
         android:id="@+id/action_about"
         android:icon="@drawable/info_24px"

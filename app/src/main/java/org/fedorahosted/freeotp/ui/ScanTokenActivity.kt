@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
@@ -48,6 +49,8 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
 
+    @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+
     @Inject lateinit var imageUtil: ImageUtil
 
     @Inject lateinit var executorService: ExecutorService
@@ -58,6 +61,10 @@ class ScanTokenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!tokenCryptoManager.isUnlocked()) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
 
         binding = ActivityScanTokenBinding.inflate(layoutInflater)
@@ -149,7 +156,9 @@ class ScanTokenActivity : AppCompatActivity() {
                                         binding.image.alpha = 0.9f
                                         binding.image.postDelayed({
                                             lifecycleScope.launch {
-                                                otpTokenDatabase.otpTokenDao().insert(token)
+                                                otpTokenDatabase.otpTokenDao().insert(
+                                                    tokenCryptoManager.encryptTokenForStorage(token)
+                                                )
                                                 setResult(RESULT_OK)
                                                 finish()
                                             }
@@ -160,7 +169,9 @@ class ScanTokenActivity : AppCompatActivity() {
                                 })
                                 .into(binding.image)
                     } else {
-                        otpTokenDatabase.otpTokenDao().insert(token)
+                        otpTokenDatabase.otpTokenDao().insert(
+                            tokenCryptoManager.encryptTokenForStorage(token)
+                        )
                         setResult(RESULT_OK)
                         finish()
                     }

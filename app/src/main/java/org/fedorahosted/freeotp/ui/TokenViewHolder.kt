@@ -8,11 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.fedorahosted.freeotp.util.Settings
 
-class TokenViewHolder(private val activity: AppCompatActivity,
-                      val tokenLayout: TokenLayout) : RecyclerView.ViewHolder(tokenLayout) {
+class TokenViewHolder(
+    private val activity: AppCompatActivity,
+    val tokenLayout: TokenLayout,
+    private val settings: Settings,
+    private val tokenCryptoManager: TokenCryptoManager
+) : RecyclerView.ViewHolder(tokenLayout) {
     fun bind(token: OtpToken) {
         tokenLayout.bind(token, R.menu.token, getOnMenuItemClick(token))
     }
@@ -32,15 +38,24 @@ class TokenViewHolder(private val activity: AppCompatActivity,
             }
 
             R.id.action_share -> {
-                AuthenticationUtil.authenticateIfScreenLockEnabled(activity) {
-                    val i = Intent(Intent.ACTION_VIEW, Uri.parse(OtpTokenFactory.toUri(token).toString()))
+                AuthenticationUtil.authenticateForSensitiveAction(
+                    activity,
+                    settings,
+                    tokenCryptoManager
+                ) {
+                    val plainToken = tokenCryptoManager.decryptToken(token)
+                    val i = Intent(Intent.ACTION_VIEW, Uri.parse(OtpTokenFactory.toUri(plainToken).toString()))
                     i.putExtra(MainActivity.SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA, activity.packageName)
                     activity.startActivity(Intent.createChooser(i, null))
                 }
             }
 
             R.id.action_share_qr_code -> {
-                AuthenticationUtil.authenticateIfScreenLockEnabled(activity) {
+                AuthenticationUtil.authenticateForSensitiveAction(
+                    activity,
+                    settings,
+                    tokenCryptoManager
+                ) {
                     val i = Intent(tokenLayout.context, ShareQrCodeActivity::class.java)
                     i.putExtra(ShareQrCodeActivity.EXTRA_TOKEN_ID, token.id)
                     activity.startActivity(i)
