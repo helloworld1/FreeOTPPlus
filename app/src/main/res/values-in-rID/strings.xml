@@ -70,6 +70,7 @@
     <string name="category">Kategori</string>
     <string name="all_categories">Semua kategori</string>
     <string name="uncategorized">Tanpa kategori</string>
+    <string name="add_category">Kategori baru</string>
     <string name="authentication_mode">Mode autentikasi</string>
     <string name="auth_mode_none">Tidak ada</string>
     <string name="auth_mode_app_launch">Saat membuka aplikasi</string>

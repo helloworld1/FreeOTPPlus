@@ -70,6 +70,7 @@
     <string name="category">分類</string>
     <string name="all_categories">所有分類</string>
     <string name="uncategorized">未分類</string>
+    <string name="add_category">新增分類</string>
     <string name="authentication_mode">身分驗證模式</string>
     <string name="auth_mode_none">無</string>
     <string name="auth_mode_app_launch">啟動應用程式時</string>

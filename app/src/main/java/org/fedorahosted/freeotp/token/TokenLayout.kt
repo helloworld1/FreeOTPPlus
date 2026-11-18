@@ -16,6 +16,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
@@ -94,11 +95,12 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
             mLabel.visibility = View.VISIBLE
         }
 
-        if (token.category.isNullOrBlank()) {
+        val formattedCategories = CategoryUtil.formatForDisplay(token.categories)
+        if (formattedCategories.isBlank()) {
             mCategory.visibility = View.GONE
         } else {
             mCategory.visibility = View.VISIBLE
-            mCategory.text = token.category
+            mCategory.text = formattedCategories
         }
     }
 

@@ -70,6 +70,7 @@
     <string name="category">الفئة</string>
     <string name="all_categories">جميع الفئات</string>
     <string name="uncategorized">غير مصنف</string>
+    <string name="add_category">فئة جديدة</string>
     <string name="authentication_mode">وضع المصادقة</string>
     <string name="auth_mode_none">بلا</string>
     <string name="auth_mode_app_launch">عند تشغيل التطبيق</string>

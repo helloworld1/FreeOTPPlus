@@ -70,6 +70,7 @@
     <string name="category">Kategorie</string>
     <string name="all_categories">Všechny kategorie</string>
     <string name="uncategorized">Nezařazené</string>
+    <string name="add_category">Nová kategorie</string>
     <string name="authentication_mode">Režim ověření</string>
     <string name="auth_mode_none">Žádné</string>
     <string name="auth_mode_app_launch">Při spuštění aplikace</string>

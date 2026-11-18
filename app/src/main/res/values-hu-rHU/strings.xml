@@ -70,6 +70,7 @@
     <string name="category">Kategória</string>
     <string name="all_categories">Összes kategória</string>
     <string name="uncategorized">Kategória nélküli</string>
+    <string name="add_category">Új kategória</string>
     <string name="authentication_mode">Hitelesítési mód</string>
     <string name="auth_mode_none">Nincs</string>
     <string name="auth_mode_app_launch">Alkalmazás indításakor</string>

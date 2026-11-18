@@ -81,6 +81,7 @@
     <string name="category">Category</string>
     <string name="all_categories">All categories</string>
     <string name="uncategorized">Uncategorized</string>
+    <string name="add_category">New category</string>
 
     <string name="authentication_mode">Authentication mode</string>
     <string name="auth_mode_none">None</string>

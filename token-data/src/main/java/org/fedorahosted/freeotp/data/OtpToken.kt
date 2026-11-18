@@ -17,5 +17,5 @@ data class OtpToken (
     val counter: Long,
     val period: Int,
     val encryptionType: EncryptionType,
-    val category: String? = null
+    val categories: List<String> = emptyList()
 )

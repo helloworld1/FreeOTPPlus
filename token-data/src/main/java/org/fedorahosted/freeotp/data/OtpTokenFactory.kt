@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.data
 
 import android.net.Uri
 import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import java.util.*
 import javax.crypto.Mac
@@ -102,10 +103,10 @@ object OtpTokenFactory {
         }
 
         val image = uri.getQueryParameter("image")
-        val category = if (includeCategoryFromQuery) {
-            uri.getQueryParameter(QUERY_CATEGORY)?.takeIf { it.isNotBlank() }
+        val categories = if (includeCategoryFromQuery) {
+            CategoryUtil.normalizeCategories(uri.getQueryParameters(QUERY_CATEGORY))
         } else {
-            null
+            emptyList()
         }
 
         return OtpToken(
@@ -121,7 +122,7 @@ object OtpTokenFactory {
             counter = counter,
             period = period,
             encryptionType = EncryptionType.PLAIN_TEXT,
-            category = category
+            categories = categories
         )
     }
 
@@ -139,8 +140,8 @@ object OtpTokenFactory {
             .appendQueryParameter(QUERY_KDF_ITERATIONS, metadata.kdfIterations.toString())
             .appendQueryParameter(QUERY_KEY_VERIFIER, metadata.keyVerifier)
 
-        if (!token.category.isNullOrBlank()) {
-            builder.appendQueryParameter(QUERY_CATEGORY, token.category)
+        for (cat in CategoryUtil.normalizeCategories(token.categories)) {
+            builder.appendQueryParameter(QUERY_CATEGORY, cat)
         }
         if (!token.imagePath.isNullOrBlank()) {
             builder.appendQueryParameter("image", token.imagePath)

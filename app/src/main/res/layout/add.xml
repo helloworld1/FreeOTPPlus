@@ -36,29 +36,29 @@
             android:layout_height="?attr/actionBarSize" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_weight="1">
 
-        <include layout="@layout/metadata" />
-
-        <View
-            style="@style/Divider"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp" />
-
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp">
+            android:layout_margin="16dp"
+            android:orientation="vertical">
+
+            <include layout="@layout/metadata" />
+
+            <View
+                style="@style/Divider"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp" />
 
             <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp">
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -231,8 +231,8 @@
                         android:text="0" />
                 </TableRow>
             </TableLayout>
-        </ScrollView>
-    </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
     <View style="@style/Divider" />
 

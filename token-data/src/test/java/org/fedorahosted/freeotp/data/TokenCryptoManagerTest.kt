@@ -260,6 +260,6 @@ class TokenCryptoManagerTest {
         assertThat(decrypted[0].label).isEqualTo("alice@example.com")
         assertThat(decrypted[0].secret).isEqualTo("JBSWY3DPEHPK3PXP")
         assertThat(decrypted[0].encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
-        assertThat(decrypted[0].category).isEqualTo("Work")
+        assertThat(decrypted[0].categories).containsExactly("Work")
     }
 }

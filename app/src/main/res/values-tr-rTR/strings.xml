@@ -70,6 +70,7 @@
     <string name="category">Kategori</string>
     <string name="all_categories">Tüm kategoriler</string>
     <string name="uncategorized">Kategorisiz</string>
+    <string name="add_category">Yeni kategori</string>
     <string name="authentication_mode">Kimlik doğrulama modu</string>
     <string name="auth_mode_none">Yok</string>
     <string name="auth_mode_app_launch">Uygulama başlangıcı</string>

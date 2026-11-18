@@ -12,7 +12,10 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.data.util.CategoryUtil
+import java.util.Locale
 
 @Dao
 interface OtpTokenDao {
@@ -26,8 +29,21 @@ interface OtpTokenDao {
     @Query("select ordinal from otp_tokens order by ordinal desc limit 1")
     fun getLastOrdinal(): Long?
 
-    @Query("select distinct category from otp_tokens where category is not null and category != ''")
-    fun getAllCategories(): Flow<List<String>>
+    @Query("select categories from otp_tokens where categories != '[]'")
+    fun getAllCategoryJsonRows(): Flow<List<String>>
+
+    fun getAllCategories(): Flow<List<String>> = getAllCategoryJsonRows().map { rows ->
+        val seenLower = mutableSetOf<String>()
+        val distinct = mutableListOf<String>()
+        for (row in rows) {
+            for (cat in CategoryUtil.fromJson(row)) {
+                if (seenLower.add(cat.lowercase(Locale.ROOT))) {
+                    distinct.add(cat)
+                }
+            }
+        }
+        distinct.sortedWith(String.CASE_INSENSITIVE_ORDER)
+    }
 
     @Query("delete from otp_tokens where id = :id")
     suspend fun deleteById(id: Long)

@@ -1,91 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <ImageButton
-        style="?android:borderlessButtonStyle"
-        android:id="@+id/image"
-        android:layout_width="104dp"
-        android:layout_height="104dp"
-        android:padding="4dp"
-        android:scaleType="centerInside"
-        android:src="@drawable/logo" />
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <TableLayout
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/image"
+            style="?android:borderlessButtonStyle"
+            android:layout_width="104dp"
+            android:layout_height="104dp"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/logo" />
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="104dp">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="48dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|end"
+                    android:paddingEnd="8dp"
+                    android:text="@string/issuer"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/issuer"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:hint="Example.com"
+                    android:inputType="textNoSuggestions"
+                    android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="48dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|end"
+                    android:paddingEnd="8dp"
+                    android:text="@string/account"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/label"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="4dp"
+                    android:hint="joe@example.com"
+                    android:inputType="textNoSuggestions"
+                    android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+            </TableRow>
+        </TableLayout>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/category_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/category"
+        android:textStyle="bold" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/category_chip_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="104dp"
-        >
+        app:chipSpacingHorizontal="8dp"
+        app:chipSpacingVertical="4dp" />
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="48dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical|right"
-                android:paddingRight="8dp"
-                android:text="@string/issuer"
-                android:textStyle="bold"/>
-
-            <EditText
-                android:id="@+id/issuer"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-            android:layout_toRightOf="@id/image"
-            android:layout_marginTop="4dp"
-            android:hint="Example.com"
-            android:inputType="textNoSuggestions"
-            android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="48dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical|right"
-                android:paddingRight="8dp"
-                android:text="@string/account"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/label"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_below="@id/issuer"
-                android:layout_marginBottom="4dp"
-                android:layout_toRightOf="@id/image"
-                android:hint="joe@example.com"
-                android:inputType="textNoSuggestions"
-                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="48dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical|right"
-                android:paddingRight="8dp"
-                android:text="@string/category"
-                android:textStyle="bold" />
-
-            <AutoCompleteTextView
-                android:id="@+id/category"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="4dp"
-                android:hint="@string/category"
-                android:inputType="textNoSuggestions"
-                android:completionThreshold="1"
-                android:textAppearance="?android:attr/textAppearanceSmallInverse" />
-        </TableRow>
-    </TableLayout>
-</RelativeLayout>
+</LinearLayout>

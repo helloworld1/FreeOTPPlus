@@ -29,6 +29,20 @@ class MainViewModel @Inject constructor(
 
     private var lastSessionEndTimestamp = 0L
 
+    init {
+        viewModelScope.launch {
+            otpTokenDatabase.otpTokenDao().getAllCategories().collect { availableCategories ->
+                val current = categoryFilter.value
+                if (current != null &&
+                    current != CATEGORY_UNCATEGORIZED &&
+                    availableCategories.none { it.equals(current, ignoreCase = true) }
+                ) {
+                    categoryFilter.value = null
+                }
+            }
+        }
+    }
+
     private fun computeInitialAuthState(): AuthState {
         return when (settings.authMode) {
             AuthMode.NONE -> AuthState.AUTHENTICATED
@@ -93,9 +107,9 @@ class MainViewModel @Inject constructor(
             if (category != null) {
                 filteredTokens = filteredTokens.filter { token ->
                     if (category == CATEGORY_UNCATEGORIZED) {
-                        token.category.isNullOrBlank()
+                        token.categories.isEmpty()
                     } else {
-                        token.category == category
+                        token.categories.any { it.equals(category, ignoreCase = true) }
                     }
                 }
             }

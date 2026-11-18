@@ -25,8 +25,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.ImageButton
@@ -38,6 +36,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -62,7 +61,8 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
     private lateinit var mImage: ImageButton
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
-    private lateinit var mCategory: AutoCompleteTextView
+    private lateinit var mCategoryChipGroup: ChipGroup
+    private lateinit var categoryChipHelper: CategoryChipHelper
     private lateinit var mSecret: EditText
     private lateinit var mInterval: EditText
     private lateinit var mCounter: EditText
@@ -97,7 +97,8 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         mImage = findViewById(R.id.image)
         mIssuer = findViewById(R.id.issuer)
         mLabel = findViewById(R.id.label)
-        mCategory = findViewById(R.id.category)
+        mCategoryChipGroup = findViewById(R.id.category_chip_group)
+        categoryChipHelper = CategoryChipHelper(this, mCategoryChipGroup)
         mSecret = findViewById(R.id.secret)
         mInterval = findViewById(R.id.interval)
         mCounter = findViewById(R.id.counter)
@@ -120,29 +121,23 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         val tw = AddTextWatcher(this)
         mIssuer.addTextChangedListener(tw)
         mLabel.addTextChangedListener(tw)
-        mCategory.addTextChangedListener(tw)
         mSecret.addTextChangedListener(AddSecretTextWatcher(this))
         mInterval.addTextChangedListener(tw)
 
         lifecycleScope.launch {
-            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first().toMutableList()
-            categories.add(0, getString(R.string.uncategorized))
-            val adapter = ArrayAdapter(this@AddActivity, android.R.layout.simple_dropdown_item_1line, categories)
-            mCategory.setAdapter(adapter)
-            mCategory.threshold = 0
-            mCategory.setOnClickListener {
-                mCategory.showDropDown()
-            }
-            mCategory.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    mCategory.showDropDown()
-                }
-            }
-            mCategory.setOnItemClickListener { _, _, position, _ ->
-                if (position == 0) {
-                    mCategory.setText("")
-                }
-            }
+            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first()
+            categoryChipHelper.initialize(
+                availableCategories = categories,
+                initialSelected = emptyList(),
+                savedInstanceState = savedInstanceState
+            )
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::categoryChipHelper.isInitialized) {
+            categoryChipHelper.saveInstanceState(outState)
         }
     }
 
@@ -204,7 +199,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
                     val token = OtpTokenFactory.createFromUri(Uri.parse(uri)).copy(
                         issuer = rawIssuer.takeIf { it.isNotBlank() },
                         label = rawLabel,
-                        category = mCategory.text.toString()
+                        categories = categoryChipHelper.getSelectedCategories()
                     )
                     otpTokenDatabase.otpTokenDao().insert(tokenCryptoManager.encryptTokenForStorage(token))
                     setResult(Activity.RESULT_OK)

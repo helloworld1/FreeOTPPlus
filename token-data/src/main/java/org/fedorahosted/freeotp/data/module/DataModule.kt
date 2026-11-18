@@ -18,7 +18,7 @@ object DataModule {
     @Provides
     fun database(@ApplicationContext context:Context)
             = Room.databaseBuilder(context, OtpTokenDatabase::class.java, "otp-token-db")
-        .addMigrations(OtpTokenDatabase.MIGRATION_1_2)
+        .addMigrations(OtpTokenDatabase.MIGRATION_1_2, OtpTokenDatabase.MIGRATION_2_3)
         .build()
 
     @Singleton

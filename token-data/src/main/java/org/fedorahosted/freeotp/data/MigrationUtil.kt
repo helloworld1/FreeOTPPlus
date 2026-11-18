@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import javax.inject.Inject
 
 class MigrationUtil @Inject constructor(
@@ -32,8 +33,10 @@ class MigrationUtil @Inject constructor(
     suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
         tokens.map { otpToken ->
             val uri = OtpTokenFactory.toUri(otpToken)
+            val normalizedCategories = CategoryUtil.normalizeCategories(otpToken.categories)
             Token(uri).apply {
-                category = otpToken.category
+                category = normalizedCategories.firstOrNull()
+                categories = normalizedCategories
             }
         }
     }
@@ -81,6 +84,11 @@ class MigrationUtil @Inject constructor(
 
         internal fun mapLegacyTokensToOtpTokens(legacyTokens: List<Token>): List<OtpToken> {
             return legacyTokens.mapIndexed { index, legacyToken ->
+                val resolvedCategories = if (legacyToken.categories != null) {
+                    CategoryUtil.normalizeCategories(legacyToken.categories)
+                } else {
+                    CategoryUtil.normalizeCategories(listOf(legacyToken.category))
+                }
                 OtpToken(
                     id = index.toLong() + 1,
                     ordinal = index.toLong() + 1,
@@ -94,7 +102,7 @@ class MigrationUtil @Inject constructor(
                     digits = if (legacyToken.digits > 0) legacyToken.digits else 6,
                     period = if (legacyToken.period > 0) legacyToken.period else 30,
                     encryptionType = EncryptionType.PLAIN_TEXT,
-                    category = legacyToken.category
+                    categories = resolvedCategories
                 )
             }
         }

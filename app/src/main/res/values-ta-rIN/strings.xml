@@ -70,6 +70,7 @@
     <string name="category">பிரிவு</string>
     <string name="all_categories">அனைத்துப் பிரிவுகளும்</string>
     <string name="uncategorized">பிரிவில்லாதவை</string>
+    <string name="add_category">புதிய பிரிவு</string>
     <string name="authentication_mode">அங்கீகாரப் பயன்முறை</string>
     <string name="auth_mode_none">ஏதுமில்லை</string>
     <string name="auth_mode_app_launch">செயலி தொடங்கும் போது</string>

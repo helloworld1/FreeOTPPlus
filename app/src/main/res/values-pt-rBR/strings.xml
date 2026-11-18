@@ -70,6 +70,7 @@
     <string name="category">Categoria</string>
     <string name="all_categories">Todas as categorias</string>
     <string name="uncategorized">Sem categoria</string>
+    <string name="add_category">Nova categoria</string>
     <string name="authentication_mode">Modo de autenticação</string>
     <string name="auth_mode_none">Nenhum</string>
     <string name="auth_mode_app_launch">Abertura do aplicativo</string>

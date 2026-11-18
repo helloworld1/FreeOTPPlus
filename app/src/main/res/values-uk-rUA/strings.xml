@@ -70,6 +70,7 @@
     <string name="category">Категорія</string>
     <string name="all_categories">Усі категорії</string>
     <string name="uncategorized">Без категорії</string>
+    <string name="add_category">Нова категорія</string>
     <string name="authentication_mode">Режим автентифікації</string>
     <string name="auth_mode_none">Немає</string>
     <string name="auth_mode_app_launch">Під час запуску програми</string>

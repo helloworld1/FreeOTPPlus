@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -63,6 +64,7 @@ public class Token {
     private long counter;
     private int period;
     private String category;
+    private List<String> categories;
 
     private Token(Uri uri, boolean internal) throws TokenUriInvalidException {
         if (!Objects.equals(uri.getScheme(), "otpauth"))
@@ -358,6 +360,14 @@ public class Token {
         this.category = category;
     }
 
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -376,12 +386,13 @@ public class Token {
                 type == token.type &&
                 Objects.equals(algo, token.algo) &&
                 Arrays.equals(secret, token.secret) &&
-                Objects.equals(category, token.category);
+                Objects.equals(category, token.category) &&
+                Objects.equals(categories, token.categories);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(issuerInt, issuerExt, issuerAlt, label, labelAlt, image, imageAlt, type, algo, digits, counter, period, category);
+        int result = Objects.hash(issuerInt, issuerExt, issuerAlt, label, labelAlt, image, imageAlt, type, algo, digits, counter, period, category, categories);
         result = 31 * result + Arrays.hashCode(secret);
         return result;
     }

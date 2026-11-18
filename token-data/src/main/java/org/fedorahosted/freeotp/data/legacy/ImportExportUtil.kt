@@ -19,6 +19,7 @@ import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -257,6 +258,12 @@ class ImportExportUtil @Inject constructor(
                     // Validate Base32 secret format
                     Base32String.decode(plainSecret)
 
+                    val resolvedCategories = if (exportedToken.categories != null) {
+                        CategoryUtil.normalizeCategories(exportedToken.categories)
+                    } else {
+                        CategoryUtil.normalizeCategories(listOf(exportedToken.category))
+                    }
+
                     OtpToken(
                         id = index.toLong() + 1,
                         ordinal = index.toLong() + 1,
@@ -270,7 +277,7 @@ class ImportExportUtil @Inject constructor(
                         counter = exportedToken.counter,
                         period = if (exportedToken.period > 0) exportedToken.period else 30,
                         encryptionType = EncryptionType.PLAIN_TEXT,
-                        category = exportedToken.category
+                        categories = resolvedCategories
                     )
                 }
             } finally {

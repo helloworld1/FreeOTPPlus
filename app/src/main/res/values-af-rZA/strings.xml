@@ -70,6 +70,7 @@
     <string name="category">Kategorie</string>
     <string name="all_categories">Alle kategorieë</string>
     <string name="uncategorized">Ongekategoriseer</string>
+    <string name="add_category">Nuwe kategorie</string>
     <string name="authentication_mode">Verifikasiemodus</string>
     <string name="auth_mode_none">Geen</string>
     <string name="auth_mode_app_launch">Toepassing-opening</string>

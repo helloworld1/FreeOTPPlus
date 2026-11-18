@@ -32,13 +32,17 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize" />
     </com.google.android.material.appbar.AppBarLayout>
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="16dp"
-        android:orientation="vertical">
-        <include layout="@layout/metadata" />
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="vertical">
+            <include layout="@layout/metadata" />
 
         <TextView
             android:id="@+id/token_details"
@@ -116,7 +120,8 @@
             android:layout_height="48dp"
             android:enabled="false"
             android:text="@string/restore_defaults" />
-    </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
     <View style="@style/Divider" />
 

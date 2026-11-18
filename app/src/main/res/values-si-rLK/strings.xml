@@ -70,6 +70,7 @@
     <string name="category">ප්‍රවර්ගය</string>
     <string name="all_categories">සියලුම ප්‍රවර්ග</string>
     <string name="uncategorized">ප්‍රවර්ග නොකළ</string>
+    <string name="add_category">නව ප්‍රවර්ගය</string>
     <string name="authentication_mode">සත්‍යාපන ප්‍රකාරය</string>
     <string name="auth_mode_none">කිසිවක් නැත</string>
     <string name="auth_mode_app_launch">යෙදුම දියත් කිරීමේදී</string>

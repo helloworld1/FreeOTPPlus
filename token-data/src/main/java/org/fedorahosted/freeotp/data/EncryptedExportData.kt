@@ -1,6 +1,7 @@
 package org.fedorahosted.freeotp.data
 
 import com.google.gson.annotations.SerializedName
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 
 class InvalidEncryptionKeyException(message: String = "Incorrect encryption key") : Exception(message)
 
@@ -32,21 +33,26 @@ data class EncryptedExportToken(
     @SerializedName("counter") val counter: Long,
     @SerializedName("period") val period: Int,
     @SerializedName("encryptionType") val encryptionType: EncryptionType,
-    @SerializedName("category") val category: String? = null
+    @SerializedName("category") val category: String? = null,
+    @SerializedName("categories") val categories: List<String>? = null
 ) {
     companion object {
-        fun fromOtpToken(token: OtpToken): EncryptedExportToken = EncryptedExportToken(
-            issuer = token.issuer,
-            label = token.label,
-            imagePath = token.imagePath,
-            tokenType = token.tokenType,
-            algorithm = token.algorithm,
-            secret = token.secret,
-            digits = token.digits,
-            counter = token.counter,
-            period = token.period,
-            encryptionType = token.encryptionType,
-            category = token.category
-        )
+        fun fromOtpToken(token: OtpToken): EncryptedExportToken {
+            val normalizedCategories = CategoryUtil.normalizeCategories(token.categories)
+            return EncryptedExportToken(
+                issuer = token.issuer,
+                label = token.label,
+                imagePath = token.imagePath,
+                tokenType = token.tokenType,
+                algorithm = token.algorithm,
+                secret = token.secret,
+                digits = token.digits,
+                counter = token.counter,
+                period = token.period,
+                encryptionType = token.encryptionType,
+                category = normalizedCategories.firstOrNull(),
+                categories = normalizedCategories
+            )
+        }
     }
 }

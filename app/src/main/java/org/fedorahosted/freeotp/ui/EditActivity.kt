@@ -26,8 +26,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -39,16 +37,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -62,7 +63,8 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private lateinit var binding: EditBinding
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
-    private lateinit var mCategory: AutoCompleteTextView
+    private lateinit var mCategoryChipGroup: ChipGroup
+    private lateinit var categoryChipHelper: CategoryChipHelper
     private lateinit var mImage: ImageButton
     private lateinit var mRestore: Button
     private lateinit var mSave: Button
@@ -71,8 +73,8 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     private var mIssuerDefault: String? = null
     private var mLabelCurrent: String? = null
     private var mLabelDefault: String? = null
-    private var mCategoryCurrent: String? = null
-    private var mCategoryDefault: String? = null
+    private var mCategoriesCurrent: List<String> = emptyList()
+    private var mCategoriesDefault: List<String> = emptyList()
 
     private var mImageCurrent: Uri? = null
     private var mImageDefault: Uri? = null
@@ -127,26 +129,29 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             val token = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
             mIssuerCurrent = token.issuer ?: ""
             mLabelCurrent = token.label
-            mCategoryCurrent = token.category ?: ""
+            mCategoriesCurrent = CategoryUtil.normalizeCategories(token.categories)
             mImageCurrent = if (token.imagePath != null) Uri.parse(token.imagePath) else null
             mIssuerDefault = mIssuerCurrent
             mLabelDefault = token.label
-            mCategoryDefault = mCategoryCurrent
+            mCategoriesDefault = mCategoriesCurrent
             mImageDefault = mImageCurrent
 
             // Get references to widgets.
             mIssuer = findViewById<View>(R.id.issuer) as EditText
             mLabel = findViewById<View>(R.id.label) as EditText
-            mCategory = findViewById<View>(R.id.category) as AutoCompleteTextView
+            mCategoryChipGroup = findViewById(R.id.category_chip_group)
             mImage = findViewById<View>(R.id.image) as ImageButton
             mRestore = findViewById<View>(R.id.restore) as Button
             mSave = findViewById<View>(R.id.save) as Button
             setSupportActionBar(findViewById(R.id.toolbar))
 
+            categoryChipHelper = CategoryChipHelper(this@EditActivity, mCategoryChipGroup) {
+                updateButtonStates()
+            }
+
             // Setup text changed listeners.
             mIssuer.addTextChangedListener(this@EditActivity)
             mLabel.addTextChangedListener(this@EditActivity)
-            mCategory.addTextChangedListener(this@EditActivity)
 
             // Setup click callbacks.
             findViewById<View>(R.id.cancel).setOnClickListener(this@EditActivity)
@@ -155,13 +160,19 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             binding.removeUserTokenImage.setOnClickListener(this@EditActivity)
             mImage.setOnClickListener(this@EditActivity)
 
+            val availableCategories = otpTokenDatabase.otpTokenDao().getAllCategories().first()
+            categoryChipHelper.initialize(
+                availableCategories = availableCategories,
+                initialSelected = mCategoriesCurrent,
+                savedInstanceState = savedInstanceState
+            )
+
             // Setup initial state. When the image is null, the image removal button will be
             // disabled and a placeholder image is displayed
             showImage(mImageCurrent)
 
             mLabel.setText(mLabelCurrent)
             mIssuer.setText(mIssuerCurrent)
-            mCategory.setText(mCategoryCurrent)
             mIssuer.setSelection(mIssuer.text.length)
 
             // Token details
@@ -190,24 +201,14 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             val intervalTextView = findViewById<TextView>(R.id.interval)
             intervalTextView.text = token.period.toString()
 
-            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first().toMutableList()
-            categories.add(0, getString(R.string.uncategorized))
-            val adapter = ArrayAdapter(this@EditActivity, android.R.layout.simple_dropdown_item_1line, categories)
-            mCategory.setAdapter(adapter)
-            mCategory.threshold = 0
-            mCategory.setOnClickListener {
-                mCategory.showDropDown()
-            }
-            mCategory.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    mCategory.showDropDown()
-                }
-            }
-            mCategory.setOnItemClickListener { _, _, position, _ ->
-                if (position == 0) {
-                    mCategory.setText("")
-                }
-            }
+            updateButtonStates()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::categoryChipHelper.isInitialized) {
+            categoryChipHelper.saveInstanceState(outState)
         }
     }
 
@@ -234,11 +235,32 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
     }
 
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        updateButtonStates()
+    }
+
+    private fun categoriesDiffer(first: List<String>, second: List<String>): Boolean {
+        val setA = CategoryUtil.normalizeCategories(first).map { it.lowercase(Locale.ROOT) }.toSet()
+        val setB = CategoryUtil.normalizeCategories(second).map { it.lowercase(Locale.ROOT) }.toSet()
+        return setA != setB
+    }
+
+    private fun updateButtonStates() {
+        if (!::mLabel.isInitialized || !::mIssuer.isInitialized || !::categoryChipHelper.isInitialized) {
+            return
+        }
         val label = mLabel.text.toString()
         val issuer = mIssuer.text.toString()
-        val category = mCategory.text.toString()
-        mSave.isEnabled = label.isNotEmpty() && (label != mLabelCurrent || issuer != mIssuerCurrent || category != mCategoryCurrent || !imageIs(mImageCurrent))
-        mRestore.isEnabled = label != mLabelDefault || issuer != mIssuerDefault || category != mCategoryDefault || !imageIs(mImageDefault)
+        val selectedCategories = categoryChipHelper.getSelectedCategories()
+        mSave.isEnabled = label.isNotEmpty() && (
+            label != mLabelCurrent ||
+                issuer != mIssuerCurrent ||
+                categoriesDiffer(selectedCategories, mCategoriesCurrent) ||
+                !imageIs(mImageCurrent)
+            )
+        mRestore.isEnabled = label != mLabelDefault ||
+            issuer != mIssuerDefault ||
+            categoriesDiffer(selectedCategories, mCategoriesDefault) ||
+            !imageIs(mImageDefault)
     }
 
     override fun afterTextChanged(s: Editable) {
@@ -256,7 +278,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             R.id.restore -> {
                 mLabel.setText(mLabelDefault)
                 mIssuer.setText(mIssuerDefault)
-                mCategory.setText(mCategoryDefault)
+                categoryChipHelper.setSelectedCategories(mCategoriesDefault)
                 mIssuer.setSelection(mIssuer.text.length)
                 mImageDefault?.let {
                     showImage(it)
@@ -269,7 +291,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     val newToken = token.copy(
                         issuer = mIssuer.text.toString().takeIf { it.isNotBlank() },
                         label = mLabel.text.toString(),
-                        category = mCategory.text.toString(),
+                        categories = categoryChipHelper.getSelectedCategories(),
                         imagePath = mImageDisplay?.toString()
                     )
 

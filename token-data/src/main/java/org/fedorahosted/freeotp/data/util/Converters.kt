@@ -24,4 +24,14 @@ class Converters {
     fun toEncryptionType(value: String): EncryptionType {
         return EncryptionType.valueOf(value)
     }
+
+    @TypeConverter
+    fun fromCategoryList(value: List<String>?): String {
+        return CategoryUtil.toJson(value)
+    }
+
+    @TypeConverter
+    fun toCategoryList(value: String?): List<String> {
+        return CategoryUtil.fromJson(value)
+    }
 }

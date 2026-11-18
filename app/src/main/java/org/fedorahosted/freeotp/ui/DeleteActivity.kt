@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.DeleteBinding
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
@@ -84,11 +85,12 @@ class DeleteActivity : AppCompatActivity() {
                     labelView.visibility = View.VISIBLE
                 }
 
-                if (token.category.isNullOrBlank()) {
+                val formattedCategories = CategoryUtil.formatForDisplay(token.categories)
+                if (formattedCategories.isBlank()) {
                     categoryView.visibility = View.GONE
                 } else {
                     categoryView.visibility = View.VISIBLE
-                    categoryView.text = token.category
+                    categoryView.text = formattedCategories
                 }
 
                 binding.imageView.setTokenImage(token)

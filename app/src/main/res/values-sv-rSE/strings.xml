@@ -70,6 +70,7 @@
     <string name="category">Kategori</string>
     <string name="all_categories">Alla kategorier</string>
     <string name="uncategorized">Okategoriserade</string>
+    <string name="add_category">Ny kategori</string>
     <string name="authentication_mode">Autentiseringsläge</string>
     <string name="auth_mode_none">Inget</string>
     <string name="auth_mode_app_launch">Vid appstart</string>
