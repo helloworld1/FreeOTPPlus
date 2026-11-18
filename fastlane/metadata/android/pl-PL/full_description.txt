@@ -11,11 +11,11 @@ Obejmuje to świetne rozwiązania korporacyjne, takie jak <a href="https://www.f
 <b>Funkcje:</b>
 <ul>
 <li>Skanowanie kodów QR.</li>
-<li>Eksportowanie i importowanie ustawień na Dysk Google lub do innych dostawców dokumentów.</li>
+<li>Eksportowanie i importowanie tokenów (jako zwykły tekst lub zaszyfrowanych) na Dysk Google lub do innych dostawców dokumentów.</li>
 <li>Interfejs Material Design z obsługą ciemnego motywu.</li>
-<li>Pasek wyszukiwania tokenów.</li>
+<li>Pasek wyszukiwania tokenów i filtrowanie według kategorii.</li>
 <li>Podgląd szczegółów tokenu.</li>
-<li>Opcja wymagania uwierzytelnienia biometrycznego / kodu PIN przy uruchamianiu aplikacji.</li>
+<li>Trzy tryby uwierzytelniania: Brak, Uruchamianie aplikacji (biometria / kod PIN) oraz Zaszyfrowany token (tajne klucze tokenów zaszyfrowane za pomocą AES-256-GCM i odblokowywane biometrią lub kluczem ręcznym).</li>
 <li>Ikony offline oparte na heurystyce dla tokenów z ponad 250 witryn internetowych.</li>
 <li>Wiele ustawień pozwalających dostosować działanie aplikacji.</li>
 </ul>

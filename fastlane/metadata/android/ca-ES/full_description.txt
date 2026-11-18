@@ -11,11 +11,11 @@ Això inclou grans solucions empresarials com <a href="https://www.freeipa.org/"
 <b>Característiques:</b>
 <ul>
 <li>Escaneig de codis QR.</li>
-<li>Exportació i importació de la configuració a Google Drive o a altres proveïdors de documents.</li>
+<li>Exportació i importació d'OTP (en text pla o xifrats) a Google Drive o a altres proveïdors de documents.</li>
 <li>Material Design amb compatibilitat per al tema fosc.</li>
-<li>Barra de cerca per trobar entrades OTP.</li>
+<li>Barra de cerca per trobar entrades OTP i filtrar per categoria.</li>
 <li>Visualització dels detalls de l'OTP.</li>
-<li>Opció per requerir autenticació biomètrica / PIN per iniciar l'aplicació.</li>
+<li>Tres modes d'autenticació: Cap, Inici de l'aplicació (biometria / PIN) i OTP xifrat (claus secretes dels OTP xifrades amb AES-256-GCM i desblocades amb biometria o clau manual).</li>
 <li>Icones fora de línia basades en heurística per a més de 250 llocs web.</li>
 <li>Moltes opcions de configuració per personalitzar el funcionament de l'aplicació.</li>
 </ul>

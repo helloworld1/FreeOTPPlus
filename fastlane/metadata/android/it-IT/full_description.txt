@@ -11,11 +11,11 @@ Ciò include ottime soluzioni enterprise come <a href="https://www.freeipa.org/"
 <b>Caratteristiche:</b>
 <ul>
 <li>Scansione del codice QR.</li>
-<li>Esportazione e importazione delle impostazioni su Google Drive o altri provider di documenti.</li>
+<li>Esportazione e importazione dei token (in chiaro o crittografati) su Google Drive o altri provider di documenti.</li>
 <li>Material Design con supporto per il tema scuro.</li>
-<li>Barra di ricerca per trovare i token.</li>
+<li>Barra di ricerca per trovare i token e filtrarli per categoria.</li>
 <li>Visualizzazione dei dettagli del token.</li>
-<li>Opzione per richiedere l'autenticazione biometrica / PIN all'avvio dell'app.</li>
+<li>Tre modalità di autenticazione: Nessuna, Avvio dell'app (dati biometrici / PIN) e Token crittografato (chiavi segrete dei token crittografate con AES-256-GCM e sbloccate tramite biometria o chiave manuale).</li>
 <li>Icone offline basate su euristica per i token di oltre 250 siti web.</li>
 <li>Numerose impostazioni per personalizzare le funzionalità dell'app.</li>
 </ul>

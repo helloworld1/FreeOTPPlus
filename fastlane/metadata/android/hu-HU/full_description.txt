@@ -11,11 +11,11 @@ Ide tartoznak az olyan kiváló vállalati megoldások, mint a <a href="https://
 <b>Funkciók:</b>
 <ul>
 <li>QR-kód beolvasása.</li>
-<li>Beállítások exportálása és importálása a Google Drive-ra vagy más dokumentumszolgáltatókhoz.</li>
+<li>Tokenek exportálása és importálása (egyszerű szövegként vagy titkosítva) a Google Drive-ra vagy más dokumentumszolgáltatókhoz.</li>
 <li>Material Design felület sötét téma támogatással.</li>
-<li>Keresősáv a tokenek kereséséhez.</li>
+<li>Keresősáv a tokenek kereséséhez és kategóriák szerinti szűréséhez.</li>
 <li>Token részleteinek megtekintése.</li>
-<li>Lehetőség biometrikus / PIN-kódos hitelesítés megkövetelésére az alkalmazás indításakor.</li>
+<li>Három hitelesítési mód: Nincs, Alkalmazás indításakor (biometrikus azonosítás / PIN-kód) és Titkosított token (AES-256-GCM eljárással titkosított titkos tokenkulcsok, biometrikus azonosítással vagy kézi kulccsal feloldva).</li>
 <li>Heurisztikán alapuló offline ikonok több mint 250 webhely tokenjeihez.</li>
 <li>Számos beállítás az alkalmazás működésének testreszabásához.</li>
 </ul>

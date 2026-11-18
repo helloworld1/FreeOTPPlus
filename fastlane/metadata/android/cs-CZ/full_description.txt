@@ -11,11 +11,11 @@ Patří sem skvělá podniková řešení jako <a href="https://www.freeipa.org/
 <b>Funkce:</b>
 <ul>
 <li>Skenování QR kódů.</li>
-<li>Export a import nastavení na Disk Google nebo k jiným poskytovatelům dokumentů.</li>
+<li>Export a import tokenů (nešifrovaně nebo šifrovaně) na Disk Google nebo k jiným poskytovatelům dokumentů.</li>
 <li>Material Design s podporou tmavého motivu.</li>
-<li>Vyhledávací lišta pro hledání tokenů.</li>
+<li>Vyhledávací lišta pro hledání tokenů a filtrování podle kategorií.</li>
 <li>Zobrazení podrobností tokenu.</li>
-<li>Možnost vyžadovat biometrické ověření / PIN při spuštění aplikace.</li>
+<li>Tři režimy ověření: Žádné, Při spuštění aplikace (biometrie / PIN) a Šifrovaný token (tajné klíče tokenů šifrované pomocí AES-256-GCM a odemykané biometrií nebo ručním klíčem).</li>
 <li>Offline ikony založené na heuristice pro tokeny více než 250 webů.</li>
 <li>Mnoho nastavení pro přizpůsobení funkcí aplikace.</li>
 </ul>

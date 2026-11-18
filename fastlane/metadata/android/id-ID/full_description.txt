@@ -11,11 +11,11 @@ Ini mencakup solusi kelas perusahaan seperti <a href="https://www.freeipa.org/">
 <b>Fitur:</b>
 <ul>
 <li>Pindai kode QR.</li>
-<li>Ekspor dan impor pengaturan ke Google Drive atau penyedia dokumen lainnya.</li>
+<li>Ekspor dan impor token (teks biasa atau terenkripsi) ke Google Drive atau penyedia dokumen lainnya.</li>
 <li>Material Design dengan dukungan tema gelap.</li>
-<li>Bilah pencarian untuk mencari token.</li>
+<li>Bilah pencarian untuk mencari token dan memfilter berdasarkan kategori.</li>
 <li>Lihat detail token.</li>
-<li>Opsi untuk mewajibkan autentikasi Biometrik / PIN saat membuka aplikasi.</li>
+<li>Tiga mode autentikasi: Tidak ada, Saat membuka aplikasi (Biometrik / PIN), dan Token terenkripsi (kunci rahasia token dienkripsi dengan AES-256-GCM dan dibuka melalui biometrik atau kunci manual).</li>
 <li>Ikon offline berbasis heuristik untuk token dari 250+ situs web.</li>
 <li>Banyak pengaturan untuk menyesuaikan fungsi aplikasi.</li>
 </ul>

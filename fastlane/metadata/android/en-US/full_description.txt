@@ -11,11 +11,11 @@ This includes great enterprise solutions like <a href="https://www.freeipa.org/"
 <b>Features:</b>
 <ul>
 <li>Scan QR code.</li>
-<li>Export and import settings to Google Drive or other document providers.</li>
+<li>Export and import tokens (plaintext or encrypted) to Google Drive or other document providers.</li>
 <li>Material design with dark theme support.</li>
-<li>Search bar to search token.</li>
+<li>Search bar to search tokens and filter by category.</li>
 <li>See token details.</li>
-<li>Option to require Biometric / PIN authentication to launch the app.</li>
+<li>Three authentication modes: None, App launch (Biometric / PIN), and Token encrypted (AES-256-GCM encrypted token secrets unlocked via biometric or manual key).</li>
 <li>Heuristic based offline icon for tokens of 250+ websites.</li>
 <li>Many settings to customize the app functionality.</li>
 </ul>

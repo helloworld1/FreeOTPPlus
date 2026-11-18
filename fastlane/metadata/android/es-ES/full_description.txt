@@ -11,11 +11,11 @@ Esto incluye excelentes soluciones empresariales como <a href="https://www.freei
 <b>Características:</b>
 <ul>
 <li>Escaneo de códigos QR.</li>
-<li>Exportación e importación de ajustes en Google Drive u otros proveedores de documentos.</li>
+<li>Exportación e importación de tokens (en texto sin formato o cifrados) en Google Drive u otros proveedores de documentos.</li>
 <li>Material Design con compatibilidad con tema oscuro.</li>
-<li>Barra de búsqueda para buscar tokens.</li>
+<li>Barra de búsqueda para buscar tokens y filtrar por categoría.</li>
 <li>Consulta de detalles del token.</li>
-<li>Opción para requerir autenticación biométrica / PIN al iniciar la aplicación.</li>
+<li>Tres modos de autenticación: Ninguno, Inicio de la aplicación (datos biométricos / PIN) y Token cifrado (claves secretas de tokens cifradas con AES-256-GCM y desbloqueadas mediante biometría o clave manual).</li>
 <li>Iconos sin conexión basados en heurística para tokens de más de 250 sitios web.</li>
 <li>Múltiples opciones para personalizar la funcionalidad de la aplicación.</li>
 </ul>

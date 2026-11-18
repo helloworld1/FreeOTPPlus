@@ -11,11 +11,11 @@ Dazu gehören bewährte Unternehmenslösungen wie <a href="https://www.freeipa.o
 <b>Funktionen:</b>
 <ul>
 <li>QR-Code scannen.</li>
-<li>Exportieren und Importieren von Einstellungen über Google Drive oder andere Dokumentenanbieter.</li>
+<li>Exportieren und Importieren von Token (im Klartext oder verschlüsselt) über Google Drive oder andere Dokumentenanbieter.</li>
 <li>Material Design mit Unterstützung für das dunkle Design.</li>
-<li>Suchleiste zum Durchsuchen von Tokens.</li>
+<li>Suchleiste zum Durchsuchen von Token und Filtern nach Kategorien.</li>
 <li>Token-Details anzeigen.</li>
-<li>Option, beim Starten der App eine biometrische oder PIN-Authentifizierung zu verlangen.</li>
+<li>Drei Authentifizierungsmodi: Keine, App-Start (Biometrie / PIN) und Token verschlüsselt (mit AES-256-GCM verschlüsselte geheime Token-Schlüssel, entsperrbar per Biometrie oder manuellem Schlüssel).</li>
 <li>Heuristikbasierte Offline-Icons für Tokens von über 250 Websites.</li>
 <li>Zahlreiche Einstellungen zur Anpassung der App-Funktionen.</li>
 </ul>

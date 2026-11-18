@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="add">Afegeix</string>
-    <string name="invalid_token">El codi especificat és invàlid!</string>
+    <string name="invalid_token">L\'OTP especificat no és vàlid!</string>
     <string name="delete">Elimina</string>
     <string name="edit">Edita</string>
     <string name="restore_defaults">Restaura els valors per defecte</string>
@@ -23,8 +23,8 @@
     <string name="about_version">FreeOTP+ versió %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
     <string name="about_license">FreeOTP+ està llicenciat sota %1$s.</string>
-    <string name="about_website">Per a més informació, consulteu el nostre %s.</string>
-    <string name="about_feedback">Agraïm els vostres comentaris:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
+    <string name="about_website">Per a més informació, consulta el nostre %s.</string>
+    <string name="about_feedback">Agraïm els teus comentaris:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Algunes icones utilitzades per aquesta aplicació es reprodueixen a partir del treball creat i compartit pel projecte de codi obert d\'Android i s\'utilitzen segons els termes descrits a la llicència Creative Commons 2.5 Attribution License.</string>
     <string name="about_token_image">Les miniatures dels OTP token_image_*.xml a la biblioteca token-images són d\'andOTP sota la &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;llicència MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
     <string name="error_camera_open">Error en obrir la càmera!</string>
@@ -70,4 +70,40 @@
     <string name="category">Categoria</string>
     <string name="all_categories">Totes les categories</string>
     <string name="uncategorized">Sense categoria</string>
+    <string name="authentication_mode">Mode d\'autenticació</string>
+    <string name="auth_mode_none">Cap</string>
+    <string name="auth_mode_app_launch">Inici de l\'aplicació</string>
+    <string name="auth_mode_token_encrypted">OTP xifrat</string>
+    <string name="set_encryption_key_title">Defineix la clau de xifratge</string>
+    <string name="set_encryption_key_message">Introdueix una clau (d\'almenys %1$d caràcters) per xifrar les claus secretes dels teus OTP. Recorda o fes una còpia de seguretat d\'aquesta clau — si l\'autenticació biomètrica deixa de ser vàlida o no està disponible, necessitaràs aquesta clau per desblocar els teus OTP.</string>
+    <string name="encryption_key_hint">Clau de xifratge</string>
+    <string name="confirm_encryption_key_hint">Confirma la clau de xifratge</string>
+    <string name="encryption_key_too_short">La clau ha de tenir almenys %1$d caràcters</string>
+    <string name="encryption_keys_do_not_match">Les claus no coincideixen</string>
+    <string name="encrypt_key_with_biometric_title">Activa el desbloqueig biomètric</string>
+    <string name="encrypt_key_with_biometric_subtitle">Utilitza la biometria per xifrar la clau dels teus OTP</string>
+    <string name="use_manual_key_only">Utilitza només la clau manual</string>
+    <string name="enter_key_manually">Introdueix la clau manualment</string>
+    <string name="unlock_tokens_title">Desbloca els OTP xifrats</string>
+    <string name="unlock_tokens_biometric_subtitle">Utilitza la biometria per desxifrar la clau dels teus OTP</string>
+    <string name="enter_encryption_key_to_unlock_message">Introdueix la teva clau de xifratge per desblocar els teus OTP.</string>
+    <string name="biometric_invalidated_enter_key_message">L\'autenticació biomètrica ja no és vàlida. Introdueix la teva clau de xifratge per desblocar els teus OTP.</string>
+    <string name="enable_biometric_unlock">Activa el desbloqueig biomètric</string>
+    <string name="reenable_biometric_unlock">Torna a activar el desbloqueig biomètric</string>
+    <string name="unlock_text">Desbloca</string>
+    <string name="incorrect_encryption_key">Clau de xifratge incorrecta</string>
+    <string name="token_encryption_enabled">Xifratge d\'OTP activat</string>
+    <string name="token_encryption_enabled_manual_only">Xifratge d\'OTP activat amb clau manual. El desbloqueig biomètric es podrà activar quan estigui configurat.</string>
+    <string name="biometric_unlock_enabled">Desbloqueig biomètric activat</string>
+    <string name="disable_token_encryption_title">Vols desactivar el xifratge d\'OTP?</string>
+    <string name="disable_token_encryption_warning">Totes les claus secretes dels OTP es desxifraran i es desaran sense xifrar en aquest dispositiu. Vols continuar?</string>
+    <string name="token_encryption_disabled">Claus secretes dels OTP desxifrades</string>
+    <string name="verify_encryption_key_title">Verifica la clau de xifratge</string>
+    <string name="verify_encryption_key_message">Introdueix la teva clau de xifratge per continuar.</string>
+    <string name="export_encryption_choice_title">Exporta els OTP</string>
+    <string name="export_encryption_choice_message">Vols exportar els teus OTP xifrats amb la clau actual o desxifrats en text pla?</string>
+    <string name="export_encrypted">Exporta xifrat</string>
+    <string name="export_decrypted">Exporta desxifrat</string>
+    <string name="import_encrypted_backup_title">Importa OTP xifrats</string>
+    <string name="import_encrypted_backup_message">Aquests OTP estan xifrats. Introdueix la clau de xifratge utilitzada en exportar aquesta còpia de seguretat.</string>
 </resources>

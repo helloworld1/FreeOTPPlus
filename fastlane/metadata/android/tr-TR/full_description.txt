@@ -11,11 +11,11 @@ Buna <a href="https://www.freeipa.org/">FreeIPA</a> gibi gelişmiş kurumsal ç�
 <b>Özellikler:</b>
 <ul>
 <li>QR kodu tarama.</li>
-<li>Ayarları Google Drive veya diğer belge sağlayıcılarına dışa ve içe aktarma.</li>
+<li>Tokenları (düz metin veya şifrelenmiş olarak) Google Drive veya diğer belge sağlayıcılarına dışa ve içe aktarma.</li>
 <li>Koyu tema destekli Material Design arayüzü.</li>
-<li>Token aramak için arama çubuğu.</li>
+<li>Token aramak ve kategoriye göre filtrelemek için arama çubuğu.</li>
 <li>Token ayrıntılarını görüntüleme.</li>
-<li>Uygulamayı başlatmak için Biyometrik / PIN kimlik doğrulaması isteme seçeneği.</li>
+<li>Üç kimlik doğrulama modu: Yok, Uygulama başlangıcı (Biyometri / PIN) ve Şifrelenmiş token (AES-256-GCM ile şifrelenmiş token gizli anahtarlarının biyometri veya manuel anahtarla açılması).</li>
 <li>250'den fazla web sitesinin tokenları için sezgisel tabanlı çevrimdışı simgeler.</li>
 <li>Uygulama işlevselliğini özelleştirmek için pek çok ayar.</li>
 </ul>

@@ -11,11 +11,11 @@ Horren barruan <a href="https://www.freeipa.org/">FreeIPA</a> bezalako enpresa-i
 <b>Ezaugarriak:</b>
 <ul>
 <li>Eskaneatu QR kodea.</li>
-<li>Esportatu eta inportatu ezarpenak Google Drive edo beste dokumentu-hornitzaile batzuetara.</li>
+<li>Esportatu eta inportatu tokenak (testu arruntean edo zifratuta) Google Drive edo beste dokumentu-hornitzaile batzuetara.</li>
 <li>Material Design gai ilunaren euskarriarekin.</li>
-<li>Bilaketa-barra tokenak bilatzeko.</li>
+<li>Bilaketa-barra tokenak bilatzeko eta kategoriaren arabera iragazteko.</li>
 <li>Ikusi tokenaren xehetasunak.</li>
-<li>Aplikazioa abiarazteko autentifikazio biometrikoa / PINa eskatzeko aukera.</li>
+<li>Hiru autentifikazio-modu: Bat ere ez, Aplikazioa abiaraztean (datu biometrikoak / PINa) eta Tokena zifratuta (AES-256-GCM bidez zifratutako tokenen gako sekretuak, datu biometrikoekin edo eskuzko gakoarekin desblokeatuta).</li>
 <li>Heuristikan oinarritutako lineaz kanpoko ikonoak 250+ webgunetako tokenentzat.</li>
 <li>Ezarpen ugari aplikazioaren funtzionalitatea pertsonalizatzeko.</li>
 </ul>

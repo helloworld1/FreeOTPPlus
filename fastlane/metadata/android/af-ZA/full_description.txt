@@ -11,11 +11,11 @@ Dit sluit uitstekende ondernemingsoplossings soos <a href="https://www.freeipa.o
 <b>Kenmerke:</b>
 <ul>
 <li>Skandeer QR-kode.</li>
-<li>Voer instellings uit na en voer dit in vanaf Google Drive of ander dokumentverskaffers.</li>
+<li>Voer kentekens (gewone teks of geënkripteer) uit na en voer dit in vanaf Google Drive of ander dokumentverskaffers.</li>
 <li>Material Design met ondersteuning vir donker tema.</li>
-<li>Soekbalk om kentekens te soek.</li>
+<li>Soekbalk om kentekens te soek en volgens kategorie te filtreer.</li>
 <li>Bekyk kentekenbesonderhede.</li>
-<li>Opsie om biometriese / PIN-verifikasie te vereis om die toepassing te open.</li>
+<li>Drie verifikasiemodusse: Geen, Toepassing-opening (biometrie / PIN) en Kenteken geënkripteer (AES-256-GCM-geënkripteerde geheime kentekensleutels wat met biometrie of handmatige sleutel ontsluit word).</li>
 <li>Heuristiek-gebaseerde vanlyn ikone vir kentekens van meer as 250 webwerwe.</li>
 <li>Baie instellings om die toepassingsfunksionaliteit aan te pas.</li>
 </ul>
