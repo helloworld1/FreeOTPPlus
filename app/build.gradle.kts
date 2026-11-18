@@ -26,6 +26,12 @@ android {
             resValue("string", "app_name", "FreeOTP+ Debug")
         }
         getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             resValue("string", "app_name", "FreeOTP+")
         }
     }
