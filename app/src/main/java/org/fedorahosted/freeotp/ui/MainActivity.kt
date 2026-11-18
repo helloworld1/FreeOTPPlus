@@ -127,6 +127,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ViewCompat.setImportantForAutofill(
+            window.decorView,
+            View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.tokenList) { view, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -548,6 +552,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 val passphrase = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
@@ -563,7 +568,7 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             importFromUtil.importKeyUriFile(uri, passphrase)
                         }
-                        dialog.dismiss()
+                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                         Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
                             .show()
                     } catch (_: InvalidEncryptionKeyException) {
@@ -571,7 +576,7 @@ class MainActivity : AppCompatActivity() {
                         keyInputLayout.error = getString(R.string.incorrect_encryption_key)
                     } catch (e: Exception) {
                         Log.e(TAG, "Encrypted import failed", e)
-                        dialog.dismiss()
+                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                         val errRes = if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text
                         Snackbar.make(binding.rootView, errRes, Snackbar.LENGTH_SHORT).show()
                     } finally {
@@ -580,6 +585,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        dialog.setOnDismissListener {
+            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
+        }
+        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }
 
@@ -699,6 +708,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 val key = keyEditText.text?.toString().orEmpty()
@@ -715,6 +725,7 @@ class MainActivity : AppCompatActivity() {
 
                 positiveButton.isEnabled = false
                 val passphraseChars = key.toCharArray()
+                AuthenticationUtil.clearAndCancelAutofill(this, keyEditText, confirmKeyEditText)
                 lifecycleScope.launch {
                     val setupMaterial = try {
                         tokenCryptoManager.deriveSetupMaterial(passphraseChars)
@@ -725,6 +736,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        dialog.setOnDismissListener {
+            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText, confirmKeyEditText)
+        }
+        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }
 
@@ -735,7 +750,7 @@ class MainActivity : AppCompatActivity() {
         if (!AuthenticationUtil.canAuthenticateStrongBiometric(this)) {
             try {
                 tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                setupDialog.dismiss()
+                AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
                 onAuthCompleted()
                 refreshOptionMenu()
                 Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
@@ -752,7 +767,7 @@ class MainActivity : AppCompatActivity() {
             Log.w(TAG, "Unable to initialize biometric encryption cipher, falling back to manual key", e)
             try {
                 tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                setupDialog.dismiss()
+                AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
                 onAuthCompleted()
                 refreshOptionMenu()
                 Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
@@ -763,7 +778,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        setupDialog.dismiss()
+        AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
         AuthenticationUtil.authenticateBiometricCrypto(
             activity = this,
             title = getString(R.string.encrypt_key_with_biometric_title),
@@ -874,6 +889,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
@@ -890,7 +906,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (unlocked) {
                         tokenCryptoManager.disableTokenEncryption(targetMode)
-                        dialog.dismiss()
+                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                         refreshOptionMenu()
                         Snackbar.make(binding.rootView, R.string.token_encryption_disabled, Snackbar.LENGTH_SHORT)
@@ -902,6 +918,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        dialog.setOnDismissListener {
+            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
+        }
+        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }
 
@@ -1031,6 +1051,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
@@ -1052,7 +1073,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     val shouldEnableBiometric = canOfferBiometric && enableBiometricCheckbox.isChecked
-                    dialog.dismiss()
+                    AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                     activeAuthDialog = null
 
                     if (shouldEnableBiometric) {
@@ -1063,8 +1084,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        dialog.setOnDismissListener {
+            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
+        }
 
         activeAuthDialog = dialog
+        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }
 

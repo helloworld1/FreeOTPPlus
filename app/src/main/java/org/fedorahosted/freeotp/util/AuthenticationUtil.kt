@@ -2,7 +2,11 @@ package org.fedorahosted.freeotp.util
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.os.Build
 import android.view.LayoutInflater
+import android.view.View
+import android.view.autofill.AutofillManager
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
@@ -11,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -162,6 +167,7 @@ object AuthenticationUtil {
             .create()
 
         dialog.setOnShowListener {
+            disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
@@ -175,7 +181,7 @@ object AuthenticationUtil {
                     chars.fill('\u0000')
                     if (keyBytes != null) {
                         keyBytes.fill(0)
-                        dialog.dismiss()
+                        dismissKeyDialogSafely(dialog, keyEditText)
                         if (!activity.isFinishing && !activity.isDestroyed) {
                             onAuthenticated()
                         }
@@ -186,7 +192,43 @@ object AuthenticationUtil {
                 }
             }
         }
+        dialog.setOnDismissListener {
+            clearAndCancelAutofill(dialog.context, keyEditText)
+        }
+        disableAutofillForDialog(dialog, dialogView)
         dialog.show()
+    }
+
+    fun disableAutofillForDialog(dialog: AlertDialog, dialogView: View) {
+        ViewCompat.setImportantForAutofill(
+            dialogView,
+            View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        )
+        dialog.window?.decorView?.let { decorView ->
+            ViewCompat.setImportantForAutofill(
+                decorView,
+                View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            )
+        }
+        cancelAutofillSession(dialog.context)
+    }
+
+    fun dismissKeyDialogSafely(dialog: AlertDialog, vararg inputs: EditText) {
+        clearAndCancelAutofill(dialog.context, *inputs)
+        dialog.dismiss()
+    }
+
+    fun clearAndCancelAutofill(context: Context, vararg inputs: EditText) {
+        for (input in inputs) {
+            input.text?.clear()
+        }
+        cancelAutofillSession(context)
+    }
+
+    private fun cancelAutofillSession(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.getSystemService(AutofillManager::class.java)?.cancel()
+        }
     }
 
     fun authenticateAppLaunch(
