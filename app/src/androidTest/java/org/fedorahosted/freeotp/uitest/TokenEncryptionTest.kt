@@ -454,13 +454,19 @@ class TokenEncryptionTest {
             assertThat(activity.importFromUtil.isJsonFileEncrypted(decJsonFile.toUri())).isFalse()
             assertThat(activity.importFromUtil.isKeyUriFileEncrypted(encUriFile.toUri())).isTrue()
 
-            // Switch to NONE ("No encryption") and clear DB
+            // Switch to NONE and keep existing tokens + insert high-ID tokens (id = 10, 11, 12)
+            // to verify JSON import clears all existing tokens without creating duplicates!
             activity.tokenCryptoManager.disableTokenEncryption(AuthMode.NONE)
-            dao.deleteById(1)
-            dao.deleteById(2)
-            assertThat(dao.getAll().first()).isEmpty()
+            dao.insertAll(
+                listOf(
+                    TestData.OTP_HOTP_TOKEN_1.copy(id = 10, ordinal = 10),
+                    TestData.OTP_TOTP_TOKEN_2.copy(id = 11, ordinal = 11),
+                    TestData.OTP_TOTP_TOKEN_2.copy(id = 12, ordinal = 12, label = "extra_to_be_cleared")
+                )
+            )
+            assertThat(dao.getAll().first()).hasSize(5)
 
-            // Import encrypted JSON in NONE mode -> requires backupKey1 and stores as PLAIN_TEXT
+            // Import encrypted JSON in NONE mode over existing 5 tokens -> clears all 5 and leaves only the 2 imported tokens
             activity.importFromUtil.importJsonFile(encJsonFile.toUri(), "backupKey1".toCharArray())
             val plainImported = dao.getAll().first()
             assertThat(plainImported).hasSize(2)
@@ -468,6 +474,12 @@ class TokenEncryptionTest {
             assertThat(plainImported[0].secret).isEqualTo(TestData.OTP_HOTP_TOKEN_1.secret)
             assertThat(plainImported[1].encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
             assertThat(plainImported[1].secret).isEqualTo(TestData.OTP_TOTP_TOKEN_2.secret)
+
+            // Re-importing decrypted JSON over high-ID tokens also clears and produces no duplicates
+            dao.insert(TestData.OTP_HOTP_TOKEN_1.copy(id = 25, ordinal = 25))
+            assertThat(dao.getAll().first()).hasSize(3)
+            activity.importFromUtil.importJsonFile(decJsonFile.toUri())
+            assertThat(dao.getAll().first()).hasSize(2)
 
             // Now enable Token encrypted mode with a DIFFERENT key ("activeKey2"), clear DB, and import encUriFile (encrypted with "backupKey1")
             dao.deleteById(1)

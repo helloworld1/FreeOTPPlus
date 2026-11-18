@@ -32,8 +32,17 @@ interface OtpTokenDao {
     @Query("delete from otp_tokens where id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("delete from otp_tokens")
+    suspend fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(otpTokenList: List<OtpToken>)
+
+    @Transaction
+    suspend fun replaceAll(otpTokenList: List<OtpToken>) {
+        deleteAll()
+        insertAll(otpTokenList)
+    }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(otpTokenList: OtpToken)

@@ -67,7 +67,7 @@ class ImportExportUtil @Inject constructor(
             }
 
             val tokensToStore = tokenCryptoManager.encryptTokensForStorage(plaintextTokens)
-            otpTokenDatabase.otpTokenDao().insertAll(tokensToStore)
+            otpTokenDatabase.otpTokenDao().replaceAll(tokensToStore)
         }
     }
 
