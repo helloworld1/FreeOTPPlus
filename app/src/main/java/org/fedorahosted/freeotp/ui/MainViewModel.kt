@@ -59,6 +59,10 @@ class MainViewModel @Inject constructor(
         categoryFilter.value = category
     }
 
+    fun getCategoryFilter(): Flow<String?> = categoryFilter
+
+    fun getCurrentCategoryFilter(): String? = categoryFilter.value
+
     fun setAuthState(auth: AuthState) {
         if (auth == AuthState.AUTHENTICATED) {
             lastSessionEndTimestamp = System.currentTimeMillis()

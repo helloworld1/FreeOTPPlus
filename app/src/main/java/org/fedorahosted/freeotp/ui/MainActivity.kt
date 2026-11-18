@@ -40,6 +40,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -54,6 +55,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
@@ -64,6 +67,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -201,6 +205,13 @@ class MainActivity : AppCompatActivity() {
                         invalidateOptionsMenu()
                     }
                 }
+
+                launch {
+                    viewModel.getCategoryFilter().collect {
+                        updateFilterMenuIconTint(this@MainActivity.menu)
+                        invalidateOptionsMenu()
+                    }
+                }
             }
         }
 
@@ -262,19 +273,29 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
+        updateFilterMenuIconTint(menu)
 
         val filterItem = menu.findItem(R.id.action_filter)
         val filterMenu = filterItem?.subMenu ?: return super.onPrepareOptionsMenu(menu)
         filterMenu.clear()
 
-        filterMenu.add(Menu.NONE, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
-        filterMenu.add(Menu.NONE, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
+        val allItem = filterMenu.add(CATEGORY_FILTER_GROUP_ID, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
+        val uncategorizedItem = filterMenu.add(CATEGORY_FILTER_GROUP_ID, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
 
-        for (category in categories) {
-            filterMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, category).setOnMenuItemClickListener {
-                viewModel.setCategoryFilter(category)
-                true
+        val categoryItems = categories.map { category ->
+            category to filterMenu.add(CATEGORY_FILTER_GROUP_ID, Menu.NONE, Menu.NONE, category).apply {
+                setOnMenuItemClickListener {
+                    viewModel.setCategoryFilter(category)
+                    true
+                }
             }
+        }
+
+        filterMenu.setGroupCheckable(CATEGORY_FILTER_GROUP_ID, true, true)
+        when (val currentFilter = viewModel.getCurrentCategoryFilter()) {
+            null -> allItem.isChecked = true
+            MainViewModel.CATEGORY_UNCATEGORIZED -> uncategorizedItem.isChecked = true
+            else -> categoryItems.firstOrNull { it.first == currentFilter }?.second?.isChecked = true
         }
 
         return super.onPrepareOptionsMenu(menu)
@@ -643,6 +664,24 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
         this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
         this.menu?.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
+        updateFilterMenuIconTint(this.menu)
+    }
+
+    private fun updateFilterMenuIconTint(menu: Menu?) {
+        val filterItem = menu?.findItem(R.id.action_filter) ?: return
+        val isFilterActive = viewModel.getCurrentCategoryFilter() != null
+        val tintAttr = if (isFilterActive) {
+            androidx.appcompat.R.attr.colorPrimary
+        } else {
+            androidx.appcompat.R.attr.colorControlNormal
+        }
+        val tintColor = MaterialColors.getColor(binding.toolbar, tintAttr)
+        val tintList = ColorStateList.valueOf(tintColor)
+        MenuItemCompat.setIconTintList(filterItem, tintList)
+        filterItem.icon?.mutate()?.let { icon ->
+            DrawableCompat.setTintList(icon, tintList)
+            filterItem.icon = icon
+        }
     }
 
     private fun showAuthenticationModeDialog() {
@@ -1149,6 +1188,7 @@ class MainActivity : AppCompatActivity() {
         const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
         const val SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA = "shareFromPackageName"
         private const val STATE_PENDING_EXPORT_ENCRYPTED = "pending_export_encrypted"
+        private const val CATEGORY_FILTER_GROUP_ID = 100
 
         internal fun exportBaseFileName(encrypted: Boolean): String {
             return if (encrypted) "freeotp-backup-encrypted" else "freeotp-backup"
