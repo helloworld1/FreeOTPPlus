@@ -42,11 +42,8 @@ Most part of the code is re-written with modern Jetpack libraries and Kotlin lan
 
 ## Translate
 
-[Crowdin](https://crowdin.com/project/freeotpplus) can be used for translation if you are uncomfortable working with strings.xml files.
-If your language is not listed, please open an issue so we can add it.
-If you don't like to use Crowdin feel free to submit a pull with the updated/added locales.
-
-Link: https://crowdin.com/project/freeotpplus
+If you want a new translation for your language, please [open a GitHub issue](https://github.com/helloworld1/FreeOTPPlus/issues) requesting the language.
+The project owner/collaborators will check in an initial translation using machine translation, after which contributors can fine-tune the translations directly on GitHub via pull requests.
 
 ## Authentication Modes & Token Encryption
 
