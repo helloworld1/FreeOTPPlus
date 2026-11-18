@@ -148,4 +148,54 @@ class CryptoEngineTest {
         val emptyDecodedToken = formattedSecretToken.copy(secret = "========")
         assertThat(TokenCodeUtil().generateTokenCode(emptyDecodedToken).currentCode).isEmpty()
     }
+
+    @Test
+    fun tokenCodeUtil_preservesRfc4226HotpVectorsAndHandlesMd5OffsetsWithoutCrash() {
+        val util = TokenCodeUtil()
+
+        // 1. Official RFC 4226 Appendix D HOTP test vectors (Secret = ASCII "12345678901234567890")
+        val rfcSecretBase32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+        val expectedRfcCodes = listOf(
+            "755224", "287082", "359152", "969429", "338314",
+            "254676", "287922", "162583", "399871", "520489"
+        )
+        for ((counter, expected) in expectedRfcCodes.withIndex()) {
+            val hotpToken = OtpToken(
+                id = 1L,
+                ordinal = 1L,
+                issuer = "RFC4226",
+                label = "test",
+                imagePath = null,
+                tokenType = OtpTokenType.HOTP,
+                algorithm = "SHA1",
+                secret = rfcSecretBase32,
+                digits = 6,
+                counter = counter.toLong(),
+                period = 30,
+                encryptionType = EncryptionType.PLAIN_TEXT
+            )
+            assertThat(util.generateTokenCode(hotpToken).currentCode).isEqualTo(expected)
+        }
+
+        // 2. HmacMD5 across 256 counters (covering all 0..15 low-nibble offsets including 13, 14, 15)
+        for (counter in 0L until 256L) {
+            val md5HotpToken = OtpToken(
+                id = 2L,
+                ordinal = 2L,
+                issuer = "LegacyMD5",
+                label = "user",
+                imagePath = null,
+                tokenType = OtpTokenType.HOTP,
+                algorithm = "MD5",
+                secret = rfcSecretBase32,
+                digits = 6,
+                counter = counter,
+                period = 30,
+                encryptionType = EncryptionType.PLAIN_TEXT
+            )
+            val code = util.generateTokenCode(md5HotpToken).currentCode
+            assertThat(code).hasLength(6)
+            assertThat(code!!.all { it.isDigit() }).isTrue()
+        }
+    }
 }

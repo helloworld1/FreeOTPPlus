@@ -175,10 +175,13 @@ public class Token {
 
             // Do the hashing
             byte[] digest = mac.doFinal(bb.array());
+            if (digest.length < 4) {
+                return "";
+            }
 
             // Truncate
             int binary;
-            int off = digest[digest.length - 1] & 0xf;
+            int off = Math.min(digest[digest.length - 1] & 0xf, digest.length - 4);
             binary = (digest[off] & 0x7f) << 0x18;
             binary |= (digest[off + 1] & 0xff) << 0x10;
             binary |= (digest[off + 2] & 0xff) << 0x08;

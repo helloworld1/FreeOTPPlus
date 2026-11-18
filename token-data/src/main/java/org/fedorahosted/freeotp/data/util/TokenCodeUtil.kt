@@ -73,10 +73,14 @@ class TokenCodeUtil private constructor(
 
             // Do the hashing
             val digest = mac.doFinal(bb.array())
+            if (digest.size < 4) {
+                return ""
+            }
 
-            // Truncate
+            // Truncate (clamp offset to digest.size - 4 so 16-byte HmacMD5 never overruns when off is 13..15;
+            // for SHA1/SHA256/SHA512 where digest.size >= 20, off <= 15 is completely unchanged)
             var binary: Int
-            val off = digest[digest.size - 1].toInt() and 0xf
+            val off = (digest[digest.size - 1].toInt() and 0xf).coerceAtMost(digest.size - 4)
             binary = digest[off].toInt() and 0x7f shl 0x18
             binary = binary or (digest[off + 1].toInt() and 0xff shl 0x10)
             binary = binary or (digest[off + 2].toInt() and 0xff shl 0x08)
@@ -98,6 +102,8 @@ class TokenCodeUtil private constructor(
         } catch (e: Base32String.DecodingException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+        } catch (e: IndexOutOfBoundsException) {
             e.printStackTrace()
         } catch (e: InvalidKeyException) {
             e.printStackTrace()
