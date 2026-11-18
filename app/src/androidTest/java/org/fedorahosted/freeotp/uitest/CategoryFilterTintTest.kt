@@ -32,6 +32,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.ui.EditActivity
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.ScanTokenActivity
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -260,5 +261,40 @@ class CategoryFilterTintTest {
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
             onView(withText(R.string.invalid_token)).check(matches(withText(R.string.invalid_token)))
         }
+    }
+
+    @Test
+    fun testCameraSelectorFallbackOrderWhenBackCameraMissing() {
+        assertThat(
+            ScanTokenActivity.chooseCameraChoice(
+                hasBackCamera = true,
+                hasFrontCamera = true,
+                hasAnyCamera = true
+            )
+        ).isEqualTo(ScanTokenActivity.CameraChoice.BACK)
+
+        assertThat(
+            ScanTokenActivity.chooseCameraChoice(
+                hasBackCamera = false,
+                hasFrontCamera = true,
+                hasAnyCamera = true
+            )
+        ).isEqualTo(ScanTokenActivity.CameraChoice.FRONT)
+
+        assertThat(
+            ScanTokenActivity.chooseCameraChoice(
+                hasBackCamera = false,
+                hasFrontCamera = false,
+                hasAnyCamera = true
+            )
+        ).isEqualTo(ScanTokenActivity.CameraChoice.ANY)
+
+        assertThat(
+            ScanTokenActivity.chooseCameraChoice(
+                hasBackCamera = false,
+                hasFrontCamera = false,
+                hasAnyCamera = false
+            )
+        ).isEqualTo(ScanTokenActivity.CameraChoice.NONE)
     }
 }

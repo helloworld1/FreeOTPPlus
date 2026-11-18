@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Surface
 import android.view.View
 import android.widget.Toast
@@ -93,31 +94,58 @@ class ScanTokenActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener(Runnable {
+        cameraProviderFuture.addListener({
+            if (isFinishing || isDestroyed) {
+                return@addListener
+            }
 
-            val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+            try {
+                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                val cameraSelector = selectAvailableCamera(cameraProvider)
+                if (cameraSelector == null) {
+                    Toast.makeText(this, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@addListener
+                }
 
-            val preview = Preview.Builder().apply {
-                setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                setTargetRotation(Surface.ROTATION_0)
-            }.build()
+                val preview = Preview.Builder().apply {
+                    setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                    setTargetRotation(Surface.ROTATION_0)
+                }.build()
 
-            preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
-            val imageAnalysis = ImageAnalysis.Builder().apply {
-                setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                setTargetRotation(Surface.ROTATION_0)
-            }.build()
+                val imageAnalysis = ImageAnalysis.Builder().apply {
+                    setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                    setTargetRotation(Surface.ROTATION_0)
+                }.build()
 
-            imageAnalysis.setAnalyzer(executorService, ImageAnalysis.Analyzer { imageProxy: ImageProxy ->
-                analyzeImage(imageProxy)
-            })
+                imageAnalysis.setAnalyzer(executorService) { imageProxy: ImageProxy ->
+                    analyzeImage(imageProxy)
+                }
 
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to start and bind camera", e)
+                Toast.makeText(this, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun selectAvailableCamera(cameraProvider: ProcessCameraProvider): CameraSelector? {
+        val choice = chooseCameraChoice(
+            hasBackCamera = runCatching { cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) }.getOrDefault(false),
+            hasFrontCamera = runCatching { cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) }.getOrDefault(false),
+            hasAnyCamera = cameraProvider.availableCameraInfos.isNotEmpty()
+        )
+        return when (choice) {
+            CameraChoice.BACK -> CameraSelector.DEFAULT_BACK_CAMERA
+            CameraChoice.FRONT -> CameraSelector.DEFAULT_FRONT_CAMERA
+            CameraChoice.ANY -> ANY_CAMERA_SELECTOR
+            CameraChoice.NONE -> null
+        }
     }
 
     private fun analyzeImage(imageProxy: ImageProxy) {
@@ -205,5 +233,30 @@ class ScanTokenActivity : AppCompatActivity() {
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
                 baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    internal enum class CameraChoice {
+        BACK,
+        FRONT,
+        ANY,
+        NONE
+    }
+
+    companion object {
+        private val TAG = ScanTokenActivity::class.java.simpleName
+        private val ANY_CAMERA_SELECTOR: CameraSelector = CameraSelector.Builder().build()
+
+        internal fun chooseCameraChoice(
+            hasBackCamera: Boolean,
+            hasFrontCamera: Boolean,
+            hasAnyCamera: Boolean
+        ): CameraChoice {
+            return when {
+                hasBackCamera -> CameraChoice.BACK
+                hasFrontCamera -> CameraChoice.FRONT
+                hasAnyCamera -> CameraChoice.ANY
+                else -> CameraChoice.NONE
+            }
+        }
     }
 }
