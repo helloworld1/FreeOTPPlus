@@ -119,4 +119,33 @@ class CryptoEngineTest {
         val code = TokenCodeUtil().generateTokenCode(token)
         assertThat(code.currentCode).isEqualTo("248759")
     }
+
+    @Test
+    fun tokenCodeUtil_handlesWhitespaceInBase32AndNeverCrashesOnInvalidSecret() {
+        // Secret containing newlines, tabs, hyphens, and non-breaking spaces decodes identically
+        val formattedSecretToken = OtpToken(
+            id = 1L,
+            ordinal = 1L,
+            issuer = "github.com",
+            label = "alice",
+            imagePath = null,
+            tokenType = OtpTokenType.HOTP,
+            algorithm = "SHA256",
+            secret = "abcd\n5432\t\u00A0====",
+            digits = 6,
+            counter = -1L,
+            period = 30,
+            encryptionType = EncryptionType.PLAIN_TEXT
+        )
+        assertThat(TokenCodeUtil().generateTokenCode(formattedSecretToken).currentCode)
+            .isEqualTo("248759")
+
+        // Corrupted non-Base32 secret already in DB returns empty code instead of crashing
+        val corruptedToken = formattedSecretToken.copy(secret = "0189_INVALID_BASE32!", period = 0)
+        assertThat(TokenCodeUtil().generateTokenCode(corruptedToken).currentCode).isEmpty()
+
+        // Padding-only empty secret returns empty code instead of throwing IllegalArgumentException in SecretKeySpec
+        val emptyDecodedToken = formattedSecretToken.copy(secret = "========")
+        assertThat(TokenCodeUtil().generateTokenCode(emptyDecodedToken).currentCode).isEmpty()
+    }
 }

@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.uitest
 
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -28,8 +29,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.ui.EditActivity
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -216,6 +219,46 @@ class CategoryFilterTintTest {
         } finally {
             migratedDb.close()
             context.deleteDatabase(dbName)
+        }
+    }
+
+    @Test
+    fun testInvalidBase32UriRejectedAndCorruptedDbTokenShowsErrorWithoutCrash() {
+        assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.createFromUri(
+                Uri.parse("otpauth://totp/Example:alice?secret=0189INVALID!&issuer=Example")
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.createFromUri(
+                Uri.parse("otpauth://totp/Example:alice?secret=========&issuer=Example")
+            )
+        }
+
+        // Valid secret with embedded newline (%0A) is accepted cleanly
+        val parsedWithNewline = OtpTokenFactory.createFromUri(
+            Uri.parse("otpauth://totp/Example:alice?secret=JBSW%0AY3DP%09EHPK3PXP&issuer=Example")
+        )
+        assertThat(parsedWithNewline.label).isEqualTo("alice")
+
+        // Pre-existing corrupted token in DB shows invalid_token snackbar instead of crashing when tapped
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.clearAllTables()
+                    activity.otpTokenDatabase.otpTokenDao().insert(
+                        TestData.OTP_HOTP_TOKEN_1.copy(
+                            id = 0L,
+                            ordinal = 0L,
+                            secret = "0189_CORRUPTED!"
+                        )
+                    )
+                }
+            }
+
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            onView(withText(R.string.invalid_token)).check(matches(withText(R.string.invalid_token)))
         }
     }
 }

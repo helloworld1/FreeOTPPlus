@@ -31,12 +31,17 @@ class MigrationUtil @Inject constructor(
     }
 
     suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
-        tokens.map { otpToken ->
-            val uri = OtpTokenFactory.toUri(otpToken)
-            val normalizedCategories = CategoryUtil.normalizeCategories(otpToken.categories)
-            Token(uri).apply {
-                category = normalizedCategories.firstOrNull()
-                categories = normalizedCategories
+        tokens.mapNotNull { otpToken ->
+            try {
+                val uri = OtpTokenFactory.toUri(otpToken)
+                val normalizedCategories = CategoryUtil.normalizeCategories(otpToken.categories)
+                Token(uri).apply {
+                    category = normalizedCategories.firstOrNull()
+                    categories = normalizedCategories
+                }
+            } catch (e: Token.TokenUriInvalidException) {
+                e.printStackTrace()
+                null
             }
         }
     }

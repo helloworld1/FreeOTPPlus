@@ -29,11 +29,6 @@ object OtpTokenFactory {
     }
 
     fun createFromEncryptedUri(uri: Uri, decryptedSecret: String): OtpToken {
-        try {
-            Base32String.decode(decryptedSecret)
-        } catch (e: Base32String.DecodingException) {
-            throw IllegalArgumentException("Decrypted secret is not valid Base32", e)
-        }
         return parseTokenUri(uri, decryptedSecret, includeCategoryFromQuery = true)
     }
 
@@ -44,6 +39,15 @@ object OtpTokenFactory {
     ): OtpToken {
         if (uri.scheme != "otpauth")
             throw IllegalArgumentException("URI does not starts with otpauth")
+
+        val decodedSecret = try {
+            Base32String.decode(plaintextSecret)
+        } catch (e: Base32String.DecodingException) {
+            throw IllegalArgumentException("Secret is not valid Base32", e)
+        }
+        if (decodedSecret.isEmpty()) {
+            throw IllegalArgumentException("Decoded Base32 secret is empty")
+        }
 
         val type =
             when (uri.authority) {
@@ -93,6 +97,9 @@ object OtpTokenFactory {
         var p = uri.getQueryParameter("period")
         if (p == null) p = "30"
         val period = p.toInt()
+        if (period <= 0) {
+            throw IllegalArgumentException("Period must be positive")
+        }
 
         val counter = if (type == OtpTokenType.HOTP) {
             var c = uri.getQueryParameter("counter")

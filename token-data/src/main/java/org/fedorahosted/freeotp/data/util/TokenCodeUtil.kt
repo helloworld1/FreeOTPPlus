@@ -24,20 +24,21 @@ class TokenCodeUtil private constructor(
 
     fun generateTokenCode(otpToken: OtpToken): TokenCode {
         val cur = System.currentTimeMillis()
+        val period = if (otpToken.period > 0) otpToken.period else 30
 
         when (otpToken.tokenType) {
             OtpTokenType.HOTP ->
-                return TokenCode(getHOTP(otpToken, otpToken.counter), cur, cur + otpToken.period * 1000)
+                return TokenCode(getHOTP(otpToken, otpToken.counter), cur, cur + period * 1000L)
             OtpTokenType.TOTP -> {
-                val counter: Long = cur / 1000 / otpToken.period
+                val counter: Long = cur / 1000 / period
                 return TokenCode(
                     getHOTP(otpToken, counter + 0),
-                    (counter + 0) * otpToken.period * 1000,
-                    (counter + 1) * otpToken.period * 1000,
+                    (counter + 0) * period * 1000L,
+                    (counter + 1) * period * 1000L,
                     TokenCode(
                         getHOTP(otpToken, counter + 1),
-                        (counter + 1) * otpToken.period * 1000,
-                        (counter + 2) * otpToken.period * 1000
+                        (counter + 1) * period * 1000L,
+                        (counter + 2) * period * 1000L
                     )
                 )
             }
@@ -63,8 +64,12 @@ class TokenCodeUtil private constructor(
 
         // Create the HMAC
         try {
+            val secretBytes = Base32String.decode(plaintextSecret)
+            if (secretBytes.isEmpty()) {
+                return ""
+            }
             val mac = Mac.getInstance("Hmac${otpToken.algorithm}")
-            mac.init(SecretKeySpec(Base32String.decode(plaintextSecret), "Hmac${otpToken.algorithm}"))
+            mac.init(SecretKeySpec(secretBytes, "Hmac${otpToken.algorithm}"))
 
             // Do the hashing
             val digest = mac.doFinal(bb.array())
@@ -90,6 +95,10 @@ class TokenCodeUtil private constructor(
                 while (hotp.length != otpToken.digits) hotp = "0$hotp"
             }
             return hotp
+        } catch (e: Base32String.DecodingException) {
+            e.printStackTrace()
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
         } catch (e: InvalidKeyException) {
             e.printStackTrace()
         } catch (e: NoSuchAlgorithmException) {

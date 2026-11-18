@@ -67,8 +67,11 @@ public class Base32String {
   }
 
   protected byte[] decodeInternal(String encoded) throws DecodingException {
-    // Remove whitespace and separators
-    encoded = encoded.trim().replaceAll(SEPARATOR, "").replaceAll(" ", "");
+    if (encoded == null) {
+      return new byte[0];
+    }
+    // Remove all whitespace (including newlines, tabs, non-breaking spaces) and separators
+    encoded = encoded.trim().replaceAll(SEPARATOR, "").replaceAll("[\\s\\u00A0]+", "");
 
     // Remove padding. Note: the padding is used as hint to determine how many
     // bits to decode from the last incomplete chunk (which is commented out

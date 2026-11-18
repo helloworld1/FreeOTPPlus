@@ -45,7 +45,8 @@ open class AddTextWatcher(activity: Activity) : TextWatcher {
         if (mLabel.text.isEmpty())
             return
 
-        if (mSecret.text.length < 8)
+        val secretWithoutPadding = mSecret.text.toString().trimEnd('=')
+        if (secretWithoutPadding.length < 8)
             return
 
         if (mInterval.text.isEmpty())

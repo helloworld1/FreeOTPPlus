@@ -51,6 +51,11 @@ class TokenListAdapter @Inject constructor(
                 // incrementCounter will not refresh the token after HOTP update
                 otpTokenDatabase.otpTokenDao().get(currentToken.id).first()?.let { token ->
                     val codes = tokenCodeUtil.generateTokenCode(token)
+                    val code = codes.currentCode
+                    if (code.isNullOrEmpty()) {
+                        Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        return@let
+                    }
 
                     if (token.tokenType == OtpTokenType.HOTP) {
                         otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
@@ -58,7 +63,7 @@ class TokenListAdapter @Inject constructor(
 
                     if (settings.copyToClipboard) {
                         // Copy code to clipboard.
-                        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, codes.currentCode))
+                        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, code))
                         Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
                     }
 
