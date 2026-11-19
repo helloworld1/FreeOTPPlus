@@ -44,6 +44,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.ImageUtil
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
@@ -55,6 +56,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var appSessionManager: AppSessionManager
     @Inject lateinit var imageUtil: ImageUtil
 
     private val SHA1_OFFSET = 1
@@ -73,8 +75,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!tokenCryptoManager.isUnlocked()) {
-            finish()
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
             return
         }
         enableEdgeToEdge()
@@ -215,6 +216,9 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
+            return
+        }
 
         if (resultCode == Activity.RESULT_OK) {
             lifecycleScope.launch {

@@ -84,6 +84,7 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.databinding.MainBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.text.DateFormat
@@ -94,11 +95,18 @@ import kotlin.math.max
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    private data class PendingActivityResult(
+        val requestCode: Int,
+        val resultCode: Int,
+        val resultData: Intent?
+    )
+
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenMigrationUtil: MigrationUtil
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var appSessionManager: AppSessionManager
     @Inject lateinit var tokenListAdapter: TokenListAdapter
 
     private val viewModel: MainViewModel by viewModels()
@@ -110,6 +118,7 @@ class MainActivity : AppCompatActivity() {
     private var activeAuthDialog: AlertDialog? = null
     private var isAuthPromptInProgress = false
     private var pendingDeepLinkUri: Uri? = null
+    private var pendingActivityResult: PendingActivityResult? = null
     private var pendingExportEncrypted = false
 
     private val tokenListObserver: AdapterDataObserver = object : AdapterDataObserver() {
@@ -192,9 +201,12 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     viewModel.getAuthState().collect { authState ->
                         if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
+                            confirmAddTokenDialog?.dismiss()
+                            confirmAddTokenDialog = null
                             verifyAuthentication()
                         } else {
                             processPendingDeepLinkIfAny()
+                            processPendingActivityResultIfAny()
                         }
                     }
                 }
@@ -257,11 +269,6 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         viewModel.onSessionStart()
         refreshOptionMenu()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        viewModel.onSessionStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -481,12 +488,35 @@ class MainActivity : AppCompatActivity() {
         resultData: Intent?
     ) {
         super.onActivityResult(requestCode, resultCode, resultData)
-        viewModel.keepSessionAliveForResult()
 
         if (resultCode != Activity.RESULT_OK) {
+            appSessionManager.refreshSessionState()
             return
         }
 
+        if (!appSessionManager.refreshSessionState()) {
+            pendingActivityResult = PendingActivityResult(requestCode, resultCode, resultData)
+            return
+        }
+
+        handleAuthenticatedActivityResult(requestCode, resultData)
+    }
+
+    private fun processPendingActivityResultIfAny() {
+        if (!viewModel.isAuthenticated() || !tokenCryptoManager.isUnlocked()) {
+            return
+        }
+        val pending = pendingActivityResult ?: return
+        pendingActivityResult = null
+        if (pending.resultCode == Activity.RESULT_OK) {
+            handleAuthenticatedActivityResult(pending.requestCode, pending.resultData)
+        }
+    }
+
+    private fun handleAuthenticatedActivityResult(
+        requestCode: Int,
+        resultData: Intent?
+    ) {
         when (requestCode) {
             WRITE_JSON_REQUEST_CODE -> {
                 val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
@@ -1177,6 +1207,7 @@ class MainActivity : AppCompatActivity() {
     private fun onAuthCompleted() {
         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         processPendingDeepLinkIfAny()
+        processPendingActivityResultIfAny()
     }
 
     companion object {

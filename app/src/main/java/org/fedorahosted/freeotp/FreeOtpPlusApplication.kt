@@ -7,12 +7,14 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.HiltAndroidApp
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @HiltAndroidApp
 class FreeOtpPlusApplication: Application() {
     @Inject lateinit var settings: Settings
+    @Inject lateinit var appSessionManager: AppSessionManager
 
     private var screenshotMode = false
 
@@ -23,6 +25,8 @@ class FreeOtpPlusApplication: Application() {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
+
+        registerActivityLifecycleCallbacks(appSessionManager)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

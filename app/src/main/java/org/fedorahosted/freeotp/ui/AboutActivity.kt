@@ -32,13 +32,19 @@ import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.databinding.AboutBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AboutActivity : AppCompatActivity() {
+    @Inject lateinit var appSessionManager: AppSessionManager
     private lateinit var binding: AboutBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
+            return
+        }
         enableEdgeToEdge()
         binding = AboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -57,6 +63,9 @@ class AboutActivity : AppCompatActivity() {
 
     public override fun onStart() {
         super.onStart()
+        if (isFinishing) {
+            return
+        }
 
         setSupportActionBar(findViewById(R.id.toolbar))
         val res = resources

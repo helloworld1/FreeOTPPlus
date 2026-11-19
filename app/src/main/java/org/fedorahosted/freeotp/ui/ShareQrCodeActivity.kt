@@ -38,6 +38,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,10 +50,12 @@ class ShareQrCodeActivity : AppCompatActivity() {
     @Inject
     lateinit var tokenCryptoManager: TokenCryptoManager
 
+    @Inject
+    lateinit var appSessionManager: AppSessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!tokenCryptoManager.isUnlocked()) {
-            finish()
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
             return
         }
         enableEdgeToEdge()
@@ -76,6 +79,9 @@ class ShareQrCodeActivity : AppCompatActivity() {
 
             // Get token values and decrypt secret in memory so shared QR is always standard unencrypted otpauth URI.
             val storedToken = otpTokenDatabase.otpTokenDao().get(tokenId).first() ?: return@launch
+            if (!appSessionManager.ensureAuthenticatedOrFinish(this@ShareQrCodeActivity)) {
+                return@launch
+            }
             val token = tokenCryptoManager.decryptToken(storedToken)
             title = if (token.issuer.isNullOrBlank()) token.label else token.issuer
 

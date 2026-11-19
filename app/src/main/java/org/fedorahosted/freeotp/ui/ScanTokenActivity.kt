@@ -34,6 +34,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import java.util.concurrent.ExecutorService
@@ -52,6 +53,8 @@ class ScanTokenActivity : AppCompatActivity() {
 
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
 
+    @Inject lateinit var appSessionManager: AppSessionManager
+
     @Inject lateinit var imageUtil: ImageUtil
 
     @Inject lateinit var executorService: ExecutorService
@@ -62,8 +65,7 @@ class ScanTokenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!tokenCryptoManager.isUnlocked()) {
-            finish()
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
             return
         }
         enableEdgeToEdge()

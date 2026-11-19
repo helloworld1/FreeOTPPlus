@@ -16,6 +16,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.DeleteBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.setTokenImage
 import javax.inject.Inject
 
@@ -23,12 +24,12 @@ import javax.inject.Inject
 class DeleteActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var appSessionManager: AppSessionManager
     private lateinit var binding: DeleteBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!tokenCryptoManager.isUnlocked()) {
-            finish()
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
             return
         }
         enableEdgeToEdge()

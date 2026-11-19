@@ -1,6 +1,10 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.app.Activity
 import android.content.Intent
+import android.os.SystemClock
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -16,20 +20,34 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.ui.EditActivity
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.MainViewModel
+import org.fedorahosted.freeotp.ui.ShareQrCodeActivity
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class AuthenticationGateTest {
 
+    private var configuredSessionManager: AppSessionManager? = null
+
     @After
     fun tearDown() {
         AuthenticationUtil.hasScreenLockOverride = null
+        AuthenticationUtil.hasStrongBiometricOverride = null
         AuthenticationUtil.authCallbackOverride = null
+        AuthenticationUtil.appLaunchAuthCallbackOverride = null
+        configuredSessionManager?.let { manager ->
+            manager.timeoutDelayMs = AppSessionManager.DEFAULT_TIMEOUT_DELAY_MS
+            manager.elapsedRealtimeProvider = { SystemClock.elapsedRealtime() }
+        }
+        configuredSessionManager = null
     }
 
     @Test
@@ -133,6 +151,114 @@ class AuthenticationGateTest {
             onView(withText(R.string.export_key_uri_format)).perform(click())
             assertThat(authPromptCount).isEqualTo(2)
         }
+    }
+
+    @Test
+    fun testTokenEncryptedBackgroundTimeoutAutoLocksKeyInMemory() {
+        AuthenticationUtil.hasStrongBiometricOverride = false
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            lateinit var mainActivity: MainActivity
+            scenario.onActivity { activity ->
+                mainActivity = activity
+                configuredSessionManager = activity.appSessionManager
+                activity.appSessionManager.timeoutDelayMs = 150L
+                activity.tokenCryptoManager.kdfIterationsOverride = 1_500
+                runBlocking {
+                    val setup = activity.tokenCryptoManager.deriveSetupMaterial("secret123".toCharArray())
+                    activity.tokenCryptoManager.enableTokenEncryption(setup, null)
+                    setup.clear()
+                }
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+            }
+
+            assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isTrue()
+
+            // Move MainActivity to background (STOPPED) without calling onStart() again
+            scenario.moveToState(Lifecycle.State.CREATED)
+
+            val deadline = System.currentTimeMillis() + 3_000L
+            while (mainActivity.tokenCryptoManager.isUnlocked() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(25)
+            }
+
+            assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isFalse()
+            assertThat(mainActivity.appSessionManager.authState.value)
+                .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+        }
+    }
+
+    @Test
+    fun testChildActivityClosesOnBackgroundTimeoutInAppLaunchMode() {
+        val tokenId = insertTestToken()
+        AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, _ -> onSuccess() }
+
+        ActivityScenario.launch(MainActivity::class.java).use { mainScenario ->
+            mainScenario.onActivity { activity ->
+                configuredSessionManager = activity.appSessionManager
+                activity.appSessionManager.timeoutDelayMs = 150L
+                activity.settings.authMode = AuthMode.APP_LAUNCH
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+            }
+        }
+
+        val qrIntent = Intent(getInstrumentation().targetContext, ShareQrCodeActivity::class.java)
+            .putExtra(ShareQrCodeActivity.EXTRA_TOKEN_ID, tokenId)
+
+        ActivityScenario.launch<ShareQrCodeActivity>(qrIntent).use { qrScenario ->
+            onView(withId(R.id.qrcode)).check(matches(isDisplayed()))
+
+            qrScenario.moveToState(Lifecycle.State.CREATED)
+
+            val deadline = System.currentTimeMillis() + 3_000L
+            while (qrScenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
+                Thread.sleep(25)
+            }
+
+            assertThat(qrScenario.state).isEqualTo(Lifecycle.State.DESTROYED)
+        }
+    }
+
+    @Test
+    fun testLongOpenDocumentPickerDoesNotBypassSessionTimeout() {
+        insertTestToken()
+        val exportFile = File(getInstrumentation().targetContext.cacheDir, "timed_out_export.json")
+        exportFile.delete()
+
+        var fakeNow = 10_000L
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            lateinit var mainActivity: MainActivity
+            scenario.onActivity { activity ->
+                mainActivity = activity
+                configuredSessionManager = activity.appSessionManager
+                activity.appSessionManager.elapsedRealtimeProvider = { fakeNow }
+                activity.tokenCryptoManager.kdfIterationsOverride = 1_500
+                runBlocking {
+                    val setup = activity.tokenCryptoManager.deriveSetupMaterial("secret123".toCharArray())
+                    activity.tokenCryptoManager.enableTokenEncryption(setup, null)
+                    setup.clear()
+                }
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+            }
+
+            // Simulate MainActivity stopping when external document picker opens at T = 10s
+            scenario.moveToState(Lifecycle.State.CREATED)
+
+            // Simulate user returning from picker 3 minutes later (T = 190s > 120s timeout)
+            fakeNow = 190_000L
+            getInstrumentation().runOnMainSync {
+                mainActivity.onActivityResult(
+                    MainActivity.WRITE_JSON_REQUEST_CODE,
+                    Activity.RESULT_OK,
+                    Intent().setData(exportFile.toUri())
+                )
+            }
+
+            assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isFalse()
+            assertThat(mainActivity.appSessionManager.authState.value)
+                .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+            assertThat(exportFile.exists()).isFalse()
+        }
+        exportFile.delete()
     }
 
     private fun insertTestToken(): Long {

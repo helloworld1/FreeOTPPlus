@@ -46,6 +46,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.EditBinding
+import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
@@ -57,6 +58,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var appSessionManager: AppSessionManager
     @Inject lateinit var settings: Settings
     @Inject lateinit var imageUtil: ImageUtil
 
@@ -101,8 +103,7 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!tokenCryptoManager.isUnlocked()) {
-            finish()
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
             return
         }
         enableEdgeToEdge()
@@ -191,6 +192,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
                     settings,
                     tokenCryptoManager
                 ) {
+                    if (!appSessionManager.ensureAuthenticatedOrFinish(this@EditActivity)) {
+                        return@authenticateForSensitiveAction
+                    }
                     val plaintextSecret = tokenCryptoManager.decryptSecret(token)
                     secretTextView.setOnClickListener(null)
                     secretTextView.setTextIsSelectable(true)
@@ -214,6 +218,9 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (!appSessionManager.ensureAuthenticatedOrFinish(this)) {
+            return
+        }
 
         if (requestCode == IMAGE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {

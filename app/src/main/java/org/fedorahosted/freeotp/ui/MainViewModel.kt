@@ -7,27 +7,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
-import org.fedorahosted.freeotp.data.TokenCryptoManager
-import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.util.AppSessionManager
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val tokenMigrationUtil: MigrationUtil,
     private val otpTokenDatabase: OtpTokenDatabase,
-    private val settings: Settings,
-    private val tokenCryptoManager: TokenCryptoManager
+    private val appSessionManager: AppSessionManager
 ) : ViewModel() {
 
     private val tokenSearchQuery = MutableStateFlow("")
     private val categoryFilter = MutableStateFlow<String?>(null)
-    private val authState = MutableStateFlow(computeInitialAuthState())
-
-    private var lastSessionEndTimestamp = 0L
 
     init {
         viewModelScope.launch {
@@ -38,20 +32,6 @@ class MainViewModel @Inject constructor(
                     availableCategories.none { it.equals(current, ignoreCase = true) }
                 ) {
                     categoryFilter.value = null
-                }
-            }
-        }
-    }
-
-    private fun computeInitialAuthState(): AuthState {
-        return when (settings.authMode) {
-            AuthMode.NONE -> AuthState.AUTHENTICATED
-            AuthMode.APP_LAUNCH -> AuthState.UNAUTHENTICATED
-            AuthMode.TOKEN_ENCRYPTED -> {
-                if (tokenCryptoManager.isUnlocked()) {
-                    AuthState.AUTHENTICATED
-                } else {
-                    AuthState.UNAUTHENTICATED
                 }
             }
         }
@@ -80,23 +60,20 @@ class MainViewModel @Inject constructor(
     fun getCurrentCategoryFilter(): String? = categoryFilter.value
 
     fun setAuthState(auth: AuthState) {
-        if (auth == AuthState.AUTHENTICATED) {
-            lastSessionEndTimestamp = System.currentTimeMillis()
-            if (!tokenMigrationUtil.isMigrated()) {
-                migrateOldData()
-            }
+        appSessionManager.setAuthState(auth)
+        if (auth == AuthState.AUTHENTICATED && !tokenMigrationUtil.isMigrated()) {
+            migrateOldData()
         }
-        authState.value = auth
     }
 
-    fun isAuthenticated(): Boolean = authState.value == AuthState.AUTHENTICATED
+    fun isAuthenticated(): Boolean = appSessionManager.isAuthenticated()
 
-    fun getAuthState(): Flow<AuthState> = authState
+    fun getAuthState(): Flow<AuthState> = appSessionManager.authState
 
     fun getAllCategories(): Flow<List<String>> = otpTokenDatabase.otpTokenDao().getAllCategories()
 
     fun getTokenList(): Flow<List<OtpToken>> {
-        return combine(authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) { auth, searchQuery, category, tokens ->
+        return combine(appSessionManager.authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) { auth, searchQuery, category, tokens ->
             if (auth != AuthState.AUTHENTICATED) {
                 return@combine emptyList()
             }
@@ -123,43 +100,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun keepSessionAliveForResult() {
-        if (authState.value == AuthState.AUTHENTICATED) {
-            lastSessionEndTimestamp = System.currentTimeMillis()
-        }
-    }
-
     fun lockSession() {
-        tokenCryptoManager.lock()
-        lastSessionEndTimestamp = 0L
-        authState.value = AuthState.UNAUTHENTICATED
+        appSessionManager.lockSession()
     }
 
     fun onSessionStart() {
-        when (settings.authMode) {
-            AuthMode.NONE -> {
-                setAuthState(AuthState.AUTHENTICATED)
-            }
-            AuthMode.APP_LAUNCH -> {
-                val timedOut = (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS
-                if (authState.value != AuthState.AUTHENTICATED || timedOut) {
-                    setAuthState(AuthState.UNAUTHENTICATED)
-                }
-            }
-            AuthMode.TOKEN_ENCRYPTED -> {
-                val timedOut = (System.currentTimeMillis() - lastSessionEndTimestamp) > TIMEOUT_DELAY_MS
-                if (authState.value != AuthState.AUTHENTICATED || !tokenCryptoManager.isUnlocked() || timedOut) {
-                    tokenCryptoManager.lock()
-                    setAuthState(AuthState.UNAUTHENTICATED)
-                }
-            }
-        }
-    }
-
-    fun onSessionStop() {
-        if (authState.value == AuthState.AUTHENTICATED) {
-            lastSessionEndTimestamp = System.currentTimeMillis()
-        }
+        appSessionManager.refreshSessionState()
     }
 
     enum class AuthState {
@@ -168,7 +114,6 @@ class MainViewModel @Inject constructor(
     }
 
     companion object {
-        private const val TIMEOUT_DELAY_MS: Long = 120 * 1000L
         const val CATEGORY_UNCATEGORIZED = "uncategorized_special_value"
     }
 

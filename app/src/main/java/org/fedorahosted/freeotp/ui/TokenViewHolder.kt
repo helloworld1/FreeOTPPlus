@@ -43,6 +43,9 @@ class TokenViewHolder(
                     settings,
                     tokenCryptoManager
                 ) {
+                    if (!tokenCryptoManager.isUnlocked()) {
+                        return@authenticateForSensitiveAction
+                    }
                     val plainToken = tokenCryptoManager.decryptToken(token)
                     val i = Intent(Intent.ACTION_VIEW, Uri.parse(OtpTokenFactory.toUri(plainToken).toString()))
                     i.putExtra(MainActivity.SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA, activity.packageName)
