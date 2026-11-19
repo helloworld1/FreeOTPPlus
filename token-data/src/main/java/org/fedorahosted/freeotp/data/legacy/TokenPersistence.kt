@@ -1,11 +1,13 @@
 package org.fedorahosted.freeotp.data.legacy
 
+import java.io.File
 import java.util.ArrayList
 
 import com.google.gson.reflect.TypeToken
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.preference.PreferenceManager
 import android.util.Log
 import androidx.annotation.WorkerThread
@@ -20,7 +22,8 @@ import javax.inject.Singleton
 
 @Singleton
 class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: Context) {
-    private val prefs: SharedPreferences = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences
+        get() = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val globalPrefs =
         PreferenceManager.getDefaultSharedPreferences(ctx)
 
@@ -129,7 +132,27 @@ class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: 
     }
 
     fun setLegacyTokenMigrated() {
-        globalPrefs.edit().putBoolean(TOKEN_MIGRATED_KEY, true).apply()
+        globalPrefs.edit().putBoolean(TOKEN_MIGRATED_KEY, true).commit()
+    }
+
+    fun clearLegacyTokens() {
+        val appCtx = ctx.applicationContext
+        val sharedPrefsDir = appCtx.applicationInfo?.dataDir?.let { File(it, "shared_prefs") }
+        val xmlFile = sharedPrefsDir?.let { File(it, "$NAME.xml") }
+        val bakFile = sharedPrefsDir?.let { File(it, "$NAME.bak") }
+
+        if (xmlFile?.exists() == true || bakFile?.exists() == true || prefs.all.isNotEmpty()) {
+            prefs.edit().clear().commit()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                appCtx.deleteSharedPreferences(NAME)
+            }
+            if (xmlFile?.exists() == true) {
+                xmlFile.delete()
+            }
+            if (bakFile?.exists() == true) {
+                bakFile.delete()
+            }
+        }
     }
 
     @Throws(Token.TokenUriInvalidException::class)

@@ -10,6 +10,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import java.security.GeneralSecurityException
 import java.security.KeyStore
@@ -22,10 +23,23 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TokenCryptoManager @Inject constructor(
+class TokenCryptoManager private constructor(
     private val sharedPreferences: SharedPreferences,
-    private val otpTokenDatabase: OtpTokenDatabase
+    private val otpTokenDatabase: OtpTokenDatabase,
+    private val tokenPersistence: TokenPersistence?,
+    @Suppress("UNUSED_PARAMETER") unused: Unit
 ) {
+    @Inject
+    constructor(
+        sharedPreferences: SharedPreferences,
+        otpTokenDatabase: OtpTokenDatabase,
+        tokenPersistence: TokenPersistence
+    ) : this(sharedPreferences, otpTokenDatabase, tokenPersistence, Unit)
+
+    constructor(
+        sharedPreferences: SharedPreferences,
+        otpTokenDatabase: OtpTokenDatabase
+    ) : this(sharedPreferences, otpTokenDatabase, null, Unit)
     interface KeyStoreBackend {
         @Throws(Exception::class)
         fun createEncryptCipher(): Cipher
@@ -401,6 +415,10 @@ class TokenCryptoManager @Inject constructor(
                 .putString(AUTH_MODE_KEY, AuthMode.TOKEN_ENCRYPTED.name)
                 .putBoolean(REQUIRE_AUTHENTICATION_KEY, true)
                 .commit()
+
+            if (tokenPersistence?.isLegacyTokenMigrated() == true) {
+                tokenPersistence.clearLegacyTokens()
+            }
 
             setSessionKey(setupMaterial.keyBytes)
         }

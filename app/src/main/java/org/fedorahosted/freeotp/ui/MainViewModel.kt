@@ -61,6 +61,8 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             if (!tokenMigrationUtil.isMigrated()) {
                 tokenMigrationUtil.migrate()
+            } else {
+                tokenMigrationUtil.purgeLegacyTokensIfMigrated()
             }
         }
     }
@@ -80,6 +82,9 @@ class MainViewModel @Inject constructor(
     fun setAuthState(auth: AuthState) {
         if (auth == AuthState.AUTHENTICATED) {
             lastSessionEndTimestamp = System.currentTimeMillis()
+            if (!tokenMigrationUtil.isMigrated()) {
+                migrateOldData()
+            }
         }
         authState.value = auth
     }

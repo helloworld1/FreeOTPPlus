@@ -8,17 +8,47 @@ import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import javax.inject.Inject
 
-class MigrationUtil @Inject constructor(
+class MigrationUtil private constructor(
     private val optTokenDatabase: OtpTokenDatabase,
     private val tokenPersistence: TokenPersistence,
+    private val tokenCryptoManager: TokenCryptoManager?,
+    @Suppress("UNUSED_PARAMETER") unused: Unit
 ) {
+    @Inject
+    constructor(
+        optTokenDatabase: OtpTokenDatabase,
+        tokenPersistence: TokenPersistence,
+        tokenCryptoManager: TokenCryptoManager
+    ) : this(optTokenDatabase, tokenPersistence, tokenCryptoManager, Unit)
+
+    constructor(
+        optTokenDatabase: OtpTokenDatabase,
+        tokenPersistence: TokenPersistence
+    ) : this(optTokenDatabase, tokenPersistence, null, Unit)
+
     fun isMigrated(): Boolean = tokenPersistence.isLegacyTokenMigrated()
 
     suspend fun migrate() {
         withContext(Dispatchers.IO) {
-            val tokenList = convertLegacyTokensToOtpTokens(tokenPersistence.getTokens())
-            optTokenDatabase.otpTokenDao().insertAll(tokenList)
+            if (tokenCryptoManager?.getAuthMode() == AuthMode.TOKEN_ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                return@withContext
+            }
+            val legacyTokens = tokenPersistence.getTokens()
+            if (legacyTokens.isNotEmpty()) {
+                val tokenList = convertLegacyTokensToOtpTokens(legacyTokens)
+                val tokensToInsert = tokenCryptoManager?.encryptTokensForStorage(tokenList) ?: tokenList
+                optTokenDatabase.otpTokenDao().insertAll(tokensToInsert)
+            }
             tokenPersistence.setLegacyTokenMigrated()
+            tokenPersistence.clearLegacyTokens()
+        }
+    }
+
+    suspend fun purgeLegacyTokensIfMigrated() {
+        withContext(Dispatchers.IO) {
+            if (tokenPersistence.isLegacyTokenMigrated()) {
+                tokenPersistence.clearLegacyTokens()
+            }
         }
     }
 

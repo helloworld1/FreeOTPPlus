@@ -16,12 +16,14 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.common.truth.Truth.assertThat
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class MigrationTest {
@@ -55,6 +57,50 @@ class MigrationTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
             .check(matches(hasDescendant(withText("account2hotp"))))
             .check(matches(hasDescendant(withText("github.com"))))
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val legacyPrefs = context.getSharedPreferences("tokens", Context.MODE_PRIVATE)
+        val legacyXml = File(context.applicationInfo.dataDir, "shared_prefs/tokens.xml")
+        assertThat(legacyPrefs.all).isEmpty()
+        assertThat(legacyXml.exists()).isFalse()
+    }
+
+    @Test
+    fun testLeftoverLegacyTokensPurgedWhenAlreadyMigrated() {
+        // Wait for initial setup migration to finish
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(hasDescendant(withText("account1totp"))))
+        activityScenario?.close()
+
+        // Simulate an already-migrated install (tokenMigrated = true) that still has leftover plaintext tokens.xml
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val legacyPrefs = context.getSharedPreferences("tokens", Context.MODE_PRIVATE)
+        val globalPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        legacyPrefs.edit()
+            .putString(
+                "leftover:secret",
+                "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"leftover\",\"label\":\"secret\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}"
+            )
+            .putString("tokenOrder", "[\"leftover:secret\"]")
+            .commit()
+        assertThat(globalPrefs.getBoolean("tokenMigrated", false)).isTrue()
+
+        val legacyXml = File(context.applicationInfo.dataDir, "shared_prefs/tokens.xml")
+        assertThat(legacyXml.exists()).isTrue()
+
+        activityScenario = launchActivity()
+        onView(withId(R.id.token_list))
+            .check(RecyclerViewAssertion.childrenCount(2))
+
+        // Poll briefly for async Dispatchers.IO purge to complete
+        val deadline = System.currentTimeMillis() + 5_000L
+        while (legacyXml.exists() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(50)
+        }
+
+        assertThat(context.getSharedPreferences("tokens", Context.MODE_PRIVATE).all).isEmpty()
+        assertThat(legacyXml.exists()).isFalse()
     }
 
     @Test
