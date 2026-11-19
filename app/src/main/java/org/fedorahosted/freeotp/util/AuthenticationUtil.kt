@@ -64,10 +64,7 @@ object AuthenticationUtil {
     fun hasScreenLock(context: Context): Boolean {
         hasScreenLockOverride?.let { return it }
         val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-        if (keyguardManager?.isDeviceSecure != true) {
-            return false
-        }
-        return BiometricManager.from(context).canAuthenticate(AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
+        return keyguardManager?.isDeviceSecure == true
     }
 
     fun canAuthenticateStrongBiometric(context: Context): Boolean {
@@ -147,6 +144,9 @@ object AuthenticationUtil {
         tokenCryptoManager: TokenCryptoManager,
         onAuthenticated: () -> Unit
     ) {
+        if (settings.authMode != AuthMode.NONE && activity is MainActivity && !activity.isSessionAuthenticated()) {
+            return
+        }
         if (authCallbackOverride != null ||
             settings.authMode != AuthMode.TOKEN_ENCRYPTED ||
             hasScreenLock(activity)
@@ -300,8 +300,9 @@ object AuthenticationUtil {
 
     fun authenticateAppLaunch(
         activity: AppCompatActivity,
-        finishOnCancel: Boolean,
-        onSuccess: () -> Unit
+        onSuccess: () -> Unit,
+        onNoDeviceCredential: () -> Unit = {},
+        onCancelOrError: (errorCode: Int, errString: CharSequence?) -> Unit = { _, _ -> }
     ) {
         appLaunchAuthCallbackOverride?.let { override ->
             override(
@@ -311,11 +312,18 @@ object AuthenticationUtil {
                     }
                 },
                 {
-                    if (finishOnCancel && !activity.isFinishing && !activity.isDestroyed) {
-                        activity.finish()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        onCancelOrError(BiometricPrompt.ERROR_USER_CANCELED, null)
                     }
                 }
             )
+            return
+        }
+
+        if (!hasScreenLock(activity)) {
+            if (!activity.isFinishing && !activity.isDestroyed) {
+                onNoDeviceCredential()
+            }
             return
         }
 
@@ -327,16 +335,13 @@ object AuthenticationUtil {
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                        Toast.makeText(
-                            applicationContext,
-                            "${activity.getString(R.string.authentication_error)} $errString",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    if (activity.isFinishing || activity.isDestroyed) {
+                        return
                     }
-
-                    if (finishOnCancel && errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
-                        activity.finish()
+                    if (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL || !hasScreenLock(activity)) {
+                        onNoDeviceCredential()
+                    } else {
+                        onCancelOrError(errorCode, errString)
                     }
                 }
 

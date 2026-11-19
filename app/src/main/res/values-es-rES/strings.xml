@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Autenticación requerida</string>
     <string name="authentication_dialog_subtitle">Utiliza datos biométricos o el PIN para autenticarte en FreeOTP+</string>
     <string name="unable_to_authenticate">No se puede autenticar. ¿Tienes activado el bloqueo de pantalla con PIN o datos biométricos?</string>
+    <string name="screen_lock_required_title">Se requiere bloqueo de pantalla</string>
+    <string name="screen_lock_required_message">La autenticación al iniciar usa el PIN, patrón, contraseña o biometría de tu dispositivo. Configura primero un bloqueo de pantalla en los Ajustes de Android o elige el modo de tokens cifrados.</string>
+    <string name="open_settings_button">Abrir Ajustes</string>
+    <string name="screen_lock_disabled_title">El bloqueo de pantalla está desactivado</string>
+    <string name="screen_lock_disabled_message">La autenticación al iniciar está activada, pero este dispositivo ya no tiene un PIN, patrón, contraseña ni biometría configurados.\n\nConfigura un bloqueo de pantalla en los Ajustes de Android para mantener la protección o desactiva la autenticación al iniciar para continuar.</string>
+    <string name="set_up_screen_lock_button">Configurar bloqueo</string>
+    <string name="turn_off_button">Desactivar</string>
+    <string name="app_launch_auth_disabled">Autenticación al iniciar desactivada</string>
     <string name="remove_user_token_image">Eliminar imagen personalizada del token</string>
     <string name="fail_to_add_image">No se pudo añadir la imagen</string>
     <string name="launch_file_browser_failure">No se puede iniciar el explorador de archivos del sistema. Probablemente sea un problema del sistema operativo.</string>

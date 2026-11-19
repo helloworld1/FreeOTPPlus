@@ -63,6 +63,14 @@
     <string name="authentication_dialog_title">Authentication required</string>
     <string name="authentication_dialog_subtitle">Please use biometric or PIN to authenticate FreeOTP+</string>
     <string name="unable_to_authenticate">Unable to authenticate. Do you have screen lock enabled with PIN / biometric enabled?</string>
+    <string name="screen_lock_required_title">Screen lock required</string>
+    <string name="screen_lock_required_message">App launch authentication uses your device\'s PIN, pattern, password, or biometric. Set up a screen lock in Android Settings first, or choose Token encrypted mode.</string>
+    <string name="open_settings_button">Open Settings</string>
+    <string name="screen_lock_disabled_title">Device screen lock is off</string>
+    <string name="screen_lock_disabled_message">App launch authentication is enabled, but this device no longer has a PIN, pattern, password, or biometric set up.\n\nSet up a screen lock in Android Settings to keep App launch protection, or turn off App launch authentication to continue.</string>
+    <string name="set_up_screen_lock_button">Set up screen lock</string>
+    <string name="turn_off_button">Turn off</string>
+    <string name="app_launch_auth_disabled">App launch authentication turned off</string>
 
     <string name="five" translatable="false">5</string>
     <string name="six" translatable="false">6</string>

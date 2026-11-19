@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Autentisering krävs</string>
     <string name="authentication_dialog_subtitle">Använd biometri eller PIN-kod för att autentisera FreeOTP+</string>
     <string name="unable_to_authenticate">Det gick inte att autentisera. Har du skärmlås med PIN-kod eller biometri aktiverat?</string>
+    <string name="screen_lock_required_title">Skärmlås krävs</string>
+    <string name="screen_lock_required_message">Autentisering vid appstart använder enhetens PIN-kod, mönster, lösenord eller biometri. Konfigurera först ett skärmlås i Android-inställningarna eller välj läget Krypterade tokens.</string>
+    <string name="open_settings_button">Öppna Inställningar</string>
+    <string name="screen_lock_disabled_title">Enhetens skärmlås är avstängt</string>
+    <string name="screen_lock_disabled_message">Autentisering vid appstart är aktiverad, men den här enheten har inte längre någon PIN-kod, mönster, lösenord eller biometri inställd.\n\nStäll in ett skärmlås i Android-inställningarna för att behålla skyddet, eller stäng av autentisering vid appstart för att fortsätta.</string>
+    <string name="set_up_screen_lock_button">Ställ in skärmlås</string>
+    <string name="turn_off_button">Stäng av</string>
+    <string name="app_launch_auth_disabled">Autentisering vid appstart har stängts av</string>
     <string name="remove_user_token_image">Ta bort anpassad tokenbild</string>
     <string name="fail_to_add_image">Det gick inte att lägga till bild</string>
     <string name="launch_file_browser_failure">Det gick inte att starta systemets filhanterare. Det är troligtvis ett OS-problem.</string>

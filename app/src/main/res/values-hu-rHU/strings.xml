@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Hitelesítés szükséges</string>
     <string name="authentication_dialog_subtitle">Használjon biometrikus azonosítást vagy PIN-kódot a FreeOTP+ hitelesítéséhez</string>
     <string name="unable_to_authenticate">Nem lehet hitelesíteni. Be van kapcsolva a PIN-kóddal vagy biometrikus azonosítással védett képernyőzár?</string>
+    <string name="screen_lock_required_title">Képernyőzár szükséges</string>
+    <string name="screen_lock_required_message">Az indításkori hitelesítés a készülék PIN-kódját, mintáját, jelszavát vagy biometrikus azonosítását használja. Először állítson be képernyőzárat az Android Beállításokban, vagy válassza a Titkosított tokenek módot.</string>
+    <string name="open_settings_button">Beállítások megnyitása</string>
+    <string name="screen_lock_disabled_title">A képernyőzár ki van kapcsolva</string>
+    <string name="screen_lock_disabled_message">Az indításkori hitelesítés be van kapcsolva, de ezen az eszközön már nincs PIN-kód, minta, jelszó vagy biometrikus azonosítás beállítva.\n\nÁllítson be képernyőzárat az Android Beállításokban a védelem megtartásához, vagy kapcsolja ki az indításkori hitelesítést a folytatáshoz.</string>
+    <string name="set_up_screen_lock_button">Képernyőzár beállítása</string>
+    <string name="turn_off_button">Kikapcsolás</string>
+    <string name="app_launch_auth_disabled">Az indításkori hitelesítés kikapcsolva</string>
     <string name="remove_user_token_image">Egyéni tokenkép eltávolítása</string>
     <string name="fail_to_add_image">Nem sikerült hozzáadni a képet</string>
     <string name="launch_file_browser_failure">Nem sikerült elindítani a rendszer fájlböngészőjét. Valószínűleg operációsrendszer-hiba.</string>

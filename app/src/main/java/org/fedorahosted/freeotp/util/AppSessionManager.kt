@@ -2,12 +2,14 @@ package org.fedorahosted.freeotp.util
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppSessionManager @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settings: Settings,
     private val tokenCryptoManager: TokenCryptoManager
 ) : Application.ActivityLifecycleCallbacks {
@@ -44,11 +47,21 @@ class AppSessionManager @Inject constructor(
     private val _authState = MutableStateFlow(computeCurrentAuthState())
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
+    private fun isAppLaunchCredentialAvailable(): Boolean {
+        return AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
+            AuthenticationUtil.hasScreenLock(context)
+    }
+
     private fun computeCurrentAuthState(): AuthState {
         return when (settings.authMode) {
             AuthMode.NONE -> AuthState.AUTHENTICATED
             AuthMode.APP_LAUNCH -> {
-                if (hasAuthenticatedSession) AuthState.AUTHENTICATED else AuthState.UNAUTHENTICATED
+                if (hasAuthenticatedSession && isAppLaunchCredentialAvailable()) {
+                    AuthState.AUTHENTICATED
+                } else {
+                    hasAuthenticatedSession = false
+                    AuthState.UNAUTHENTICATED
+                }
             }
             AuthMode.TOKEN_ENCRYPTED -> {
                 if (tokenCryptoManager.isUnlocked()) {
@@ -92,6 +105,10 @@ class AppSessionManager @Inject constructor(
     @MainThread
     fun setAuthState(state: AuthState) {
         if (state == AuthState.AUTHENTICATED) {
+            if (settings.authMode == AuthMode.APP_LAUNCH && !isAppLaunchCredentialAvailable()) {
+                lockSession()
+                return
+            }
             hasAuthenticatedSession = true
             cancelBackgroundLockTimer()
             if (startedActivityCount > 0) {

@@ -206,6 +206,12 @@ class TokenListFragment : Fragment() {
                 }
 
                 override fun onPrepareMenu(menu: Menu) {
+                    val authenticated = viewModel.isAuthenticated()
+                    for (i in 0 until menu.size()) {
+                        menu.getItem(i).isVisible = authenticated
+                    }
+                    if (!authenticated) return
+
                     menu.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
                     menu.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
                     menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
@@ -251,6 +257,7 @@ class TokenListFragment : Fragment() {
                 }
 
                 override fun onMenuItemSelected(item: MenuItem): Boolean {
+                    if (!viewModel.isAuthenticated()) return false
                     val mainActivity = requireActivity() as MainActivity
                     return when (item.itemId) {
                         R.id.action_scan -> {

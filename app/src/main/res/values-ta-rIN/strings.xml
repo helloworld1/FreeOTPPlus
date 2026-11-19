@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">அங்கீகாரம் தேவை</string>
     <string name="authentication_dialog_subtitle">FreeOTP+-ஐ அங்கீகரிக்க பயோமெட்ரிக் அல்லது PIN-ஐப் பயன்படுத்தவும்</string>
     <string name="unable_to_authenticate">அங்கீகரிக்க முடியவில்லை. PIN / பயோமெட்ரிக் திரைப் பூட்டு இயக்கப்பட்டுள்ளதா?</string>
+    <string name="screen_lock_required_title">திரைப் பூட்டு தேவை</string>
+    <string name="screen_lock_required_message">செயலி தொடக்க அங்கீகாரம் உங்கள் சாதனத்தின் PIN, வடிவம், கடவுச்சொல் அல்லது பயோமெட்ரிக்கைப் பயன்படுத்துகிறது. முதலில் Android அமைப்புகளில் திரைப் பூட்டை அமைக்கவும் அல்லது டோக்கன் மறைகுறியாக்கப்பட்ட பயன்முறையைத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="open_settings_button">அமைப்புகளைத் திற</string>
+    <string name="screen_lock_disabled_title">சாதனத் திரைப் பூட்டு ஆஃப் செய்யப்பட்டுள்ளது</string>
+    <string name="screen_lock_disabled_message">செயலி தொடக்க அங்கீகாரம் இயக்கப்பட்டுள்ளது, ஆனால் இந்தச் சாதனத்தில் PIN, வடிவம், கடவுச்சொல் அல்லது பயோமெட்ரிக் எதுவும் இனி அமைக்கப்படவில்லை.\n\nபாதுகாப்பைத் தொடர Android அமைப்புகளில் திரைப் பூட்டை அமைக்கவும், அல்லது தொடர செயலி தொடக்க அங்கீகாரத்தை ஆஃப் செய்யவும்.</string>
+    <string name="set_up_screen_lock_button">திரைப் பூட்டை அமை</string>
+    <string name="turn_off_button">ஆஃப் செய்</string>
+    <string name="app_launch_auth_disabled">செயலி தொடக்க அங்கீகாரம் ஆஃப் செய்யப்பட்டது</string>
     <string name="remove_user_token_image">தனிப்பயன் டோக்கன் படத்தை அகற்று</string>
     <string name="fail_to_add_image">படத்தைச் சேர்க்க முடியவில்லை</string>
     <string name="launch_file_browser_failure">கணினியின் கோப்பு உலாவியைத் திறக்க முடியவில்லை. இது இயங்குதளச் சிக்கலாக இருக்கலாம்.</string>

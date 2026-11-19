@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Vyžadováno ověření</string>
     <string name="authentication_dialog_subtitle">K ověření ve FreeOTP+ použijte biometrii nebo PIN</string>
     <string name="unable_to_authenticate">Nelze ověřit. Máte zapnutý zámek obrazovky s PINem nebo biometrií?</string>
+    <string name="screen_lock_required_title">Je vyžadován zámek obrazovky</string>
+    <string name="screen_lock_required_message">Ověření při spuštění aplikace používá PIN, gesto, heslo nebo biometrii zařízení. Nejprve nastavte zámek obrazovky v Nastavení systému Android nebo zvolte režim Šifrování tokenů.</string>
+    <string name="open_settings_button">Otevřít Nastavení</string>
+    <string name="screen_lock_disabled_title">Zámek obrazovky zařízení je vypnutý</string>
+    <string name="screen_lock_disabled_message">Ověření při spuštění aplikace je zapnuté, ale toto zařízení již nemá nastavený PIN, gesto, heslo ani biometrii.\n\nNastavte zámek obrazovky v Nastavení systému Android pro zachování ochrany, nebo pokračujte vypnutím ověření při spuštění.</string>
+    <string name="set_up_screen_lock_button">Nastavit zámek</string>
+    <string name="turn_off_button">Vypnout</string>
+    <string name="app_launch_auth_disabled">Ověření při spuštění aplikace bylo vypnuto</string>
     <string name="remove_user_token_image">Odstranit vlastní obrázek tokenu</string>
     <string name="fail_to_add_image">Nepodařilo se přidat obrázek</string>
     <string name="launch_file_browser_failure">Nelze spustit systémového správce souborů. Pravděpodobně jde o problém operačního systému.</string>

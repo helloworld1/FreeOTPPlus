@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">සත්‍යාපනය අවශ්‍යයි</string>
     <string name="authentication_dialog_subtitle">FreeOTP+ සත්‍යාපනය කිරීමට කරුණාකර ජෛවමිතික හෝ PIN අංකය භාවිතා කරන්න</string>
     <string name="unable_to_authenticate">සත්‍යාපනය කළ නොහැක. PIN / ජෛවමිතික සමඟ තිර අගුල සබල කර තිබේද?</string>
+    <string name="screen_lock_required_title">තිර අගුල අවශ්‍යයි</string>
+    <string name="screen_lock_required_message">යෙදුම දියත් කිරීමේ සත්‍යාපනය ඔබගේ උපාංගයේ PIN, රටාව, මුරපදය හෝ ජෛවමිතික භාවිතා කරයි. පළමුව Android සැකසීම් තුළ තිර අගුලක් සකසන්න, නැතහොත් සංකේතනය කළ ටෝකන ප්‍රකාරය තෝරන්න.</string>
+    <string name="open_settings_button">සැකසීම් විවෘත කරන්න</string>
+    <string name="screen_lock_disabled_title">උපාංගයේ තිර අගුල ක්‍රියාවිරහිතයි</string>
+    <string name="screen_lock_disabled_message">යෙදුම දියත් කිරීමේ සත්‍යාපනය සබල කර ඇත, නමුත් මෙම උපාංගයේ තවදුරටත් PIN, රටාව, මුරපදය හෝ ජෛවමිතික සකසා නොමැත.\n\nආරක්ෂාව තබා ගැනීමට Android සැකසීම් තුළ තිර අගුලක් සකසන්න, නැතහොත් ඉදිරියට යාමට දියත් කිරීමේ සත්‍යාපනය අක්‍රිය කරන්න.</string>
+    <string name="set_up_screen_lock_button">තිර අගුල සකසන්න</string>
+    <string name="turn_off_button">අක්‍රිය කරන්න</string>
+    <string name="app_launch_auth_disabled">යෙදුම දියත් කිරීමේ සත්‍යාපනය අක්‍රිය කරන ලදී</string>
     <string name="remove_user_token_image">පරිශීලක ටෝකන රූපය ඉවත් කරන්න</string>
     <string name="fail_to_add_image">රූපය එක් කිරීමට අසමත් විය</string>
     <string name="launch_file_browser_failure">පද්ධතියේ ගොනු ගවේෂකය විවෘත කළ නොහැක. එය බොහෝ විට මෙහෙයුම් පද්ධතියේ ගැටලුවක් විය හැකිය.</string>

@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Verifikasie vereis</string>
     <string name="authentication_dialog_subtitle">Gebruik asseblief biometrie of PIN om FreeOTP+ te verifieer</string>
     <string name="unable_to_authenticate">Kan nie verifieer nie. Is skermslot met PIN / biometrie geaktiveer?</string>
+    <string name="screen_lock_required_title">Skermslot vereis</string>
+    <string name="screen_lock_required_message">Programbegin-stawing gebruik jou toestel se PIN, patroon, wagwoord of biometrie. Stel eers \'n skermslot in Android-instellings op, of kies Kenteken-geënkripteerde modus.</string>
+    <string name="open_settings_button">Maak Instellings oop</string>
+    <string name="screen_lock_disabled_title">Toestelskermslot is af</string>
+    <string name="screen_lock_disabled_message">Programbegin-stawing is geaktiveer, maar hierdie toestel het nie meer \'n PIN, patroon, wagwoord of biometrie opgestel nie.\n\nStel \'n skermslot in Android-instellings op om beskerming aktief te hou, of skakel Programbegin-stawing af om voort te gaan.</string>
+    <string name="set_up_screen_lock_button">Stel skermslot op</string>
+    <string name="turn_off_button">Skakel af</string>
+    <string name="app_launch_auth_disabled">Programbegin-stawing is afgeskakel</string>
     <string name="remove_user_token_image">Verwyder pasgemaakte kentekenprent</string>
     <string name="fail_to_add_image">Kon nie prent byvoeg nie</string>
     <string name="launch_file_browser_failure">Kan nie die stelsel se lêerblaaier oopmaak nie. Dit is waarskynlik \'n bedryfstelselprobleem.</string>

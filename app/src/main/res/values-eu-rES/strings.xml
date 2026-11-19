@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Autentifikazioa behar da</string>
     <string name="authentication_dialog_subtitle">Erabili datu biometrikoak edo PINa FreeOTP+ autentifikatzeko</string>
     <string name="unable_to_authenticate">Ezin da autentifikatu. Pantaila-blokeoa PIN edo datu biometrikoekin gaituta duzu?</string>
+    <string name="screen_lock_required_title">Pantaila-blokeoa behar da</string>
+    <string name="screen_lock_required_message">Aplikazioa abiarazteko autentifikazioak gailuaren PINa, eredua, pasahitza edo biometria erabiltzen du. Konfiguratu lehenik pantaila-blokeoa Android ezarpenetan edo aukeratu token zifratuen modua.</string>
+    <string name="open_settings_button">Ireki Ezarpenak</string>
+    <string name="screen_lock_disabled_title">Gailuaren pantaila-blokeoa desaktibatuta dago</string>
+    <string name="screen_lock_disabled_message">Aplikazioa abiarazteko autentifikazioa gaituta dago, baina gailu honek ez du jada PINik, eredurik, pasahitzik edo biometriarik konfiguratuta.\n\nKonfiguratu pantaila-blokeoa Android ezarpenetan babesa mantentzeko, edo desaktibatu abiarazteko autentifikazioa jarraitzeko.</string>
+    <string name="set_up_screen_lock_button">Konfiguratu blokeoa</string>
+    <string name="turn_off_button">Desaktibatu</string>
+    <string name="app_launch_auth_disabled">Aplikazioa abiarazteko autentifikazioa desaktibatuta</string>
     <string name="remove_user_token_image">Kendu erabiltzailearen token-irudia</string>
     <string name="fail_to_add_image">Ezin izan da irudia gehitu</string>
     <string name="launch_file_browser_failure">Ezin izan da sistemaren fitxategi-arakatzailea abiarazi. Ziurrenik sistema eragilearen arazo bat da.</string>

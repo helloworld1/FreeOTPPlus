@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">المصادقة مطلوبة</string>
     <string name="authentication_dialog_subtitle">يرجى استخدام المقاييس الحيوية أو رمز PIN للمصادقة في FreeOTP+</string>
     <string name="unable_to_authenticate">تعذّرت المصادقة. هل قفل الشاشة مفعّل باستخدام رمز PIN أو المقاييس الحيوية؟</string>
+    <string name="screen_lock_required_title">قفل الشاشة مطلوب</string>
+    <string name="screen_lock_required_message">تعتمد مصادقة بدء التطبيق على رمز PIN أو النمط أو كلمة المرور أو المقاييس الحيوية للجهاز. قم بإعداد قفل الشاشة في إعدادات Android أولاً، أو اختر وضع تشفير الرموز.</string>
+    <string name="open_settings_button">فتح الإعدادات</string>
+    <string name="screen_lock_disabled_title">قفل شاشة الجهاز متوقف</string>
+    <string name="screen_lock_disabled_message">مصادقة بدء التطبيق مفعّلة، لكن لم يعد هناك رمز PIN أو نمط أو كلمة مرور أو مقاييس حيوية قيد الإعداد على هذا الجهاز.\n\nقم بإعداد قفل الشاشة في إعدادات Android للإبقاء على الحماية، أو أوقف مصادقة بدء التطبيق للمتابعة.</string>
+    <string name="set_up_screen_lock_button">إعداد قفل الشاشة</string>
+    <string name="turn_off_button">إيقاف</string>
+    <string name="app_launch_auth_disabled">تم إيقاف مصادقة بدء التطبيق</string>
     <string name="remove_user_token_image">إزالة صورة الرمز المخصصة</string>
     <string name="fail_to_add_image">فشلت إضافة الصورة</string>
     <string name="launch_file_browser_failure">تعذّر فتح مستعرض ملفات النظام. من المحتمل أن تكون مشكلة في نظام التشغيل.</string>

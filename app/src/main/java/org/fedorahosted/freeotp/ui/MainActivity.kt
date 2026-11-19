@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
+import android.app.admin.DevicePolicyManager
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
@@ -15,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
 import androidx.core.view.ViewCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
@@ -71,8 +73,16 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
 
+    private enum class AuthDialogKind {
+        NONE,
+        MANUAL_KEY,
+        APP_LAUNCH_RETRY,
+        APP_LAUNCH_NO_SCREEN_LOCK
+    }
+
     private var activeTransientDialog: AlertDialog? = null
     private var activeAuthDialog: AlertDialog? = null
+    private var activeAuthDialogKind: AuthDialogKind = AuthDialogKind.NONE
     private var isAuthPromptInProgress = false
     private var pendingDeepLinkUri: Uri? = null
     private var pendingDocumentResult: PendingDocumentResult? = null
@@ -132,6 +142,10 @@ class MainActivity : AppCompatActivity() {
             activeAuthDialog?.takeIf { it.isShowing }?.window
         )
         return fragmentDialogWindows + activityDialogWindows
+    }
+
+    internal fun isSessionAuthenticated(): Boolean {
+        return viewModel.isAuthenticated() && tokenCryptoManager.isUnlocked()
     }
 
     internal fun showTrackedDialog(dialog: AlertDialog) {
@@ -217,15 +231,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isAuthPromptInProgress = false
         dismissTransientDialog()
-        activeAuthDialog?.dismiss()
-        activeAuthDialog = null
+        dismissAuthDialog()
     }
 
     override fun onStart() {
         super.onStart()
         viewModel.onSessionStart()
         invalidateMenu()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!isSessionAuthenticated()) {
+            verifyAuthentication()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -299,14 +320,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal fun startImportJson() {
+        if (!isSessionAuthenticated()) return
         launchSystemPicker { openJsonLauncher.launch(arrayOf("*/*")) }
     }
 
     internal fun startImportKeyUri() {
+        if (!isSessionAuthenticated()) return
         launchSystemPicker { openKeyUriLauncher.launch(arrayOf("*/*")) }
     }
 
     internal fun handleExportAction(isJson: Boolean) {
+        if (!isSessionAuthenticated()) return
         AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
             if (settings.authMode == AuthMode.TOKEN_ENCRYPTED) {
                 showExportEncryptionChoiceDialog(isJson)
@@ -467,6 +491,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal fun showAuthenticationModeDialog() {
+        if (!isSessionAuthenticated()) return
         val modes = arrayOf(AuthMode.NONE, AuthMode.APP_LAUNCH, AuthMode.TOKEN_ENCRYPTED)
         val labels = arrayOf(
             getString(R.string.auth_mode_none),
@@ -491,21 +516,119 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleAuthModeSelection(currentMode: AuthMode, targetMode: AuthMode) {
+        val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
+            AuthenticationUtil.hasScreenLock(this)
         when {
             targetMode == AuthMode.TOKEN_ENCRYPTED -> {
-                showSetEncryptionKeyDialog()
-            }
-            currentMode == AuthMode.TOKEN_ENCRYPTED -> {
-                showDisableEncryptionWarningDialog(targetMode)
-            }
-            else -> {
-                AuthenticationUtil.authenticateAppLaunch(this, finishOnCancel = false) {
-                    settings.authMode = targetMode
-                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    invalidateMenu()
+                if (currentMode == AuthMode.APP_LAUNCH && hasAppLaunchCredential) {
+                    AuthenticationUtil.authenticateAppLaunch(
+                        activity = this,
+                        onSuccess = { showSetEncryptionKeyDialog() },
+                        onNoDeviceCredential = { showSetEncryptionKeyDialog() },
+                        onCancelOrError = { code, msg -> showNonFatalAuthErrorIfNeeded(code, msg) }
+                    )
+                } else {
+                    showSetEncryptionKeyDialog()
                 }
             }
+            currentMode == AuthMode.TOKEN_ENCRYPTED -> {
+                if (targetMode == AuthMode.APP_LAUNCH && !hasAppLaunchCredential) {
+                    showScreenLockRequiredDialog()
+                } else {
+                    showDisableEncryptionWarningDialog(targetMode)
+                }
+            }
+            targetMode == AuthMode.APP_LAUNCH -> {
+                if (!hasAppLaunchCredential) {
+                    showScreenLockRequiredDialog()
+                    return
+                }
+                AuthenticationUtil.authenticateAppLaunch(
+                    activity = this,
+                    onSuccess = {
+                        settings.authMode = AuthMode.APP_LAUNCH
+                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                        invalidateMenu()
+                    },
+                    onNoDeviceCredential = {
+                        showScreenLockRequiredDialog()
+                    },
+                    onCancelOrError = { code, msg ->
+                        showNonFatalAuthErrorIfNeeded(code, msg)
+                    }
+                )
+            }
+            else -> {
+                if (!hasAppLaunchCredential) {
+                    disableAppLaunchWhenScreenLockMissing()
+                    return
+                }
+                AuthenticationUtil.authenticateAppLaunch(
+                    activity = this,
+                    onSuccess = {
+                        settings.authMode = AuthMode.NONE
+                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                        invalidateMenu()
+                    },
+                    onNoDeviceCredential = {
+                        disableAppLaunchWhenScreenLockMissing()
+                    },
+                    onCancelOrError = { code, msg ->
+                        showNonFatalAuthErrorIfNeeded(code, msg)
+                    }
+                )
+            }
         }
+    }
+
+    private fun showNonFatalAuthErrorIfNeeded(errorCode: Int, errString: CharSequence?) {
+        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED &&
+            errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON &&
+            errorCode != BiometricPrompt.ERROR_CANCELED &&
+            !errString.isNullOrBlank()
+        ) {
+            Toast.makeText(
+                applicationContext,
+                "${getString(R.string.authentication_error)} $errString",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun openSecuritySettings() {
+        val candidateIntents = listOf(
+            Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD),
+            Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS),
+            Intent(android.provider.Settings.ACTION_SETTINGS)
+        )
+        for (candidate in candidateIntents) {
+            try {
+                startActivity(candidate)
+                return
+            } catch (_: ActivityNotFoundException) {
+                // Try next fallback Settings action
+            }
+        }
+        Toast.makeText(applicationContext, R.string.unable_to_authenticate, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showScreenLockRequiredDialog() {
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.screen_lock_required_title)
+            .setMessage(R.string.screen_lock_required_message)
+            .setPositiveButton(R.string.open_settings_button) { _, _ ->
+                openSecuritySettings()
+            }
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+        showTrackedDialog(dialog)
+    }
+
+    private fun disableAppLaunchWhenScreenLockMissing() {
+        settings.authMode = AuthMode.NONE
+        onAuthCompleted()
+        invalidateMenu()
+        showSnackbar(R.string.app_launch_auth_disabled)
     }
 
     private fun showSetEncryptionKeyDialog() {
@@ -707,7 +830,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun dismissAuthDialog() {
+        activeAuthDialog?.dismiss()
+        activeAuthDialog = null
+        activeAuthDialogKind = AuthDialogKind.NONE
+    }
+
     private fun verifyAuthentication() {
+        if (settings.authMode == AuthMode.APP_LAUNCH) {
+            val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
+                AuthenticationUtil.hasScreenLock(this)
+            if (!hasAppLaunchCredential && activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_RETRY) {
+                dismissAuthDialog()
+            } else if (hasAppLaunchCredential && activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_NO_SCREEN_LOCK) {
+                dismissAuthDialog()
+            }
+        }
+
         if (isAuthPromptInProgress || activeAuthDialog?.isShowing == true) {
             return
         }
@@ -718,15 +857,88 @@ class MainActivity : AppCompatActivity() {
             }
             AuthMode.APP_LAUNCH -> {
                 isAuthPromptInProgress = true
-                AuthenticationUtil.authenticateAppLaunch(this, finishOnCancel = true) {
-                    isAuthPromptInProgress = false
-                    onAuthCompleted()
-                }
+                AuthenticationUtil.authenticateAppLaunch(
+                    activity = this,
+                    onSuccess = {
+                        isAuthPromptInProgress = false
+                        onAuthCompleted()
+                    },
+                    onNoDeviceCredential = {
+                        isAuthPromptInProgress = false
+                        showAppLaunchScreenLockDisabledDialog()
+                    },
+                    onCancelOrError = { errorCode, errString ->
+                        isAuthPromptInProgress = false
+                        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            return@authenticateAppLaunch
+                        }
+                        val message = errString?.takeIf {
+                            errorCode != BiometricPrompt.ERROR_USER_CANCELED &&
+                                errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON &&
+                                errorCode != BiometricPrompt.ERROR_CANCELED &&
+                                it.isNotBlank()
+                        }?.toString()
+                        showAppLaunchRetryDialog(message)
+                    }
+                )
             }
             AuthMode.TOKEN_ENCRYPTED -> {
                 verifyTokenEncryptedLaunch()
             }
         }
+    }
+
+    private fun showAppLaunchScreenLockDisabledDialog() {
+        dismissAuthDialog()
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.screen_lock_disabled_title)
+            .setMessage(R.string.screen_lock_disabled_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.set_up_screen_lock_button) { _, _ ->
+                activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
+                openSecuritySettings()
+            }
+            .setNeutralButton(R.string.turn_off_button) { _, _ ->
+                activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
+                disableAppLaunchWhenScreenLockMissing()
+            }
+            .setNegativeButton(R.string.cancel_text) { _, _ ->
+                activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
+                finish()
+            }
+            .create()
+        activeAuthDialog = dialog
+        activeAuthDialogKind = AuthDialogKind.APP_LAUNCH_NO_SCREEN_LOCK
+        AuthenticationUtil.applySecureFlag(this, dialog)
+        dialog.show()
+        AuthenticationUtil.applySecureFlag(this, dialog)
+    }
+
+    private fun showAppLaunchRetryDialog(errorMessage: String?) {
+        dismissAuthDialog()
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.authentication_dialog_title)
+            .setMessage(errorMessage ?: getString(R.string.authentication_dialog_subtitle))
+            .setCancelable(false)
+            .setPositiveButton(R.string.unlock_text) { _, _ ->
+                activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
+                verifyAuthentication()
+            }
+            .setNegativeButton(R.string.cancel_text) { _, _ ->
+                activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
+                finish()
+            }
+            .create()
+        activeAuthDialog = dialog
+        activeAuthDialogKind = AuthDialogKind.APP_LAUNCH_RETRY
+        AuthenticationUtil.applySecureFlag(this, dialog)
+        dialog.show()
+        AuthenticationUtil.applySecureFlag(this, dialog)
     }
 
     private fun verifyTokenEncryptedLaunch() {
@@ -770,7 +982,7 @@ class MainActivity : AppCompatActivity() {
         isLaunchGate: Boolean,
         biometricInvalidated: Boolean
     ) {
-        activeAuthDialog?.dismiss()
+        dismissAuthDialog()
 
         val canOfferBiometric = (!tokenCryptoManager.isBiometricKeyConfigured() || biometricInvalidated) &&
             AuthenticationUtil.canAuthenticateStrongBiometric(this)
@@ -794,6 +1006,7 @@ class MainActivity : AppCompatActivity() {
             biometricCheckboxLabelRes = biometricLabelRes,
             onCancel = {
                 activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
                 if (isLaunchGate) {
                     finish()
                 }
@@ -804,6 +1017,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 dismissSafely()
                 activeAuthDialog = null
+                activeAuthDialogKind = AuthDialogKind.NONE
                 if (canOfferBiometric && biometricChecked) {
                     promptReenableBiometricAfterManualUnlock()
                 } else {
@@ -814,6 +1028,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         activeAuthDialog = dialog
+        activeAuthDialogKind = AuthDialogKind.MANUAL_KEY
         dialog.show()
     }
 

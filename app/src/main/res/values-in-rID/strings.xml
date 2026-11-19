@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Autentikasi diperlukan</string>
     <string name="authentication_dialog_subtitle">Gunakan biometrik atau PIN untuk mengautentikasi FreeOTP+</string>
     <string name="unable_to_authenticate">Tidak dapat mengautentikasi. Apakah kunci layar dengan PIN / biometrik sudah diaktifkan?</string>
+    <string name="screen_lock_required_title">Kunci layar diperlukan</string>
+    <string name="screen_lock_required_message">Autentikasi saat membuka aplikasi menggunakan PIN, pola, sandi, atau biometrik perangkat Anda. Siapkan kunci layar di Setelan Android terlebih dahulu, atau pilih mode Token terenkripsi.</string>
+    <string name="open_settings_button">Buka Setelan</string>
+    <string name="screen_lock_disabled_title">Kunci layar perangkat nonaktif</string>
+    <string name="screen_lock_disabled_message">Autentikasi saat membuka aplikasi aktif, tetapi perangkat ini tidak lagi memiliki PIN, pola, sandi, atau biometrik.\n\nSiapkan kunci layar di Setelan Android untuk mempertahankan perlindungan, atau nonaktifkan autentikasi saat membuka aplikasi untuk melanjutkan.</string>
+    <string name="set_up_screen_lock_button">Siapkan kunci layar</string>
+    <string name="turn_off_button">Nonaktifkan</string>
+    <string name="app_launch_auth_disabled">Autentikasi saat membuka aplikasi dinonaktifkan</string>
     <string name="remove_user_token_image">Hapus gambar token kustom</string>
     <string name="fail_to_add_image">Gagal menambahkan gambar</string>
     <string name="launch_file_browser_failure">Tidak dapat membuka pengelola file sistem. Kemungkinan ini masalah OS.</string>

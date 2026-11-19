@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">需要身分驗證</string>
     <string name="authentication_dialog_subtitle">請使用生物辨識或 PIN 碼以驗證 FreeOTP+</string>
     <string name="unable_to_authenticate">無法驗證。您是否已啟用搭配 PIN 碼或生物辨識的螢幕鎖定？</string>
+    <string name="screen_lock_required_title">需要螢幕鎖定</string>
+    <string name="screen_lock_required_message">應用程式啟動驗證會使用裝置的 PIN 碼、圖形、密碼或生物辨識。請先在 Android 設定中設定螢幕鎖定，或選擇「權杖加密」模式。</string>
+    <string name="open_settings_button">開啟設定</string>
+    <string name="screen_lock_disabled_title">裝置螢幕鎖定已關閉</string>
+    <string name="screen_lock_disabled_message">已啟用應用程式啟動驗證，但此裝置已不再設定 PIN 碼、圖形、密碼或生物辨識。\n\n請在 Android 設定中設定螢幕鎖定以維持保護，或關閉應用程式啟動驗證以繼續。</string>
+    <string name="set_up_screen_lock_button">設定螢幕鎖定</string>
+    <string name="turn_off_button">關閉</string>
+    <string name="app_launch_auth_disabled">已關閉應用程式啟動驗證</string>
     <string name="remove_user_token_image">移除自訂權杖圖片</string>
     <string name="fail_to_add_image">新增圖片失敗</string>
     <string name="launch_file_browser_failure">無法啟動系統的檔案管理器。這可能是作業系統的問題。</string>

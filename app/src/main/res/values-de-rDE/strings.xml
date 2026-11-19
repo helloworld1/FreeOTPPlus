@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Authentifizierung erforderlich</string>
     <string name="authentication_dialog_subtitle">Bitte verwenden Sie Biometrie oder PIN, um sich bei FreeOTP+ zu authentifizieren</string>
     <string name="unable_to_authenticate">Authentifizierung nicht möglich. Ist die Displaysperre mit PIN oder Biometrie aktiviert?</string>
+    <string name="screen_lock_required_title">Displaysperre erforderlich</string>
+    <string name="screen_lock_required_message">Die Authentifizierung beim App-Start verwendet PIN, Muster, Passwort oder Biometrie Ihres Geräts. Richten Sie zuerst in den Android-Einstellungen eine Displaysperre ein oder wählen Sie den Modus „Token verschlüsselt“.</string>
+    <string name="open_settings_button">Einstellungen öffnen</string>
+    <string name="screen_lock_disabled_title">Displaysperre ist deaktiviert</string>
+    <string name="screen_lock_disabled_message">Die Authentifizierung beim App-Start ist aktiviert, aber auf diesem Gerät ist keine PIN, kein Muster, kein Passwort und keine Biometrie mehr eingerichtet.\n\nRichten Sie in den Android-Einstellungen eine Displaysperre ein, um den Schutz beizubehalten, oder deaktivieren Sie die Authentifizierung beim App-Start.</string>
+    <string name="set_up_screen_lock_button">Displaysperre einrichten</string>
+    <string name="turn_off_button">Deaktivieren</string>
+    <string name="app_launch_auth_disabled">Authentifizierung beim App-Start deaktiviert</string>
     <string name="remove_user_token_image">Benutzerdefiniertes Token-Bild entfernen</string>
     <string name="fail_to_add_image">Fehler beim Hinzufügen des Bildes</string>
     <string name="launch_file_browser_failure">Der Dateimanager des Systems konnte nicht gestartet werden. Wahrscheinlich liegt ein Betriebssystemproblem vor.</string>

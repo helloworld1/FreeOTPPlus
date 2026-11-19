@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Authentification requise</string>
     <string name="authentication_dialog_subtitle">Veuillez utiliser la biométrie ou le code PIN pour vous authentifier sur FreeOTP+</string>
     <string name="unable_to_authenticate">Authentification impossible. Avez-vous activé le verrouillage de l’écran par code PIN ou biométrie ?</string>
+    <string name="screen_lock_required_title">Verrouillage d\'écran requis</string>
+    <string name="screen_lock_required_message">L\'authentification au lancement utilise le code PIN, le schéma, le mot de passe ou la biométrie de l\'appareil. Configurez d\'abord un verrouillage d\'écran dans les Paramètres Android ou choisissez le mode Jetons chiffrés.</string>
+    <string name="open_settings_button">Ouvrir les Paramètres</string>
+    <string name="screen_lock_disabled_title">Le verrouillage d\'écran est désactivé</string>
+    <string name="screen_lock_disabled_message">L\'authentification au lancement est activée, mais aucun code PIN, schéma, mot de passe ou donnée biométrique n\'est configuré sur cet appareil.\n\nConfigurez un verrouillage d\'écran dans les Paramètres Android pour conserver la protection, ou désactivez l\'authentification au lancement pour continuer.</string>
+    <string name="set_up_screen_lock_button">Configurer le verrouillage</string>
+    <string name="turn_off_button">Désactiver</string>
+    <string name="app_launch_auth_disabled">Authentification au lancement désactivée</string>
     <string name="remove_user_token_image">Supprimer l’image personnalisée du jeton</string>
     <string name="fail_to_add_image">Échec de l’ajout de l’image</string>
     <string name="launch_file_browser_failure">Impossible de lancer le gestionnaire de fichiers du système. Il s’agit probablement d’un problème du système d’exploitation.</string>

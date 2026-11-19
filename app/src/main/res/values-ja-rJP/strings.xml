@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">認証が必要です</string>
     <string name="authentication_dialog_subtitle">生体認証またはPINを使用してFreeOTP+の認証を行ってください</string>
     <string name="unable_to_authenticate">認証できません。PINまたは生体認証による画面ロックが有効になっていますか？</string>
+    <string name="screen_lock_required_title">画面ロックが必要です</string>
+    <string name="screen_lock_required_message">アプリ起動時の認証には、端末のPIN、パターン、パスワード、または生体認証を使用します。先にAndroidの設定で画面ロックを設定するか、「トークンを暗号化」モードを選択してください。</string>
+    <string name="open_settings_button">設定を開く</string>
+    <string name="screen_lock_disabled_title">端末の画面ロックがオフです</string>
+    <string name="screen_lock_disabled_message">アプリ起動時の認証が有効になっていますが、この端末にはPIN、パターン、パスワード、または生体認証が設定されていません。\n\n保護を維持するにはAndroidの設定で画面ロックを設定するか、続行するにはアプリ起動時の認証をオフにしてください。</string>
+    <string name="set_up_screen_lock_button">画面ロックを設定</string>
+    <string name="turn_off_button">オフにする</string>
+    <string name="app_launch_auth_disabled">アプリ起動時の認証をオフにしました</string>
     <string name="remove_user_token_image">カスタムトークン画像を削除</string>
     <string name="fail_to_add_image">画像の追加に失敗しました</string>
     <string name="launch_file_browser_failure">システムのファイルマネージャーを起動できません。OSの問題である可能性があります。</string>

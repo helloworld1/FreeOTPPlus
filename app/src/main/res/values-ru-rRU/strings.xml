@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Требуется аутентификация</string>
     <string name="authentication_dialog_subtitle">Используйте биометрию или PIN-код для аутентификации в FreeOTP+</string>
     <string name="unable_to_authenticate">Не удалось выполнить аутентификацию. Включена ли блокировка экрана с помощью PIN-кода или биометрии?</string>
+    <string name="screen_lock_required_title">Требуется блокировка экрана</string>
+    <string name="screen_lock_required_message">Аутентификация при запуске использует PIN-код, графический ключ, пароль или биометрию устройства. Сначала настройте блокировку экрана в настройках Android или выберите режим шифрования токенов.</string>
+    <string name="open_settings_button">Открыть настройки</string>
+    <string name="screen_lock_disabled_title">Блокировка экрана отключена</string>
+    <string name="screen_lock_disabled_message">Аутентификация при запуске включена, но на этом устройстве больше не настроены PIN-код, графический ключ, пароль или биометрия.\n\nНастройте блокировку экрана в настройках Android для сохранения защиты или отключите аутентификацию при запуске, чтобы продолжить.</string>
+    <string name="set_up_screen_lock_button">Настроить блокировку</string>
+    <string name="turn_off_button">Отключить</string>
+    <string name="app_launch_auth_disabled">Аутентификация при запуске отключена</string>
     <string name="remove_user_token_image">Удалить пользовательское изображение токена</string>
     <string name="fail_to_add_image">Не удалось добавить изображение</string>
     <string name="launch_file_browser_failure">Не удалось запустить системный файловый менеджер. Вероятно, это проблема операционной системы.</string>

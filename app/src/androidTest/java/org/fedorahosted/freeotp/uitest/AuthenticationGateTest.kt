@@ -285,6 +285,117 @@ class AuthenticationGateTest {
         exportFile.delete()
     }
 
+    @Test
+    fun testSelectingAppLaunchWithoutScreenLockShowsHelpfulDialogAndKeepsNoneMode() {
+        AuthenticationUtil.hasScreenLockOverride = false
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(withText(R.string.auth_mode_app_launch)).inRoot(isDialog()).perform(click())
+
+            onView(withText(R.string.screen_lock_required_title)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            onView(withText(R.string.open_settings_button)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            onView(withText(R.string.cancel_text)).inRoot(isDialog()).perform(click())
+
+            scenario.onActivity { activity ->
+                assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+            }
+        }
+    }
+
+    @Test
+    fun testAppLaunchWithRemovedScreenLockBlocksExportAndOffersTurnOffRecovery() {
+        insertTestToken()
+        val exportFile = File(getInstrumentation().targetContext.cacheDir, "blocked_unauth_export.json")
+        exportFile.delete()
+
+        // Configure APP_LAUNCH first, then simulate user removing device screen lock in Android Settings
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.APP_LAUNCH
+                activity.appSessionManager.lockSession()
+            }
+        }
+
+        AuthenticationUtil.hasScreenLockOverride = false
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            onView(withText(R.string.screen_lock_disabled_title)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            onView(withText(R.string.set_up_screen_lock_button)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+
+            // Verify session is strictly UNAUTHENTICATED and unauthenticated export is blocked
+            scenario.onActivity { activity ->
+                assertThat(activity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+                activity.handleExportAction(isJson = true)
+            }
+            assertThat(exportFile.exists()).isFalse()
+
+            // Tapping "Turn off" cleanly disables APP_LAUNCH and unlocks tokens without trapping the user
+            onView(withText(R.string.turn_off_button)).inRoot(isDialog()).perform(click())
+
+            scenario.onActivity { activity ->
+                assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                assertThat(activity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
+            }
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+        }
+    }
+
+    @Test
+    fun testAppLaunchCancelShowsRetryDialogAndUnlockRetriesPrompt() {
+        insertTestToken()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.APP_LAUNCH
+                activity.appSessionManager.lockSession()
+            }
+        }
+
+        AuthenticationUtil.hasScreenLockOverride = true
+        var pendingCancel: (() -> Unit)? = null
+        var pendingSuccess: (() -> Unit)? = null
+        var promptCount = 0
+
+        AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, onCancel ->
+            promptCount++
+            pendingSuccess = onSuccess
+            pendingCancel = onCancel
+        }
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            assertThat(promptCount).isEqualTo(1)
+
+            // User cancels BiometricPrompt -> retry dialog shown while tokens stay locked
+            scenario.onActivity {
+                pendingCancel?.invoke()
+            }
+
+            onView(withText(R.string.authentication_dialog_title)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            scenario.onActivity { activity ->
+                assertThat(activity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+            }
+
+            // Clicking Unlock re-invokes BiometricPrompt and unlocks on success
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            assertThat(promptCount).isEqualTo(2)
+
+            scenario.onActivity {
+                pendingSuccess?.invoke()
+            }
+
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+        }
+    }
+
     private fun insertTestToken(): Long {
         var tokenId = 1L
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->

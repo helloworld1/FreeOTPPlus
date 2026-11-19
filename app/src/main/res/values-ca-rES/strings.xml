@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Es requereix autenticació</string>
     <string name="authentication_dialog_subtitle">Utilitza la biometria o el PIN per autenticar-te a FreeOTP+</string>
     <string name="unable_to_authenticate">No es pot autenticar. Tens activat el bloqueig de pantalla amb PIN o biometria?</string>
+    <string name="screen_lock_required_title">Cal un bloqueig de pantalla</string>
+    <string name="screen_lock_required_message">L\'autenticació a l\'inici utilitza el PIN, el patró, la contrasenya o la biometria del dispositiu. Configureu primer un bloqueig de pantalla a la Configuració d\'Android o trieu el mode amb xifratge d\'OTP.</string>
+    <string name="open_settings_button">Obre la Configuració</string>
+    <string name="screen_lock_disabled_title">El bloqueig de pantalla està desactivat</string>
+    <string name="screen_lock_disabled_message">L\'autenticació a l\'inici està activada, però aquest dispositiu ja no té cap PIN, patró, contrasenya ni biometria configurats.\n\nConfigureu un bloqueig de pantalla a la Configuració d\'Android per mantenir la protecció, o desactiveu l\'autenticació a l\'inici per continuar.</string>
+    <string name="set_up_screen_lock_button">Configura el bloqueig</string>
+    <string name="turn_off_button">Desactiva</string>
+    <string name="app_launch_auth_disabled">S\'ha desactivat l\'autenticació a l\'inici</string>
     <string name="remove_user_token_image">Elimina la imatge personalitzada de l\'OTP</string>
     <string name="fail_to_add_image">No s\'ha pogut afegir la imatge</string>
     <string name="launch_file_browser_failure">No es pot iniciar el navegador de fitxers del sistema. És probable que sigui un problema del sistema operatiu.</string>

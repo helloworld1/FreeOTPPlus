@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Kimlik doğrulama gerekli</string>
     <string name="authentication_dialog_subtitle">FreeOTP+ kimlik doğrulaması için lütfen biyometri veya PIN kullanın</string>
     <string name="unable_to_authenticate">Kimlik doğrulanamadı. PIN / biyometri ile ekran kilidi etkinleştirilmiş mi?</string>
+    <string name="screen_lock_required_title">Ekran kilidi gerekli</string>
+    <string name="screen_lock_required_message">Uygulama açılışında kimlik doğrulama; cihazınızın PIN, desen, parola veya biyometrik kilidini kullanır. Önce Android Ayarları\'ndan bir ekran kilidi ayarlayın veya Şifrelenmiş token modunu seçin.</string>
+    <string name="open_settings_button">Ayarları Aç</string>
+    <string name="screen_lock_disabled_title">Cihaz ekran kilidi kapalı</string>
+    <string name="screen_lock_disabled_message">Uygulama açılışında kimlik doğrulama etkin, ancak bu cihazda artık ayarlanmış bir PIN, desen, parola veya biyometrik kilit yok.\n\nKorumayı sürdürmek için Android Ayarları\'ndan ekran kilidi ayarlayın veya devam etmek için uygulama açılışı doğrulamasını kapatın.</string>
+    <string name="set_up_screen_lock_button">Ekran kilidi ayarla</string>
+    <string name="turn_off_button">Kapat</string>
+    <string name="app_launch_auth_disabled">Uygulama açılışında kimlik doğrulama kapatıldı</string>
     <string name="remove_user_token_image">Özel token resmini kaldır</string>
     <string name="fail_to_add_image">Resim eklenemedi</string>
     <string name="launch_file_browser_failure">Sistemin dosya yöneticisi başlatılamıyor. Muhtemelen bir işletim sistemi sorunudur.</string>

@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">需要身份验证</string>
     <string name="authentication_dialog_subtitle">请使用生物识别或 PIN 码验证 FreeOTP+</string>
     <string name="unable_to_authenticate">无法进行身份验证。是否已启用带 PIN 码或生物识别的屏幕锁定？</string>
+    <string name="screen_lock_required_title">需要屏幕锁定</string>
+    <string name="screen_lock_required_message">应用启动身份验证使用设备的 PIN 码、图案、密码或生物识别。请先在 Android 设置中设置屏幕锁定，或选择“令牌加密”模式。</string>
+    <string name="open_settings_button">打开设置</string>
+    <string name="screen_lock_disabled_title">设备屏幕锁定已关闭</string>
+    <string name="screen_lock_disabled_message">已启用应用启动身份验证，但此设备不再设置 PIN 码、图案、密码或生物识别。\n\n请在 Android 设置中设置屏幕锁定以保持保护，或关闭应用启动身份验证以继续。</string>
+    <string name="set_up_screen_lock_button">设置屏幕锁定</string>
+    <string name="turn_off_button">关闭</string>
+    <string name="app_launch_auth_disabled">已关闭应用启动身份验证</string>
     <string name="remove_user_token_image">移除自定义令牌图片</string>
     <string name="fail_to_add_image">添加图片失败</string>
     <string name="launch_file_browser_failure">无法启动系统文件管理器，这可能是操作系统问题。</string>

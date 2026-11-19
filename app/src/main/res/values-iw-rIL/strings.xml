@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">נדרש אימות</string>
     <string name="authentication_dialog_subtitle">נא להשתמש בזיהוי ביומטרי או בקוד PIN לאימות ב-FreeOTP+</string>
     <string name="unable_to_authenticate">לא ניתן לאמת. האם נעילת המסך באמצעות קוד PIN או זיהוי ביומטרי מופעלת?</string>
+    <string name="screen_lock_required_title">נדרשת נעילת מסך</string>
+    <string name="screen_lock_required_message">אימות בעת הפעלת האפליקציה משתמש בקוד ה-PIN, בדפוס, בסיסמה או בזיהוי הביומטרי של המכשיר. הגדר תחילה נעילת מסך בהגדרות Android, או בחר במצב אסימונים מוצפנים.</string>
+    <string name="open_settings_button">פתח הגדרות</string>
+    <string name="screen_lock_disabled_title">נעילת המסך במכשיר כבויה</string>
+    <string name="screen_lock_disabled_message">אימות בעת הפעלת האפליקציה מופעל, אך במכשיר זה לא מוגדרים עוד קוד PIN, דפוס, סיסמה או זיהוי ביומטרי.\n\nהגדר נעילת מסך בהגדרות Android כדי לשמור על ההגנה, או כבה את האימות בעת הפעלת האפליקציה כדי להמשיך.</string>
+    <string name="set_up_screen_lock_button">הגדר נעילת מסך</string>
+    <string name="turn_off_button">כבה</string>
+    <string name="app_launch_auth_disabled">האימות בעת הפעלת האפליקציה כובה</string>
     <string name="remove_user_token_image">הסרת תמונת האסימון המותאמת אישית</string>
     <string name="fail_to_add_image">הוספת התמונה נכשלה</string>
     <string name="launch_file_browser_failure">לא ניתן להפעיל את סייר הקבצים של המערכת. ככל הנראה מדובר בבעיה במערכת ההפעלה.</string>

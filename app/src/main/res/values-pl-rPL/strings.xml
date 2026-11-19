@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Wymagane uwierzytelnienie</string>
     <string name="authentication_dialog_subtitle">Użyj biometrii lub kodu PIN, aby uwierzytelnić się w FreeOTP+</string>
     <string name="unable_to_authenticate">Nie można uwierzytelnić. Czy blokada ekranu za pomocą kodu PIN / biometrii jest włączona?</string>
+    <string name="screen_lock_required_title">Wymagana blokada ekranu</string>
+    <string name="screen_lock_required_message">Uwierzytelnianie przy uruchomieniu używa kodu PIN, wzoru, hasła lub biometrii urządzenia. Najpierw ustaw blokadę ekranu w Ustawieniach systemu Android lub wybierz tryb Zaszyfrowane tokeny.</string>
+    <string name="open_settings_button">Otwórz Ustawienia</string>
+    <string name="screen_lock_disabled_title">Blokada ekranu urządzenia jest wyłączona</string>
+    <string name="screen_lock_disabled_message">Uwierzytelnianie przy uruchomieniu jest włączone, ale na tym urządzeniu nie ma już skonfigurowanego kodu PIN, wzoru, hasła ani biometrii.\n\nSkonfiguruj blokadę ekranu w Ustawieniach systemu Android, aby zachować ochronę, lub wyłącz uwierzytelnianie przy uruchomieniu, aby kontynuować.</string>
+    <string name="set_up_screen_lock_button">Ustaw blokadę ekranu</string>
+    <string name="turn_off_button">Wyłącz</string>
+    <string name="app_launch_auth_disabled">Wyłączono uwierzytelnianie przy uruchomieniu</string>
     <string name="remove_user_token_image">Usuń własną ikonę tokenu</string>
     <string name="fail_to_add_image">Nie udało się dodać obrazu</string>
     <string name="launch_file_browser_failure">Nie udało się uruchomić systemowego menedżera plików. Prawdopodobnie jest to problem systemu operacyjnego.</string>

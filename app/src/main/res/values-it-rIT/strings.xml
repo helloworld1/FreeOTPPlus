@@ -59,6 +59,14 @@
     <string name="authentication_dialog_title">Autenticazione richiesta</string>
     <string name="authentication_dialog_subtitle">Usa i dati biometrici o il PIN per autenticarti su FreeOTP+</string>
     <string name="unable_to_authenticate">Impossibile autenticarsi. Hai abilitato il blocco schermo con PIN o dati biometrici?</string>
+    <string name="screen_lock_required_title">Blocco schermo richiesto</string>
+    <string name="screen_lock_required_message">L\'autenticazione all\'avvio utilizza il PIN, la sequenza, la password o la biometria del dispositivo. Configura prima un blocco schermo nelle Impostazioni Android o scegli la modalità Token crittografati.</string>
+    <string name="open_settings_button">Apri Impostazioni</string>
+    <string name="screen_lock_disabled_title">Blocco schermo disattivato</string>
+    <string name="screen_lock_disabled_message">L\'autenticazione all\'avvio è attiva, ma su questo dispositivo non sono più configurati PIN, sequenza, password o dati biometrici.\n\nConfigura un blocco schermo nelle Impostazioni Android per mantenere la protezione oppure disattiva l\'autenticazione all\'avvio per continuare.</string>
+    <string name="set_up_screen_lock_button">Configura blocco schermo</string>
+    <string name="turn_off_button">Disattiva</string>
+    <string name="app_launch_auth_disabled">Autenticazione all\'avvio disattivata</string>
     <string name="remove_user_token_image">Rimuovi immagine personalizzata del token</string>
     <string name="fail_to_add_image">Impossibile aggiungere l\'immagine</string>
     <string name="launch_file_browser_failure">Impossibile avviare il gestore file di sistema. Probabilmente è un problema del sistema operativo.</string>
