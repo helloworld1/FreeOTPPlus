@@ -33,6 +33,7 @@
     <string name="import_text">匯入</string>
     <string name="export_text">匯出</string>
     <string name="export_succeeded_text">匯出成功。</string>
+    <string name="export_failed_text">匯出失敗。</string>
     <string name="import_succeeded_text">匯入成功</string>
     <string name="import_json_failed_text">匯入 JSON 失敗。檔案格式不正確。</string>
     <string name="import_key_uri_failed_text">匯入金鑰 URI 檔案失敗。檔案格式不正確。</string>

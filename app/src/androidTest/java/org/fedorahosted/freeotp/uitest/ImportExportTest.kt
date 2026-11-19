@@ -64,7 +64,7 @@ class ImportExportTest {
     }
 
     @Test
-    fun testExportAndImportJsonWithoutIssuer() = runBlocking {
+    fun testExportAndImportJsonWithoutIssuer(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val jsonFile = File(context.cacheDir, "test_export_no_issuer.json")
         jsonFile.createNewFile()
@@ -103,7 +103,7 @@ class ImportExportTest {
     }
 
     @Test
-    fun testImportJsonVariantsWithoutIssuerExt() = runBlocking {
+    fun testImportJsonVariantsWithoutIssuerExt(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val jsonFile = File(context.cacheDir, "test_import_variants.json")
         jsonFile.writeText(
@@ -168,7 +168,7 @@ class ImportExportTest {
     }
 
     @Test
-    fun testExportAndImportKeyUriWithoutIssuer() = runBlocking {
+    fun testExportAndImportKeyUriWithoutIssuer(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val keyUriFile = File(context.cacheDir, "test_export_key_uri.txt")
         keyUriFile.createNewFile()

@@ -4,7 +4,8 @@ import android.net.Uri
 import com.google.android.apps.authenticator.Base32String
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
-import java.util.*
+import java.security.NoSuchAlgorithmException
+import java.util.Locale
 import javax.crypto.Mac
 
 object OtpTokenFactory {
@@ -18,6 +19,67 @@ object OtpTokenFactory {
     fun isEncryptedUri(uri: Uri): Boolean {
         return uri.getQueryParameter(QUERY_ENCRYPTION) == ENCRYPTION_AES_GCM ||
             CryptoEngine.isEncryptedPayload(uri.getQueryParameter("secret"))
+    }
+
+    fun create(
+        type: OtpTokenType,
+        issuer: String?,
+        label: String,
+        secret: String,
+        algorithm: String = "SHA1",
+        digits: Int = 6,
+        period: Int = 30,
+        initialCounter: Long = 0L,
+        imagePath: String? = null,
+        categories: List<String> = emptyList(),
+        isSteamIssuerOverride: Boolean = false
+    ): OtpToken {
+        val decodedSecret = try {
+            Base32String.decode(secret)
+        } catch (e: Base32String.DecodingException) {
+            throw IllegalArgumentException("Secret is not valid Base32", e)
+        }
+        if (decodedSecret.isEmpty()) {
+            throw IllegalArgumentException("Decoded Base32 secret is empty")
+        }
+
+        val normalizedIssuer = issuer?.takeIf { it.isNotBlank() }
+        if (normalizedIssuer == null && label.isEmpty()) {
+            throw IllegalArgumentException("Token label is empty")
+        }
+
+        val normalizedAlgorithm = algorithm.ifBlank { "SHA1" }.uppercase(Locale.US)
+        try {
+            Mac.getInstance("Hmac$normalizedAlgorithm")
+        } catch (e: NoSuchAlgorithmException) {
+            throw IllegalArgumentException("Unsupported algorithm: $normalizedAlgorithm", e)
+        }
+
+        val isSteam = normalizedIssuer == "Steam" || isSteamIssuerOverride
+        if (!isSteam && digits !in 5..8) {
+            throw IllegalArgumentException("Digits must be 5 to 8")
+        }
+        if (period <= 0) {
+            throw IllegalArgumentException("Period must be positive")
+        }
+
+        val storedCounter = if (type == OtpTokenType.HOTP) initialCounter - 1 else 0L
+
+        return OtpToken(
+            id = 0,
+            ordinal = -System.currentTimeMillis(), // Places newly created token at the top of the list
+            issuer = normalizedIssuer,
+            label = label,
+            imagePath = imagePath,
+            tokenType = type,
+            algorithm = normalizedAlgorithm,
+            secret = secret,
+            digits = digits,
+            counter = storedCounter,
+            period = period,
+            encryptionType = EncryptionType.PLAIN_TEXT,
+            categories = CategoryUtil.normalizeCategories(categories)
+        )
     }
 
     fun createFromUri(uri: Uri): OtpToken {
@@ -37,99 +99,57 @@ object OtpTokenFactory {
         plaintextSecret: String,
         includeCategoryFromQuery: Boolean
     ): OtpToken {
-        if (uri.scheme != "otpauth")
+        if (uri.scheme != "otpauth") {
             throw IllegalArgumentException("URI does not starts with otpauth")
-
-        val decodedSecret = try {
-            Base32String.decode(plaintextSecret)
-        } catch (e: Base32String.DecodingException) {
-            throw IllegalArgumentException("Secret is not valid Base32", e)
-        }
-        if (decodedSecret.isEmpty()) {
-            throw IllegalArgumentException("Decoded Base32 secret is empty")
         }
 
-        val type =
-            when (uri.authority) {
-                "totp" -> OtpTokenType.TOTP
-                "hotp" -> OtpTokenType.HOTP
-                else -> throw IllegalArgumentException("URI does not contain totp or hotp type")
-            }
+        val type = when (uri.authority) {
+            "totp" -> OtpTokenType.TOTP
+            "hotp" -> OtpTokenType.HOTP
+            else -> throw IllegalArgumentException("URI does not contain totp or hotp type")
+        }
 
-        var path = uri.path ?: throw IllegalArgumentException("Token path is null")
-
-        // Strip the path of its leading '/'
-        path = path.trimStart('/')
-
+        val path = uri.path?.trimStart('/') ?: throw IllegalArgumentException("Token path is null")
         if (path.isEmpty()) {
             throw IllegalArgumentException("Token path is empty")
         }
 
-        val i = path.indexOf(':')
-        val issuerExt = if (i < 0) "" else path.substring(0, i)
+        val colonIndex = path.indexOf(':')
+        val issuerExt = if (colonIndex < 0) "" else path.substring(0, colonIndex)
         val issuerInt = uri.getQueryParameter("issuer")
-
         val issuer = when {
             !issuerInt.isNullOrBlank() -> issuerInt
             issuerExt.isNotBlank() -> issuerExt
             else -> null
         }
-        val label = path.substring(if (i >= 0) i + 1 else 0)
-        if (issuer == null && label.isEmpty()) {
-            throw IllegalArgumentException("Token label is empty")
-        }
-
-        var algo = uri.getQueryParameter("algorithm")
-        if (algo == null) algo = "sha1"
-        algo = algo.uppercase(Locale.getDefault())
-
-        Mac.getInstance("Hmac$algo")
+        val label = path.substring(if (colonIndex >= 0) colonIndex + 1 else 0)
 
         val isSteam = issuer == "Steam" || issuerExt == "Steam"
-        var d = uri.getQueryParameter("digits")
-        if (d == null) {
-            d = if (isSteam) "5" else "6"
-        }
-        val digits = d.toInt()
-        if (!isSteam && digits != 6 && digits != 7 && digits != 8 && digits != 5)
-            throw IllegalArgumentException("Digits must be 5 to 8")
-
-        var p = uri.getQueryParameter("period")
-        if (p == null) p = "30"
-        val period = p.toInt()
-        if (period <= 0) {
-            throw IllegalArgumentException("Period must be positive")
-        }
-
-        val counter = if (type == OtpTokenType.HOTP) {
-            var c = uri.getQueryParameter("counter")
-            if (c == null) c = "0"
-            c.toLong() - 1
+        val digits = (uri.getQueryParameter("digits") ?: if (isSteam) "5" else "6").toInt()
+        val period = (uri.getQueryParameter("period") ?: "30").toInt()
+        val initialCounter = if (type == OtpTokenType.HOTP) {
+            (uri.getQueryParameter("counter") ?: "0").toLong()
         } else {
-            0
+            0L
         }
-
-        val image = uri.getQueryParameter("image")
         val categories = if (includeCategoryFromQuery) {
             CategoryUtil.normalizeCategories(uri.getQueryParameters(QUERY_CATEGORY))
         } else {
             emptyList()
         }
 
-        return OtpToken(
-            id = 0,
-            ordinal = -System.currentTimeMillis(), // One way to make the token to the top of the list
+        return create(
+            type = type,
             issuer = issuer,
             label = label,
-            imagePath = image,
-            tokenType = type,
-            algorithm = algo,
             secret = plaintextSecret,
+            algorithm = uri.getQueryParameter("algorithm") ?: "SHA1",
             digits = digits,
-            counter = counter,
             period = period,
-            encryptionType = EncryptionType.PLAIN_TEXT,
-            categories = categories
+            initialCounter = initialCounter,
+            imagePath = uri.getQueryParameter("image"),
+            categories = categories,
+            isSteamIssuerOverride = isSteam
         )
     }
 

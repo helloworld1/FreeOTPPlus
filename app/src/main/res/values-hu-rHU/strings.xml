@@ -33,6 +33,7 @@
     <string name="import_text">Importálás</string>
     <string name="export_text">Exportálás</string>
     <string name="export_succeeded_text">Az exportálás sikerült.</string>
+    <string name="export_failed_text">Az exportálás nem sikerült.</string>
     <string name="import_succeeded_text">Az importálás sikerült</string>
     <string name="import_json_failed_text">A JSON importálása sikertelen. A fájl hibás formátumú.</string>
     <string name="import_key_uri_failed_text">A kulcs-URI fájl importálása sikertelen. A fájl hibás formátumú.</string>

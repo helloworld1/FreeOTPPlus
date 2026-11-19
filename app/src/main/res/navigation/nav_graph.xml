@@ -50,7 +50,7 @@
         android:id="@+id/scanTokenFragment"
         android:name="org.fedorahosted.freeotp.ui.ScanTokenFragment"
         android:label="@string/scan_qr_code"
-        tools:layout="@layout/activity_scan_token" />
+        tools:layout="@layout/fragment_scan_token" />
 
     <fragment
         android:id="@+id/addTokenFragment"

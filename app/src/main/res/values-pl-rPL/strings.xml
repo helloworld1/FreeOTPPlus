@@ -33,6 +33,7 @@
     <string name="import_text">Importuj</string>
     <string name="export_text">Eksportuj</string>
     <string name="export_succeeded_text">Eksport zakończony pomyślnie.</string>
+    <string name="export_failed_text">Eksport nie powiódł się.</string>
     <string name="import_succeeded_text">Import zakończony pomyślnie</string>
     <string name="import_json_failed_text">Nie udało się zaimportować JSON. Plik ma nieprawidłowy format.</string>
     <string name="import_key_uri_failed_text">Nie udało się zaimportować pliku URI kluczy. Plik ma nieprawidłowy format.</string>

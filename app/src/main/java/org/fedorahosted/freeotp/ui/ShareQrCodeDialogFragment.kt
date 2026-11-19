@@ -13,6 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                 dismissAllowingStateLoss()
                 return@launch
             }
-            if (!tokenCryptoManager.isUnlocked()) {
+            if (!isAdded || !tokenCryptoManager.isUnlocked()) {
                 dismissAllowingStateLoss()
                 return@launch
             }
@@ -82,15 +83,19 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                     }
                     Bitmap.createBitmap(pixels, qrCodeSize, qrCodeSize, Bitmap.Config.RGB_565)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Failed generating QR code", e)
                 null
             }
 
+            if (!isAdded) return@launch
+
             if (qrBitmap != null) {
                 binding.qrcode.setImageBitmap(qrBitmap)
             } else {
-                Toast.makeText(requireContext(), R.string.invalid_token, Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, R.string.invalid_token, Toast.LENGTH_SHORT).show() }
                 dismissAllowingStateLoss()
             }
         }
@@ -101,5 +106,9 @@ class ShareQrCodeDialogFragment : DialogFragment() {
     companion object {
         private val TAG = ShareQrCodeDialogFragment::class.java.simpleName
         const val ARG_TOKEN_ID = "token_id"
+
+        fun args(tokenId: Long): Bundle = Bundle().apply {
+            putLong(ARG_TOKEN_ID, tokenId)
+        }
     }
 }

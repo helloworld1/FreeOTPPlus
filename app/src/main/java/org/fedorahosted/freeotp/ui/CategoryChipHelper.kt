@@ -23,6 +23,12 @@ class CategoryChipHelper(
 ) {
     private val knownCategories = mutableListOf<String>()
     private val selectedCategories = mutableListOf<String>()
+    private var activeAddCategoryDialog: AlertDialog? = null
+
+    fun dismissDialog() {
+        activeAddCategoryDialog?.dismiss()
+        activeAddCategoryDialog = null
+    }
 
     fun initialize(
         availableCategories: List<String>,
@@ -153,6 +159,7 @@ class CategoryChipHelper(
         }
 
         dialog.setOnShowListener {
+            AuthenticationUtil.applySecureFlag(activity, dialog)
             AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.isEnabled = !editText.text?.toString()?.trim().isNullOrEmpty()
@@ -174,8 +181,14 @@ class CategoryChipHelper(
             editText.requestFocus()
         }
         dialog.setOnDismissListener {
+            if (activeAddCategoryDialog === dialog) {
+                activeAddCategoryDialog = null
+            }
             AuthenticationUtil.clearAndCancelAutofill(activity, editText)
         }
+        activeAddCategoryDialog?.dismiss()
+        activeAddCategoryDialog = dialog
+        AuthenticationUtil.applySecureFlag(activity, dialog)
         AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }

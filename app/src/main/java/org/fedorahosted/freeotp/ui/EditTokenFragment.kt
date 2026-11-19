@@ -2,16 +2,16 @@ package org.fedorahosted.freeotp.ui
 
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -32,7 +32,14 @@ import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class EditTokenFragment : Fragment(), TextWatcher {
+class EditTokenFragment : Fragment() {
+
+    private data class InitialTokenState(
+        val issuer: String,
+        val label: String,
+        val categories: List<String>,
+        val imageUri: Uri?
+    )
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
@@ -43,19 +50,8 @@ class EditTokenFragment : Fragment(), TextWatcher {
     private val binding get() = _binding!!
 
     private lateinit var categoryChipHelper: CategoryChipHelper
-    private var isFormInitialized = false
-
-    private var mIssuerCurrent: String? = null
-    private var mIssuerDefault: String? = null
-    private var mLabelCurrent: String? = null
-    private var mLabelDefault: String? = null
-    private var mCategoriesCurrent: List<String> = emptyList()
-    private var mCategoriesDefault: List<String> = emptyList()
-
-    private var mImageCurrent: Uri? = null
-    private var mImageDefault: Uri? = null
-    private var mImageDisplay: Uri? = null
-
+    private var initialState: InitialTokenState? = null
+    private var displayedImageUri: Uri? = null
     private var tokenId: Long = 0L
 
     private val pickImageLauncher = registerForActivityResult(
@@ -67,7 +63,7 @@ class EditTokenFragment : Fragment(), TextWatcher {
                 val path = imageUtil.saveImageUriToFile(sourceUri)
                 showImage(path)
             } catch (_: Exception) {
-                Toast.makeText(requireContext(), R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
             }
         }
     }
@@ -117,14 +113,12 @@ class EditTokenFragment : Fragment(), TextWatcher {
                 return@launch
             }
 
-            mIssuerCurrent = token.issuer ?: ""
-            mLabelCurrent = token.label
-            mCategoriesCurrent = CategoryUtil.normalizeCategories(token.categories)
-            mImageCurrent = token.imagePath?.let { Uri.parse(it) }
-            mIssuerDefault = mIssuerCurrent
-            mLabelDefault = token.label
-            mCategoriesDefault = mCategoriesCurrent
-            mImageDefault = mImageCurrent
+            val initial = InitialTokenState(
+                issuer = token.issuer ?: "",
+                label = token.label,
+                categories = CategoryUtil.normalizeCategories(token.categories),
+                imageUri = token.imagePath?.toUri()
+            )
 
             categoryChipHelper = CategoryChipHelper(
                 requireActivity() as AppCompatActivity,
@@ -137,12 +131,12 @@ class EditTokenFragment : Fragment(), TextWatcher {
             if (_binding == null) return@launch
             categoryChipHelper.initialize(
                 availableCategories = availableCategories,
-                initialSelected = mCategoriesCurrent,
+                initialSelected = initial.categories,
                 savedInstanceState = savedInstanceState
             )
 
-            b.issuer.addTextChangedListener(this@EditTokenFragment)
-            b.label.addTextChangedListener(this@EditTokenFragment)
+            b.issuer.doAfterTextChanged { updateButtonStates() }
+            b.label.doAfterTextChanged { updateButtonStates() }
 
             b.image.setOnClickListener {
                 pickImageLauncher.launch("image/*")
@@ -151,11 +145,11 @@ class EditTokenFragment : Fragment(), TextWatcher {
                 showImage(null)
             }
             b.restore.setOnClickListener {
-                b.label.setText(mLabelDefault)
-                b.issuer.setText(mIssuerDefault)
-                categoryChipHelper.setSelectedCategories(mCategoriesDefault)
+                b.label.setText(initial.label)
+                b.issuer.setText(initial.issuer)
+                categoryChipHelper.setSelectedCategories(initial.categories)
                 b.issuer.setSelection(b.issuer.text?.length ?: 0)
-                showImage(mImageDefault)
+                showImage(initial.imageUri)
             }
             b.save.setOnClickListener {
                 saveTokenChanges()
@@ -166,12 +160,12 @@ class EditTokenFragment : Fragment(), TextWatcher {
                 @Suppress("DEPRECATION")
                 savedInstanceState?.getParcelable(STATE_IMAGE_DISPLAY)
             } else {
-                mImageCurrent
+                initial.imageUri
             }
 
             if (savedInstanceState == null) {
-                b.label.setText(mLabelCurrent)
-                b.issuer.setText(mIssuerCurrent)
+                b.label.setText(initial.label)
+                b.issuer.setText(initial.issuer)
                 b.issuer.setSelection(b.issuer.text?.length ?: 0)
             }
 
@@ -187,6 +181,8 @@ class EditTokenFragment : Fragment(), TextWatcher {
             }
 
             b.secret.setTextIsSelectable(false)
+            b.secret.isFocusableInTouchMode = false
+            b.secret.freezesText = false
             b.secret.text = getString(R.string.click_to_display)
             b.secret.setOnClickListener {
                 val host = activity as? AppCompatActivity ?: return@setOnClickListener
@@ -202,11 +198,13 @@ class EditTokenFragment : Fragment(), TextWatcher {
                     val plaintextSecret = tokenCryptoManager.decryptSecret(token)
                     activeBinding.secret.setOnClickListener(null)
                     activeBinding.secret.setTextIsSelectable(true)
+                    // Never serialize revealed OTP secrets into Fragment savedInstanceState Bundles
+                    activeBinding.secret.freezesText = false
                     activeBinding.secret.text = plaintextSecret
                 }
             }
 
-            isFormInitialized = true
+            initialState = initial
             showImage(initialImage)
             updateButtonStates()
         }
@@ -214,17 +212,13 @@ class EditTokenFragment : Fragment(), TextWatcher {
 
     private fun showImage(imageUri: Uri?) {
         val b = _binding ?: return
-        mImageDisplay = imageUri
+        displayedImageUri = imageUri
         Glide.with(this)
             .load(imageUri)
             .placeholder(R.drawable.logo)
             .into(b.image)
-        b.removeUserTokenImage.isEnabled = mImageDisplay != null
+        b.removeUserTokenImage.isEnabled = displayedImageUri != null
         updateButtonStates()
-    }
-
-    private fun imageIs(uri: Uri?): Boolean {
-        return if (uri == null) mImageDisplay == null else uri == mImageDisplay
     }
 
     private fun categoriesDiffer(first: List<String>, second: List<String>): Boolean {
@@ -235,23 +229,20 @@ class EditTokenFragment : Fragment(), TextWatcher {
 
     private fun updateButtonStates() {
         val b = _binding ?: return
-        if (!isFormInitialized || !::categoryChipHelper.isInitialized) {
-            return
-        }
+        val initial = initialState ?: return
+        if (!::categoryChipHelper.isInitialized) return
+
         val label = b.label.text?.toString().orEmpty()
         val issuer = b.issuer.text?.toString().orEmpty()
         val selectedCategories = categoryChipHelper.getSelectedCategories()
 
-        b.save.isEnabled = label.isNotEmpty() && (
-            label != mLabelCurrent ||
-                issuer != mIssuerCurrent ||
-                categoriesDiffer(selectedCategories, mCategoriesCurrent) ||
-                !imageIs(mImageCurrent)
-            )
-        b.restore.isEnabled = label != mLabelDefault ||
-            issuer != mIssuerDefault ||
-            categoriesDiffer(selectedCategories, mCategoriesDefault) ||
-            !imageIs(mImageDefault)
+        val hasChanges = label != initial.label ||
+            issuer != initial.issuer ||
+            categoriesDiffer(selectedCategories, initial.categories) ||
+            displayedImageUri != initial.imageUri
+
+        b.save.isEnabled = label.isNotEmpty() && hasChanges
+        b.restore.isEnabled = hasChanges
     }
 
     private fun saveTokenChanges() {
@@ -266,7 +257,7 @@ class EditTokenFragment : Fragment(), TextWatcher {
                 issuer = b.issuer.text?.toString()?.takeIf { it.isNotBlank() },
                 label = b.label.text?.toString().orEmpty(),
                 categories = categoryChipHelper.getSelectedCategories(),
-                imagePath = mImageDisplay?.toString()
+                imagePath = displayedImageUri?.toString()
             )
             otpTokenDatabase.otpTokenDao().update(newToken)
             if (isAdded) {
@@ -275,25 +266,20 @@ class EditTokenFragment : Fragment(), TextWatcher {
         }
     }
 
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        updateButtonStates()
-    }
-
-    override fun afterTextChanged(s: Editable?) {}
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         if (::categoryChipHelper.isInitialized) {
             categoryChipHelper.saveInstanceState(outState)
         }
-        if (isFormInitialized) {
-            outState.putParcelable(STATE_IMAGE_DISPLAY, mImageDisplay)
+        if (initialState != null) {
+            outState.putParcelable(STATE_IMAGE_DISPLAY, displayedImageUri)
         }
     }
 
     override fun onDestroyView() {
+        if (::categoryChipHelper.isInitialized) {
+            categoryChipHelper.dismissDialog()
+        }
         _binding = null
         super.onDestroyView()
     }
@@ -301,5 +287,9 @@ class EditTokenFragment : Fragment(), TextWatcher {
     companion object {
         const val ARG_TOKEN_ID = "token_id"
         private const val STATE_IMAGE_DISPLAY = "state_edit_image_display"
+
+        fun args(tokenId: Long): Bundle = Bundle().apply {
+            putLong(ARG_TOKEN_ID, tokenId)
+        }
     }
 }

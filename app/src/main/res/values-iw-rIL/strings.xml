@@ -33,6 +33,7 @@
     <string name="import_text">ייבוא</string>
     <string name="export_text">ייצוא</string>
     <string name="export_succeeded_text">הייצוא הצליח.</string>
+    <string name="export_failed_text">הייצוא נכשל.</string>
     <string name="import_succeeded_text">הייבוא הצליח</string>
     <string name="import_json_failed_text">ייבוא JSON נכשל. מבנה הקובץ אינו תקין.</string>
     <string name="import_key_uri_failed_text">ייבוא קובץ URI של מפתחות נכשל. מבנה הקובץ אינו תקין.</string>

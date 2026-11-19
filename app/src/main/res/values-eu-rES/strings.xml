@@ -33,6 +33,7 @@
     <string name="import_text">Inportatu</string>
     <string name="export_text">Esportatu</string>
     <string name="export_succeeded_text">Ongi esportatu da.</string>
+    <string name="export_failed_text">Esportazioak huts egin du.</string>
     <string name="import_succeeded_text">Ongi inportatu da</string>
     <string name="import_json_failed_text">Huts egin du JSONa inportatzean. Fitxategia gaizki osatuta dago.</string>
     <string name="import_key_uri_failed_text">Huts egin du gako-URI fitxategia inportatzean. Fitxategia gaizki osatuta dago.</string>

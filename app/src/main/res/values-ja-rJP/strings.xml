@@ -33,6 +33,7 @@
     <string name="import_text">インポート</string>
     <string name="export_text">エクスポート</string>
     <string name="export_succeeded_text">エクスポートに成功しました。</string>
+    <string name="export_failed_text">エクスポートに失敗しました。</string>
     <string name="import_succeeded_text">インポートに成功しました</string>
     <string name="import_json_failed_text">JSONのインポートに失敗しました。ファイルの形式が正しくありません。</string>
     <string name="import_key_uri_failed_text">Key URIファイルのインポートに失敗しました。ファイルの形式が正しくありません。</string>

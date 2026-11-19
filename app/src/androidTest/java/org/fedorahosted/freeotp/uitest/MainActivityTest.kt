@@ -20,6 +20,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
@@ -219,15 +221,19 @@ class MainActivityTest {
 
     @Test
     fun testExternalTokenLinkConfirmationAccept() {
+        activityRule.scenario.close()
         val context = getInstrumentation().targetContext
         val intent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("otpauth://totp/GitHub:alice@example.com?secret=JBSWY3DPEHPK3PXP")
         ).setClass(context, MainActivity::class.java)
 
-        ActivityScenario.launch<MainActivity>(intent).use {
-            onView(withId(R.id.token_list))
-                .check(RecyclerViewAssertion.childrenCount(0))
+        ActivityScenario.launch<MainActivity>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                runBlocking {
+                    assertThat(activity.otpTokenDatabase.otpTokenDao().getAll().first()).isEmpty()
+                }
+            }
 
             onView(withText(containsString("GitHub")))
                 .check(matches(isDisplayed()))
@@ -247,6 +253,7 @@ class MainActivityTest {
 
     @Test
     fun testExternalTokenLinkConfirmationCancel() {
+        activityRule.scenario.close()
         val context = getInstrumentation().targetContext
         val intent = Intent(
             Intent.ACTION_VIEW,

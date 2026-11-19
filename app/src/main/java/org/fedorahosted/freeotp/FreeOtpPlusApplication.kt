@@ -3,6 +3,7 @@ package org.fedorahosted.freeotp
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.DialogFragment
@@ -22,6 +23,15 @@ class FreeOtpPlusApplication : Application() {
 
     private var screenshotMode = false
 
+    fun applySecureFlagIfNeeded(window: Window?) {
+        if (!(BuildConfig.DEBUG && screenshotMode)) {
+            window?.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         if (settings.darkMode) {
@@ -39,22 +49,14 @@ class FreeOtpPlusApplication : Application() {
                 if (BuildConfig.DEBUG && activity is MainActivity) {
                     screenshotMode = activity.intent?.extras?.getBoolean(MainActivity.SCREENSHOT_MODE_EXTRA) == true
                 }
-                if (!(BuildConfig.DEBUG && screenshotMode)) {
-                    activity.window.setFlags(
-                        WindowManager.LayoutParams.FLAG_SECURE,
-                        WindowManager.LayoutParams.FLAG_SECURE
-                    )
-                }
+                applySecureFlagIfNeeded(activity.window)
 
                 if (activity is FragmentActivity) {
                     activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
                         object : FragmentManager.FragmentLifecycleCallbacks() {
                             override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
-                                if (f is DialogFragment && !(BuildConfig.DEBUG && screenshotMode)) {
-                                    f.dialog?.window?.setFlags(
-                                        WindowManager.LayoutParams.FLAG_SECURE,
-                                        WindowManager.LayoutParams.FLAG_SECURE
-                                    )
+                                if (f is DialogFragment) {
+                                    applySecureFlagIfNeeded(f.dialog?.window)
                                 }
                             }
                         },

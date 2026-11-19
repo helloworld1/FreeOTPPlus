@@ -1,7 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -47,7 +46,7 @@ class TokenViewHolder(
                         return@authenticateForSensitiveAction
                     }
                     val plainToken = tokenCryptoManager.decryptToken(token)
-                    val i = Intent(Intent.ACTION_VIEW, Uri.parse(OtpTokenFactory.toUri(plainToken).toString()))
+                    val i = Intent(Intent.ACTION_VIEW, OtpTokenFactory.toUri(plainToken))
                     i.putExtra(MainActivity.SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA, activity.packageName)
                     activity.startActivity(Intent.createChooser(i, null))
                 }

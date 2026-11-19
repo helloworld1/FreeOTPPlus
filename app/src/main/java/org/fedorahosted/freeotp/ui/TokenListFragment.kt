@@ -8,11 +8,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuItemCompat
 import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
@@ -25,7 +24,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import com.google.android.material.color.MaterialColors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -54,13 +52,8 @@ class TokenListFragment : Fragment() {
 
     private lateinit var tokenListAdapter: TokenListAdapter
     private var categories: List<String> = emptyList()
-
-    private val tokenListObserver: AdapterDataObserver = object : AdapterDataObserver() {
-        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-            super.onItemRangeInserted(positionStart, itemCount)
-            _binding?.tokenList?.scrollToPosition(positionStart)
-        }
-    }
+    private var previousTopTokenId: Long? = null
+    private var previousFilterKey: Pair<String, String?>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,19 +105,19 @@ class TokenListFragment : Fragment() {
             onEdit = { token ->
                 navigateFromList(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to token.id)
+                    EditTokenFragment.args(token.id)
                 )
             },
             onDelete = { token ->
                 navigateFromList(
                     R.id.action_tokenList_to_deleteToken,
-                    bundleOf(DeleteTokenDialogFragment.ARG_TOKEN_ID to token.id)
+                    DeleteTokenDialogFragment.args(token.id)
                 )
             },
             onShareQrCode = { token ->
                 navigateFromList(
                     R.id.action_tokenList_to_shareQrCode,
-                    bundleOf(ShareQrCodeDialogFragment.ARG_TOKEN_ID to token.id)
+                    ShareQrCodeDialogFragment.args(token.id)
                 )
             }
         )
@@ -135,7 +128,6 @@ class TokenListFragment : Fragment() {
 
         ItemTouchHelper(TokenTouchCallback(viewLifecycleOwner, tokenListAdapter, otpTokenDatabase))
             .attachToRecyclerView(binding.tokenList)
-        tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         setupMenuProvider()
 
@@ -144,9 +136,7 @@ class TokenListFragment : Fragment() {
             binding.searchView.isIconified = false
             binding.searchView.setQuery(existingQuery, false)
         }
-        binding.searchView.setOnQueryTextListener(object :
-            SearchView.OnQueryTextListener,
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.setTokenSearchQuery(query.orEmpty())
                 return true
@@ -166,7 +156,21 @@ class TokenListFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.getTokenList().collect { tokens ->
-                        tokenListAdapter.submitList(tokens)
+                        val currentFilterKey = viewModel.getCurrentSearchQuery() to viewModel.getCurrentCategoryFilter()
+                        val topId = tokens.firstOrNull()?.id
+                        val shouldScrollToTop = previousFilterKey == currentFilterKey &&
+                            previousTopTokenId != null &&
+                            topId != null &&
+                            topId != previousTopTokenId
+                        previousFilterKey = currentFilterKey
+                        previousTopTokenId = topId
+
+                        tokenListAdapter.submitList(tokens) {
+                            if (shouldScrollToTop) {
+                                _binding?.tokenList?.scrollToPosition(0)
+                            }
+                        }
+
                         if (tokens.isEmpty()) {
                             binding.emptyViewContainer.visibility = View.VISIBLE
                             binding.tokenList.visibility = View.GONE
@@ -291,12 +295,13 @@ class TokenListFragment : Fragment() {
 
                         R.id.use_dark_theme -> {
                             settings.darkMode = !settings.darkMode
-                            if (settings.darkMode) {
-                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                            item.isChecked = settings.darkMode
+                            val mode = if (settings.darkMode) {
+                                AppCompatDelegate.MODE_NIGHT_YES
                             } else {
-                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                             }
-                            mainActivity.recreate()
+                            AppCompatDelegate.setDefaultNightMode(mode)
                             true
                         }
 
@@ -358,7 +363,6 @@ class TokenListFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
         binding.tokenList.adapter = null
         _binding = null
         super.onDestroyView()

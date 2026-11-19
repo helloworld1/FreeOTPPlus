@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.util
 
+import android.app.Dialog
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
@@ -9,6 +10,7 @@ import android.view.autofill.AutofillManager
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -18,13 +20,16 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
+import org.fedorahosted.freeotp.FreeOtpPlusApplication
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.ui.MainActivity
 import javax.crypto.Cipher
 
 object AuthenticationUtil {
@@ -151,22 +156,82 @@ object AuthenticationUtil {
         }
 
         // In TOKEN_ENCRYPTED mode without a device screen lock, verify the user's encryption key
+        val dialog = createManualKeyPromptDialog(
+            activity = activity,
+            titleRes = R.string.verify_encryption_key_title,
+            messageRes = R.string.verify_encryption_key_message,
+            positiveButtonRes = R.string.ok_text
+        ) { chars, _, dismissSafely ->
+            val keyBytes = tokenCryptoManager.verifyPassphrase(chars)
+            if (keyBytes != null) {
+                keyBytes.fill(0)
+                dismissSafely()
+                if (!activity.isFinishing && !activity.isDestroyed) {
+                    onAuthenticated()
+                }
+                null
+            } else {
+                activity.getString(R.string.incorrect_encryption_key)
+            }
+        }
+        if (activity is MainActivity) {
+            activity.showTrackedDialog(dialog)
+        } else {
+            dialog.show()
+        }
+    }
+
+    fun applySecureFlag(context: Context, dialog: Dialog) {
+        (context.applicationContext as? FreeOtpPlusApplication)?.applySecureFlagIfNeeded(dialog.window)
+    }
+
+    fun createManualKeyPromptDialog(
+        activity: AppCompatActivity,
+        @StringRes titleRes: Int,
+        @StringRes messageRes: Int,
+        @StringRes positiveButtonRes: Int,
+        cancelable: Boolean = true,
+        @StringRes biometricCheckboxLabelRes: Int? = null,
+        onCancel: (() -> Unit)? = null,
+        onDismiss: (() -> Unit)? = null,
+        onSubmit: suspend (
+            passphrase: CharArray,
+            biometricChecked: Boolean,
+            dismissSafely: () -> Unit
+        ) -> String?
+    ): AlertDialog {
         val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_manual_key_prompt, null)
         val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
         val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
         val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+        val enableBiometricCheckbox = dialogView.findViewById<MaterialCheckBox>(R.id.enable_biometric_checkbox)
 
-        messageView.setText(R.string.verify_encryption_key_message)
+        messageView.setText(messageRes)
         keyEditText.doAfterTextChanged { keyInputLayout.error = null }
 
+        if (biometricCheckboxLabelRes != null) {
+            enableBiometricCheckbox.visibility = View.VISIBLE
+            enableBiometricCheckbox.isChecked = true
+            enableBiometricCheckbox.setText(biometricCheckboxLabelRes)
+        } else {
+            enableBiometricCheckbox.visibility = View.GONE
+        }
+
         val dialog = MaterialAlertDialogBuilder(activity)
-            .setTitle(R.string.verify_encryption_key_title)
+            .setTitle(titleRes)
             .setView(dialogView)
-            .setPositiveButton(R.string.ok_text, null)
-            .setNegativeButton(R.string.cancel_text, null)
+            .setCancelable(cancelable)
+            .setPositiveButton(positiveButtonRes, null)
+            .setNegativeButton(R.string.cancel_text) { _, _ ->
+                onCancel?.invoke()
+            }
+            .setOnCancelListener {
+                onCancel?.invoke()
+            }
             .create()
 
         dialog.setOnShowListener {
+            applySecureFlag(activity, dialog)
             disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
@@ -176,27 +241,29 @@ object AuthenticationUtil {
                     return@setOnClickListener
                 }
                 positiveButton.isEnabled = false
+                val biometricChecked = biometricCheckboxLabelRes != null && enableBiometricCheckbox.isChecked
                 activity.lifecycleScope.launch {
-                    val keyBytes = tokenCryptoManager.verifyPassphrase(chars)
-                    chars.fill('\u0000')
-                    if (keyBytes != null) {
-                        keyBytes.fill(0)
-                        dismissKeyDialogSafely(dialog, keyEditText)
-                        if (!activity.isFinishing && !activity.isDestroyed) {
-                            onAuthenticated()
+                    val errorMessage = try {
+                        onSubmit(chars, biometricChecked) {
+                            dismissKeyDialogSafely(dialog, keyEditText)
                         }
-                    } else {
+                    } finally {
+                        chars.fill('\u0000')
+                    }
+                    if (errorMessage != null) {
                         positiveButton.isEnabled = true
-                        keyInputLayout.error = activity.getString(R.string.incorrect_encryption_key)
+                        keyInputLayout.error = errorMessage
                     }
                 }
             }
         }
         dialog.setOnDismissListener {
             clearAndCancelAutofill(dialog.context, keyEditText)
+            onDismiss?.invoke()
         }
+        applySecureFlag(activity, dialog)
         disableAutofillForDialog(dialog, dialogView)
-        dialog.show()
+        return dialog
     }
 
     fun disableAutofillForDialog(dialog: AlertDialog, dialogView: View) {

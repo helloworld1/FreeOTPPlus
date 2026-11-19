@@ -33,6 +33,7 @@
     <string name="import_text">Importovat</string>
     <string name="export_text">Exportovat</string>
     <string name="export_succeeded_text">Export byl úspěšný.</string>
+    <string name="export_failed_text">Export se nezdařil.</string>
     <string name="import_succeeded_text">Import byl úspěšný</string>
     <string name="import_json_failed_text">Nepodařilo se naimportovat JSON. Soubor má chybný formát.</string>
     <string name="import_key_uri_failed_text">Nepodařilo se naimportovat soubor URI klíčů. Soubor má chybný formát.</string>

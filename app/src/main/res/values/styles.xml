@@ -24,16 +24,6 @@
         <item name="colorOutlineVariant">@color/outline_variant</item>
     </style>
 
-    <style name="ShapeAppearance.FreeOtp.IconWell" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">14dp</item>
-    </style>
-
-    <style name="ShapeAppearance.FreeOtp.AvatarPicker" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">20dp</item>
-    </style>
-
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>

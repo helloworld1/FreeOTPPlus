@@ -33,6 +33,7 @@
     <string name="import_text">Impor</string>
     <string name="export_text">Ekspor</string>
     <string name="export_succeeded_text">Ekspor berhasil.</string>
+    <string name="export_failed_text">Ekspor gagal.</string>
     <string name="import_succeeded_text">Impor berhasil</string>
     <string name="import_json_failed_text">Gagal mengimpor JSON. Format file tidak valid.</string>
     <string name="import_key_uri_failed_text">Gagal mengimpor file URI kunci. Format file tidak valid.</string>

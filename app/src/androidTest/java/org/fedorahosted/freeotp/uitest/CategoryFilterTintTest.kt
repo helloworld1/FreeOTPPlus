@@ -3,7 +3,6 @@ package org.fedorahosted.freeotp.uitest
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.appcompat.widget.Toolbar
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -139,7 +138,7 @@ class CategoryFilterTintTest {
                 }
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to 1L)
+                    EditTokenFragment.args(1L)
                 )
             }
 

@@ -3,7 +3,6 @@ package org.fedorahosted.freeotp.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -21,6 +20,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -32,13 +32,13 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
-import org.fedorahosted.freeotp.databinding.ActivityScanTokenBinding
+import org.fedorahosted.freeotp.databinding.FragmentScanTokenBinding
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import java.util.concurrent.ExecutorService
 import javax.inject.Inject
@@ -51,7 +51,7 @@ class ScanTokenFragment : Fragment() {
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var executorService: ExecutorService
 
-    private var _binding: ActivityScanTokenBinding? = null
+    private var _binding: FragmentScanTokenBinding? = null
     private val binding get() = _binding!!
 
     @Volatile
@@ -68,7 +68,7 @@ class ScanTokenFragment : Fragment() {
             _binding?.viewFinder?.post { startCamera() }
         } else {
             Toast.makeText(requireContext(), R.string.error_camera_open, Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
+            popScanDestination()
         }
     }
 
@@ -77,7 +77,7 @@ class ScanTokenFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = ActivityScanTokenBinding.inflate(inflater, container, false)
+        _binding = FragmentScanTokenBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -135,7 +135,7 @@ class ScanTokenFragment : Fragment() {
                 val cameraSelector = selectAvailableCamera(cameraProvider)
                 if (cameraSelector == null) {
                     Toast.makeText(requireContext(), R.string.error_camera_open, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
+                    popScanDestination()
                     return@addListener
                 }
 
@@ -161,7 +161,7 @@ class ScanTokenFragment : Fragment() {
                 Log.e(TAG, "Failed to start and bind camera", e)
                 if (isAdded) {
                     Toast.makeText(requireContext(), R.string.error_camera_open, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
+                    popScanDestination()
                 }
             }
         }, ContextCompat.getMainExecutor(ctx))
@@ -191,76 +191,78 @@ class ScanTokenFragment : Fragment() {
             tokenQRCodeDecoder.parseQRCode(imageProxy)
         } finally {
             imageProxy.close()
-        }
+        } ?: return
 
-        if (tokenString != null) {
-            foundToken = true
-            val owner = if (isAdded) viewLifecycleOwner else return
-            owner.lifecycleScope.launch {
-                try {
-                    val token = OtpTokenFactory.createFromUri(Uri.parse(tokenString))
-                    val activeBinding = _binding
-                    if (token.imagePath != null && activeBinding != null) {
-                        Glide.with(this@ScanTokenFragment)
-                            .load(token.imagePath)
-                            .placeholder(R.drawable.scan)
-                            .listener(object : RequestListener<Drawable> {
-                                override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Drawable>,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    Log.w(TAG, "Failed to load scanned token image, saving token without preview", e)
-                                    owner.lifecycleScope.launch {
-                                        persistScannedTokenAndFinish(token)
-                                    }
-                                    return false
-                                }
+        foundToken = true
+        // Hop from analyzer background thread onto Fragment's main-thread lifecycleScope
+        lifecycleScope.launch {
+            if (!isAdded || _binding == null) {
+                foundToken = false
+                return@launch
+            }
+            try {
+                val token = OtpTokenFactory.createFromUri(tokenString.toUri())
+                // Persist immediately so navigating back during any image preview never loses the token
+                otpTokenDatabase.otpTokenDao().insert(
+                    tokenCryptoManager.encryptTokenForStorage(token)
+                )
 
-                                override fun onResourceReady(
-                                    resource: Drawable,
-                                    model: Any,
-                                    target: Target<Drawable>?,
-                                    dataSource: DataSource,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    val b = _binding ?: return false
-                                    b.progress.visibility = View.INVISIBLE
-                                    b.image.alpha = 0.9f
-                                    b.image.postDelayed({
-                                        if (isAdded) {
-                                            viewLifecycleOwner.lifecycleScope.launch {
-                                                persistScannedTokenAndFinish(token)
-                                            }
-                                        }
-                                    }, 1500)
-                                    return false
-                                }
-                            })
-                            .into(activeBinding.image)
-                    } else {
-                        persistScannedTokenAndFinish(token)
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Invalid token URI scanned", e)
-                    val now = SystemClock.elapsedRealtime()
-                    if (isAdded && now - lastInvalidToastElapsedMs > 2_500L) {
-                        lastInvalidToastElapsedMs = now
-                        Toast.makeText(requireContext(), R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
-                    }
-                    foundToken = false
+                val activeBinding = _binding
+                if (token.imagePath != null && activeBinding != null && isAdded) {
+                    Glide.with(this@ScanTokenFragment)
+                        .load(token.imagePath)
+                        .placeholder(R.drawable.scan)
+                        .listener(object : RequestListener<Drawable> {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                Log.w(TAG, "Failed to load scanned token image, finishing scan", e)
+                                activeBinding.image.post { popScanDestination() }
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable,
+                                model: Any,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                val b = _binding ?: return false
+                                b.progress.visibility = View.INVISIBLE
+                                b.image.alpha = 0.9f
+                                b.image.postDelayed({ popScanDestination() }, 1500)
+                                return false
+                            }
+                        })
+                        .into(activeBinding.image)
+                } else {
+                    popScanDestination()
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Invalid token URI scanned", e)
+                val now = SystemClock.elapsedRealtime()
+                if (isAdded && now - lastInvalidToastElapsedMs > 2_500L) {
+                    lastInvalidToastElapsedMs = now
+                    context?.let {
+                        Toast.makeText(it, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                foundToken = false
             }
         }
     }
 
-    private suspend fun persistScannedTokenAndFinish(token: OtpToken) {
-        otpTokenDatabase.otpTokenDao().insert(
-            tokenCryptoManager.encryptTokenForStorage(token)
-        )
-        if (isAdded) {
-            findNavController().popBackStack()
+    private fun popScanDestination() {
+        if (!isAdded) return
+        val navController = findNavController()
+        if (navController.currentDestination?.id == R.id.scanTokenFragment) {
+            navController.popBackStack()
         }
     }
 

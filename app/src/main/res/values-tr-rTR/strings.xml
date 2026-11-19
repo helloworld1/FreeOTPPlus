@@ -33,6 +33,7 @@
     <string name="import_text">İçe Aktar</string>
     <string name="export_text">Dışa Aktar</string>
     <string name="export_succeeded_text">Dışa aktarım başarılı.</string>
+    <string name="export_failed_text">Dışa aktarım başarısız.</string>
     <string name="import_succeeded_text">İçe aktarım başarılı</string>
     <string name="import_json_failed_text">JSON içe aktarılamadı. Dosya biçimi hatalı.</string>
     <string name="import_key_uri_failed_text">Anahtar URI dosyası içe aktarılamadı. Dosya biçimi hatalı.</string>

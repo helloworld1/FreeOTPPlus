@@ -37,6 +37,7 @@
     <string name="import_text">Import</string>
     <string name="export_text">Export</string>
     <string name="export_succeeded_text">Export succeeded.</string>
+    <string name="export_failed_text">Export failed.</string>
     <string name="import_succeeded_text">Import succeeded</string>
     <string name="import_json_failed_text">Failed to import JSON. The file is malformed.</string>
     <string name="import_key_uri_failed_text">Failed to import key uri file. The file is malformed.</string>

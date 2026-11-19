@@ -33,6 +33,7 @@
     <string name="import_text">Voer in</string>
     <string name="export_text">Voer uit</string>
     <string name="export_succeeded_text">Uitvoer suksesvol.</string>
+    <string name="export_failed_text">Uitvoer het misluk.</string>
     <string name="import_succeeded_text">Invoer suksesvol</string>
     <string name="import_json_failed_text">Kon nie JSON invoer nie. Die lêer is ongeldig geformateer.</string>
     <string name="import_key_uri_failed_text">Kon nie sleutel-URI-lêer invoer nie. Die lêer is ongeldig geformateer.</string>

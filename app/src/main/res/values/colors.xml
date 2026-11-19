@@ -22,8 +22,6 @@
     <color name="outline">#71787E</color>
     <color name="outline_variant">#C1C7CE</color>
 
-    <color name="token_background">#E6E8EB</color>
-    <color name="overflow_menu">#41484D</color>
     <color name="qr_surface">#FFFFFF</color>
     <color name="scrim_translucent">#99000000</color>
 </resources>

@@ -2,14 +2,17 @@ package org.fedorahosted.freeotp.uitest
 
 import android.view.Window
 import android.view.WindowManager
-import androidx.core.os.bundleOf
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
@@ -46,7 +49,7 @@ class FlagSecureTest {
                 activity.navigateBack()
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                    EditTokenFragment.args(tokenId)
                 )
                 assertFlagSecureSet(activity.window)
             }
@@ -68,7 +71,7 @@ class FlagSecureTest {
             scenario.onActivity { activity ->
                 activity.navigateTo(
                     R.id.action_tokenList_to_shareQrCode,
-                    bundleOf(ShareQrCodeDialogFragment.ARG_TOKEN_ID to tokenId)
+                    ShareQrCodeDialogFragment.args(tokenId)
                 )
             }
             onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
@@ -88,10 +91,34 @@ class FlagSecureTest {
             scenario.onActivity { activity ->
                 activity.navigateTo(
                     R.id.action_tokenList_to_deleteToken,
-                    bundleOf(DeleteTokenDialogFragment.ARG_TOKEN_ID to tokenId)
+                    DeleteTokenDialogFragment.args(tokenId)
                 )
             }
             onView(withId(R.id.delete)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+            scenario.onActivity { activity ->
+                val dialogWindows = activity.getOpenDialogWindows()
+                assertThat(dialogWindows).isNotEmpty()
+                assertFlagSecureSet(dialogWindows.first())
+            }
+        }
+    }
+
+    @Test
+    fun testActivityAlertDialogsSetFlagSecure() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+            scenario.onActivity { activity ->
+                val dialogWindows = activity.getOpenDialogWindows()
+                assertThat(dialogWindows).isNotEmpty()
+                assertFlagSecureSet(dialogWindows.first())
+            }
+
+            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).perform(click())
+            onView(withId(R.id.key_edit_text)).inRoot(isDialog()).check(matches(isDisplayed()))
 
             scenario.onActivity { activity ->
                 val dialogWindows = activity.getOpenDialogWindows()

@@ -33,6 +33,7 @@
     <string name="import_text">ආයාත කරන්න</string>
     <string name="export_text">නිර්යාත කරන්න</string>
     <string name="export_succeeded_text">නිර්යාත කිරීම සාර්ථකයි.</string>
+    <string name="export_failed_text">නිර්යාත කිරීම අසාර්ථක විය.</string>
     <string name="import_succeeded_text">ආයාත කිරීම සාර්ථකයි</string>
     <string name="import_json_failed_text">JSON ආයාත කිරීමට අසමත් විය. ගොනු ආකෘතිය දෝෂ සහිතයි.</string>
     <string name="import_key_uri_failed_text">යතුරු URI ගොනුව ආයාත කිරීමට අසමත් විය. ගොනු ආකෘතිය දෝෂ සහිතයි.</string>

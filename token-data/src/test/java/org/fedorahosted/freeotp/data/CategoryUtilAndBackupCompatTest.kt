@@ -157,4 +157,64 @@ class CategoryUtilAndBackupCompatTest {
         assertThat(decrypted).hasSize(1)
         assertThat(decrypted[0].categories).containsExactly("Work", "Cloud").inOrder()
     }
+
+    @Test
+    fun otpTokenFactoryCreate_validatesInputsAndPreservesSpecialCharacters() {
+        val hotp = OtpTokenFactory.create(
+            type = OtpTokenType.HOTP,
+            issuer = "My:Issuer",
+            label = "alice+1@example.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            algorithm = "sha256",
+            digits = 8,
+            period = 30,
+            initialCounter = 5L,
+            imagePath = "file:///data/user/0/app/files/my+icon 1.png",
+            categories = listOf(" Work ", "work", "Infra")
+        )
+        assertThat(hotp.tokenType).isEqualTo(OtpTokenType.HOTP)
+        assertThat(hotp.issuer).isEqualTo("My:Issuer")
+        assertThat(hotp.label).isEqualTo("alice+1@example.com")
+        assertThat(hotp.algorithm).isEqualTo("SHA256")
+        assertThat(hotp.digits).isEqualTo(8)
+        assertThat(hotp.counter).isEqualTo(4L)
+        assertThat(hotp.imagePath).isEqualTo("file:///data/user/0/app/files/my+icon 1.png")
+        assertThat(hotp.categories).containsExactly("Work", "Infra").inOrder()
+
+        val blankIssuer = OtpTokenFactory.create(
+            type = OtpTokenType.TOTP,
+            issuer = "   ",
+            label = "service:bob",
+            secret = "JBSWY3DPEHPK3PXP"
+        )
+        assertThat(blankIssuer.issuer).isNull()
+        assertThat(blankIssuer.label).isEqualTo("service:bob")
+        assertThat(blankIssuer.counter).isEqualTo(0L)
+
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.create(
+                type = OtpTokenType.TOTP,
+                issuer = null,
+                label = "alice",
+                secret = "INVALID_0189!"
+            )
+        }
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.create(
+                type = OtpTokenType.TOTP,
+                issuer = "",
+                label = "",
+                secret = "JBSWY3DPEHPK3PXP"
+            )
+        }
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.create(
+                type = OtpTokenType.TOTP,
+                issuer = "GitHub",
+                label = "alice",
+                secret = "JBSWY3DPEHPK3PXP",
+                algorithm = "NOT_A_MAC"
+            )
+        }
+    }
 }

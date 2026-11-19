@@ -33,6 +33,7 @@
     <string name="import_text">இறக்குமதி</string>
     <string name="export_text">ஏற்றுமதி</string>
     <string name="export_succeeded_text">ஏற்றுமதி வெற்றியடைந்தது.</string>
+    <string name="export_failed_text">ஏற்றுமதி தோல்வியடைந்தது.</string>
     <string name="import_succeeded_text">இறக்குமதி வெற்றியடைந்தது</string>
     <string name="import_json_failed_text">JSON இறக்குமதி தோல்வியடைந்தது. கோப்பு வடிவமைப்பு தவறானது.</string>
     <string name="import_key_uri_failed_text">திறவுகோல் URI கோப்பை இறக்குமதி செய்ய முடியவில்லை. கோப்பு வடிவமைப்பு தவறானது.</string>

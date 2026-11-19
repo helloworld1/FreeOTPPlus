@@ -33,6 +33,7 @@
     <string name="import_text">Импорт</string>
     <string name="export_text">Экспорт</string>
     <string name="export_succeeded_text">Экспорт успешно выполнен.</string>
+    <string name="export_failed_text">Ошибка экспорта.</string>
     <string name="import_succeeded_text">Импорт успешно выполнен</string>
     <string name="import_json_failed_text">Не удалось импортировать JSON. Неверный формат файла.</string>
     <string name="import_key_uri_failed_text">Не удалось импортировать файл URI ключей. Неверный формат файла.</string>

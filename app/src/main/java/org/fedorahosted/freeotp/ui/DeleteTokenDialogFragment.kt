@@ -89,5 +89,9 @@ class DeleteTokenDialogFragment : DialogFragment() {
 
     companion object {
         const val ARG_TOKEN_ID = "token_id"
+
+        fun args(tokenId: Long): Bundle = Bundle().apply {
+            putLong(ARG_TOKEN_ID, tokenId)
+        }
     }
 }

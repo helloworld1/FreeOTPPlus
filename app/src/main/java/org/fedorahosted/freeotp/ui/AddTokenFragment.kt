@@ -2,8 +2,6 @@ package org.fedorahosted.freeotp.ui
 
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,11 +22,10 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.AddBinding
 import org.fedorahosted.freeotp.util.ImageUtil
-import java.net.URLEncoder
-import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,7 +39,8 @@ class AddTokenFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var categoryChipHelper: CategoryChipHelper
-    private var mImageURL: Uri? = null
+    private var selectedImageUri: Uri? = null
+    private var isFormattingSecret = false
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -51,7 +49,7 @@ class AddTokenFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val savedUri = imageUtil.saveImageUriToFile(sourceUri)
-                mImageURL = savedUri
+                selectedImageUri = savedUri
                 _binding?.let { b ->
                     Glide.with(this@AddTokenFragment)
                         .load(savedUri)
@@ -59,7 +57,7 @@ class AddTokenFragment : Fragment() {
                         .into(b.image)
                 }
             } catch (_: Exception) {
-                Toast.makeText(requireContext(), R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
             }
         }
     }
@@ -100,10 +98,10 @@ class AddTokenFragment : Fragment() {
 
         if (savedInstanceState != null) {
             @Suppress("DEPRECATION")
-            mImageURL = savedInstanceState.getParcelable(STATE_IMAGE_URI)
-            if (mImageURL != null) {
+            selectedImageUri = savedInstanceState.getParcelable(STATE_IMAGE_URI)
+            if (selectedImageUri != null) {
                 Glide.with(this)
-                    .load(mImageURL)
+                    .load(selectedImageUri)
                     .placeholder(R.drawable.logo)
                     .into(binding.image)
             }
@@ -128,26 +126,25 @@ class AddTokenFragment : Fragment() {
         binding.interval.doAfterTextChanged { validateForm() }
         binding.counter.doAfterTextChanged { validateForm() }
 
-        binding.secret.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                validateForm()
-            }
-            override fun afterTextChanged(s: Editable?) {
-                if (!s.isNullOrEmpty()) {
+        binding.secret.doAfterTextChanged { s ->
+            if (isFormattingSecret) return@doAfterTextChanged
+            if (!s.isNullOrEmpty()) {
+                isFormattingSecret = true
+                try {
                     var haveData = false
                     for (i in s.length - 1 downTo 0) {
-                        val c = s[i]
-                        if (c != '=') {
+                        if (s[i] != '=') {
                             haveData = true
                         } else if (haveData) {
                             s.delete(i, i + 1)
                         }
                     }
+                } finally {
+                    isFormattingSecret = false
                 }
-                validateForm()
             }
-        })
+            validateForm()
+        }
 
         binding.image.setOnClickListener {
             pickImageLauncher.launch("image/*")
@@ -177,15 +174,13 @@ class AddTokenFragment : Fragment() {
 
     private fun validateForm() {
         val b = _binding ?: return
-        val rawIssuer = b.issuer.text?.toString().orEmpty()
         val rawLabel = b.label.text?.toString().orEmpty()
         val secretWithoutPadding = b.secret.text?.toString().orEmpty().trimEnd('=')
         val interval = b.interval.text?.toString()?.toIntOrNull()
         val isHotp = b.typeToggleGroup.checkedButtonId == R.id.hotp
         val counterValid = !isHotp || b.counter.text?.toString()?.toLongOrNull() != null
-        val pathValid = rawLabel.isNotEmpty() && !(rawIssuer.isBlank() && rawLabel.trim('/').isEmpty())
 
-        b.add.isEnabled = pathValid &&
+        b.add.isEnabled = rawLabel.isNotEmpty() &&
             secretWithoutPadding.length >= 8 &&
             interval != null &&
             interval > 0 &&
@@ -196,14 +191,17 @@ class AddTokenFragment : Fragment() {
         val b = _binding ?: return
         val rawIssuer = b.issuer.text?.toString().orEmpty()
         val rawLabel = b.label.text?.toString().orEmpty()
-        val issuer = Uri.encode(rawIssuer)
-        val label = Uri.encode(rawLabel)
-        val secret = Uri.encode(b.secret.text?.toString().orEmpty())
-        val algorithm = b.algorithm.text?.toString().orEmpty().ifBlank { "SHA1" }.lowercase(Locale.US)
+        val secret = b.secret.text?.toString().orEmpty()
+        val algorithm = b.algorithm.text?.toString().orEmpty().ifBlank { "SHA1" }
         val interval = b.interval.text?.toString()?.toIntOrNull() ?: return
         if (interval <= 0) return
 
         val isHotp = b.typeToggleGroup.checkedButtonId == R.id.hotp
+        val initialCounter = if (isHotp) {
+            b.counter.text?.toString()?.toLongOrNull() ?: return
+        } else {
+            0L
+        }
         val digits = when (b.digitsToggleGroup.checkedButtonId) {
             R.id.digits5 -> 5
             R.id.digits7 -> 7
@@ -211,41 +209,19 @@ class AddTokenFragment : Fragment() {
             else -> 6
         }
 
-        val path = when {
-            rawIssuer.isNotBlank() -> "$issuer:$label"
-            rawLabel.contains(':') -> ":$label"
-            else -> label
-        }
-
-        var uri = String.format(
-            Locale.US,
-            "otpauth://%sotp/%s?secret=%s&algorithm=%s&digits=%d&period=%d",
-            if (isHotp) "h" else "t",
-            path,
-            secret,
-            algorithm,
-            digits,
-            interval
-        )
-
-        if (rawIssuer.isNotBlank()) {
-            uri += String.format(Locale.US, "&issuer=%s", issuer)
-        }
-        if (isHotp) {
-            val counter = b.counter.text?.toString()?.toLongOrNull() ?: return
-            uri += String.format(Locale.US, "&counter=%d", counter)
-        }
-        if (mImageURL != null) {
-            val enc = URLEncoder.encode(mImageURL.toString(), "utf-8")
-            uri += String.format(Locale.US, "&image=%s", enc)
-        }
-
         b.add.isEnabled = false
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val token = OtpTokenFactory.createFromUri(Uri.parse(uri)).copy(
-                    issuer = rawIssuer.takeIf { it.isNotBlank() },
+                val token = OtpTokenFactory.create(
+                    type = if (isHotp) OtpTokenType.HOTP else OtpTokenType.TOTP,
+                    issuer = rawIssuer,
                     label = rawLabel,
+                    secret = secret,
+                    algorithm = algorithm,
+                    digits = digits,
+                    period = interval,
+                    initialCounter = initialCounter,
+                    imagePath = selectedImageUri?.toString(),
                     categories = categoryChipHelper.getSelectedCategories()
                 )
                 otpTokenDatabase.otpTokenDao().insert(tokenCryptoManager.encryptTokenForStorage(token))
@@ -253,7 +229,7 @@ class AddTokenFragment : Fragment() {
                     findNavController().popBackStack()
                 }
             } catch (_: Exception) {
-                b.add.isEnabled = true
+                _binding?.add?.isEnabled = true
                 (activity as? MainActivity)?.showSnackbar(R.string.invalid_token_uri_received)
             }
         }
@@ -267,10 +243,13 @@ class AddTokenFragment : Fragment() {
         _binding?.algorithm?.text?.toString()?.let {
             outState.putString(STATE_ALGORITHM, it)
         }
-        outState.putParcelable(STATE_IMAGE_URI, mImageURL)
+        outState.putParcelable(STATE_IMAGE_URI, selectedImageUri)
     }
 
     override fun onDestroyView() {
+        if (::categoryChipHelper.isInitialized) {
+            categoryChipHelper.dismissDialog()
+        }
         _binding = null
         super.onDestroyView()
     }

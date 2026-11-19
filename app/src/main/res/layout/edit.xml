@@ -214,13 +214,13 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
                         android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        android:minHeight="40dp"
+                        android:freezesText="false"
                         android:gravity="center_vertical"
+                        android:minHeight="40dp"
                         android:textAppearance="?attr/textAppearanceBodyLarge"
                         android:textColor="@color/primary"
-                        android:textIsSelectable="true"
                         android:typeface="monospace" />
 
                 </LinearLayout>

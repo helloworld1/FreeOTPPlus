@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.ui
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
@@ -24,7 +23,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -34,7 +32,6 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.InvalidEncryptionKeyException
-import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
@@ -52,15 +49,21 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private data class PendingActivityResult(
-        val requestCode: Int,
-        val resultCode: Int,
-        val resultData: Intent?
+
+    internal enum class DocumentAction {
+        IMPORT_JSON,
+        IMPORT_KEY_URI,
+        EXPORT_JSON,
+        EXPORT_KEY_URI
+    }
+
+    private data class PendingDocumentResult(
+        val action: DocumentAction,
+        val uri: Uri
     )
 
     @Inject lateinit var importFromUtil: ImportExportUtil
     @Inject lateinit var settings: Settings
-    @Inject lateinit var tokenMigrationUtil: MigrationUtil
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var appSessionManager: AppSessionManager
@@ -68,11 +71,11 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
 
-    private var confirmAddTokenDialog: AlertDialog? = null
+    private var activeTransientDialog: AlertDialog? = null
     private var activeAuthDialog: AlertDialog? = null
     private var isAuthPromptInProgress = false
     private var pendingDeepLinkUri: Uri? = null
-    private var pendingActivityResult: PendingActivityResult? = null
+    private var pendingDocumentResult: PendingDocumentResult? = null
     private var pendingExportEncrypted = false
 
     private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US)
@@ -80,25 +83,25 @@ class MainActivity : AppCompatActivity() {
     private val openJsonLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
-        handleDocumentPickerUri(READ_JSON_REQUEST_CODE, uri)
+        onDocumentPicked(DocumentAction.IMPORT_JSON, uri)
     }
 
     private val openKeyUriLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
-        handleDocumentPickerUri(READ_KEY_URI_REQUEST_CODE, uri)
+        onDocumentPicked(DocumentAction.IMPORT_KEY_URI, uri)
     }
 
     private val createJsonLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        handleDocumentPickerUri(WRITE_JSON_REQUEST_CODE, uri)
+        onDocumentPicked(DocumentAction.EXPORT_JSON, uri)
     }
 
     private val createKeyUriLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
     ) { uri ->
-        handleDocumentPickerUri(WRITE_KEY_URI_REQUEST_CODE, uri)
+        onDocumentPicked(DocumentAction.EXPORT_KEY_URI, uri)
     }
 
     private fun navController(): NavController {
@@ -120,10 +123,30 @@ class MainActivity : AppCompatActivity() {
 
     fun getOpenDialogWindows(): List<Window> {
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
-            ?: return emptyList()
-        return navHost.childFragmentManager.fragments
-            .filterIsInstance<DialogFragment>()
-            .mapNotNull { it.dialog?.window }
+        val fragmentDialogWindows = navHost?.childFragmentManager?.fragments
+            ?.filterIsInstance<DialogFragment>()
+            ?.mapNotNull { it.dialog?.window }
+            .orEmpty()
+        val activityDialogWindows = listOfNotNull(
+            activeTransientDialog?.takeIf { it.isShowing }?.window,
+            activeAuthDialog?.takeIf { it.isShowing }?.window
+        )
+        return fragmentDialogWindows + activityDialogWindows
+    }
+
+    internal fun showTrackedDialog(dialog: AlertDialog) {
+        if (activeTransientDialog !== dialog) {
+            activeTransientDialog?.dismiss()
+        }
+        activeTransientDialog = dialog
+        AuthenticationUtil.applySecureFlag(this, dialog)
+        dialog.show()
+        AuthenticationUtil.applySecureFlag(this, dialog)
+    }
+
+    private fun dismissTransientDialog() {
+        activeTransientDialog?.dismiss()
+        activeTransientDialog = null
     }
 
     fun showSnackbar(messageRes: Int, duration: Int = Snackbar.LENGTH_SHORT) {
@@ -154,15 +177,14 @@ class MainActivity : AppCompatActivity() {
                 viewModel.getAuthState().collect { authState ->
                     if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
                         binding.navHostFragment.visibility = View.INVISIBLE
-                        confirmAddTokenDialog?.dismiss()
-                        confirmAddTokenDialog = null
+                        dismissTransientDialog()
                         dismissOpenChildScreensOnLock()
                         verifyAuthentication()
                     } else {
                         binding.navHostFragment.visibility = View.VISIBLE
                         invalidateMenu()
                         processPendingDeepLinkIfAny()
-                        processPendingActivityResultIfAny()
+                        processPendingDocumentResultIfAny()
                     }
                 }
             }
@@ -195,8 +217,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        confirmAddTokenDialog?.dismiss()
-        confirmAddTokenDialog = null
+        dismissTransientDialog()
         activeAuthDialog?.dismiss()
         activeAuthDialog = null
     }
@@ -215,8 +236,11 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        if (intent.getBooleanExtra(EXTRA_DEEP_LINK_HANDLED, false)) {
+            return
+        }
         val uri = intent.data ?: return
-        intent.data = null
+        intent.putExtra(EXTRA_DEEP_LINK_HANDLED, true)
 
         if (!viewModel.isAuthenticated() || !tokenCryptoManager.isUnlocked()) {
             pendingDeepLinkUri = uri
@@ -249,8 +273,7 @@ class MainActivity : AppCompatActivity() {
             "${getString(R.string.issuer)}: ${token.issuer}\n${getString(R.string.account)}: ${token.label}"
         }
 
-        confirmAddTokenDialog?.dismiss()
-        confirmAddTokenDialog = MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.add_token)
             .setMessage(getString(R.string.add_token_confirmation_message, tokenDetails))
             .setIcon(R.drawable.alert)
@@ -262,25 +285,25 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             .setNegativeButton(R.string.cancel_text, null)
-            .show()
+            .create()
+        showTrackedDialog(dialog)
+    }
+
+    private inline fun launchSystemPicker(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
+            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
+        }
     }
 
     internal fun startImportJson() {
-        try {
-            openJsonLauncher.launch(arrayOf("*/*"))
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
-        }
+        launchSystemPicker { openJsonLauncher.launch(arrayOf("*/*")) }
     }
 
     internal fun startImportKeyUri() {
-        try {
-            openKeyUriLauncher.launch(arrayOf("*/*"))
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
-        }
+        launchSystemPicker { openKeyUriLauncher.launch(arrayOf("*/*")) }
     }
 
     internal fun handleExportAction(isJson: Boolean) {
@@ -295,7 +318,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showExportEncryptionChoiceDialog(isJson: Boolean) {
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.export_encryption_choice_title)
             .setMessage(R.string.export_encryption_choice_message)
             .setPositiveButton(R.string.export_encrypted) { _, _ ->
@@ -307,100 +330,60 @@ class MainActivity : AppCompatActivity() {
                 launchExportCreateFile(isJson)
             }
             .setNeutralButton(R.string.cancel_text, null)
-            .show()
+            .create()
+        showTrackedDialog(dialog)
     }
 
     private fun launchExportCreateFile(isJson: Boolean) {
         val baseFileName = exportBaseFileName(encrypted = pendingExportEncrypted)
         val timestamp = dateFormatter.format(Date())
-        try {
+        launchSystemPicker {
             if (isJson) {
                 createJsonLauncher.launch("${baseFileName}_$timestamp.json")
             } else {
                 createKeyUriLauncher.launch("${baseFileName}_$timestamp.txt")
             }
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun handleDocumentPickerUri(requestCode: Int, uri: Uri?) {
+    internal fun onDocumentPicked(action: DocumentAction, uri: Uri?) {
         if (uri == null) {
             appSessionManager.refreshSessionState()
             return
         }
-        val data = Intent().setData(uri)
         if (!appSessionManager.refreshSessionState()) {
-            pendingActivityResult = PendingActivityResult(requestCode, Activity.RESULT_OK, data)
+            pendingDocumentResult = PendingDocumentResult(action, uri)
             return
         }
-        handleAuthenticatedActivityResult(requestCode, data)
+        handleAuthenticatedDocumentResult(action, uri)
     }
 
-    @Deprecated("Deprecated in Java")
-    public override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        resultData: Intent?
-    ) {
-        @Suppress("DEPRECATION")
-        super.onActivityResult(requestCode, resultCode, resultData)
-
-        if (requestCode != WRITE_JSON_REQUEST_CODE &&
-            requestCode != READ_JSON_REQUEST_CODE &&
-            requestCode != WRITE_KEY_URI_REQUEST_CODE &&
-            requestCode != READ_KEY_URI_REQUEST_CODE
-        ) {
-            appSessionManager.refreshSessionState()
-            return
-        }
-
-        if (resultCode != Activity.RESULT_OK) {
-            appSessionManager.refreshSessionState()
-            return
-        }
-
-        if (!appSessionManager.refreshSessionState()) {
-            pendingActivityResult = PendingActivityResult(requestCode, resultCode, resultData)
-            return
-        }
-
-        handleAuthenticatedActivityResult(requestCode, resultData)
-    }
-
-    private fun processPendingActivityResultIfAny() {
+    private fun processPendingDocumentResultIfAny() {
         if (!viewModel.isAuthenticated() || !tokenCryptoManager.isUnlocked()) {
             return
         }
-        val pending = pendingActivityResult ?: return
-        pendingActivityResult = null
-        if (pending.resultCode == Activity.RESULT_OK) {
-            handleAuthenticatedActivityResult(pending.requestCode, pending.resultData)
-        }
+        val pending = pendingDocumentResult ?: return
+        pendingDocumentResult = null
+        handleAuthenticatedDocumentResult(pending.action, pending.uri)
     }
 
-    private fun handleAuthenticatedActivityResult(
-        requestCode: Int,
-        resultData: Intent?
-    ) {
-        when (requestCode) {
-            WRITE_JSON_REQUEST_CODE -> {
+    private fun handleAuthenticatedDocumentResult(action: DocumentAction, uri: Uri) {
+        when (action) {
+            DocumentAction.EXPORT_JSON -> {
                 val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.exportJsonFile(uri, encrypt = encryptExport)
                         showSnackbar(R.string.export_succeeded_text)
                     } catch (e: Exception) {
                         Log.e(TAG, "Export JSON failed", e)
+                        showSnackbar(R.string.export_failed_text)
                     }
                 }
             }
 
-            READ_JSON_REQUEST_CODE -> {
-                val uri = resultData?.data ?: return
-                MaterialAlertDialogBuilder(this)
+            DocumentAction.IMPORT_JSON -> {
+                val dialog = MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.import_json_file)
                     .setMessage(R.string.import_json_file_warning)
                     .setIcon(R.drawable.alert)
@@ -420,25 +403,25 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     .setNegativeButton(R.string.cancel_text, null)
-                    .show()
+                    .create()
+                showTrackedDialog(dialog)
             }
 
-            WRITE_KEY_URI_REQUEST_CODE -> {
+            DocumentAction.EXPORT_KEY_URI -> {
                 val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
                     try {
                         importFromUtil.exportKeyUriFile(uri, encrypt = encryptExport)
                         showSnackbar(R.string.export_succeeded_text)
                     } catch (e: Exception) {
                         Log.e(TAG, "Export Key URI failed", e)
+                        showSnackbar(R.string.export_failed_text)
                     }
                 }
             }
 
-            READ_KEY_URI_REQUEST_CODE -> {
+            DocumentAction.IMPORT_KEY_URI -> {
                 lifecycleScope.launch {
-                    val uri = resultData?.data ?: return@launch
                     try {
                         if (importFromUtil.isKeyUriFileEncrypted(uri)) {
                             showImportEncryptedBackupDialog(uri, isJson = false)
@@ -456,59 +439,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showImportEncryptedBackupDialog(uri: Uri, isJson: Boolean) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
-        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
-        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
-        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
-
-        messageView.setText(R.string.import_encrypted_backup_message)
-        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.import_encrypted_backup_title)
-            .setView(dialogView)
-            .setPositiveButton(R.string.import_text, null)
-            .setNegativeButton(R.string.cancel_text, null)
-            .create()
-
-        dialog.setOnShowListener {
-            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                val passphrase = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
-                if (passphrase.isEmpty()) {
-                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                    return@setOnClickListener
+        val dialog = AuthenticationUtil.createManualKeyPromptDialog(
+            activity = this,
+            titleRes = R.string.import_encrypted_backup_title,
+            messageRes = R.string.import_encrypted_backup_message,
+            positiveButtonRes = R.string.import_text
+        ) { passphrase, _, dismissSafely ->
+            try {
+                if (isJson) {
+                    importFromUtil.importJsonFile(uri, passphrase)
+                } else {
+                    importFromUtil.importKeyUriFile(uri, passphrase)
                 }
-                positiveButton.isEnabled = false
-                lifecycleScope.launch {
-                    try {
-                        if (isJson) {
-                            importFromUtil.importJsonFile(uri, passphrase)
-                        } else {
-                            importFromUtil.importKeyUriFile(uri, passphrase)
-                        }
-                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                        showSnackbar(R.string.import_succeeded_text)
-                    } catch (_: InvalidEncryptionKeyException) {
-                        positiveButton.isEnabled = true
-                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Encrypted import failed", e)
-                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                        val errRes = if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text
-                        showSnackbar(errRes)
-                    } finally {
-                        passphrase.fill('\u0000')
-                    }
-                }
+                dismissSafely()
+                showSnackbar(R.string.import_succeeded_text)
+                null
+            } catch (_: InvalidEncryptionKeyException) {
+                getString(R.string.incorrect_encryption_key)
+            } catch (e: Exception) {
+                Log.e(TAG, "Encrypted import failed", e)
+                dismissSafely()
+                showSnackbar(if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text)
+                null
             }
         }
-        dialog.setOnDismissListener {
-            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
-        }
-        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-        dialog.show()
+        showTrackedDialog(dialog)
     }
 
     internal fun showAuthenticationModeDialog() {
@@ -521,18 +476,18 @@ class MainActivity : AppCompatActivity() {
         val currentMode = settings.authMode
         val currentIndex = modes.indexOf(currentMode).coerceAtLeast(0)
 
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.authentication_mode)
-            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
-                dialog.dismiss()
+            .setSingleChoiceItems(labels, currentIndex) { pickerDialog, which ->
+                pickerDialog.dismiss()
                 val selectedMode = modes[which]
-                if (selectedMode == currentMode) {
-                    return@setSingleChoiceItems
+                if (selectedMode != currentMode) {
+                    handleAuthModeSelection(currentMode, selectedMode)
                 }
-                handleAuthModeSelection(currentMode, selectedMode)
             }
             .setNegativeButton(R.string.cancel_text, null)
-            .show()
+            .create()
+        showTrackedDialog(dialog)
     }
 
     private fun handleAuthModeSelection(currentMode: AuthMode, targetMode: AuthMode) {
@@ -573,6 +528,7 @@ class MainActivity : AppCompatActivity() {
             .create()
 
         dialog.setOnShowListener {
+            AuthenticationUtil.applySecureFlag(this, dialog)
             AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
@@ -605,7 +561,22 @@ class MainActivity : AppCompatActivity() {
             AuthenticationUtil.clearAndCancelAutofill(this, keyEditText, confirmKeyEditText)
         }
         AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-        dialog.show()
+        showTrackedDialog(dialog)
+    }
+
+    private suspend fun enableManualOnlyEncryption(
+        setupMaterial: TokenCryptoManager.SetupMaterial,
+        setupDialog: AlertDialog? = null
+    ) {
+        try {
+            tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+            setupDialog?.let { AuthenticationUtil.dismissKeyDialogSafely(it) }
+            onAuthCompleted()
+            invalidateMenu()
+            showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+        } finally {
+            setupMaterial.clear()
+        }
     }
 
     private suspend fun completeTokenEncryptionSetup(
@@ -613,15 +584,7 @@ class MainActivity : AppCompatActivity() {
         setupDialog: AlertDialog
     ) {
         if (!AuthenticationUtil.canAuthenticateStrongBiometric(this)) {
-            try {
-                tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
-                onAuthCompleted()
-                invalidateMenu()
-                showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-            } finally {
-                setupMaterial.clear()
-            }
+            enableManualOnlyEncryption(setupMaterial, setupDialog)
             return
         }
 
@@ -629,15 +592,7 @@ class MainActivity : AppCompatActivity() {
             tokenCryptoManager.createBiometricEncryptCipher()
         } catch (e: Exception) {
             Log.w(TAG, "Unable to initialize biometric encryption cipher, falling back to manual key", e)
-            try {
-                tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
-                onAuthCompleted()
-                invalidateMenu()
-                showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-            } finally {
-                setupMaterial.clear()
-            }
+            enableManualOnlyEncryption(setupMaterial, setupDialog)
             return
         }
 
@@ -659,29 +614,18 @@ class MainActivity : AppCompatActivity() {
                         onAuthCompleted()
                         invalidateMenu()
                         showSnackbar(R.string.token_encryption_enabled)
+                        setupMaterial.clear()
                     } catch (e: Exception) {
                         Log.e(TAG, "Biometric key wrapping failed, falling back to manual key", e)
                         tokenCryptoManager.cancelPendingBiometricKeySetup()
-                        tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                        onAuthCompleted()
-                        invalidateMenu()
-                        showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                    } finally {
-                        setupMaterial.clear()
+                        enableManualOnlyEncryption(setupMaterial)
                     }
                 }
             },
             onFallbackToManual = { _ ->
                 tokenCryptoManager.cancelPendingBiometricKeySetup()
                 lifecycleScope.launch {
-                    try {
-                        tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
-                        onAuthCompleted()
-                        invalidateMenu()
-                        showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                    } finally {
-                        setupMaterial.clear()
-                    }
+                    enableManualOnlyEncryption(setupMaterial)
                 }
             },
             onCancel = {
@@ -692,7 +636,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDisableEncryptionWarningDialog(targetMode: AuthMode) {
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.disable_token_encryption_title)
             .setMessage(R.string.disable_token_encryption_warning)
             .setIcon(R.drawable.alert)
@@ -700,7 +644,8 @@ class MainActivity : AppCompatActivity() {
                 authenticateAndDisableEncryption(targetMode)
             }
             .setNegativeButton(R.string.cancel_text, null)
-            .show()
+            .create()
+        showTrackedDialog(dialog)
     }
 
     private fun authenticateAndDisableEncryption(targetMode: AuthMode) {
@@ -733,55 +678,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showVerifyKeyToDisableDialog(targetMode: AuthMode) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
-        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
-        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
-        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
-
-        messageView.setText(R.string.verify_encryption_key_message)
-        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.verify_encryption_key_title)
-            .setView(dialogView)
-            .setPositiveButton(R.string.ok_text, null)
-            .setNegativeButton(R.string.cancel_text, null)
-            .create()
-
-        dialog.setOnShowListener {
-            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
-                if (chars.isEmpty()) {
-                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                    return@setOnClickListener
-                }
-                positiveButton.isEnabled = false
-                lifecycleScope.launch {
-                    val unlocked = try {
-                        tokenCryptoManager.unlockWithPassphrase(chars)
-                    } finally {
-                        chars.fill('\u0000')
-                    }
-                    if (unlocked) {
-                        tokenCryptoManager.disableTokenEncryption(targetMode)
-                        AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                        viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                        invalidateMenu()
-                        showSnackbar(R.string.token_encryption_disabled)
-                    } else {
-                        positiveButton.isEnabled = true
-                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                    }
-                }
+        val dialog = AuthenticationUtil.createManualKeyPromptDialog(
+            activity = this,
+            titleRes = R.string.verify_encryption_key_title,
+            messageRes = R.string.verify_encryption_key_message,
+            positiveButtonRes = R.string.ok_text
+        ) { chars, _, dismissSafely ->
+            if (tokenCryptoManager.unlockWithPassphrase(chars)) {
+                tokenCryptoManager.disableTokenEncryption(targetMode)
+                dismissSafely()
+                viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                invalidateMenu()
+                showSnackbar(R.string.token_encryption_disabled)
+                null
+            } else {
+                getString(R.string.incorrect_encryption_key)
             }
         }
-        dialog.setOnDismissListener {
-            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
-        }
-        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-        dialog.show()
+        showTrackedDialog(dialog)
     }
 
     private fun performDisableEncryption(targetMode: AuthMode) {
@@ -858,96 +772,48 @@ class MainActivity : AppCompatActivity() {
     ) {
         activeAuthDialog?.dismiss()
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_manual_key_prompt, null)
-        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
-        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
-        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
-        val enableBiometricCheckbox = dialogView.findViewById<MaterialCheckBox>(R.id.enable_biometric_checkbox)
-
-        messageView.setText(
-            if (biometricInvalidated) {
-                R.string.biometric_invalidated_enter_key_message
-            } else {
-                R.string.enter_encryption_key_to_unlock_message
-            }
-        )
-        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
-
         val canOfferBiometric = (!tokenCryptoManager.isBiometricKeyConfigured() || biometricInvalidated) &&
             AuthenticationUtil.canAuthenticateStrongBiometric(this)
-        if (canOfferBiometric) {
-            enableBiometricCheckbox.visibility = View.VISIBLE
-            enableBiometricCheckbox.isChecked = true
-            enableBiometricCheckbox.setText(
-                if (biometricInvalidated) {
-                    R.string.reenable_biometric_unlock
-                } else {
-                    R.string.enable_biometric_unlock
-                }
-            )
+        val biometricLabelRes = if (canOfferBiometric) {
+            if (biometricInvalidated) R.string.reenable_biometric_unlock else R.string.enable_biometric_unlock
         } else {
-            enableBiometricCheckbox.visibility = View.GONE
+            null
+        }
+        val messageRes = if (biometricInvalidated) {
+            R.string.biometric_invalidated_enter_key_message
+        } else {
+            R.string.enter_encryption_key_to_unlock_message
         }
 
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.unlock_tokens_title)
-            .setView(dialogView)
-            .setCancelable(!isLaunchGate)
-            .setPositiveButton(R.string.unlock_text, null)
-            .setNegativeButton(R.string.cancel_text) { _, _ ->
+        val dialog = AuthenticationUtil.createManualKeyPromptDialog(
+            activity = this,
+            titleRes = R.string.unlock_tokens_title,
+            messageRes = messageRes,
+            positiveButtonRes = R.string.unlock_text,
+            cancelable = !isLaunchGate,
+            biometricCheckboxLabelRes = biometricLabelRes,
+            onCancel = {
                 activeAuthDialog = null
                 if (isLaunchGate) {
                     finish()
                 }
             }
-            .setOnCancelListener {
+        ) { chars, biometricChecked, dismissSafely ->
+            if (!tokenCryptoManager.unlockWithPassphrase(chars)) {
+                getString(R.string.incorrect_encryption_key)
+            } else {
+                dismissSafely()
                 activeAuthDialog = null
-                if (isLaunchGate) {
-                    finish()
+                if (canOfferBiometric && biometricChecked) {
+                    promptReenableBiometricAfterManualUnlock()
+                } else {
+                    onAuthCompleted()
                 }
+                null
             }
-            .create()
-
-        dialog.setOnShowListener {
-            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
-                if (chars.isEmpty()) {
-                    keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                    return@setOnClickListener
-                }
-                positiveButton.isEnabled = false
-                lifecycleScope.launch {
-                    val unlocked = try {
-                        tokenCryptoManager.unlockWithPassphrase(chars)
-                    } finally {
-                        chars.fill('\u0000')
-                    }
-                    if (!unlocked) {
-                        positiveButton.isEnabled = true
-                        keyInputLayout.error = getString(R.string.incorrect_encryption_key)
-                        return@launch
-                    }
-
-                    val shouldEnableBiometric = canOfferBiometric && enableBiometricCheckbox.isChecked
-                    AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                    activeAuthDialog = null
-
-                    if (shouldEnableBiometric) {
-                        promptReenableBiometricAfterManualUnlock()
-                    } else {
-                        onAuthCompleted()
-                    }
-                }
-            }
-        }
-        dialog.setOnDismissListener {
-            AuthenticationUtil.clearAndCancelAutofill(this, keyEditText)
         }
 
         activeAuthDialog = dialog
-        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
         dialog.show()
     }
 
@@ -995,19 +861,16 @@ class MainActivity : AppCompatActivity() {
     private fun onAuthCompleted() {
         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         processPendingDeepLinkIfAny()
-        processPendingActivityResultIfAny()
+        processPendingDocumentResultIfAny()
     }
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
-        const val READ_JSON_REQUEST_CODE = 42
-        const val WRITE_JSON_REQUEST_CODE = 43
-        const val READ_KEY_URI_REQUEST_CODE = 44
-        const val WRITE_KEY_URI_REQUEST_CODE = 45
         const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
         const val SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA = "shareFromPackageName"
         private const val STATE_PENDING_EXPORT_ENCRYPTED = "pending_export_encrypted"
         private const val STATE_PENDING_DEEP_LINK_URI = "pending_deep_link_uri"
+        private const val EXTRA_DEEP_LINK_HANDLED = "org.fedorahosted.freeotp.EXTRA_DEEP_LINK_HANDLED"
 
         internal fun exportBaseFileName(encrypted: Boolean): String {
             return if (encrypted) "freeotp-backup-encrypted" else "freeotp-backup"

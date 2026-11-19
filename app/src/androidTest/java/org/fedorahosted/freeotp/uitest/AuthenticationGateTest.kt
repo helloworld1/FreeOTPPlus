@@ -1,10 +1,8 @@
 package org.fedorahosted.freeotp.uitest
 
-import android.app.Activity
-import android.content.Intent
 import android.os.SystemClock
+import android.widget.TextView
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
@@ -68,7 +66,7 @@ class AuthenticationGateTest {
             scenario.onActivity { activity ->
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                    EditTokenFragment.args(tokenId)
                 )
             }
             onView(withId(R.id.secret))
@@ -76,6 +74,9 @@ class AuthenticationGateTest {
                 .check(matches(withText(R.string.click_to_display)))
                 .perform(click())
                 .check(matches(withText(TestData.OTP_TOTP_TOKEN_2.secret)))
+            scenario.onActivity { activity ->
+                assertThat(activity.findViewById<TextView>(R.id.secret).freezesText).isFalse()
+            }
         }
         assertThat(authPromptCalled).isFalse()
     }
@@ -94,7 +95,7 @@ class AuthenticationGateTest {
             scenario.onActivity { activity ->
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                    EditTokenFragment.args(tokenId)
                 )
             }
             onView(withId(R.id.secret))
@@ -217,7 +218,7 @@ class AuthenticationGateTest {
                 activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                 activity.navigateTo(
                     R.id.action_tokenList_to_shareQrCode,
-                    bundleOf(ShareQrCodeDialogFragment.ARG_TOKEN_ID to tokenId)
+                    ShareQrCodeDialogFragment.args(tokenId)
                 )
             }
 
@@ -270,11 +271,9 @@ class AuthenticationGateTest {
 
             fakeNow = 190_000L
             getInstrumentation().runOnMainSync {
-                @Suppress("DEPRECATION")
-                mainActivity.onActivityResult(
-                    MainActivity.WRITE_JSON_REQUEST_CODE,
-                    Activity.RESULT_OK,
-                    Intent().setData(exportFile.toUri())
+                mainActivity.onDocumentPicked(
+                    MainActivity.DocumentAction.EXPORT_JSON,
+                    exportFile.toUri()
                 )
             }
 

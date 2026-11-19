@@ -3,7 +3,6 @@ package org.fedorahosted.freeotp.uitest
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -240,7 +239,7 @@ class TokenEncryptionTest {
                 }
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
-                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to 1L)
+                    EditTokenFragment.args(1L)
                 )
             }
 
