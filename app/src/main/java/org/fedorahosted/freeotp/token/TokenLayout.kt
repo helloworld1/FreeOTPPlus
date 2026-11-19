@@ -16,6 +16,7 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.util.setTokenImage
+import java.util.Locale
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private val tag = TokenLayout::class.java.simpleName
@@ -26,6 +27,8 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private lateinit var mIssuer: TextView
     private lateinit var mLabel: TextView
     private lateinit var mCategory: TextView
+    private lateinit var mCounterContainer: View
+    private lateinit var mCounterValue: TextView
     private lateinit var mMenu: ImageView
     private lateinit var mPopupMenu: PopupMenu
 
@@ -50,6 +53,8 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mIssuer = findViewById(R.id.issuer)
         mLabel = findViewById(R.id.label)
         mCategory = findViewById(R.id.category)
+        mCounterContainer = findViewById(R.id.counter_container)
+        mCounterValue = findViewById(R.id.counter_value)
         mMenu = findViewById(R.id.menu)
 
         mPopupMenu = PopupMenu(context, mMenu)
@@ -94,6 +99,18 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         }
 
         mCategory.visibility = View.GONE
+        updateCounter(token)
+    }
+
+    fun updateCounter(token: OtpToken) {
+        if (token.tokenType == OtpTokenType.HOTP) {
+            val displayCounter = formatHotpCounter(token.counter)
+            mCounterValue.text = displayCounter
+            mCounterContainer.contentDescription = "${context.getString(R.string.counter)}: $displayCounter"
+            mCounterContainer.visibility = View.VISIBLE
+        } else {
+            mCounterContainer.visibility = View.GONE
+        }
     }
 
     private fun animate(view: View, anim: Int, animate: Boolean) {
@@ -165,6 +182,11 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     }
 
     companion object {
+        internal fun formatHotpCounter(storedCounter: Long): String {
+            val displayValue = if (storedCounter == Long.MAX_VALUE) Long.MAX_VALUE else storedCounter + 1L
+            return String.format(Locale.US, "%d", displayValue)
+        }
+
         internal fun formatCodeForDisplay(raw: String): String {
             return when (raw.length) {
                 6 -> "${raw.substring(0, 3)} ${raw.substring(3)}"

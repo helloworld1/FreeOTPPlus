@@ -4,11 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.sqlite.db.SimpleSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -72,19 +69,8 @@ interface OtpTokenDao {
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
     suspend fun updateOrdinal(id: Long, ordinal: Long)
 
-    /**
-     * This incrementCounter won't trigger Flow collect by using raw query
-     * We do not want increment count triggering flow because it can refresh the token
-     */
-    suspend fun incrementCounter(id: Long) {
-        incrementCounterRaw(
-            SimpleSQLiteQuery("update otp_tokens set counter = counter + 1 where id = ?",
-                arrayOf(id))
-        )
-    }
-
-    @RawQuery
-    suspend fun incrementCounterRaw(query: SupportSQLiteQuery): Int
+    @Query("update otp_tokens set counter = counter + 1 where id = :id")
+    suspend fun incrementCounter(id: Long)
 
     @Transaction
     suspend fun movePairs(pairs : List<Pair<Long,Long>>){

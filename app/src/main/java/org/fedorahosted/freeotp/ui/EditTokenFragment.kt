@@ -25,6 +25,7 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.EditBinding
+import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
@@ -174,7 +175,7 @@ class EditTokenFragment : Fragment() {
 
             if (token.tokenType == OtpTokenType.HOTP) {
                 b.intervalLabel.setText(R.string.counter)
-                b.interval.text = (token.counter + 1).toString()
+                b.interval.text = TokenLayout.formatHotpCounter(token.counter)
             } else {
                 b.intervalLabel.setText(R.string.interval)
                 b.interval.text = token.period.toString()

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.not
 import org.junit.Rule
@@ -195,13 +196,66 @@ class MainActivityTest {
     @Test
     fun testTokenClickRevealHotp() {
         populateTestData()
+
+        // HOTP token (pos 0) shows counter "0"; TOTP token (pos 1) hides counter badge
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_container), isDisplayed())))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("0"), isDisplayed())))))
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
+            .check(matches(RecyclerViewAssertion.atPosition(1, hasDescendant(allOf(withId(R.id.counter_container), not(isDisplayed()))))))
+
+        // Tap HOTP token -> reveals code AND increments counter badge live to "1"
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("github.com"))))
-            .check(matches(hasDescendant(withText("github account 1"))))
-            .check(matches(hasDescendant(withText("248 759"))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github.com")))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github account 1")))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("248 759")))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("1"), isDisplayed())))))
+
+        // Open Edit screen and verify Counter matches "1"
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
+                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+        onView(withText(R.string.edit))
+            .perform(click())
+        onView(withId(R.id.interval))
+            .check(matches(withText("1")))
+    }
+
+    @Test
+    fun testAddHotpTokenWithCustomCounterAndIncrementOnUse() {
+        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+        onView(withText(R.string.add_token))
+            .perform(click())
+        onView(withId(R.id.issuer))
+            .perform(replaceText("HotpService"), closeSoftKeyboard())
+        onView(withId(R.id.label))
+            .perform(replaceText("alice@example.com"), closeSoftKeyboard())
+        onView(withId(R.id.secret))
+            .perform(replaceText("JBSWY3DPEHPK3PXP"), closeSoftKeyboard())
+        onView(withId(R.id.hotp))
+            .perform(scrollTo(), click())
+        onView(withId(R.id.counter))
+            .perform(scrollTo(), replaceText("341"), closeSoftKeyboard())
+        onView(withId(R.id.add))
+            .check(matches(isEnabled()))
+            .perform(click())
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("341"), isDisplayed())))))
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("342"), isDisplayed())))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.code), not(withText("--- ---")))))))
     }
 
     @Test

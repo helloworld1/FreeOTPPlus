@@ -49,6 +49,18 @@ class TokenListAdapter(
         )
     }
 
+    override fun onBindViewHolder(
+        holder: TokenViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isNotEmpty() && payloads.all { it == TokenItemCallback.PAYLOAD_COUNTER_CHANGED }) {
+            holder.bindCounterUpdate(currentList[position])
+            return
+        }
+        super.onBindViewHolder(holder, position, payloads)
+    }
+
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
         val currentToken = currentList[position]
         holder.bind(currentToken)
@@ -68,8 +80,15 @@ class TokenListAdapter(
                         return@let
                     }
 
+                    val tokenLayout = v as TokenLayout
                     if (token.tokenType == OtpTokenType.HOTP) {
                         otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+                        val incrementedCounter = if (token.counter == Long.MAX_VALUE) {
+                            Long.MAX_VALUE
+                        } else {
+                            token.counter + 1L
+                        }
+                        holder.bindCounterUpdate(token.copy(counter = incrementedCounter))
                     }
 
                     if (settings.copyToClipboard) {
@@ -78,7 +97,7 @@ class TokenListAdapter(
                     }
 
                     viewModel.putActiveTokenCode(token.id, codes)
-                    (v as TokenLayout).start(token.tokenType, codes, true)
+                    tokenLayout.start(token.tokenType, codes, true)
                 }
             }
         }

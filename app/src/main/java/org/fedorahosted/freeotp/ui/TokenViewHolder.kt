@@ -22,11 +22,10 @@ class TokenViewHolder(
     private val onShareQrCode: (OtpToken) -> Unit
 ) : RecyclerView.ViewHolder(tokenLayout) {
 
-    fun bind(token: OtpToken) {
-        tokenLayout.bind(token, R.menu.token, getOnMenuItemClick(token))
-    }
+    private var currentToken: OtpToken? = null
 
-    private fun getOnMenuItemClick(token: OtpToken) = PopupMenu.OnMenuItemClickListener { item ->
+    private val menuItemClickListener = PopupMenu.OnMenuItemClickListener { item ->
+        val token = currentToken ?: return@OnMenuItemClickListener true
         when (item.itemId) {
             R.id.action_edit -> {
                 onEdit(token)
@@ -63,5 +62,15 @@ class TokenViewHolder(
             }
         }
         true
+    }
+
+    fun bind(token: OtpToken) {
+        currentToken = token
+        tokenLayout.bind(token, R.menu.token, menuItemClickListener)
+    }
+
+    fun bindCounterUpdate(token: OtpToken) {
+        currentToken = token
+        tokenLayout.updateCounter(token)
     }
 }

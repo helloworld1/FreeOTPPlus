@@ -87,10 +87,11 @@
             app:autoSizeStepGranularity="1sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toTopOf="@+id/titles_container"
-            app:layout_constraintEnd_toStartOf="@+id/menu"
+            app:layout_constraintEnd_toStartOf="@+id/counter_container"
             app:layout_constraintStart_toEndOf="@+id/image_bg"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
+            app:layout_goneMarginEnd="2dp"
             tool:text="012 345" />
 
         <LinearLayout
@@ -102,12 +103,63 @@
             android:layout_marginEnd="2dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/menu"
+            app:layout_constraintEnd_toStartOf="@+id/counter_container"
             app:layout_constraintStart_toEndOf="@+id/image_bg"
-            app:layout_constraintTop_toBottomOf="@+id/code">
+            app:layout_constraintTop_toBottomOf="@+id/code"
+            app:layout_goneMarginEnd="2dp">
 
             <include layout="@layout/titles" />
         </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/counter_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="2dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/surface_container_high"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/menu"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeWidth="0dp"
+            tool:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minWidth="38dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="5dp">
+
+                <TextView
+                    android:id="@+id/counter_symbol"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
+                    android:includeFontPadding="false"
+                    android:text="@string/counter_symbol"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/counter_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:textColor="@color/on_surface"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:typeface="monospace"
+                    tool:text="341" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <ImageView
             android:id="@+id/menu"
