@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.coreKtx)
     implementation(libs.activityKtx)
+    implementation(libs.fragmentKtx)
+    implementation(libs.bundles.navigation)
     implementation(libs.bundles.kotlinxCoroutines)
 
     implementation(libs.bundles.cameraX)
@@ -86,4 +88,5 @@ dependencies {
     androidTestImplementation(libs.bundles.androidxJunit)
     androidTestImplementation(libs.androidxTruth)
     androidTestImplementation(libs.bundles.espresso)
+    androidTestImplementation(libs.bundles.navigation)
 }

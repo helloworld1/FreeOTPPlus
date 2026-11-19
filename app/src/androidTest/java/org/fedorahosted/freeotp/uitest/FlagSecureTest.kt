@@ -1,19 +1,22 @@
 package org.fedorahosted.freeotp.uitest
 
-import android.app.Activity
-import android.content.Intent
+import android.view.Window
 import android.view.WindowManager
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
-import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
-import org.fedorahosted.freeotp.ui.AboutActivity
-import org.fedorahosted.freeotp.ui.AddActivity
-import org.fedorahosted.freeotp.ui.DeleteActivity
-import org.fedorahosted.freeotp.ui.EditActivity
+import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.ui.DeleteTokenDialogFragment
+import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.fedorahosted.freeotp.ui.ShareQrCodeActivity
+import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -24,64 +27,76 @@ class FlagSecureTest {
     fun testMainActivitySetsFlagSecure() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
+                assertFlagSecureSet(activity.window)
             }
         }
     }
 
     @Test
-    fun testAddActivitySetsFlagSecure() {
-        ActivityScenario.launch(AddActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
-            }
-        }
-    }
-
-    @Test
-    fun testEditActivitySetsFlagSecure() {
+    fun testFullScreenFragmentsKeepFlagSecure() {
         val tokenId = insertTestToken()
-        val intent = Intent(getInstrumentation().targetContext, EditActivity::class.java)
-            .putExtra(EditActivity.EXTRA_TOKEN_ID, tokenId)
-
-        ActivityScenario.launch<EditActivity>(intent).use { scenario ->
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
+                activity.navigateTo(R.id.action_tokenList_to_addToken)
+                assertFlagSecureSet(activity.window)
             }
+            onView(withId(R.id.secret)).check(matches(isDisplayed()))
+
+            scenario.onActivity { activity ->
+                activity.navigateBack()
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                )
+                assertFlagSecureSet(activity.window)
+            }
+            onView(withId(R.id.issuer)).check(matches(isDisplayed()))
+
+            scenario.onActivity { activity ->
+                activity.navigateBack()
+                activity.navigateTo(R.id.action_tokenList_to_about)
+                assertFlagSecureSet(activity.window)
+            }
+            onView(withId(R.id.about_version)).check(matches(isDisplayed()))
         }
     }
 
     @Test
-    fun testShareQrCodeActivitySetsFlagSecure() {
+    fun testShareQrCodeDialogSetsFlagSecure() {
         val tokenId = insertTestToken()
-        val intent = Intent(getInstrumentation().targetContext, ShareQrCodeActivity::class.java)
-            .putExtra(ShareQrCodeActivity.EXTRA_TOKEN_ID, tokenId)
-
-        ActivityScenario.launch<ShareQrCodeActivity>(intent).use { scenario ->
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
+                activity.navigateTo(
+                    R.id.action_tokenList_to_shareQrCode,
+                    bundleOf(ShareQrCodeDialogFragment.ARG_TOKEN_ID to tokenId)
+                )
+            }
+            onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+            scenario.onActivity { activity ->
+                val dialogWindows = activity.getOpenDialogWindows()
+                assertThat(dialogWindows).isNotEmpty()
+                assertFlagSecureSet(dialogWindows.first())
             }
         }
     }
 
     @Test
-    fun testDeleteActivitySetsFlagSecure() {
+    fun testDeleteTokenDialogSetsFlagSecure() {
         val tokenId = insertTestToken()
-        val intent = Intent(getInstrumentation().targetContext, DeleteActivity::class.java)
-            .putExtra(DeleteActivity.EXTRA_TOKEN_ID, tokenId)
-
-        ActivityScenario.launch<DeleteActivity>(intent).use { scenario ->
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
+                activity.navigateTo(
+                    R.id.action_tokenList_to_deleteToken,
+                    bundleOf(DeleteTokenDialogFragment.ARG_TOKEN_ID to tokenId)
+                )
             }
-        }
-    }
+            onView(withId(R.id.delete)).inRoot(isDialog()).check(matches(isDisplayed()))
 
-    @Test
-    fun testAboutActivitySetsFlagSecure() {
-        ActivityScenario.launch(AboutActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                assertFlagSecureSet(activity)
+                val dialogWindows = activity.getOpenDialogWindows()
+                assertThat(dialogWindows).isNotEmpty()
+                assertFlagSecureSet(dialogWindows.first())
             }
         }
     }
@@ -91,7 +106,8 @@ class FlagSecureTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 runBlocking {
-                    activity.otpTokenDatabase.otpTokenDao().insert(TestData.OTP_TOTP_TOKEN_2.copy(id = 1, ordinal = 1))
+                    activity.otpTokenDatabase.otpTokenDao()
+                        .insert(TestData.OTP_TOTP_TOKEN_2.copy(id = 1, ordinal = 1))
                     tokenId = 1L
                 }
             }
@@ -99,8 +115,8 @@ class FlagSecureTest {
         return tokenId
     }
 
-    private fun assertFlagSecureSet(activity: Activity) {
-        val flags = activity.window.attributes.flags
+    private fun assertFlagSecureSet(window: Window) {
+        val flags = window.attributes.flags
         assertThat(flags and WindowManager.LayoutParams.FLAG_SECURE)
             .isEqualTo(WindowManager.LayoutParams.FLAG_SECURE)
     }

@@ -1,9 +1,9 @@
 package org.fedorahosted.freeotp.uitest
 
-import android.content.Intent
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -33,7 +33,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.EncryptionType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
-import org.fedorahosted.freeotp.ui.EditActivity
+import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
@@ -214,12 +214,12 @@ class TokenEncryptionTest {
                 }
             }
 
-            // Tap HOTP token card and verify exact OTP code generation ("248759")
+            // Tap HOTP token card and verify exact OTP code generation ("248 759")
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("248759"))))
+                .check(matches(hasDescendant(withText("248 759"))))
 
             // Add a new token while in Token encrypted mode and verify it is stored encrypted too
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
@@ -238,14 +238,15 @@ class TokenEncryptionTest {
                         assertThat(token.secret).startsWith("v1:")
                     }
                 }
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to 1L)
+                )
             }
-        }
 
-        // Verify EditActivity secret reveal requires key verification when no screen lock is set and reveals plaintext
-        val editIntent = Intent(getInstrumentation().targetContext, EditActivity::class.java)
-            .putExtra(EditActivity.EXTRA_TOKEN_ID, 1L)
-        ActivityScenario.launch<EditActivity>(editIntent).use {
+            // Verify EditTokenFragment secret reveal requires key verification when no screen lock is set and reveals plaintext
             onView(withId(R.id.secret))
+                .perform(scrollTo())
                 .check(matches(withText(R.string.click_to_display)))
                 .perform(click())
 

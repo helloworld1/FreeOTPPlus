@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/tokenListFragment">
+
+    <fragment
+        android:id="@+id/tokenListFragment"
+        android:name="org.fedorahosted.freeotp.ui.TokenListFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_token_list">
+        <action
+            android:id="@+id/action_tokenList_to_scanToken"
+            app:destination="@id/scanTokenFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_tokenList_to_addToken"
+            app:destination="@id/addTokenFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_tokenList_to_editToken"
+            app:destination="@id/editTokenFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_tokenList_to_about"
+            app:destination="@id/aboutFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_tokenList_to_deleteToken"
+            app:destination="@id/deleteTokenDialog" />
+        <action
+            android:id="@+id/action_tokenList_to_shareQrCode"
+            app:destination="@id/shareQrCodeDialog" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scanTokenFragment"
+        android:name="org.fedorahosted.freeotp.ui.ScanTokenFragment"
+        android:label="@string/scan_qr_code"
+        tools:layout="@layout/activity_scan_token" />
+
+    <fragment
+        android:id="@+id/addTokenFragment"
+        android:name="org.fedorahosted.freeotp.ui.AddTokenFragment"
+        android:label="@string/add_token"
+        tools:layout="@layout/add" />
+
+    <fragment
+        android:id="@+id/editTokenFragment"
+        android:name="org.fedorahosted.freeotp.ui.EditTokenFragment"
+        android:label="@string/edit"
+        tools:layout="@layout/edit">
+        <argument
+            android:name="token_id"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="org.fedorahosted.freeotp.ui.AboutFragment"
+        android:label="@string/about_freeotp"
+        tools:layout="@layout/about" />
+
+    <dialog
+        android:id="@+id/deleteTokenDialog"
+        android:name="org.fedorahosted.freeotp.ui.DeleteTokenDialogFragment"
+        android:label="@string/delete">
+        <argument
+            android:name="token_id"
+            app:argType="long" />
+    </dialog>
+
+    <dialog
+        android:id="@+id/shareQrCodeDialog"
+        android:name="org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment"
+        android:label="@string/share_qr_code">
+        <argument
+            android:name="token_id"
+            app:argType="long" />
+    </dialog>
+</navigation>

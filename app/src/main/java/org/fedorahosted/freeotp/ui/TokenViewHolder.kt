@@ -17,24 +17,24 @@ class TokenViewHolder(
     private val activity: AppCompatActivity,
     val tokenLayout: TokenLayout,
     private val settings: Settings,
-    private val tokenCryptoManager: TokenCryptoManager
+    private val tokenCryptoManager: TokenCryptoManager,
+    private val onEdit: (OtpToken) -> Unit,
+    private val onDelete: (OtpToken) -> Unit,
+    private val onShareQrCode: (OtpToken) -> Unit
 ) : RecyclerView.ViewHolder(tokenLayout) {
+
     fun bind(token: OtpToken) {
         tokenLayout.bind(token, R.menu.token, getOnMenuItemClick(token))
     }
 
-    fun getOnMenuItemClick(token: OtpToken) = PopupMenu.OnMenuItemClickListener { item ->
+    private fun getOnMenuItemClick(token: OtpToken) = PopupMenu.OnMenuItemClickListener { item ->
         when (item.itemId) {
             R.id.action_edit -> {
-                val i = Intent(tokenLayout.context, EditActivity::class.java)
-                i.putExtra(EditActivity.EXTRA_TOKEN_ID, token.id)
-                activity.startActivity(i)
+                onEdit(token)
             }
 
             R.id.action_delete -> {
-                val i = Intent(tokenLayout.context, DeleteActivity::class.java)
-                i.putExtra(DeleteActivity.EXTRA_TOKEN_ID, token.id)
-                activity.startActivity(i)
+                onDelete(token)
             }
 
             R.id.action_share -> {
@@ -59,13 +59,10 @@ class TokenViewHolder(
                     settings,
                     tokenCryptoManager
                 ) {
-                    val i = Intent(tokenLayout.context, ShareQrCodeActivity::class.java)
-                    i.putExtra(ShareQrCodeActivity.EXTRA_TOKEN_ID, token.id)
-                    activity.startActivity(i)
+                    onShareQrCode(token)
                 }
             }
         }
         true
     }
-
 }

@@ -8,15 +8,13 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-
+import androidx.core.content.ContextCompat
 import com.google.android.material.card.MaterialCardView
-
-import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.legacy.TokenCode
-import org.fedorahosted.freeotp.data.util.CategoryUtil
+import org.fedorahosted.freeotp.ui.ProgressCircle
 import org.fedorahosted.freeotp.util.setTokenImage
 
 class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
@@ -33,7 +31,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
 
     private var mCodes: TokenCode? = null
     private var mType: OtpTokenType? = null
-    private var mPlaceholder: String? = null
+    private var mPlaceholder: String = "--- ---"
     private var mStartTime: Long = 0
 
     constructor(context: Context) : super(context)
@@ -45,28 +43,31 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     override fun onFinishInflate() {
         super.onFinishInflate()
 
-        mProgressInner = findViewById<View>(R.id.progressInner) as ProgressCircle
-        mProgressOuter = findViewById<View>(R.id.progressOuter) as ProgressCircle
-        mImage = findViewById<View>(R.id.image) as ImageView
-        mCode = findViewById<View>(R.id.code) as TextView
-        mIssuer = findViewById<View>(R.id.issuer) as TextView
-        mLabel = findViewById<View>(R.id.label) as TextView
-        mCategory = findViewById<View>(R.id.category) as TextView
-        mMenu = findViewById<View>(R.id.menu) as ImageView
+        mProgressInner = findViewById(R.id.progressInner)
+        mProgressOuter = findViewById(R.id.progressOuter)
+        mImage = findViewById(R.id.image)
+        mCode = findViewById(R.id.code)
+        mIssuer = findViewById(R.id.issuer)
+        mLabel = findViewById(R.id.label)
+        mCategory = findViewById(R.id.category)
+        mMenu = findViewById(R.id.menu)
 
         mPopupMenu = PopupMenu(context, mMenu)
         mMenu.setOnClickListener(this)
     }
 
+    override fun onDetachedFromWindow() {
+        removeCallbacks(this)
+        super.onDetachedFromWindow()
+    }
+
     fun bind(token: OtpToken, menu: Int, micl: PopupMenu.OnMenuItemClickListener) {
         mCodes = null
 
-        // Setup menu.
         mPopupMenu.menu.clear()
         mPopupMenu.menuInflater.inflate(menu, mPopupMenu.menu)
         mPopupMenu.setOnMenuItemClickListener(micl)
 
-        // Cancel all active animations.
         isEnabled = true
         removeCallbacks(this)
         mImage.clearAnimation()
@@ -75,17 +76,14 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mProgressInner.visibility = View.GONE
         mProgressOuter.visibility = View.GONE
 
-        // Get the code placeholder.
-        val placeholder = CharArray(token.digits)
-        for (i in placeholder.indices)
-            placeholder[i] = '-'
-        mPlaceholder = String(placeholder)
+        mPlaceholder = buildPlaceholder(token.digits)
 
-        // Show the image.
         mImage.setTokenImage(token)
+        mImage.alpha = 1.0f
 
-        // Set the labels.
         mCode.text = mPlaceholder
+        mCode.setTextColor(ContextCompat.getColor(context, R.color.on_surface_variant))
+
         if (token.issuer.isNullOrBlank()) {
             mIssuer.text = token.label
             mLabel.visibility = View.GONE
@@ -95,19 +93,14 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
             mLabel.visibility = View.VISIBLE
         }
 
-        val formattedCategories = CategoryUtil.formatForDisplay(token.categories)
-        if (formattedCategories.isBlank()) {
-            mCategory.visibility = View.GONE
-        } else {
-            mCategory.visibility = View.VISIBLE
-            mCategory.text = formattedCategories
-        }
+        mCategory.visibility = View.GONE
     }
 
     private fun animate(view: View, anim: Int, animate: Boolean) {
         val a = AnimationUtils.loadAnimation(view.context, anim)
-        if (!animate)
+        if (!animate) {
             a.duration = 0
+        }
         view.startAnimation(a)
     }
 
@@ -115,12 +108,10 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mCodes = codes
         mType = type
 
-        // Start animations.
         mProgressInner.visibility = View.VISIBLE
         animate(mProgressInner, R.anim.fadein, animate)
         animate(mImage, R.anim.token_image_fadeout, animate)
 
-        // Handle type-specific UI.
         when (type) {
             OtpTokenType.HOTP -> isEnabled = false
             OtpTokenType.TOTP -> {
@@ -130,6 +121,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         }
 
         mStartTime = System.currentTimeMillis()
+        removeCallbacks(this)
         post(this)
     }
 
@@ -138,12 +130,13 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     }
 
     override fun run() {
-        // Get the current data
-        val code = mCodes?.currentCode?: run {
+        val rawCode = mCodes?.currentCode ?: run {
             mCode.text = mPlaceholder
+            mCode.setTextColor(ContextCompat.getColor(context, R.color.on_surface_variant))
             mProgressInner.visibility = View.GONE
             mProgressOuter.visibility = View.GONE
             animate(mImage, R.anim.token_image_fadein, true)
+            isEnabled = true
             return
         }
 
@@ -157,16 +150,33 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
             return
         }
 
-        // Determine whether to enable/disable the view.
-        if (!isEnabled)
+        if (!isEnabled) {
             isEnabled = System.currentTimeMillis() - mStartTime > 5000
+        }
 
-        // Update the fields
-        mCode.text = code
+        mCode.text = formatCodeForDisplay(rawCode)
+        mCode.setTextColor(ContextCompat.getColor(context, R.color.primary))
         mProgressInner.setProgress(currentProgress)
-        if (mType != OtpTokenType.HOTP)
+        if (mType != OtpTokenType.HOTP) {
             mProgressOuter.setProgress(totalProgress)
+        }
 
         postDelayed(this, 100)
+    }
+
+    companion object {
+        internal fun formatCodeForDisplay(raw: String): String {
+            return when (raw.length) {
+                6 -> "${raw.substring(0, 3)} ${raw.substring(3)}"
+                7 -> "${raw.substring(0, 3)} ${raw.substring(3)}"
+                8 -> "${raw.substring(0, 4)} ${raw.substring(4)}"
+                else -> raw
+            }
+        }
+
+        internal fun buildPlaceholder(digits: Int): String {
+            val safeDigits = digits.coerceIn(4, 10)
+            return formatCodeForDisplay("-".repeat(safeDigits))
+        }
     }
 }

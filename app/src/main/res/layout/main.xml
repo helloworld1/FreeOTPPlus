@@ -1,72 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-   - FreeOTP
-   -
-   - Authors: Nathaniel McCallum <npmccallum@redhat.com>
-   -
-   - Copyright (C) 2013  Nathaniel McCallum, Red Hat
-   -
-   - Licensed under the Apache License, Version 2.0 (the "License");
-   - you may not use this file except in compliance with the License.
-   - You may obtain a copy of the License at
-   -
-   -     http://www.apache.org/licenses/LICENSE-2.0
-   -
-   - Unless required by applicable law or agreed to in writing, software
-   - distributed under the License is distributed on an "AS IS" BASIS,
-   - limitations under the License.
-   -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface"
+    android:importantForAutofill="noExcludeDescendants"
+    tools:targetApi="o">
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-	android:id="@+id/root_view"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
-	<com.google.android.material.appbar.AppBarLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:fitsSystemWindows="true">
-		<com.google.android.material.appbar.MaterialToolbar
-			android:id="@+id/toolbar"
-			android:layout_width="match_parent"
-			android:layout_height="?attr/actionBarSize">
-			<androidx.appcompat.widget.SearchView
-				android:id="@+id/search_view"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="end"
-				android:layout_marginEnd="@dimen/space_2"
-				android:iconifiedByDefault="true"/>
-		</com.google.android.material.appbar.MaterialToolbar>
-	</com.google.android.material.appbar.AppBarLayout>
-	<androidx.core.widget.NestedScrollView
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		app:layout_behavior="@string/appbar_scrolling_view_behavior">
-		<TextView
-			android:id="@+id/empty_view"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:padding="8dp"
-			android:gravity="center"
-			android:visibility="gone"
-			android:text="@string/no_keys" />
-	</androidx.core.widget.NestedScrollView>
-	<androidx.recyclerview.widget.RecyclerView
-		android:id="@+id/token_list"
-		android:visibility="gone"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:clipToPadding="false"
-		android:paddingBottom="@dimen/token_list_bottom_padding"
-		app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-	<com.google.android.material.floatingactionbutton.FloatingActionButton
-		android:id="@+id/add_token_fab"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_gravity="bottom|end"
-		android:layout_margin="24dp"
-		android:contentDescription="@string/add_token"
-		app:srcCompat="@drawable/camera"/>
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

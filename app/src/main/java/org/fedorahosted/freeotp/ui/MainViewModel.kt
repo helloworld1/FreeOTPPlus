@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
+import android.util.ArrayMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.util.AppSessionManager
 import javax.inject.Inject
 
@@ -22,6 +24,7 @@ class MainViewModel @Inject constructor(
 
     private val tokenSearchQuery = MutableStateFlow("")
     private val categoryFilter = MutableStateFlow<String?>(null)
+    private val activeTokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
 
     init {
         viewModelScope.launch {
@@ -32,6 +35,13 @@ class MainViewModel @Inject constructor(
                     availableCategories.none { it.equals(current, ignoreCase = true) }
                 ) {
                     categoryFilter.value = null
+                }
+            }
+        }
+        viewModelScope.launch {
+            appSessionManager.authState.collect { state ->
+                if (state == AuthState.UNAUTHENTICATED) {
+                    activeTokenCodes.clear()
                 }
             }
         }
@@ -51,6 +61,8 @@ class MainViewModel @Inject constructor(
         tokenSearchQuery.value = query
     }
 
+    fun getCurrentSearchQuery(): String = tokenSearchQuery.value
+
     fun setCategoryFilter(category: String?) {
         categoryFilter.value = category
     }
@@ -58,6 +70,23 @@ class MainViewModel @Inject constructor(
     fun getCategoryFilter(): Flow<String?> = categoryFilter
 
     fun getCurrentCategoryFilter(): String? = categoryFilter.value
+
+    fun putActiveTokenCode(tokenId: Long, code: TokenCode) {
+        activeTokenCodes[tokenId] = code
+    }
+
+    fun getActiveTokenCode(tokenId: Long): TokenCode? {
+        val code = activeTokenCodes[tokenId] ?: return null
+        if (code.currentCode == null) {
+            activeTokenCodes.remove(tokenId)
+            return null
+        }
+        return code
+    }
+
+    fun removeActiveTokenCode(tokenId: Long) {
+        activeTokenCodes.remove(tokenId)
+    }
 
     fun setAuthState(auth: AuthState) {
         appSessionManager.setAuthState(auth)
@@ -82,7 +111,7 @@ class MainViewModel @Inject constructor(
             if (searchQuery.isNotEmpty()) {
                 filteredTokens = filteredTokens.filter { token ->
                     token.label.contains(searchQuery, true)
-                            || token.issuer?.contains(searchQuery, true) ?: false
+                        || token.issuer?.contains(searchQuery, true) ?: false
                 }
             }
 
@@ -101,6 +130,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun lockSession() {
+        activeTokenCodes.clear()
         appSessionManager.lockSession()
     }
 
@@ -116,5 +146,4 @@ class MainViewModel @Inject constructor(
     companion object {
         const val CATEGORY_UNCATEGORIZED = "uncategorized_special_value"
     }
-
 }

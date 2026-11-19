@@ -1,9 +1,9 @@
 package org.fedorahosted.freeotp.uitest
 
-import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -30,9 +30,10 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.ui.EditActivity
+import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.fedorahosted.freeotp.ui.ScanTokenActivity
+import org.fedorahosted.freeotp.ui.ScanTokenFragment
+import org.hamcrest.Matchers.not
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,10 +63,10 @@ class CategoryFilterTintTest {
                     )
                 }
             }
-            // Multi-category token card shows joined categories
+            // Category labels are not displayed on the main token list card
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("Work • Cloud"))))
+                .check(matches(not(hasDescendant(withText("Work • Cloud")))))
 
             // Initially "All categories" is selected -> default control normal tint
             scenario.onActivity { activity ->
@@ -136,13 +137,12 @@ class CategoryFilterTintTest {
                         )
                     )
                 }
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to 1L)
+                )
             }
-        }
 
-        val editIntent = Intent(getInstrumentation().targetContext, EditActivity::class.java)
-            .putExtra(EditActivity.EXTRA_TOKEN_ID, 1L)
-
-        ActivityScenario.launch<EditActivity>(editIntent).use {
             // Existing "Work" chip is checked; toggle "Personal" on as well
             onView(withText("Work")).check(matches(isChecked()))
             onView(withText("Personal")).perform(scrollTo(), click())
@@ -266,35 +266,35 @@ class CategoryFilterTintTest {
     @Test
     fun testCameraSelectorFallbackOrderWhenBackCameraMissing() {
         assertThat(
-            ScanTokenActivity.chooseCameraChoice(
+            ScanTokenFragment.chooseCameraChoice(
                 hasBackCamera = true,
                 hasFrontCamera = true,
                 hasAnyCamera = true
             )
-        ).isEqualTo(ScanTokenActivity.CameraChoice.BACK)
+        ).isEqualTo(ScanTokenFragment.CameraChoice.BACK)
 
         assertThat(
-            ScanTokenActivity.chooseCameraChoice(
+            ScanTokenFragment.chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = true,
                 hasAnyCamera = true
             )
-        ).isEqualTo(ScanTokenActivity.CameraChoice.FRONT)
+        ).isEqualTo(ScanTokenFragment.CameraChoice.FRONT)
 
         assertThat(
-            ScanTokenActivity.chooseCameraChoice(
+            ScanTokenFragment.chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = false,
                 hasAnyCamera = true
             )
-        ).isEqualTo(ScanTokenActivity.CameraChoice.ANY)
+        ).isEqualTo(ScanTokenFragment.CameraChoice.ANY)
 
         assertThat(
-            ScanTokenActivity.chooseCameraChoice(
+            ScanTokenFragment.chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = false,
                 hasAnyCamera = false
             )
-        ).isEqualTo(ScanTokenActivity.CameraChoice.NONE)
+        ).isEqualTo(ScanTokenFragment.CameraChoice.NONE)
     }
 }

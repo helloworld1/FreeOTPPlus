@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="token_background">#7F7F7F</color>
-    <color name="primary_dark">#222222</color>
-    <color name="overflow_menu">#A0A0A0</color>
-</resources>
+    <!-- Material 3 Dark Brand Palette (FreeOTP+ Blue) -->
+    <color name="primary">#87CEFF</color>
+    <color name="on_primary">#00344D</color>
+    <color name="primary_container">#004C6E</color>
+    <color name="on_primary_container">#C8E6FF</color>
+    <color name="primary_dark">#111416</color>
 
+    <color name="secondary">#B6C9D8</color>
+    <color name="on_secondary">#20333E</color>
+    <color name="secondary_container">#374955</color>
+    <color name="on_secondary_container">#D1E5F4</color>
+
+    <color name="surface">#111416</color>
+    <color name="on_surface">#E1E2E5</color>
+    <color name="surface_variant">#41484D</color>
+    <color name="on_surface_variant">#C1C7CE</color>
+    <color name="surface_container_low">#191C1E</color>
+    <color name="surface_container">#1D2022</color>
+    <color name="surface_container_high">#282A2D</color>
+    <color name="outline">#8B9298</color>
+    <color name="outline_variant">#41484D</color>
+
+    <color name="token_background">#282A2D</color>
+    <color name="overflow_menu">#C1C7CE</color>
+    <color name="qr_surface">#FFFFFF</color>
+    <color name="scrim_translucent">#99000000</color>
+</resources>

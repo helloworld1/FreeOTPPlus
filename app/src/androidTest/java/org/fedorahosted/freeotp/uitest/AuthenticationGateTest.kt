@@ -4,14 +4,17 @@ import android.app.Activity
 import android.content.Intent
 import android.os.SystemClock
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -21,10 +24,10 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
-import org.fedorahosted.freeotp.ui.EditActivity
+import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
-import org.fedorahosted.freeotp.ui.ShareQrCodeActivity
+import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.junit.After
@@ -60,11 +63,16 @@ class AuthenticationGateTest {
         }
 
         val tokenId = insertTestToken()
-        val intent = Intent(getInstrumentation().targetContext, EditActivity::class.java)
-            .putExtra(EditActivity.EXTRA_TOKEN_ID, tokenId)
 
-        ActivityScenario.launch<EditActivity>(intent).use {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                )
+            }
             onView(withId(R.id.secret))
+                .perform(scrollTo())
                 .check(matches(withText(R.string.click_to_display)))
                 .perform(click())
                 .check(matches(withText(TestData.OTP_TOTP_TOKEN_2.secret)))
@@ -81,11 +89,16 @@ class AuthenticationGateTest {
         }
 
         val tokenId = insertTestToken()
-        val intent = Intent(getInstrumentation().targetContext, EditActivity::class.java)
-            .putExtra(EditActivity.EXTRA_TOKEN_ID, tokenId)
 
-        ActivityScenario.launch<EditActivity>(intent).use { scenario ->
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    bundleOf(EditTokenFragment.ARG_TOKEN_ID to tokenId)
+                )
+            }
             onView(withId(R.id.secret))
+                .perform(scrollTo())
                 .check(matches(withText(R.string.click_to_display)))
                 .perform(click())
                 .check(matches(withText(R.string.click_to_display)))
@@ -102,7 +115,7 @@ class AuthenticationGateTest {
     }
 
     @Test
-    fun testShareQrCodeWithScreenLockGatesActivity() {
+    fun testShareQrCodeWithScreenLockGatesDialog() {
         AuthenticationUtil.hasScreenLockOverride = true
         var pendingAuth: (() -> Unit)? = null
         AuthenticationUtil.authCallbackOverride = { onAuthenticated ->
@@ -127,7 +140,7 @@ class AuthenticationGateTest {
                 pendingAuth?.invoke()
             }
 
-            onView(withId(R.id.qrcode)).check(matches(isDisplayed()))
+            onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
         }
     }
 
@@ -136,7 +149,6 @@ class AuthenticationGateTest {
         AuthenticationUtil.hasScreenLockOverride = true
         var authPromptCount = 0
         AuthenticationUtil.authCallbackOverride = {
-            // Simulate cancelling the prompt before launching SAF createFile
             authPromptCount++
         }
 
@@ -173,7 +185,6 @@ class AuthenticationGateTest {
 
             assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isTrue()
 
-            // Move MainActivity to background (STOPPED) without calling onStart() again
             scenario.moveToState(Lifecycle.State.CREATED)
 
             val deadline = System.currentTimeMillis() + 3_000L
@@ -188,33 +199,48 @@ class AuthenticationGateTest {
     }
 
     @Test
-    fun testChildActivityClosesOnBackgroundTimeoutInAppLaunchMode() {
+    fun testChildScreensDismissOnTimeoutAndResumeRequiresReauthInAppLaunchMode() {
         val tokenId = insertTestToken()
-        AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, _ -> onSuccess() }
+        var authPromptCount = 0
+        AuthenticationUtil.appLaunchAuthCallbackOverride = { _, _ ->
+            // Hold prompt open without auto-completing on resume
+            authPromptCount++
+        }
 
-        ActivityScenario.launch(MainActivity::class.java).use { mainScenario ->
-            mainScenario.onActivity { activity ->
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            lateinit var mainActivity: MainActivity
+            scenario.onActivity { activity ->
+                mainActivity = activity
                 configuredSessionManager = activity.appSessionManager
                 activity.appSessionManager.timeoutDelayMs = 150L
                 activity.settings.authMode = AuthMode.APP_LAUNCH
                 activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                activity.navigateTo(
+                    R.id.action_tokenList_to_shareQrCode,
+                    bundleOf(ShareQrCodeDialogFragment.ARG_TOKEN_ID to tokenId)
+                )
             }
-        }
 
-        val qrIntent = Intent(getInstrumentation().targetContext, ShareQrCodeActivity::class.java)
-            .putExtra(ShareQrCodeActivity.EXTRA_TOKEN_ID, tokenId)
+            onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
 
-        ActivityScenario.launch<ShareQrCodeActivity>(qrIntent).use { qrScenario ->
-            onView(withId(R.id.qrcode)).check(matches(isDisplayed()))
-
-            qrScenario.moveToState(Lifecycle.State.CREATED)
+            scenario.moveToState(Lifecycle.State.CREATED)
 
             val deadline = System.currentTimeMillis() + 3_000L
-            while (qrScenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
+            while (mainActivity.appSessionManager.authState.value != MainViewModel.AuthState.UNAUTHENTICATED &&
+                System.currentTimeMillis() < deadline
+            ) {
                 Thread.sleep(25)
             }
+            assertThat(mainActivity.appSessionManager.authState.value)
+                .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
 
-            assertThat(qrScenario.state).isEqualTo(Lifecycle.State.DESTROYED)
+            // Resume app (simulating Recents return) -> ShareQrCodeDialogFragment is dismissed and lock gate prompts
+            scenario.moveToState(Lifecycle.State.RESUMED)
+            scenario.onActivity { activity ->
+                assertThat(activity.getOpenDialogWindows()).isEmpty()
+                assertThat(activity.currentDestinationId()).isEqualTo(R.id.tokenListFragment)
+                assertThat(authPromptCount).isGreaterThan(0)
+            }
         }
     }
 
@@ -240,12 +266,11 @@ class AuthenticationGateTest {
                 activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
             }
 
-            // Simulate MainActivity stopping when external document picker opens at T = 10s
             scenario.moveToState(Lifecycle.State.CREATED)
 
-            // Simulate user returning from picker 3 minutes later (T = 190s > 120s timeout)
             fakeNow = 190_000L
             getInstrumentation().runOnMainSync {
+                @Suppress("DEPRECATION")
                 mainActivity.onActivityResult(
                     MainActivity.WRITE_JSON_REQUEST_CODE,
                     Activity.RESULT_OK,

@@ -1,23 +1,3 @@
-/*
- * FreeOTP
- *
- * Authors: Nathaniel McCallum <npmccallum@redhat.com>
- *
- * Copyright (C) 2013  Nathaniel McCallum, Red Hat
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.fedorahosted.freeotp.ui
 
 import android.content.Context
@@ -29,24 +9,24 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
-import androidx.appcompat.app.AppCompatDelegate
-
+import androidx.core.graphics.ColorUtils
+import com.google.android.material.color.MaterialColors
 import org.fedorahosted.freeotp.R
 
 class ProgressCircle : View {
-    private var mPaint: Paint? = null
-    private var mRectF: RectF? = null
-    private var mRect: Rect? = null
+    private lateinit var mPaint: Paint
+    private lateinit var mRectF: RectF
+    private lateinit var mRect: Rect
     private var mProgress: Int = 0
-    var max: Int = 0
+    var max: Int = 100
     var hollow: Boolean = false
         set(hollow) {
             field = hollow
-            mPaint!!.style = if (hollow) Style.STROKE else Style.FILL
-            mPaint!!.strokeWidth = if (hollow) mStrokeWidth else 0f
+            mPaint.style = if (hollow) Style.STROKE else Style.FILL
+            mPaint.strokeWidth = if (hollow) mStrokeWidth else 0f
         }
-    private var mPadding: Float = 0.toFloat()
-    private var mStrokeWidth: Float = 0.toFloat()
+    private var mPadding: Float = 0f
+    private var mStrokeWidth: Float = 0f
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
         setup(context, attrs)
@@ -63,20 +43,17 @@ class ProgressCircle : View {
     private fun setup(context: Context, attrs: AttributeSet?) {
         val dm = resources.displayMetrics
         mPadding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, dm)
-        mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, dm)
+        mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3.5f, dm)
 
         mRectF = RectF()
         mRect = Rect()
 
-        mPaint = Paint()
-        mPaint!!.setARGB(0x99, 0x33, 0x33, 0x33)
-        mPaint!!.isAntiAlias = true
-        mPaint!!.strokeCap = Paint.Cap.BUTT
+        mPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            strokeCap = Paint.Cap.ROUND
+        }
 
         if (attrs != null) {
-            val t = context.theme
-            val a = t.obtainStyledAttributes(attrs, R.styleable.ProgressCircle, 0, 0)
-
+            val a = context.theme.obtainStyledAttributes(attrs, R.styleable.ProgressCircle, 0, 0)
             try {
                 max = a.getInteger(R.styleable.ProgressCircle_max, 100)
                 hollow = a.getBoolean(R.styleable.ProgressCircle_hollow, false)
@@ -84,32 +61,39 @@ class ProgressCircle : View {
                 a.recycle()
             }
         }
+        updatePaintColor(100)
     }
 
     fun setProgress(progress: Int) {
         mProgress = progress
-
-        val percent = mProgress * 100 / max
-        if (percent > 25 || mProgress == 0) {
-            if (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_NO && AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY)
-                mPaint!!.setARGB(0x99, 0x2B, 0xAD, 0x00)
-            else
-                mPaint!!.setARGB(0x99, 0x33, 0x33, 0x33)
-        } else
-            mPaint!!.setARGB(0x99, 0xff, 0xe0 * percent / 25, 0x00)
-
+        val safeMax = if (max > 0) max else 100
+        val percent = mProgress * 100 / safeMax
+        updatePaintColor(percent)
         invalidate()
     }
 
+    private fun updatePaintColor(percent: Int) {
+        val baseColor = if (percent > 25 || mProgress == 0) {
+            MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary)
+        } else {
+            MaterialColors.getColor(this, androidx.appcompat.R.attr.colorError)
+        }
+        val alpha = if (hollow) 0xE6 else 0xB3
+        mPaint.color = ColorUtils.setAlphaComponent(baseColor, alpha)
+    }
+
     override fun onDraw(canvas: Canvas) {
+        val safeMax = if (max > 0) max else 100
         getDrawingRect(mRect)
 
-        mRect!!.left += (paddingLeft + mPadding).toInt()
-        mRect!!.top += (paddingTop + mPadding).toInt()
-        mRect!!.right -= (paddingRight + mPadding).toInt()
-        mRect!!.bottom -= (paddingBottom + mPadding).toInt()
-        mRectF!!.set(mRect!!)
+        val inset = mPadding + if (hollow) mStrokeWidth / 2f else 0f
+        mRectF.set(
+            mRect.left + paddingLeft + inset,
+            mRect.top + paddingTop + inset,
+            mRect.right - paddingRight - inset,
+            mRect.bottom - paddingBottom - inset
+        )
 
-        canvas.drawArc(mRectF!!, -90f, (mProgress * 360 / max).toFloat(), !hollow, mPaint!!)
+        canvas.drawArc(mRectF, -90f, (mProgress * 360f / safeMax), !hollow, mPaint)
     }
 }

@@ -1,73 +1,30 @@
-/*
- * FreeOTP
- *
- * Authors: Nathaniel McCallum <npmccallum@redhat.com>
- *
- * Copyright (C) 2013  Nathaniel McCallum, Red Hat
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- * Portions Copyright 2009 ZXing authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.fedorahosted.freeotp.ui
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
-import android.widget.SearchView
+import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.view.MenuItemCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -89,9 +46,9 @@ import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
-import kotlin.math.max
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -107,13 +64,10 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var appSessionManager: AppSessionManager
-    @Inject lateinit var tokenListAdapter: TokenListAdapter
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
-    private var searchQuery = ""
-    private var menu: Menu? = null
-    private var categories: List<String> = emptyList()
+
     private var confirmAddTokenDialog: AlertDialog? = null
     private var activeAuthDialog: AlertDialog? = null
     private var isAuthPromptInProgress = false
@@ -121,14 +75,60 @@ class MainActivity : AppCompatActivity() {
     private var pendingActivityResult: PendingActivityResult? = null
     private var pendingExportEncrypted = false
 
-    private val tokenListObserver: AdapterDataObserver = object : AdapterDataObserver() {
-        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-            super.onItemRangeInserted(positionStart, itemCount)
-            binding.tokenList.scrollToPosition(positionStart)
-        }
+    private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US)
+
+    private val openJsonLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        handleDocumentPickerUri(READ_JSON_REQUEST_CODE, uri)
     }
 
-    private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm")
+    private val openKeyUriLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        handleDocumentPickerUri(READ_KEY_URI_REQUEST_CODE, uri)
+    }
+
+    private val createJsonLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        handleDocumentPickerUri(WRITE_JSON_REQUEST_CODE, uri)
+    }
+
+    private val createKeyUriLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri ->
+        handleDocumentPickerUri(WRITE_KEY_URI_REQUEST_CODE, uri)
+    }
+
+    private fun navController(): NavController {
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        return navHost.navController
+    }
+
+    fun navigateTo(resId: Int, args: Bundle? = null) {
+        navController().navigate(resId, args)
+    }
+
+    fun navigateBack(): Boolean {
+        return navController().popBackStack()
+    }
+
+    fun currentDestinationId(): Int? {
+        return navController().currentDestination?.id
+    }
+
+    fun getOpenDialogWindows(): List<Window> {
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            ?: return emptyList()
+        return navHost.childFragmentManager.fragments
+            .filterIsInstance<DialogFragment>()
+            .mapNotNull { it.dialog?.window }
+    }
+
+    fun showSnackbar(messageRes: Int, duration: Int = Snackbar.LENGTH_SHORT) {
+        Snackbar.make(binding.rootView, messageRes, duration).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,6 +136,8 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             pendingExportEncrypted = savedInstanceState.getBoolean(STATE_PENDING_EXPORT_ENCRYPTED, false)
+            @Suppress("DEPRECATION")
+            pendingDeepLinkUri = savedInstanceState.getParcelable(STATE_PENDING_DEEP_LINK_URI)
         }
 
         binding = MainBinding.inflate(layoutInflater)
@@ -145,105 +147,25 @@ class MainActivity : AppCompatActivity() {
             View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         )
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.tokenList) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(
-                view.paddingLeft,
-                view.paddingTop,
-                view.paddingRight,
-                resources.getDimensionPixelSize(R.dimen.token_list_bottom_padding) + insets.bottom
-            )
-            windowInsets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.addTokenFab) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val marginParams = view.layoutParams as android.view.ViewGroup.MarginLayoutParams
-            marginParams.bottomMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.bottom
-            if (view.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
-                marginParams.leftMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.left
-            } else {
-                marginParams.rightMargin = resources.getDimensionPixelSize(R.dimen.space_3) + insets.right
-            }
-            view.layoutParams = marginParams
-            windowInsets
-        }
-
         viewModel.migrateOldData()
-
-        binding.tokenList.adapter = tokenListAdapter
-
-        // Used GridlayoutManager to support tablet mode for multiple columns
-        // Make sure one column has at least 320 DP
-        val columns = max(1, resources.configuration.screenWidthDp / 320)
-        binding.tokenList.layoutManager = GridLayoutManager(this, columns)
-
-        ItemTouchHelper(TokenTouchCallback(this, tokenListAdapter, otpTokenDatabase))
-            .attachToRecyclerView(binding.tokenList)
-        tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.getTokenList().collect { tokens ->
-                        tokenListAdapter.submitList(tokens)
-
-                        if (tokens.isEmpty()) {
-                            binding.emptyView.visibility = View.VISIBLE
-                            binding.tokenList.visibility = View.GONE
-                        } else {
-                            binding.emptyView.visibility = View.GONE
-                            binding.tokenList.visibility = View.VISIBLE
-                        }
-                    }
-                }
-
-                launch {
-                    viewModel.getAuthState().collect { authState ->
-                        if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
-                            confirmAddTokenDialog?.dismiss()
-                            confirmAddTokenDialog = null
-                            verifyAuthentication()
-                        } else {
-                            processPendingDeepLinkIfAny()
-                            processPendingActivityResultIfAny()
-                        }
-                    }
-                }
-
-                launch {
-                    viewModel.getAllCategories().collect {
-                        categories = it
-                        invalidateOptionsMenu()
-                    }
-                }
-
-                launch {
-                    viewModel.getCategoryFilter().collect {
-                        updateFilterMenuIconTint(this@MainActivity.menu)
-                        invalidateOptionsMenu()
+                viewModel.getAuthState().collect { authState ->
+                    if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
+                        binding.navHostFragment.visibility = View.INVISIBLE
+                        confirmAddTokenDialog?.dismiss()
+                        confirmAddTokenDialog = null
+                        dismissOpenChildScreensOnLock()
+                        verifyAuthentication()
+                    } else {
+                        binding.navHostFragment.visibility = View.VISIBLE
+                        invalidateMenu()
+                        processPendingDeepLinkIfAny()
+                        processPendingActivityResultIfAny()
                     }
                 }
             }
-        }
-
-        setSupportActionBar(binding.toolbar)
-
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener, androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.setTokenSearchQuery(query ?: "")
-                return true
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean {
-                searchQuery = query ?: ""
-                viewModel.setTokenSearchQuery(query ?: "")
-                return true
-            }
-        })
-
-        binding.addTokenFab.setOnClickListener {
-            startActivity(Intent(this, ScanTokenActivity::class.java))
         }
 
         if (savedInstanceState == null) {
@@ -251,9 +173,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun dismissOpenChildScreensOnLock() {
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            ?: return
+        for (fragment in navHost.childFragmentManager.fragments.toList()) {
+            if (fragment is DialogFragment) {
+                fragment.dismissAllowingStateLoss()
+            }
+        }
+        val controller = navHost.navController
+        if (controller.currentDestination?.id != R.id.tokenListFragment) {
+            controller.popBackStack(R.id.tokenListFragment, false)
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(STATE_PENDING_EXPORT_ENCRYPTED, pendingExportEncrypted)
+        outState.putParcelable(STATE_PENDING_DEEP_LINK_URI, pendingDeepLinkUri)
     }
 
     override fun onDestroy() {
@@ -262,129 +199,12 @@ class MainActivity : AppCompatActivity() {
         confirmAddTokenDialog = null
         activeAuthDialog?.dismiss()
         activeAuthDialog = null
-        tokenListAdapter.unregisterAdapterDataObserver(tokenListObserver)
     }
 
     override fun onStart() {
         super.onStart()
         viewModel.onSessionStart()
-        refreshOptionMenu()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
-        this.menu = menu
-        refreshOptionMenu()
-        return true
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
-        updateFilterMenuIconTint(menu)
-
-        val filterItem = menu.findItem(R.id.action_filter)
-        val filterMenu = filterItem?.subMenu ?: return super.onPrepareOptionsMenu(menu)
-        filterMenu.clear()
-
-        val allItem = filterMenu.add(CATEGORY_FILTER_GROUP_ID, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
-        val uncategorizedItem = filterMenu.add(CATEGORY_FILTER_GROUP_ID, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
-
-        val categoryItems = categories.map { category ->
-            category to filterMenu.add(CATEGORY_FILTER_GROUP_ID, Menu.NONE, Menu.NONE, category).apply {
-                setOnMenuItemClickListener {
-                    viewModel.setCategoryFilter(category)
-                    true
-                }
-            }
-        }
-
-        filterMenu.setGroupCheckable(CATEGORY_FILTER_GROUP_ID, true, true)
-        when (val currentFilter = viewModel.getCurrentCategoryFilter()) {
-            null -> allItem.isChecked = true
-            MainViewModel.CATEGORY_UNCATEGORIZED -> uncategorizedItem.isChecked = true
-            else -> categoryItems.firstOrNull { it.first == currentFilter }?.second?.isChecked = true
-        }
-
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_scan -> {
-                startActivity(Intent(this, ScanTokenActivity::class.java))
-                return true
-            }
-
-            R.id.action_add -> {
-                startActivity(Intent(this, AddActivity::class.java))
-                return true
-            }
-
-            R.id.action_filter_all -> {
-                viewModel.setCategoryFilter(null)
-                return true
-            }
-
-            R.id.action_filter_uncategorized -> {
-                viewModel.setCategoryFilter(MainViewModel.CATEGORY_UNCATEGORIZED)
-                return true
-            }
-
-            R.id.action_import_json -> {
-                performFileSearch(READ_JSON_REQUEST_CODE)
-                return true
-            }
-
-            R.id.action_import_key_uri -> {
-                performFileSearch(READ_KEY_URI_REQUEST_CODE)
-                return true
-            }
-
-            R.id.action_export_json -> {
-                handleExportAction(isJson = true)
-                return true
-            }
-
-            R.id.action_export_key_uri -> {
-                handleExportAction(isJson = false)
-                return true
-            }
-
-            R.id.use_dark_theme -> {
-                settings.darkMode = !settings.darkMode
-                if (settings.darkMode) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                } else {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-                recreate()
-                return true
-            }
-
-            R.id.copy_to_clipboard -> {
-                settings.copyToClipboard = !settings.copyToClipboard
-                item.isChecked = settings.copyToClipboard
-                refreshOptionMenu()
-            }
-
-            R.id.authentication_mode -> {
-                showAuthenticationModeDialog()
-                return true
-            }
-
-            R.id.action_about -> {
-                startActivity(Intent(this, AboutActivity::class.java))
-                return true
-            }
-
-            R.id.quit_and_lock -> {
-                viewModel.lockSession()
-                finish()
-                return true
-            }
-        }
-
-        return false
+        invalidateMenu()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -418,9 +238,8 @@ class MainActivity : AppCompatActivity() {
     private fun showAddTokenDeepLinkConfirmation(uri: Uri) {
         val token = try {
             OtpTokenFactory.createFromUri(uri)
-        } catch (e: Exception) {
-            Snackbar.make(binding.rootView, R.string.invalid_token_uri_received, Snackbar.LENGTH_SHORT)
-                .show()
+        } catch (_: Exception) {
+            showSnackbar(R.string.invalid_token_uri_received)
             return
         }
 
@@ -446,7 +265,25 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun handleExportAction(isJson: Boolean) {
+    internal fun startImportJson() {
+        try {
+            openJsonLauncher.launch(arrayOf("*/*"))
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
+            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    internal fun startImportKeyUri() {
+        try {
+            openKeyUriLauncher.launch(arrayOf("*/*"))
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
+            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    internal fun handleExportAction(isJson: Boolean) {
         AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
             if (settings.authMode == AuthMode.TOKEN_ENCRYPTED) {
                 showExportEncryptionChoiceDialog(isJson)
@@ -475,19 +312,49 @@ class MainActivity : AppCompatActivity() {
 
     private fun launchExportCreateFile(isJson: Boolean) {
         val baseFileName = exportBaseFileName(encrypted = pendingExportEncrypted)
-        if (isJson) {
-            createFile("application/json", baseFileName, "json", WRITE_JSON_REQUEST_CODE)
-        } else {
-            createFile("text/plain", baseFileName, "txt", WRITE_KEY_URI_REQUEST_CODE)
+        val timestamp = dateFormatter.format(Date())
+        try {
+            if (isJson) {
+                createJsonLauncher.launch("${baseFileName}_$timestamp.json")
+            } else {
+                createKeyUriLauncher.launch("${baseFileName}_$timestamp.txt")
+            }
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Cannot find activity", e)
+            Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun handleDocumentPickerUri(requestCode: Int, uri: Uri?) {
+        if (uri == null) {
+            appSessionManager.refreshSessionState()
+            return
+        }
+        val data = Intent().setData(uri)
+        if (!appSessionManager.refreshSessionState()) {
+            pendingActivityResult = PendingActivityResult(requestCode, Activity.RESULT_OK, data)
+            return
+        }
+        handleAuthenticatedActivityResult(requestCode, data)
+    }
+
+    @Deprecated("Deprecated in Java")
     public override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
         resultData: Intent?
     ) {
+        @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, resultData)
+
+        if (requestCode != WRITE_JSON_REQUEST_CODE &&
+            requestCode != READ_JSON_REQUEST_CODE &&
+            requestCode != WRITE_KEY_URI_REQUEST_CODE &&
+            requestCode != READ_KEY_URI_REQUEST_CODE
+        ) {
+            appSessionManager.refreshSessionState()
+            return
+        }
 
         if (resultCode != Activity.RESULT_OK) {
             appSessionManager.refreshSessionState()
@@ -522,9 +389,12 @@ class MainActivity : AppCompatActivity() {
                 val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.exportJsonFile(uri, encrypt = encryptExport)
-                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                        .show()
+                    try {
+                        importFromUtil.exportJsonFile(uri, encrypt = encryptExport)
+                        showSnackbar(R.string.export_succeeded_text)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Export JSON failed", e)
+                    }
                 }
             }
 
@@ -541,13 +411,11 @@ class MainActivity : AppCompatActivity() {
                                     showImportEncryptedBackupDialog(uri, isJson = true)
                                 } else {
                                     importFromUtil.importJsonFile(uri)
-                                    Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                        .show()
+                                    showSnackbar(R.string.import_succeeded_text)
                                 }
                             } catch (e: Exception) {
                                 Log.e(TAG, "Import JSON failed", e)
-                                Snackbar.make(binding.root, R.string.import_json_failed_text, Snackbar.LENGTH_SHORT)
-                                    .show()
+                                showSnackbar(R.string.import_json_failed_text)
                             }
                         }
                     }
@@ -559,9 +427,12 @@ class MainActivity : AppCompatActivity() {
                 val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
                 lifecycleScope.launch {
                     val uri = resultData?.data ?: return@launch
-                    importFromUtil.exportKeyUriFile(uri, encrypt = encryptExport)
-                    Snackbar.make(binding.rootView, R.string.export_succeeded_text, Snackbar.LENGTH_SHORT)
-                        .show()
+                    try {
+                        importFromUtil.exportKeyUriFile(uri, encrypt = encryptExport)
+                        showSnackbar(R.string.export_succeeded_text)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Export Key URI failed", e)
+                    }
                 }
             }
 
@@ -573,13 +444,11 @@ class MainActivity : AppCompatActivity() {
                             showImportEncryptedBackupDialog(uri, isJson = false)
                         } else {
                             importFromUtil.importKeyUriFile(uri)
-                            Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                                .show()
+                            showSnackbar(R.string.import_succeeded_text)
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
-                        Snackbar.make(binding.rootView, R.string.import_key_uri_failed_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                        showSnackbar(R.string.import_key_uri_failed_text)
                     }
                 }
             }
@@ -620,8 +489,7 @@ class MainActivity : AppCompatActivity() {
                             importFromUtil.importKeyUriFile(uri, passphrase)
                         }
                         AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                        Snackbar.make(binding.rootView, R.string.import_succeeded_text, Snackbar.LENGTH_SHORT)
-                            .show()
+                        showSnackbar(R.string.import_succeeded_text)
                     } catch (_: InvalidEncryptionKeyException) {
                         positiveButton.isEnabled = true
                         keyInputLayout.error = getString(R.string.incorrect_encryption_key)
@@ -629,7 +497,7 @@ class MainActivity : AppCompatActivity() {
                         Log.e(TAG, "Encrypted import failed", e)
                         AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                         val errRes = if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text
-                        Snackbar.make(binding.rootView, errRes, Snackbar.LENGTH_SHORT).show()
+                        showSnackbar(errRes)
                     } finally {
                         passphrase.fill('\u0000')
                     }
@@ -643,78 +511,7 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    /**
-     * Fires an intent to spin up the "file chooser" UI and select an image.
-     */
-    private fun performFileSearch(requestCode: Int) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "*/*"
-
-        try {
-            startActivityForResult(intent, requestCode)
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(
-                applicationContext,
-                getString(R.string.launch_file_browser_failure),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    private fun createFile(
-        mimeType: String,
-        fileName: String,
-        fileExtension: String,
-        requestCode: Int,
-        appendTimestamp: Boolean = true
-    ) {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = mimeType
-        intent.putExtra(
-            Intent.EXTRA_TITLE,
-            "$fileName${if (appendTimestamp) "_${dateFormatter.format(Date())}" else ""}.$fileExtension"
-        )
-
-        try {
-            startActivityForResult(intent, requestCode)
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Cannot find activity", e)
-            Toast.makeText(
-                applicationContext,
-                getString(R.string.launch_file_browser_failure),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    private fun refreshOptionMenu() {
-        this.menu?.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
-        this.menu?.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
-        this.menu?.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
-        updateFilterMenuIconTint(this.menu)
-    }
-
-    private fun updateFilterMenuIconTint(menu: Menu?) {
-        val filterItem = menu?.findItem(R.id.action_filter) ?: return
-        val isFilterActive = viewModel.getCurrentCategoryFilter() != null
-        val tintAttr = if (isFilterActive) {
-            androidx.appcompat.R.attr.colorPrimary
-        } else {
-            androidx.appcompat.R.attr.colorControlNormal
-        }
-        val tintColor = MaterialColors.getColor(binding.toolbar, tintAttr)
-        val tintList = ColorStateList.valueOf(tintColor)
-        MenuItemCompat.setIconTintList(filterItem, tintList)
-        filterItem.icon?.mutate()?.let { icon ->
-            DrawableCompat.setTintList(icon, tintList)
-            filterItem.icon = icon
-        }
-    }
-
-    private fun showAuthenticationModeDialog() {
+    internal fun showAuthenticationModeDialog() {
         val modes = arrayOf(AuthMode.NONE, AuthMode.APP_LAUNCH, AuthMode.TOKEN_ENCRYPTED)
         val labels = arrayOf(
             getString(R.string.auth_mode_none),
@@ -747,11 +544,10 @@ class MainActivity : AppCompatActivity() {
                 showDisableEncryptionWarningDialog(targetMode)
             }
             else -> {
-                // Switching between NONE and APP_LAUNCH
                 AuthenticationUtil.authenticateAppLaunch(this, finishOnCancel = false) {
                     settings.authMode = targetMode
                     viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    refreshOptionMenu()
+                    invalidateMenu()
                 }
             }
         }
@@ -821,9 +617,8 @@ class MainActivity : AppCompatActivity() {
                 tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
                 AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
                 onAuthCompleted()
-                refreshOptionMenu()
-                Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                    .show()
+                invalidateMenu()
+                showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
             } finally {
                 setupMaterial.clear()
             }
@@ -838,9 +633,8 @@ class MainActivity : AppCompatActivity() {
                 tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
                 AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
                 onAuthCompleted()
-                refreshOptionMenu()
-                Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                    .show()
+                invalidateMenu()
+                showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
             } finally {
                 setupMaterial.clear()
             }
@@ -863,17 +657,15 @@ class MainActivity : AppCompatActivity() {
                         )
                         tokenCryptoManager.enableTokenEncryption(setupMaterial, wrappedBlob)
                         onAuthCompleted()
-                        refreshOptionMenu()
-                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled, Snackbar.LENGTH_SHORT)
-                            .show()
+                        invalidateMenu()
+                        showSnackbar(R.string.token_encryption_enabled)
                     } catch (e: Exception) {
                         Log.e(TAG, "Biometric key wrapping failed, falling back to manual key", e)
                         tokenCryptoManager.cancelPendingBiometricKeySetup()
                         tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
                         onAuthCompleted()
-                        refreshOptionMenu()
-                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                            .show()
+                        invalidateMenu()
+                        showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
                     } finally {
                         setupMaterial.clear()
                     }
@@ -885,9 +677,8 @@ class MainActivity : AppCompatActivity() {
                     try {
                         tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
                         onAuthCompleted()
-                        refreshOptionMenu()
-                        Snackbar.make(binding.rootView, R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
-                            .show()
+                        invalidateMenu()
+                        showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
                     } finally {
                         setupMaterial.clear()
                     }
@@ -977,9 +768,8 @@ class MainActivity : AppCompatActivity() {
                         tokenCryptoManager.disableTokenEncryption(targetMode)
                         AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
                         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                        refreshOptionMenu()
-                        Snackbar.make(binding.rootView, R.string.token_encryption_disabled, Snackbar.LENGTH_SHORT)
-                            .show()
+                        invalidateMenu()
+                        showSnackbar(R.string.token_encryption_disabled)
                     } else {
                         positiveButton.isEnabled = true
                         keyInputLayout.error = getString(R.string.incorrect_encryption_key)
@@ -998,9 +788,8 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             tokenCryptoManager.disableTokenEncryption(targetMode)
             viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-            refreshOptionMenu()
-            Snackbar.make(binding.rootView, R.string.token_encryption_disabled, Snackbar.LENGTH_SHORT)
-                .show()
+            invalidateMenu()
+            showSnackbar(R.string.token_encryption_disabled)
         }
     }
 
@@ -1183,8 +972,7 @@ class MainActivity : AppCompatActivity() {
                 isAuthPromptInProgress = false
                 try {
                     tokenCryptoManager.saveBiometricEncryptedCurrentKey(authenticatedCipher)
-                    Snackbar.make(binding.rootView, R.string.biometric_unlock_enabled, Snackbar.LENGTH_SHORT)
-                        .show()
+                    showSnackbar(R.string.biometric_unlock_enabled)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed saving re-enabled biometric key", e)
                     tokenCryptoManager.cancelPendingBiometricKeySetup()
@@ -1219,7 +1007,7 @@ class MainActivity : AppCompatActivity() {
         const val SCREENSHOT_MODE_EXTRA = "screenshot_mode"
         const val SHARE_FROM_PACKAGE_NAME_INTENT_EXTRA = "shareFromPackageName"
         private const val STATE_PENDING_EXPORT_ENCRYPTED = "pending_export_encrypted"
-        private const val CATEGORY_FILTER_GROUP_ID = 100
+        private const val STATE_PENDING_DEEP_LINK_URI = "pending_deep_link_uri"
 
         internal fun exportBaseFileName(encrypted: Boolean): String {
             return if (encrypted) "freeotp-backup-encrypted" else "freeotp-backup"

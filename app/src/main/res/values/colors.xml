@@ -1,9 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#16AFF9</color>
-    <color name="primary_dark">#128EC9</color>
-    <color name="secondary">#16AFF9</color>
-    <color name="token_background">@android:color/white</color>
-    <color name="overflow_menu">#303030</color>
-</resources>
+    <!-- Material 3 Light Brand Palette (FreeOTP+ Blue) -->
+    <color name="primary">#006590</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#C8E6FF</color>
+    <color name="on_primary_container">#001E2E</color>
+    <color name="primary_dark">#004C6E</color>
 
+    <color name="secondary">#4E616D</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#D1E5F4</color>
+    <color name="on_secondary_container">#0A1E28</color>
+
+    <color name="surface">#F8F9FC</color>
+    <color name="on_surface">#191C1E</color>
+    <color name="surface_variant">#DDE3EA</color>
+    <color name="on_surface_variant">#41484D</color>
+    <color name="surface_container_low">#F2F4F7</color>
+    <color name="surface_container">#ECEEF1</color>
+    <color name="surface_container_high">#E6E8EB</color>
+    <color name="outline">#71787E</color>
+    <color name="outline_variant">#C1C7CE</color>
+
+    <color name="token_background">#E6E8EB</color>
+    <color name="overflow_menu">#41484D</color>
+    <color name="qr_surface">#FFFFFF</color>
+    <color name="scrim_translucent">#99000000</color>
+</resources>

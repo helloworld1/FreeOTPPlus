@@ -1,129 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-   - FreeOTP
-   -
-   - Authors: Nathaniel McCallum <npmccallum@redhat.com>
-   -
-   - Copyright (C) 2013  Nathaniel McCallum, Red Hat
-   -
-   - Licensed under the Apache License, Version 2.0 (the "License");
-   - you may not use this file except in compliance with the License.
-   - You may obtain a copy of the License at
-   -
-   -     http://www.apache.org/licenses/LICENSE-2.0
-   -
-   - Unless required by applicable law or agreed to in writing, software
-   - distributed under the License is distributed on an "AS IS" BASIS,
-   - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   - See the License for the specific language governing permissions and
-   - limitations under the License.
-   -->
-
-<org.fedorahosted.freeotp.token.TokenLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<org.fedorahosted.freeotp.token.TokenLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/space_1"
-    android:background="?android:selectableItemBackground">
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="5dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/surface_container_low"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/outline_variant"
+    app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="96dp">
+        android:minHeight="108dp"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="12dp">
 
-        <View
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/image_bg"
-            android:layout_width="96dp"
-            android:layout_height="0dp"
-            android:background="@color/token_background"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            app:cardBackgroundColor="@color/surface_container_high"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:strokeWidth="0dp">
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="96dp"
-            android:layout_height="0dp"
-            android:src="@drawable/logo"
-            android:scaleType="fitCenter"
-            android:padding="16dp"
-            app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintStart_toStartOf="@+id/image_bg"
-            app:layout_constraintEnd_toEndOf="@+id/image_bg"
-            app:layout_constraintTop_toTopOf="@+id/image_bg"
-            app:layout_constraintBottom_toBottomOf="@+id/image_bg"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-        <org.fedorahosted.freeotp.ui.ProgressCircle
-            android:id="@+id/progressInner"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:padding="28dp"
-            app:hollow="false"
-            app:max="1000"
-            app:layout_constraintStart_toStartOf="@+id/image"
-            app:layout_constraintEnd_toEndOf="@+id/image"
-            app:layout_constraintTop_toTopOf="@+id/image"
-            app:layout_constraintBottom_toBottomOf="@+id/image" />
+                <ImageView
+                    android:id="@+id/image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/logo" />
 
-        <org.fedorahosted.freeotp.ui.ProgressCircle
-            android:id="@+id/progressOuter"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:padding="24dp"
-            app:hollow="true"
-            app:max="1000"
-            app:layout_constraintStart_toStartOf="@+id/image"
-            app:layout_constraintEnd_toEndOf="@+id/image"
-            app:layout_constraintTop_toTopOf="@+id/image"
-            app:layout_constraintBottom_toBottomOf="@+id/image" />
+                <org.fedorahosted.freeotp.ui.ProgressCircle
+                    android:id="@+id/progressInner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp"
+                    android:visibility="gone"
+                    app:hollow="false"
+                    app:max="1000" />
+
+                <org.fedorahosted.freeotp.ui.ProgressCircle
+                    android:id="@+id/progressOuter"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:visibility="gone"
+                    app:hollow="true"
+                    app:max="1000" />
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/code"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:gravity="start|center"
+            android:layout_height="44dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="2dp"
+            android:gravity="start|center_vertical"
+            android:letterSpacing="0.02"
+            android:maxLines="1"
+            android:textColor="@color/on_surface_variant"
             android:textSize="34sp"
             android:textStyle="bold"
             android:typeface="monospace"
-            tool:text="01234567"
+            app:autoSizeMaxTextSize="34sp"
+            app:autoSizeMinTextSize="22sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toTopOf="@+id/titles_container"
+            app:layout_constraintEnd_toStartOf="@+id/menu"
             app:layout_constraintStart_toEndOf="@+id/image_bg"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/titles_container"/>
+            app:layout_constraintVertical_chainStyle="packed"
+            tool:text="012 345" />
 
         <LinearLayout
             android:id="@+id/titles_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="40dp"
-            android:paddingBottom="12dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
             android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/menu"
             app:layout_constraintStart_toEndOf="@+id/image_bg"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/code"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/code">
+
             <include layout="@layout/titles" />
         </LinearLayout>
 
         <ImageView
             android:id="@+id/menu"
-            android:layout_width="32dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="@dimen/space_2"
-            android:src="@drawable/menu"
-            app:tint="@color/overflow_menu"
-            android:tintMode="add"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/edit"
+            android:padding="8dp"
             android:scaleType="centerInside"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:src="@drawable/more_vert_24px"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/titles_container" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

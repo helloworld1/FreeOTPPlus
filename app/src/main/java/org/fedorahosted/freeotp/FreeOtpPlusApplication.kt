@@ -5,6 +5,10 @@ import android.app.Application
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.HiltAndroidApp
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.AppSessionManager
@@ -12,7 +16,7 @@ import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @HiltAndroidApp
-class FreeOtpPlusApplication: Application() {
+class FreeOtpPlusApplication : Application() {
     @Inject lateinit var settings: Settings
     @Inject lateinit var appSessionManager: AppSessionManager
 
@@ -30,7 +34,7 @@ class FreeOtpPlusApplication: Application() {
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                // Block screenshots and screen recording across all screens by default;
+                // Block screenshots and screen recording across all screens and dialogs by default;
                 // only debug builds may opt into screenshot mode via the debug shortcut.
                 if (BuildConfig.DEBUG && activity is MainActivity) {
                     screenshotMode = activity.intent?.extras?.getBoolean(MainActivity.SCREENSHOT_MODE_EXTRA) == true
@@ -39,6 +43,22 @@ class FreeOtpPlusApplication: Application() {
                     activity.window.setFlags(
                         WindowManager.LayoutParams.FLAG_SECURE,
                         WindowManager.LayoutParams.FLAG_SECURE
+                    )
+                }
+
+                if (activity is FragmentActivity) {
+                    activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
+                        object : FragmentManager.FragmentLifecycleCallbacks() {
+                            override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+                                if (f is DialogFragment && !(BuildConfig.DEBUG && screenshotMode)) {
+                                    f.dialog?.window?.setFlags(
+                                        WindowManager.LayoutParams.FLAG_SECURE,
+                                        WindowManager.LayoutParams.FLAG_SECURE
+                                    )
+                                }
+                            }
+                        },
+                        true
                     )
                 }
             }

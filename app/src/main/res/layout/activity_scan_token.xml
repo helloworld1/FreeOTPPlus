@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black">
+
     <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
     <org.fedorahosted.freeotp.ui.ScanWindowFrameLayout
         android:id="@+id/window"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_margin="64dp">
+
         <ImageView
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:alpha=".75"
+            android:importantForAccessibility="no"
             android:scaleType="fitCenter"
-            android:src="@drawable/scan"
-            android:alpha=".6" />
+            android:src="@drawable/scan" />
 
         <ProgressBar
             android:id="@+id/progress"
@@ -32,13 +36,34 @@
             android:indeterminate="true" />
     </org.fedorahosted.freeotp.ui.ScanWindowFrameLayout>
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/back_button_container"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/scrim_translucent"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <ImageButton
+            android:id="@+id/back_button"
+            style="?android:borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@android:string/cancel"
+            android:padding="10dp"
+            android:src="@drawable/arrow_back_24px"
+            app:tint="@android:color/white" />
+    </com.google.android.material.card.MaterialCardView>
+
     <TextView
         android:id="@+id/textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="invisible"
-        android:textColor="@android:color/primary_text_dark"
-        android:text="@string/error_camera_open" />
+        android:text="@string/error_camera_open"
+        android:textColor="@android:color/white"
+        android:visibility="invisible" />
 </FrameLayout>
-

@@ -199,7 +199,7 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("github.com"))))
             .check(matches(hasDescendant(withText("github account 1"))))
-            .check(matches(hasDescendant(withText("248759"))))
+            .check(matches(hasDescendant(withText("248 759"))))
     }
 
     @Test

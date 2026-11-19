@@ -13,16 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.TokenCryptoManager
-import org.fedorahosted.freeotp.ui.AboutActivity
-import org.fedorahosted.freeotp.ui.AddActivity
-import org.fedorahosted.freeotp.ui.DeleteActivity
-import org.fedorahosted.freeotp.ui.EditActivity
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel.AuthState
-import org.fedorahosted.freeotp.ui.ScanTokenActivity
-import org.fedorahosted.freeotp.ui.ShareQrCodeActivity
-import java.util.Collections
-import java.util.WeakHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,8 +40,6 @@ class AppSessionManager @Inject constructor(
     private var hasAuthenticatedSession = false
     private var startedActivityCount = 0
     private var backgroundedAtElapsedRealtime: Long? = null
-    private val liveChildActivities: MutableSet<Activity> =
-        Collections.newSetFromMap(WeakHashMap())
 
     private val _authState = MutableStateFlow(computeCurrentAuthState())
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -127,29 +117,6 @@ class AppSessionManager @Inject constructor(
         } else {
             AuthState.UNAUTHENTICATED
         }
-        if (settings.authMode != AuthMode.NONE) {
-            finishProtectedChildActivities()
-        }
-    }
-
-    @MainThread
-    fun ensureAuthenticatedOrFinish(activity: Activity): Boolean {
-        if (refreshSessionState()) {
-            return true
-        }
-        if (!activity.isFinishing && !activity.isDestroyed) {
-            activity.finish()
-        }
-        return false
-    }
-
-    private fun finishProtectedChildActivities() {
-        val snapshot = liveChildActivities.toList()
-        for (activity in snapshot) {
-            if (!activity.isFinishing && !activity.isDestroyed) {
-                activity.finish()
-            }
-        }
     }
 
     private fun scheduleBackgroundLockTimer() {
@@ -161,25 +128,16 @@ class AppSessionManager @Inject constructor(
         mainHandler.removeCallbacks(backgroundLockRunnable)
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        if (isProtectedChildActivity(activity)) {
-            liveChildActivities.add(activity)
-        }
-    }
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
 
     override fun onActivityStarted(activity: Activity) {
-        if (!isAppUiActivity(activity)) {
+        if (activity !is MainActivity) {
             return
         }
         startedActivityCount++
         cancelBackgroundLockTimer()
-
-        val authenticated = refreshSessionState()
+        refreshSessionState()
         backgroundedAtElapsedRealtime = null
-
-        if (!authenticated && isProtectedChildActivity(activity) && !activity.isFinishing) {
-            activity.finish()
-        }
     }
 
     override fun onActivityResumed(activity: Activity) {}
@@ -187,7 +145,7 @@ class AppSessionManager @Inject constructor(
     override fun onActivityPaused(activity: Activity) {}
 
     override fun onActivityStopped(activity: Activity) {
-        if (!isAppUiActivity(activity)) {
+        if (activity !is MainActivity) {
             return
         }
         startedActivityCount = (startedActivityCount - 1).coerceAtLeast(0)
@@ -201,24 +159,7 @@ class AppSessionManager @Inject constructor(
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
-    override fun onActivityDestroyed(activity: Activity) {
-        if (isProtectedChildActivity(activity)) {
-            liveChildActivities.remove(activity)
-        }
-    }
-
-    private fun isAppUiActivity(activity: Activity): Boolean {
-        return activity is MainActivity || isProtectedChildActivity(activity)
-    }
-
-    private fun isProtectedChildActivity(activity: Activity): Boolean {
-        return activity is AddActivity ||
-            activity is EditActivity ||
-            activity is DeleteActivity ||
-            activity is ScanTokenActivity ||
-            activity is ShareQrCodeActivity ||
-            activity is AboutActivity
-    }
+    override fun onActivityDestroyed(activity: Activity) {}
 
     companion object {
         const val DEFAULT_TIMEOUT_DELAY_MS: Long = 120 * 1000L
