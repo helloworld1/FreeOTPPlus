@@ -1,0 +1,1 @@
+Tweefactorauthenticator (2FA) met eenmalige-wachtwoordprotocollen (OTP)

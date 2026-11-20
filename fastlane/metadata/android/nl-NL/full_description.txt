@@ -1,0 +1,23 @@
+FreeOTP+ voegt een tweede beveiligingslaag toe aan uw online accounts.
+Dit werkt door eenmalige wachtwoorden (OTP) te genereren op uw mobiele apparaten, die samen met uw reguliere wachtwoord worden gebruikt om uw aanmelding vrijwel onmogelijk te kraken te maken.
+Deze wachtwoorden kunnen zelfs worden gegenereerd wanneer uw telefoon in de vliegtuigmodus staat.
+Tokens kunnen eenvoudig worden toegevoegd door een QR-code te scannen of door de tokenconfiguratie handmatig in te voeren.
+Dit wordt tweefactorauthenticatie (2FA) genoemd.
+
+FreeOTP werkt met veel bekende online diensten die u al gebruikt, waaronder Google, Facebook, Evernote, GitHub en nog veel meer!
+FreeOTP is ook geschikt voor zakelijke beveiliging wanneer de gestandaardiseerde protocollen <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> of <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a> worden ondersteund.
+Hieronder vallen ook bewezen zakelijke oplossingen zoals <a href="https://www.freeipa.org/">FreeIPA</a>.
+
+<b>Functies:</b>
+<ul>
+<li>QR-code scannen.</li>
+<li>Tokens exporteren en importeren (in platte tekst of versleuteld) via Google Drive of andere opslagdiensten.</li>
+<li>Material Design met ondersteuning voor het donkere thema.</li>
+<li>Zoekbalk om tokens te doorzoeken en te filteren op categorie.</li>
+<li>Tokendetails bekijken.</li>
+<li>Drie authenticatiemodi: Geen, Bij opstarten (Biometrie / pincode) en Token versleuteld (met AES-256-GCM versleutelde geheime tokensleutels, te ontgrendelen via biometrie of een handmatige sleutel).</li>
+<li>Op heuristiek gebaseerde offline pictogrammen voor tokens van meer dan 250 websites.</li>
+<li>Uitgebreide instellingen om de werking van de app aan te passen.</li>
+</ul>
+
+FreeOTP Plus is een fork van FreeOTP.
