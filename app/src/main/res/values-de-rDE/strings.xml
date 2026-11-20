@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">Schlüssel-URI-Format importieren</string>
     <string name="export_json_format">JSON-Format exportieren</string>
     <string name="export_key_uri_format">Schlüssel-URI-Format exportieren</string>
-    <string name="use_dark_theme">Dunkles Design verwenden</string>
+    <string name="theme">Design</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
     <string name="add_token_success">Der Token wurde erfolgreich hinzugefügt</string>
     <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
     <string name="require_authentication">Authentifizierung verlangen</string>

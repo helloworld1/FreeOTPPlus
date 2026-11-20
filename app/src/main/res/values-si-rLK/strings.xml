@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">යතුරු URI ආකෘතිය ආයාත කරන්න</string>
     <string name="export_json_format">JSON ආකෘතිය නිර්යාත කරන්න</string>
     <string name="export_key_uri_format">යතුරු URI ආකෘතිය නිර්යාත කරන්න</string>
-    <string name="use_dark_theme">අඳුරු තේමාව භාවිතා කරන්න</string>
+    <string name="theme">තේමාව</string>
+    <string name="theme_system">පද්ධතිය</string>
+    <string name="theme_light">දීප්තිමත්</string>
+    <string name="theme_dark">අඳුරු</string>
     <string name="add_token_success">ටෝකනය සාර්ථකව එක් කරන ලදී</string>
     <string name="copy_to_clipboard">පසුරු පුවරුවට පිටපත් කරන්න</string>
     <string name="require_authentication">සත්‍යාපනය අවශ්‍යයි</string>

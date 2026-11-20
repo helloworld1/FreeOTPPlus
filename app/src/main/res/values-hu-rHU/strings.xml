@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">Kulcs-URI formátum importálása</string>
     <string name="export_json_format">JSON-formátum exportálása</string>
     <string name="export_key_uri_format">Kulcs-URI formátum exportálása</string>
-    <string name="use_dark_theme">Sötét téma használata</string>
+    <string name="theme">Téma</string>
+    <string name="theme_system">Rendszer</string>
+    <string name="theme_light">Világos</string>
+    <string name="theme_dark">Sötét</string>
     <string name="add_token_success">A token sikeresen hozzáadva</string>
     <string name="copy_to_clipboard">Másolás a vágólapra</string>
     <string name="require_authentication">Hitelesítés megkövetelése</string>

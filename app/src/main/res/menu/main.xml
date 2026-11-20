@@ -70,9 +70,24 @@
         </menu>
     </item>
     <item
-        android:id="@+id/use_dark_theme"
-        android:title="@string/use_dark_theme"
-        android:checkable="true"/>
+        android:id="@+id/theme"
+        android:title="@string/theme">
+        <menu>
+            <group
+                android:id="@+id/theme_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/theme_system"
+                    android:title="@string/theme_system" />
+                <item
+                    android:id="@+id/theme_light"
+                    android:title="@string/theme_light" />
+                <item
+                    android:id="@+id/theme_dark"
+                    android:title="@string/theme_dark" />
+            </group>
+        </menu>
+    </item>
     <item
         android:id="@+id/copy_to_clipboard"
         android:title="@string/copy_to_clipboard"

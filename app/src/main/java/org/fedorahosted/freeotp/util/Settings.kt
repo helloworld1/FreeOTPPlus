@@ -1,19 +1,54 @@
 package org.fedorahosted.freeotp.util
 
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val DARK_MODE_KEY = "darkMode"
+internal const val DARK_MODE_KEY = "darkMode"
+internal const val THEME_MODE_KEY = "themeMode"
 private const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
+
+enum class ThemeMode(val prefValue: String, val nightMode: Int) {
+    SYSTEM("SYSTEM", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM),
+    LIGHT("LIGHT", AppCompatDelegate.MODE_NIGHT_NO),
+    DARK("DARK", AppCompatDelegate.MODE_NIGHT_YES);
+
+    companion object {
+        fun fromPrefValue(value: String): ThemeMode? {
+            return entries.firstOrNull { it.prefValue == value }
+        }
+    }
+}
 
 @Singleton
 class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
+    var themeMode: ThemeMode
+        get() {
+            val raw = sharedPreferences.getString(THEME_MODE_KEY, null)
+            if (raw != null) {
+                ThemeMode.fromPrefValue(raw)?.let { return it }
+            }
+            return if (sharedPreferences.getBoolean(DARK_MODE_KEY, false)) {
+                ThemeMode.DARK
+            } else {
+                ThemeMode.SYSTEM
+            }
+        }
+        set(value) {
+            sharedPreferences.edit()
+                .putString(THEME_MODE_KEY, value.prefValue)
+                .putBoolean(DARK_MODE_KEY, value == ThemeMode.DARK)
+                .apply()
+        }
+
     var darkMode: Boolean
-        get() = sharedPreferences.getBoolean(DARK_MODE_KEY, false)
-        set(value) = sharedPreferences.edit().putBoolean(DARK_MODE_KEY, value).apply()
+        get() = themeMode == ThemeMode.DARK
+        set(value) {
+            themeMode = if (value) ThemeMode.DARK else ThemeMode.SYSTEM
+        }
 
     var copyToClipboard: Boolean
         get() = sharedPreferences.getBoolean(COPY_TO_CLIPBOARD_KEY, true)

@@ -34,11 +34,7 @@ class FreeOtpPlusApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        if (settings.darkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        }
+        AppCompatDelegate.setDefaultNightMode(settings.themeMode.nightMode)
 
         registerActivityLifecycleCallbacks(appSessionManager)
 

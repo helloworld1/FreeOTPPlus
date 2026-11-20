@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">ייבוא בפורמט URI של מפתח</string>
     <string name="export_json_format">ייצוא בפורמט JSON</string>
     <string name="export_key_uri_format">ייצוא בפורמט URI של מפתח</string>
-    <string name="use_dark_theme">שימוש בערכת עיצוב כהה</string>
+    <string name="theme">ערכת עיצוב</string>
+    <string name="theme_system">מערכת</string>
+    <string name="theme_light">בהירה</string>
+    <string name="theme_dark">כהה</string>
     <string name="add_token_success">האסימון נוסף בהצלחה</string>
     <string name="copy_to_clipboard">העתקה ללוח</string>
     <string name="require_authentication">דרישת אימות</string>

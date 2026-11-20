@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">திறவுகோல் URI வடிவத்தில் இறக்குமதி செய்</string>
     <string name="export_json_format">JSON வடிவத்தில் ஏற்றுமதி செய்</string>
     <string name="export_key_uri_format">திறவுகோல் URI வடிவத்தில் ஏற்றுமதி செய்</string>
-    <string name="use_dark_theme">இருண்ட தோற்றத்தைப் பயன்படுத்து</string>
+    <string name="theme">தோற்றம்</string>
+    <string name="theme_system">சிஸ்டம்</string>
+    <string name="theme_light">ஒளி</string>
+    <string name="theme_dark">இருள்</string>
     <string name="add_token_success">டோக்கன் வெற்றிகரமாகச் சேர்க்கப்பட்டது</string>
     <string name="copy_to_clipboard">கிளிப்போர்டுக்கு நகலெடு</string>
     <string name="require_authentication">அங்கீகாரம் தேவை</string>

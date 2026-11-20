@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">استيراد بتنسيق URI للمفتاح</string>
     <string name="export_json_format">تصدير بتنسيق JSON</string>
     <string name="export_key_uri_format">تصدير بتنسيق URI للمفتاح</string>
-    <string name="use_dark_theme">استخدام المظهر الداكن</string>
+    <string name="theme">المظهر</string>
+    <string name="theme_system">النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
     <string name="add_token_success">تمت إضافة الرمز بنجاح</string>
     <string name="copy_to_clipboard">نسخ إلى الحافظة</string>
     <string name="require_authentication">طلب المصادقة</string>

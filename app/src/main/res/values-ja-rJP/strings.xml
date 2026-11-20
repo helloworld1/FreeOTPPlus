@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">Key URI形式でインポート</string>
     <string name="export_json_format">JSON形式でエクスポート</string>
     <string name="export_key_uri_format">Key URI形式でエクスポート</string>
-    <string name="use_dark_theme">ダークテーマを使用</string>
+    <string name="theme">テーマ</string>
+    <string name="theme_system">システム</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
     <string name="add_token_success">トークンを追加しました</string>
     <string name="copy_to_clipboard">クリップボードにコピー</string>
     <string name="require_authentication">認証を要求する</string>

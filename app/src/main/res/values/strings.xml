@@ -53,7 +53,10 @@
     <string name="import_key_uri_format">Import key URI format</string>
     <string name="export_json_format">Export JSON format</string>
     <string name="export_key_uri_format">Export key URI format</string>
-    <string name="use_dark_theme">Use dark theme</string>
+    <string name="theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="add_token_success">The token was successfully added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="require_authentication">Require authentication</string>

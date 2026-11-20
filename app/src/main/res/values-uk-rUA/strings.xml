@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">Імпортувати формат URI ключів</string>
     <string name="export_json_format">Експортувати у формат JSON</string>
     <string name="export_key_uri_format">Експортувати у формат URI ключів</string>
-    <string name="use_dark_theme">Використовувати темну тему</string>
+    <string name="theme">Тема</string>
+    <string name="theme_system">Системна</string>
+    <string name="theme_light">Світла</string>
+    <string name="theme_dark">Темна</string>
     <string name="add_token_success">Ключ успішно додано</string>
     <string name="copy_to_clipboard">Копіювати до буфера обміну</string>
     <string name="require_authentication">Вимагати автентифікацію</string>

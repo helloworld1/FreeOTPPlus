@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">导入密钥 URI 格式</string>
     <string name="export_json_format">导出 JSON 格式</string>
     <string name="export_key_uri_format">导出密钥 URI 格式</string>
-    <string name="use_dark_theme">使用深色主题</string>
+    <string name="theme">主题</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="add_token_success">已成功添加令牌</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
     <string name="require_authentication">需要身份验证</string>

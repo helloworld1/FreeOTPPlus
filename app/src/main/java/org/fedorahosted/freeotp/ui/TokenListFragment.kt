@@ -34,6 +34,7 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.databinding.FragmentTokenListBinding
 import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.util.ThemeMode
 import javax.inject.Inject
 import kotlin.math.max
 
@@ -212,7 +213,11 @@ class TokenListFragment : Fragment() {
                     }
                     if (!authenticated) return
 
-                    menu.findItem(R.id.use_dark_theme)?.isChecked = settings.darkMode
+                    when (settings.themeMode) {
+                        ThemeMode.SYSTEM -> menu.findItem(R.id.theme_system)?.isChecked = true
+                        ThemeMode.LIGHT -> menu.findItem(R.id.theme_light)?.isChecked = true
+                        ThemeMode.DARK -> menu.findItem(R.id.theme_dark)?.isChecked = true
+                    }
                     menu.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
                     menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
                     updateFilterMenuIconTint(menu)
@@ -300,15 +305,18 @@ class TokenListFragment : Fragment() {
                             true
                         }
 
-                        R.id.use_dark_theme -> {
-                            settings.darkMode = !settings.darkMode
-                            item.isChecked = settings.darkMode
-                            val mode = if (settings.darkMode) {
-                                AppCompatDelegate.MODE_NIGHT_YES
-                            } else {
-                                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                            }
-                            AppCompatDelegate.setDefaultNightMode(mode)
+                        R.id.theme_system -> {
+                            applyThemeMode(ThemeMode.SYSTEM, item, mainActivity)
+                            true
+                        }
+
+                        R.id.theme_light -> {
+                            applyThemeMode(ThemeMode.LIGHT, item, mainActivity)
+                            true
+                        }
+
+                        R.id.theme_dark -> {
+                            applyThemeMode(ThemeMode.DARK, item, mainActivity)
                             true
                         }
 
@@ -342,6 +350,15 @@ class TokenListFragment : Fragment() {
             viewLifecycleOwner,
             Lifecycle.State.RESUMED
         )
+    }
+
+    private fun applyThemeMode(mode: ThemeMode, item: MenuItem, mainActivity: MainActivity) {
+        settings.themeMode = mode
+        item.isChecked = true
+        AppCompatDelegate.setDefaultNightMode(mode.nightMode)
+        if (!mainActivity.isChangingConfigurations && !mainActivity.isFinishing && !mainActivity.isDestroyed) {
+            mainActivity.invalidateMenu()
+        }
     }
 
     private fun navigateFromList(actionId: Int, args: Bundle? = null) {

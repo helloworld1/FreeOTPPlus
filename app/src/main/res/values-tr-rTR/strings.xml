@@ -48,7 +48,10 @@
     <string name="import_key_uri_format">Anahtar URI biçiminde içe aktar</string>
     <string name="export_json_format">JSON biçiminde dışa aktar</string>
     <string name="export_key_uri_format">Anahtar URI biçiminde dışa aktar</string>
-    <string name="use_dark_theme">Koyu tema kullan</string>
+    <string name="theme">Tema</string>
+    <string name="theme_system">Sistem</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
     <string name="add_token_success">Token başarıyla eklendi</string>
     <string name="copy_to_clipboard">Panoya kopyala</string>
     <string name="require_authentication">Kimlik doğrulama iste</string>
