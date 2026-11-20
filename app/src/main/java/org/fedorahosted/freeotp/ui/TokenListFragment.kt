@@ -24,6 +24,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.bumptech.glide.Glide
 import com.google.android.material.color.MaterialColors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -195,6 +196,16 @@ class TokenListFragment : Fragment() {
                         requireActivity().invalidateMenu()
                     }
                 }
+
+                launch {
+                    viewModel.getImageRefreshVersion().collect { version ->
+                        if (version > 0L) {
+                            Glide.get(requireContext()).clearMemory()
+                            @Suppress("NotifyDataSetChanged")
+                            tokenListAdapter.notifyDataSetChanged()
+                        }
+                    }
+                }
             }
         }
     }
@@ -295,6 +306,11 @@ class TokenListFragment : Fragment() {
                             true
                         }
 
+                        R.id.action_import_images -> {
+                            mainActivity.startImportTokenImages()
+                            true
+                        }
+
                         R.id.action_export_json -> {
                             mainActivity.handleExportAction(isJson = true)
                             true
@@ -302,6 +318,11 @@ class TokenListFragment : Fragment() {
 
                         R.id.action_export_key_uri -> {
                             mainActivity.handleExportAction(isJson = false)
+                            true
+                        }
+
+                        R.id.action_export_images -> {
+                            mainActivity.startExportTokenImages()
                             true
                         }
 

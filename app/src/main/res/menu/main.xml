@@ -55,6 +55,9 @@
             <item
                 android:id="@+id/action_import_key_uri"
                 android:title="@string/import_key_uri_format" />
+            <item
+                android:id="@+id/action_import_images"
+                android:title="@string/import_token_images" />
         </menu>
     </item>
     <item
@@ -67,6 +70,9 @@
             <item
                 android:id="@+id/action_export_key_uri"
                 android:title="@string/export_key_uri_format" />
+            <item
+                android:id="@+id/action_export_images"
+                android:title="@string/export_token_images" />
         </menu>
     </item>
     <item

@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importa en format URI de clau</string>
     <string name="export_json_format">Exporta en format JSON</string>
     <string name="export_key_uri_format">Exporta en format URI de clau</string>
+    <string name="import_token_images">Importa les imatges dels tokens</string>
+    <string name="export_token_images">Exporta les imatges dels tokens</string>
+    <string name="import_token_images_failed_text">No s\'ha pogut importar les imatges dels tokens. El fitxer ZIP no és vàlid.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Clar</string>

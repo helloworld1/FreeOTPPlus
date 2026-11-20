@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">匯入金鑰 URI 格式</string>
     <string name="export_json_format">匯出 JSON 格式</string>
     <string name="export_key_uri_format">匯出金鑰 URI 格式</string>
+    <string name="import_token_images">匯入權杖圖片</string>
+    <string name="export_token_images">匯出權杖圖片</string>
+    <string name="import_token_images_failed_text">匯入權杖圖片失敗。ZIP 檔案無效。</string>
     <string name="theme">主題</string>
     <string name="theme_system">跟隨系統</string>
     <string name="theme_light">淺色</string>

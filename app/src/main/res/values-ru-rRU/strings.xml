@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Импортировать формат URI ключей</string>
     <string name="export_json_format">Экспортировать формат JSON</string>
     <string name="export_key_uri_format">Экспортировать формат URI ключей</string>
+    <string name="import_token_images">Импортировать изображения токенов</string>
+    <string name="export_token_images">Экспортировать изображения токенов</string>
+    <string name="import_token_images_failed_text">Не удалось импортировать изображения токенов. Недопустимый ZIP-файл.</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системная</string>
     <string name="theme_light">Светлая</string>

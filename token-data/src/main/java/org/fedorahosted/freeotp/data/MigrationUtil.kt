@@ -63,7 +63,7 @@ class MigrationUtil private constructor(
     suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
         tokens.mapNotNull { otpToken ->
             try {
-                val uri = OtpTokenFactory.toUri(otpToken)
+                val uri = OtpTokenFactory.toUri(otpToken, includeImage = true)
                 val normalizedCategories = CategoryUtil.normalizeCategories(otpToken.categories)
                 Token(uri).apply {
                     category = normalizedCategories.firstOrNull()

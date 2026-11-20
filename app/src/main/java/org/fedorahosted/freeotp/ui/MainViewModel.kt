@@ -24,6 +24,7 @@ class MainViewModel @Inject constructor(
 
     private val tokenSearchQuery = MutableStateFlow("")
     private val categoryFilter = MutableStateFlow<String?>(null)
+    private val imageRefreshVersion = MutableStateFlow(0L)
     private val activeTokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
 
     init {
@@ -70,6 +71,12 @@ class MainViewModel @Inject constructor(
     fun getCategoryFilter(): Flow<String?> = categoryFilter
 
     fun getCurrentCategoryFilter(): String? = categoryFilter.value
+
+    fun getImageRefreshVersion(): Flow<Long> = imageRefreshVersion
+
+    fun notifyTokenImagesChanged() {
+        imageRefreshVersion.value++
+    }
 
     fun putActiveTokenCode(tokenId: Long, code: TokenCode) {
         activeTokenCodes[tokenId] = code

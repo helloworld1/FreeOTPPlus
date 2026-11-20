@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importer au format URI de clé</string>
     <string name="export_json_format">Exporter au format JSON</string>
     <string name="export_key_uri_format">Exporter au format URI de clé</string>
+    <string name="import_token_images">Importer les images des jetons</string>
+    <string name="export_token_images">Exporter les images des jetons</string>
+    <string name="import_token_images_failed_text">Échec de l’importation des images des jetons. Le fichier ZIP n’est pas valide.</string>
     <string name="theme">Thème</string>
     <string name="theme_system">Système</string>
     <string name="theme_light">Clair</string>

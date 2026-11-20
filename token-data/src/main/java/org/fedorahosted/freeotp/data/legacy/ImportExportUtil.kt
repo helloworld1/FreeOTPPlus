@@ -22,7 +22,9 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.security.GeneralSecurityException
@@ -68,7 +70,12 @@ class ImportExportUtil @Inject constructor(
                 migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens)
             }
 
-            val tokensToStore = tokenCryptoManager.encryptTokensForStorage(plaintextTokens)
+            val linkedTokens = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+                tokens = plaintextTokens,
+                filesDir = context.filesDir,
+                manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
+            )
+            val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().replaceAll(tokensToStore)
         }
     }
@@ -126,7 +133,12 @@ class ImportExportUtil @Inject constructor(
                 }
             }
 
-            val tokensToStore = tokenCryptoManager.encryptTokensForStorage(plaintextTokens)
+            val linkedTokens = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+                tokens = plaintextTokens,
+                filesDir = context.filesDir,
+                manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
+            )
+            val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().insertAll(tokensToStore)
         }
     }
@@ -198,10 +210,48 @@ class ImportExportUtil @Inject constructor(
                     } else {
                         for (token in tokens) {
                             val plainToken = tokenCryptoManager.decryptToken(token)
-                            printWriter.println(OtpTokenFactory.toUri(plainToken).toString())
+                            printWriter.println(OtpTokenFactory.toUri(plainToken, includeImage = true).toString())
                         }
                     }
                 }
+            }
+        }
+    }
+
+    suspend fun exportTokenImagesZip(fileUri: Uri) {
+        withContext(Dispatchers.IO) {
+            val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
+            val outputStream = context.contentResolver.openOutputStream(fileUri, "w")
+                ?: throw IOException("Unable to open output stream for $fileUri")
+            outputStream.use { out ->
+                TokenImageBackupUtil.exportTokenImagesToZip(
+                    tokens = tokens,
+                    filesDir = context.filesDir,
+                    gson = gson,
+                    zipOutputStream = out,
+                    fallbackStreamOpener = { rawUri ->
+                        TokenImageBackupUtil.openUriFallback(context, rawUri)
+                    }
+                )
+            }
+        }
+    }
+
+    suspend fun importTokenImagesZip(fileUri: Uri) {
+        withContext(Dispatchers.IO) {
+            val currentTokens = otpTokenDatabase.otpTokenDao().getAll().first()
+            val inputStream = context.contentResolver.openInputStream(fileUri)
+                ?: throw IOException("Unable to open input stream for $fileUri")
+            val updatedTokens = inputStream.use { input ->
+                TokenImageBackupUtil.importTokenImagesFromZip(
+                    currentTokens = currentTokens,
+                    filesDir = context.filesDir,
+                    gson = gson,
+                    zipInputStream = input
+                )
+            }
+            if (updatedTokens.isNotEmpty()) {
+                otpTokenDatabase.otpTokenDao().updateAll(updatedTokens)
             }
         }
     }

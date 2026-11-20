@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">ייבוא בפורמט URI של מפתח</string>
     <string name="export_json_format">ייצוא בפורמט JSON</string>
     <string name="export_key_uri_format">ייצוא בפורמט URI של מפתח</string>
+    <string name="import_token_images">ייבוא תמונות אסימונים</string>
+    <string name="export_token_images">ייצוא תמונות אסימונים</string>
+    <string name="import_token_images_failed_text">ייבוא תמונות האסימונים נכשל. קובץ ה-ZIP אינו תקין.</string>
     <string name="theme">ערכת עיצוב</string>
     <string name="theme_system">מערכת</string>
     <string name="theme_light">בהירה</string>

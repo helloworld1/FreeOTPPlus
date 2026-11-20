@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Impor format URI kunci</string>
     <string name="export_json_format">Ekspor format JSON</string>
     <string name="export_key_uri_format">Ekspor format URI kunci</string>
+    <string name="import_token_images">Impor gambar token</string>
+    <string name="export_token_images">Ekspor gambar token</string>
+    <string name="import_token_images_failed_text">Gagal mengimpor gambar token. File ZIP tidak valid.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Terang</string>

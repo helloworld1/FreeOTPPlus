@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importera nyckel-URI-format</string>
     <string name="export_json_format">Exportera JSON-format</string>
     <string name="export_key_uri_format">Exportera nyckel-URI-format</string>
+    <string name="import_token_images">Importera tokenbilder</string>
+    <string name="export_token_images">Exportera tokenbilder</string>
+    <string name="import_token_images_failed_text">Det gick inte att importera tokenbilder. ZIP-filen är ogiltig.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Ljust</string>

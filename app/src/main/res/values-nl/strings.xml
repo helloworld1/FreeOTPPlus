@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Sleutel-URI-indeling importeren</string>
     <string name="export_json_format">JSON-indeling exporteren</string>
     <string name="export_key_uri_format">Sleutel-URI-indeling exporteren</string>
+    <string name="import_token_images">Tokenafbeeldingen importeren</string>
+    <string name="export_token_images">Tokenafbeeldingen exporteren</string>
+    <string name="import_token_images_failed_text">Importeren van tokenafbeeldingen mislukt. Het ZIP-bestand is ongeldig.</string>
     <string name="theme">Thema</string>
     <string name="theme_system">Systeem</string>
     <string name="theme_light">Licht</string>

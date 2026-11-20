@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importovat formát URI klíčů</string>
     <string name="export_json_format">Exportovat formát JSON</string>
     <string name="export_key_uri_format">Exportovat formát URI klíčů</string>
+    <string name="import_token_images">Importovat obrázky tokenů</string>
+    <string name="export_token_images">Exportovat obrázky tokenů</string>
+    <string name="import_token_images_failed_text">Nepodařilo se naimportovat obrázky tokenů. Soubor ZIP je neplatný.</string>
     <string name="theme">Motiv</string>
     <string name="theme_system">Systém</string>
     <string name="theme_light">Světlý</string>

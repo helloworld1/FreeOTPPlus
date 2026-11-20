@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Kulcs-URI formátum importálása</string>
     <string name="export_json_format">JSON-formátum exportálása</string>
     <string name="export_key_uri_format">Kulcs-URI formátum exportálása</string>
+    <string name="import_token_images">Tokenképek importálása</string>
+    <string name="export_token_images">Tokenképek exportálása</string>
+    <string name="import_token_images_failed_text">A tokenképek importálása sikertelen. A ZIP-fájl érvénytelen.</string>
     <string name="theme">Téma</string>
     <string name="theme_system">Rendszer</string>
     <string name="theme_light">Világos</string>

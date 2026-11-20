@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">استيراد بتنسيق URI للمفتاح</string>
     <string name="export_json_format">تصدير بتنسيق JSON</string>
     <string name="export_key_uri_format">تصدير بتنسيق URI للمفتاح</string>
+    <string name="import_token_images">استيراد صور الرموز</string>
+    <string name="export_token_images">تصدير صور الرموز</string>
+    <string name="import_token_images_failed_text">فشل استيراد صور الرموز. ملف ZIP غير صالح.</string>
     <string name="theme">المظهر</string>
     <string name="theme_system">النظام</string>
     <string name="theme_light">فاتح</string>

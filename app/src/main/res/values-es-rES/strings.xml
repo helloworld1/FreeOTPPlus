@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importar formato URI de clave</string>
     <string name="export_json_format">Exportar formato JSON</string>
     <string name="export_key_uri_format">Exportar formato URI de clave</string>
+    <string name="import_token_images">Importar imágenes de tokens</string>
+    <string name="export_token_images">Exportar imágenes de tokens</string>
+    <string name="import_token_images_failed_text">Error al importar las imágenes de los tokens. El archivo ZIP no es válido.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>

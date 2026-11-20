@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">திறவுகோல் URI வடிவத்தில் இறக்குமதி செய்</string>
     <string name="export_json_format">JSON வடிவத்தில் ஏற்றுமதி செய்</string>
     <string name="export_key_uri_format">திறவுகோல் URI வடிவத்தில் ஏற்றுமதி செய்</string>
+    <string name="import_token_images">டோக்கன் படங்களை இறக்குமதி செய்</string>
+    <string name="export_token_images">டோக்கன் படங்களை ஏற்றுமதி செய்</string>
+    <string name="import_token_images_failed_text">டோக்கன் படங்களை இறக்குமதி செய்ய முடியவில்லை. ZIP கோப்பு தவறானது.</string>
     <string name="theme">தோற்றம்</string>
     <string name="theme_system">சிஸ்டம்</string>
     <string name="theme_light">ஒளி</string>

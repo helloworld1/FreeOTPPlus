@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Імпортувати формат URI ключів</string>
     <string name="export_json_format">Експортувати у формат JSON</string>
     <string name="export_key_uri_format">Експортувати у формат URI ключів</string>
+    <string name="import_token_images">Імпортувати зображення ключів</string>
+    <string name="export_token_images">Експортувати зображення ключів</string>
+    <string name="import_token_images_failed_text">Не вдалося імпортувати зображення ключів. Неправильний файл ZIP.</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системна</string>
     <string name="theme_light">Світла</string>

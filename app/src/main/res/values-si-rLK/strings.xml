@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">යතුරු URI ආකෘතිය ආයාත කරන්න</string>
     <string name="export_json_format">JSON ආකෘතිය නිර්යාත කරන්න</string>
     <string name="export_key_uri_format">යතුරු URI ආකෘතිය නිර්යාත කරන්න</string>
+    <string name="import_token_images">ටෝකන රූප ආයාත කරන්න</string>
+    <string name="export_token_images">ටෝකන රූප නිර්යාත කරන්න</string>
+    <string name="import_token_images_failed_text">ටෝකන රූප ආයාත කිරීමට අසමත් විය. ZIP ගොනුව වලංගු නොවේ.</string>
     <string name="theme">තේමාව</string>
     <string name="theme_system">පද්ධතිය</string>
     <string name="theme_light">දීප්තිමත්</string>

@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Schlüssel-URI-Format importieren</string>
     <string name="export_json_format">JSON-Format exportieren</string>
     <string name="export_key_uri_format">Schlüssel-URI-Format exportieren</string>
+    <string name="import_token_images">Token-Bilder importieren</string>
+    <string name="export_token_images">Token-Bilder exportieren</string>
+    <string name="import_token_images_failed_text">Importieren der Token-Bilder fehlgeschlagen. Die ZIP-Datei ist ungültig.</string>
     <string name="theme">Design</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>

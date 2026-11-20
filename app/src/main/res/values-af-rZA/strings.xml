@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Voer sleutel-URI-formaat in</string>
     <string name="export_json_format">Voer JSON-formaat uit</string>
     <string name="export_key_uri_format">Voer sleutel-URI-formaat uit</string>
+    <string name="import_token_images">Voer kentekenprente in</string>
+    <string name="export_token_images">Voer kentekenprente uit</string>
+    <string name="import_token_images_failed_text">Kon nie kentekenprente invoer nie. Die ZIP-lêer is ongeldig.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Stelsel</string>
     <string name="theme_light">Lig</string>

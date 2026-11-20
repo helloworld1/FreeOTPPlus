@@ -214,10 +214,14 @@ class EditTokenFragment : Fragment() {
     private fun showImage(imageUri: Uri?) {
         val b = _binding ?: return
         displayedImageUri = imageUri
-        Glide.with(this)
+        var request = Glide.with(this)
             .load(imageUri)
             .placeholder(R.drawable.logo)
-            .into(b.image)
+            .error(R.drawable.logo)
+        org.fedorahosted.freeotp.util.localFileSignature(imageUri?.toString())?.let { signature ->
+            request = request.signature(signature)
+        }
+        request.into(b.image)
         b.removeUserTokenImage.isEnabled = displayedImageUri != null
         updateButtonStates()
     }

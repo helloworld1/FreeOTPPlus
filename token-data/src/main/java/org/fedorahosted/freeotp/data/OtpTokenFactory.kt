@@ -156,8 +156,12 @@ object OtpTokenFactory {
         )
     }
 
-    fun toUri(token: OtpToken): Uri {
-        return buildBaseUriBuilder(token).build()
+    fun toUri(token: OtpToken, includeImage: Boolean = false): Uri {
+        val builder = buildBaseUriBuilder(token)
+        if (includeImage && !token.imagePath.isNullOrBlank()) {
+            builder.appendQueryParameter("image", token.imagePath)
+        }
+        return builder.build()
     }
 
     fun toEncryptedUri(token: OtpToken, metadata: EncryptionMetadata): Uri {

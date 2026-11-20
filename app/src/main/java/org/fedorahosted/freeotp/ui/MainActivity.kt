@@ -25,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -56,8 +57,10 @@ class MainActivity : AppCompatActivity() {
     internal enum class DocumentAction {
         IMPORT_JSON,
         IMPORT_KEY_URI,
+        IMPORT_IMAGES,
         EXPORT_JSON,
-        EXPORT_KEY_URI
+        EXPORT_KEY_URI,
+        EXPORT_IMAGES
     }
 
     private data class PendingDocumentResult(
@@ -113,6 +116,18 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.CreateDocument("text/plain")
     ) { uri ->
         onDocumentPicked(DocumentAction.EXPORT_KEY_URI, uri)
+    }
+
+    private val openImagesZipLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        onDocumentPicked(DocumentAction.IMPORT_IMAGES, uri)
+    }
+
+    private val createImagesZipLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri ->
+        onDocumentPicked(DocumentAction.EXPORT_IMAGES, uri)
     }
 
     private fun navController(): NavController {
@@ -330,6 +345,21 @@ class MainActivity : AppCompatActivity() {
         launchSystemPicker { openKeyUriLauncher.launch(arrayOf("*/*")) }
     }
 
+    internal fun startImportTokenImages() {
+        if (!isSessionAuthenticated()) return
+        launchSystemPicker {
+            openImagesZipLauncher.launch(arrayOf("application/zip", "application/x-zip-compressed", "*/*"))
+        }
+    }
+
+    internal fun startExportTokenImages() {
+        if (!isSessionAuthenticated()) return
+        val timestamp = dateFormatter.format(Date())
+        launchSystemPicker {
+            createImagesZipLauncher.launch("freeotp_images_$timestamp.zip")
+        }
+    }
+
     internal fun handleExportAction(isJson: Boolean) {
         if (!isSessionAuthenticated()) return
         AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
@@ -419,6 +449,8 @@ class MainActivity : AppCompatActivity() {
                                     showImportEncryptedBackupDialog(uri, isJson = true)
                                 } else {
                                     importFromUtil.importJsonFile(uri)
+                                    Glide.get(this@MainActivity).clearMemory()
+                                    viewModel.notifyTokenImagesChanged()
                                     showSnackbar(R.string.import_succeeded_text)
                                 }
                             } catch (e: Exception) {
@@ -452,11 +484,39 @@ class MainActivity : AppCompatActivity() {
                             showImportEncryptedBackupDialog(uri, isJson = false)
                         } else {
                             importFromUtil.importKeyUriFile(uri)
+                            Glide.get(this@MainActivity).clearMemory()
+                            viewModel.notifyTokenImagesChanged()
                             showSnackbar(R.string.import_succeeded_text)
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Import Key uri failed", e)
                         showSnackbar(R.string.import_key_uri_failed_text)
+                    }
+                }
+            }
+
+            DocumentAction.EXPORT_IMAGES -> {
+                lifecycleScope.launch {
+                    try {
+                        importFromUtil.exportTokenImagesZip(uri)
+                        showSnackbar(R.string.export_succeeded_text)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Export token images failed", e)
+                        showSnackbar(R.string.export_failed_text)
+                    }
+                }
+            }
+
+            DocumentAction.IMPORT_IMAGES -> {
+                lifecycleScope.launch {
+                    try {
+                        importFromUtil.importTokenImagesZip(uri)
+                        Glide.get(this@MainActivity).clearMemory()
+                        viewModel.notifyTokenImagesChanged()
+                        showSnackbar(R.string.import_succeeded_text)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Import token images failed", e)
+                        showSnackbar(R.string.import_token_images_failed_text)
                     }
                 }
             }
@@ -476,6 +536,8 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     importFromUtil.importKeyUriFile(uri, passphrase)
                 }
+                Glide.get(this@MainActivity).clearMemory()
+                viewModel.notifyTokenImagesChanged()
                 dismissSafely()
                 showSnackbar(R.string.import_succeeded_text)
                 null

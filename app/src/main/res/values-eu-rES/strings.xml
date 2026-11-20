@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Inportatu gako-URI formatua</string>
     <string name="export_json_format">Esportatu JSON formatua</string>
     <string name="export_key_uri_format">Esportatu gako-URI formatua</string>
+    <string name="import_token_images">Inportatu token-irudiak</string>
+    <string name="export_token_images">Esportatu token-irudiak</string>
+    <string name="import_token_images_failed_text">Huts egin du token-irudiak inportatzean. ZIP fitxategia baliogabea da.</string>
     <string name="theme">Gaia</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Argia</string>

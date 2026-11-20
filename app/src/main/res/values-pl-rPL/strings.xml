@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Importuj format URI kluczy</string>
     <string name="export_json_format">Eksportuj format JSON</string>
     <string name="export_key_uri_format">Eksportuj format URI kluczy</string>
+    <string name="import_token_images">Importuj ikony tokenów</string>
+    <string name="export_token_images">Eksportuj ikony tokenów</string>
+    <string name="import_token_images_failed_text">Nie udało się zaimportować ikon tokenów. Plik ZIP jest nieprawidłowy.</string>
     <string name="theme">Motyw</string>
     <string name="theme_system">Systemowy</string>
     <string name="theme_light">Jasny</string>

@@ -48,6 +48,9 @@
     <string name="import_key_uri_format">Key URI形式でインポート</string>
     <string name="export_json_format">JSON形式でエクスポート</string>
     <string name="export_key_uri_format">Key URI形式でエクスポート</string>
+    <string name="import_token_images">トークン画像をインポート</string>
+    <string name="export_token_images">トークン画像をエクスポート</string>
+    <string name="import_token_images_failed_text">トークン画像のインポートに失敗しました。ZIPファイルが無効です。</string>
     <string name="theme">テーマ</string>
     <string name="theme_system">システム</string>
     <string name="theme_light">ライト</string>
