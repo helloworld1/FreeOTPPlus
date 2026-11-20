@@ -38,5 +38,7 @@ dependencies {
     implementation(libs.coreKtx)
     implementation(libs.appCompat)
 
+    testImplementation(libs.bundles.androidxJunit)
+    testImplementation(libs.androidxTruth)
     androidTestImplementation(libs.bundles.androidxTest)
 }

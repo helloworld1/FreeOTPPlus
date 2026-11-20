@@ -1,10 +1,9 @@
 package org.liberty.android.freeotp.token_images
 
-import java.util.*
-
 enum class TokenImage(val resource: Int,
                       val issuer: String? = null,
-                      val alsoMatchLabel: Boolean = false) {
+                      val alsoMatchLabel: Boolean = false,
+                      val altIssuers: List<String> = emptyList()) {
     OneAndOne(R.drawable.token_image_1and1),
     OnePassword(R.drawable.token_image_1password),
     TwentyThreeAndMe(R.drawable.token_image_23andme),
@@ -31,6 +30,7 @@ enum class TokenImage(val resource: Int,
     AVM(R.drawable.token_image_avm),
     Backblaze(R.drawable.token_image_backblaze),
     BattleNet(R.drawable.token_image_battlenet),
+    BestBuy(R.drawable.token_image_bestbuy, altIssuers = listOf("Best Buy")),
     Betterment(R.drawable.token_image_betterment),
     Binance(R.drawable.token_image_binance),
     BitBucket(R.drawable.token_image_bitbucket),
@@ -74,6 +74,7 @@ enum class TokenImage(val resource: Int,
     DreamHost(R.drawable.token_image_dreamhost),
     Dropbox(R.drawable.token_image_dropbox),
     Drupal(R.drawable.token_image_drupal),
+    Ecobee(R.drawable.token_image_ecobee),
     ElectronicArts(R.drawable.token_image_electronic_arts),
     Email(R.drawable.token_image_email),
     EpicGames(R.drawable.token_image_epic_games),
@@ -101,6 +102,7 @@ enum class TokenImage(val resource: Int,
     GMX(R.drawable.token_image_gmx),
     GoDaddy(R.drawable.token_image_godaddy),
     Gogs(R.drawable.token_image_gogs),
+    GOG(R.drawable.token_image_gog, "GOG.com", altIssuers = listOf("GOG")),
     Google(R.drawable.token_image_google),
     GovUK(R.drawable.token_image_govuk),
     Grav(R.drawable.token_image_grav),
@@ -158,6 +160,7 @@ enum class TokenImage(val resource: Int,
     Miraheze(R.drawable.token_image_miraheze),
     Mixer(R.drawable.token_image_mixer),
     MongoDB(R.drawable.token_image_mongodb),
+    Mozilla(R.drawable.token_image_mozilla),
     MVPSnet(R.drawable.token_image_mvpsnet),
     NameCheap(R.drawable.token_image_namecheap),
     NameCom(R.drawable.token_image_namecom),
@@ -167,6 +170,7 @@ enum class TokenImage(val resource: Int,
     Nintendo(R.drawable.token_image_nintendo),
     NoStarchPress(R.drawable.token_image_no_starch_press),
     NPM(R.drawable.token_image_npm),
+    Nvidia(R.drawable.token_image_nvidia),
     Oculus(R.drawable.token_image_oculus),
     Office(R.drawable.token_image_office),
     Okta(R.drawable.token_image_okta),
@@ -267,14 +271,20 @@ enum class TokenImage(val resource: Int,
 }
 
 fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
-    val issuerToMatch = this.issuer ?: this.name
+    val candidates = if (altIssuers.isEmpty()) {
+        listOf(this.issuer ?: this.name)
+    } else {
+        listOf(this.issuer ?: this.name) + altIssuers
+    }
 
-    val issuerMatched = issuer?.lowercase(Locale.getDefault())
-            ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+    val issuerMatched = issuer != null && candidates.any { candidate ->
+        issuer.contains(candidate, ignoreCase = true)
+    }
 
     return if (!issuerMatched && this.alsoMatchLabel) {
-        label?.lowercase(Locale.getDefault())
-                ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
+        label != null && candidates.any { candidate ->
+            label.contains(candidate, ignoreCase = true)
+        }
     } else {
         issuerMatched
     }
