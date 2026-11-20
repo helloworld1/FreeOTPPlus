@@ -51,6 +51,13 @@
     <string name="import_token_images">Importera tokenbilder</string>
     <string name="export_token_images">Exportera tokenbilder</string>
     <string name="import_token_images_failed_text">Det gick inte att importera tokenbilder. ZIP-filen är ogiltig.</string>
+    <string name="sort">Sortera</string>
+    <string name="sort_by_account_asc">Sortera efter Konto stigande</string>
+    <string name="sort_by_account_desc">Sortera efter Konto fallande</string>
+    <string name="sort_by_issuer_asc">Sortera efter Utfärdare stigande</string>
+    <string name="sort_by_issuer_desc">Sortera efter Utfärdare fallande</string>
+    <string name="sort_tokens_warning_title">Sortera tokens?</string>
+    <string name="sort_tokens_warning_message">Automatisk sortering återställer all manuell ordning och går inte att ångra. Vi rekommenderar att du skapar en JSON-säkerhetskopia först.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Ljust</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">Token resimlerini içe aktar</string>
     <string name="export_token_images">Token resimlerini dışa aktar</string>
     <string name="import_token_images_failed_text">Token resimleri içe aktarılamadı. ZIP dosyası geçersiz.</string>
+    <string name="sort">Sırala</string>
+    <string name="sort_by_account_asc">Hesaba göre artan sırala</string>
+    <string name="sort_by_account_desc">Hesaba göre azalan sırala</string>
+    <string name="sort_by_issuer_asc">Yayıncıya göre artan sırala</string>
+    <string name="sort_by_issuer_desc">Yayıncıya göre azalan sırala</string>
+    <string name="sort_tokens_warning_title">Tokenler sıralansın mı?</string>
+    <string name="sort_tokens_warning_message">Otomatik sıralama kullanıldığında tüm elle yapılan sıralama sıfırlanır ve bu işlem geri alınamaz. Önce bir JSON yedeği oluşturmanız önerilir.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Açık</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">导入令牌图片</string>
     <string name="export_token_images">导出令牌图片</string>
     <string name="import_token_images_failed_text">导入令牌图片失败。ZIP 文件无效。</string>
+    <string name="sort">排序</string>
+    <string name="sort_by_account_asc">按账户升序排列</string>
+    <string name="sort_by_account_desc">按账户降序排列</string>
+    <string name="sort_by_issuer_asc">按发行方升序排列</string>
+    <string name="sort_by_issuer_desc">按发行方降序排列</string>
+    <string name="sort_tokens_warning_title">排序令牌？</string>
+    <string name="sort_tokens_warning_message">使用自动排序将重置所有手动排序且无法撤销。建议先创建一份 JSON 备份。</string>
     <string name="theme">主题</string>
     <string name="theme_system">跟随系统</string>
     <string name="theme_light">浅色</string>

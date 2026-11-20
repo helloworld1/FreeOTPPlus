@@ -15,3 +15,4 @@
 -keep enum org.fedorahosted.freeotp.data.AuthMode { *; }
 -keep enum org.fedorahosted.freeotp.data.EncryptionType { *; }
 -keep enum org.fedorahosted.freeotp.data.OtpTokenType { *; }
+-keep enum org.fedorahosted.freeotp.data.TokenSortOrder { *; }

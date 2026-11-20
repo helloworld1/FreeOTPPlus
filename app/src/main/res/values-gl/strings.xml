@@ -51,6 +51,13 @@
     <string name="import_token_images">Importar imaxes dos tokens</string>
     <string name="export_token_images">Exportar imaxes dos tokens</string>
     <string name="import_token_images_failed_text">Produciuse un erro ao importar as imaxes dos tokens. O ficheiro ZIP non é válido.</string>
+    <string name="sort">Ordenar</string>
+    <string name="sort_by_account_asc">Ordenar por Conta ascendente</string>
+    <string name="sort_by_account_desc">Ordenar por Conta descendente</string>
+    <string name="sort_by_issuer_asc">Ordenar por Emisor ascendente</string>
+    <string name="sort_by_issuer_desc">Ordenar por Emisor descendente</string>
+    <string name="sort_tokens_warning_title">Queres ordenar os tokens?</string>
+    <string name="sort_tokens_warning_message">O uso da ordenación automática reverterá toda a orde manual e non se pode desfacer. Recoméndase crear primeiro unha copia de seguranza en formato JSON.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>

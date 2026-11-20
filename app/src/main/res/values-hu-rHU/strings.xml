@@ -51,6 +51,13 @@
     <string name="import_token_images">Tokenképek importálása</string>
     <string name="export_token_images">Tokenképek exportálása</string>
     <string name="import_token_images_failed_text">A tokenképek importálása sikertelen. A ZIP-fájl érvénytelen.</string>
+    <string name="sort">Rendezés</string>
+    <string name="sort_by_account_asc">Rendezés Fiók szerint növekvő</string>
+    <string name="sort_by_account_desc">Rendezés Fiók szerint csökkenő</string>
+    <string name="sort_by_issuer_asc">Rendezés Kibocsátó szerint növekvő</string>
+    <string name="sort_by_issuer_desc">Rendezés Kibocsátó szerint csökkenő</string>
+    <string name="sort_tokens_warning_title">Tokenek rendezése?</string>
+    <string name="sort_tokens_warning_message">Az automatikus rendezés felülírja a kézi sorrendet, és ez a művelet nem vonható vissza. Javasolt előbb JSON biztonsági mentést készíteni.</string>
     <string name="theme">Téma</string>
     <string name="theme_system">Rendszer</string>
     <string name="theme_light">Világos</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">Impor gambar token</string>
     <string name="export_token_images">Ekspor gambar token</string>
     <string name="import_token_images_failed_text">Gagal mengimpor gambar token. File ZIP tidak valid.</string>
+    <string name="sort">Urutkan</string>
+    <string name="sort_by_account_asc">Urutkan berdasarkan Akun Menaik</string>
+    <string name="sort_by_account_desc">Urutkan berdasarkan Akun Menurun</string>
+    <string name="sort_by_issuer_asc">Urutkan berdasarkan Penerbit Menaik</string>
+    <string name="sort_by_issuer_desc">Urutkan berdasarkan Penerbit Menurun</string>
+    <string name="sort_tokens_warning_title">Urutkan token?</string>
+    <string name="sort_tokens_warning_message">Menggunakan pengurutan otomatis akan menghapus semua urutan manual dan tidak dapat dibatalkan. Disarankan untuk membuat cadangan JSON terlebih dahulu.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Terang</string>

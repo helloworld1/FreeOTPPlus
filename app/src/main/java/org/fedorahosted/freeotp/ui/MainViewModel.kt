@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.util.AppSessionManager
 import javax.inject.Inject
@@ -76,6 +77,12 @@ class MainViewModel @Inject constructor(
 
     fun notifyTokenImagesChanged() {
         imageRefreshVersion.value++
+    }
+
+    fun sortTokens(order: TokenSortOrder) {
+        viewModelScope.launch {
+            otpTokenDatabase.otpTokenDao().sortAll(order)
+        }
     }
 
     fun putActiveTokenCode(tokenId: Long, code: TokenCode) {

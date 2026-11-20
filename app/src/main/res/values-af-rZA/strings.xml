@@ -51,6 +51,13 @@
     <string name="import_token_images">Voer kentekenprente in</string>
     <string name="export_token_images">Voer kentekenprente uit</string>
     <string name="import_token_images_failed_text">Kon nie kentekenprente invoer nie. Die ZIP-lêer is ongeldig.</string>
+    <string name="sort">Sorteer</string>
+    <string name="sort_by_account_asc">Sorteer volgens Rekening oplopend</string>
+    <string name="sort_by_account_desc">Sorteer volgens Rekening aflopend</string>
+    <string name="sort_by_issuer_asc">Sorteer volgens Uitreiker oplopend</string>
+    <string name="sort_by_issuer_desc">Sorteer volgens Uitreiker aflopend</string>
+    <string name="sort_tokens_warning_title">Sorteer kentekens?</string>
+    <string name="sort_tokens_warning_message">Outomatiese sortering sal alle handmatige volgorde terugstel en kan nie ontdoen word nie. Dit word aanbeveel om eers \'n JSON-rugsteun te skep.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Stelsel</string>
     <string name="theme_light">Lig</string>

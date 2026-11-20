@@ -76,6 +76,25 @@
         </menu>
     </item>
     <item
+        android:id="@+id/action_sort"
+        android:icon="@drawable/sort_24px"
+        android:title="@string/sort">
+        <menu>
+            <item
+                android:id="@+id/action_sort_account_asc"
+                android:title="@string/sort_by_account_asc" />
+            <item
+                android:id="@+id/action_sort_account_desc"
+                android:title="@string/sort_by_account_desc" />
+            <item
+                android:id="@+id/action_sort_issuer_asc"
+                android:title="@string/sort_by_issuer_asc" />
+            <item
+                android:id="@+id/action_sort_issuer_desc"
+                android:title="@string/sort_by_issuer_desc" />
+        </menu>
+    </item>
+    <item
         android:id="@+id/theme"
         android:title="@string/theme">
         <menu>

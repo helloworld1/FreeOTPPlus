@@ -51,6 +51,13 @@
     <string name="import_token_images">Імпортувати зображення ключів</string>
     <string name="export_token_images">Експортувати зображення ключів</string>
     <string name="import_token_images_failed_text">Не вдалося імпортувати зображення ключів. Неправильний файл ZIP.</string>
+    <string name="sort">Сортувати</string>
+    <string name="sort_by_account_asc">Сортувати за Обліковим записом за зростанням</string>
+    <string name="sort_by_account_desc">Сортувати за Обліковим записом за спаданням</string>
+    <string name="sort_by_issuer_asc">Сортувати за Видавцем за зростанням</string>
+    <string name="sort_by_issuer_desc">Сортувати за Видавцем за спаданням</string>
+    <string name="sort_tokens_warning_title">Відсортувати ключі?</string>
+    <string name="sort_tokens_warning_message">Використання автоматичного сортування скасує весь ручний порядок, і цю дію неможливо скасувати. Рекомендується спочатку створити резервну копію у форматі JSON.</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системна</string>
     <string name="theme_light">Світла</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">Inportatu token-irudiak</string>
     <string name="export_token_images">Esportatu token-irudiak</string>
     <string name="import_token_images_failed_text">Huts egin du token-irudiak inportatzean. ZIP fitxategia baliogabea da.</string>
+    <string name="sort">Ordenatu</string>
+    <string name="sort_by_account_asc">Ordenatu Kontuaren arabera gorantz</string>
+    <string name="sort_by_account_desc">Ordenatu Kontuaren arabera beherantz</string>
+    <string name="sort_by_issuer_asc">Ordenatu Igorlearen arabera gorantz</string>
+    <string name="sort_by_issuer_desc">Ordenatu Igorlearen arabera beherantz</string>
+    <string name="sort_tokens_warning_title">Tokenak ordenatu?</string>
+    <string name="sort_tokens_warning_message">Ordenatze automatikoa erabiltzeak eskuzko ordena guztia leheneratuko du eta ezin da desegin. Lehenik JSON babeskopia bat sortzea gomendatzen da.</string>
     <string name="theme">Gaia</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Argia</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">Tokenafbeeldingen importeren</string>
     <string name="export_token_images">Tokenafbeeldingen exporteren</string>
     <string name="import_token_images_failed_text">Importeren van tokenafbeeldingen mislukt. Het ZIP-bestand is ongeldig.</string>
+    <string name="sort">Sorteren</string>
+    <string name="sort_by_account_asc">Sorteren op Account oplopend</string>
+    <string name="sort_by_account_desc">Sorteren op Account aflopend</string>
+    <string name="sort_by_issuer_asc">Sorteren op Uitgever oplopend</string>
+    <string name="sort_by_issuer_desc">Sorteren op Uitgever aflopend</string>
+    <string name="sort_tokens_warning_title">Tokens sorteren?</string>
+    <string name="sort_tokens_warning_message">Automatisch sorteren overschrijft uw handmatige volgorde en kan niet ongedaan worden gemaakt. Het wordt aanbevolen om eerst een JSON-back-up te maken.</string>
     <string name="theme">Thema</string>
     <string name="theme_system">Systeem</string>
     <string name="theme_light">Licht</string>

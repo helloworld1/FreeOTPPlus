@@ -32,6 +32,7 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.databinding.FragmentTokenListBinding
 import org.fedorahosted.freeotp.util.Settings
@@ -323,6 +324,26 @@ class TokenListFragment : Fragment() {
 
                         R.id.action_export_images -> {
                             mainActivity.startExportTokenImages()
+                            true
+                        }
+
+                        R.id.action_sort_account_asc -> {
+                            mainActivity.showSortConfirmationDialog(TokenSortOrder.ACCOUNT_ASC)
+                            true
+                        }
+
+                        R.id.action_sort_account_desc -> {
+                            mainActivity.showSortConfirmationDialog(TokenSortOrder.ACCOUNT_DESC)
+                            true
+                        }
+
+                        R.id.action_sort_issuer_asc -> {
+                            mainActivity.showSortConfirmationDialog(TokenSortOrder.ISSUER_ASC)
+                            true
+                        }
+
+                        R.id.action_sort_issuer_desc -> {
+                            mainActivity.showSortConfirmationDialog(TokenSortOrder.ISSUER_DESC)
                             true
                         }
 

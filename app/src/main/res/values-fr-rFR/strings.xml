@@ -51,6 +51,13 @@
     <string name="import_token_images">Importer les images des jetons</string>
     <string name="export_token_images">Exporter les images des jetons</string>
     <string name="import_token_images_failed_text">Échec de l’importation des images des jetons. Le fichier ZIP n’est pas valide.</string>
+    <string name="sort">Trier</string>
+    <string name="sort_by_account_asc">Trier par Compte croissant</string>
+    <string name="sort_by_account_desc">Trier par Compte décroissant</string>
+    <string name="sort_by_issuer_asc">Trier par Émetteur croissant</string>
+    <string name="sort_by_issuer_desc">Trier par Émetteur décroissant</string>
+    <string name="sort_tokens_warning_title">Trier les jetons ?</string>
+    <string name="sort_tokens_warning_message">L’utilisation du tri automatique annulera tout classement manuel et cette action est irréversible. Il est recommandé de créer d’abord une sauvegarde JSON.</string>
     <string name="theme">Thème</string>
     <string name="theme_system">Système</string>
     <string name="theme_light">Clair</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">Importa les imatges dels tokens</string>
     <string name="export_token_images">Exporta les imatges dels tokens</string>
     <string name="import_token_images_failed_text">No s\'ha pogut importar les imatges dels tokens. El fitxer ZIP no és vàlid.</string>
+    <string name="sort">Ordena</string>
+    <string name="sort_by_account_asc">Ordena per Compte ascendent</string>
+    <string name="sort_by_account_desc">Ordena per Compte descendent</string>
+    <string name="sort_by_issuer_asc">Ordena per Emissor ascendent</string>
+    <string name="sort_by_issuer_desc">Ordena per Emissor descendent</string>
+    <string name="sort_tokens_warning_title">Vols ordenar els tokens?</string>
+    <string name="sort_tokens_warning_message">L\'ús de l\'ordenació automàtica revertirà tota l\'ordenació manual i no es pot desfer. Es recomana crear primer una còpia de seguretat en format JSON.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Clar</string>

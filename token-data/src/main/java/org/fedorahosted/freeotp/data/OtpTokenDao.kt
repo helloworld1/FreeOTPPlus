@@ -73,6 +73,13 @@ interface OtpTokenDao {
     suspend fun incrementCounter(id: Long)
 
     @Transaction
+    suspend fun sortAll(order: TokenSortOrder) {
+        val current = getAll().first()
+        if (current.size <= 1) return
+        updateAll(order.sort(current))
+    }
+
+    @Transaction
     suspend fun movePairs(pairs : List<Pair<Long,Long>>){
         for(pair in pairs.listIterator()) {
             withContext(Dispatchers.IO) {

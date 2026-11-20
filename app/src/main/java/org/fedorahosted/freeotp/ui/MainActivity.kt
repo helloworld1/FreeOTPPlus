@@ -39,6 +39,7 @@ import org.fedorahosted.freeotp.data.InvalidEncryptionKeyException
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.databinding.MainBinding
@@ -358,6 +359,20 @@ class MainActivity : AppCompatActivity() {
         launchSystemPicker {
             createImagesZipLauncher.launch("freeotp_images_$timestamp.zip")
         }
+    }
+
+    internal fun showSortConfirmationDialog(order: TokenSortOrder) {
+        if (!isSessionAuthenticated()) return
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.sort_tokens_warning_title)
+            .setMessage(R.string.sort_tokens_warning_message)
+            .setIcon(R.drawable.alert)
+            .setPositiveButton(R.string.ok_text) { _, _ ->
+                viewModel.sortTokens(order)
+            }
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+        showTrackedDialog(dialog)
     }
 
     internal fun handleExportAction(isJson: Boolean) {

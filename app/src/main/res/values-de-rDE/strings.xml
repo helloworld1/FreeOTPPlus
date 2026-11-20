@@ -51,6 +51,13 @@
     <string name="import_token_images">Token-Bilder importieren</string>
     <string name="export_token_images">Token-Bilder exportieren</string>
     <string name="import_token_images_failed_text">Importieren der Token-Bilder fehlgeschlagen. Die ZIP-Datei ist ungültig.</string>
+    <string name="sort">Sortieren</string>
+    <string name="sort_by_account_asc">Nach Konto aufsteigend sortieren</string>
+    <string name="sort_by_account_desc">Nach Konto absteigend sortieren</string>
+    <string name="sort_by_issuer_asc">Nach Aussteller aufsteigend sortieren</string>
+    <string name="sort_by_issuer_desc">Nach Aussteller absteigend sortieren</string>
+    <string name="sort_tokens_warning_title">Token sortieren?</string>
+    <string name="sort_tokens_warning_message">Durch die automatische Sortierung wird die gesamte manuelle Reihenfolge überschrieben und dies kann nicht rückgängig gemacht werden. Es wird empfohlen, zuerst ein JSON-Backup zu erstellen.</string>
     <string name="theme">Design</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>

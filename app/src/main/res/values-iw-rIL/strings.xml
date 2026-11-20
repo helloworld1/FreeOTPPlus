@@ -51,6 +51,13 @@
     <string name="import_token_images">ייבוא תמונות אסימונים</string>
     <string name="export_token_images">ייצוא תמונות אסימונים</string>
     <string name="import_token_images_failed_text">ייבוא תמונות האסימונים נכשל. קובץ ה-ZIP אינו תקין.</string>
+    <string name="sort">מיון</string>
+    <string name="sort_by_account_asc">מיון לפי חשבון בסדר עולה</string>
+    <string name="sort_by_account_desc">מיון לפי חשבון בסדר יורד</string>
+    <string name="sort_by_issuer_asc">מיון לפי מנפיק בסדר עולה</string>
+    <string name="sort_by_issuer_desc">מיון לפי מנפיק בסדר יורד</string>
+    <string name="sort_tokens_warning_title">למיין את האסימונים?</string>
+    <string name="sort_tokens_warning_message">שימוש במיון אוטומטי יבטל את כל הסידור הידני ולא ניתן לבטל פעולה זו. מומלץ ליצור גיבוי JSON תחילה.</string>
     <string name="theme">ערכת עיצוב</string>
     <string name="theme_system">מערכת</string>
     <string name="theme_light">בהירה</string>

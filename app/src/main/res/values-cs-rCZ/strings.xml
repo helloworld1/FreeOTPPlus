@@ -51,6 +51,13 @@
     <string name="import_token_images">Importovat obrázky tokenů</string>
     <string name="export_token_images">Exportovat obrázky tokenů</string>
     <string name="import_token_images_failed_text">Nepodařilo se naimportovat obrázky tokenů. Soubor ZIP je neplatný.</string>
+    <string name="sort">Seřadit</string>
+    <string name="sort_by_account_asc">Seřadit podle účtu vzestupně</string>
+    <string name="sort_by_account_desc">Seřadit podle účtu sestupně</string>
+    <string name="sort_by_issuer_asc">Seřadit podle vydavatele vzestupně</string>
+    <string name="sort_by_issuer_desc">Seřadit podle vydavatele sestupně</string>
+    <string name="sort_tokens_warning_title">Seřadit tokeny?</string>
+    <string name="sort_tokens_warning_message">Použití automatického řazení zruší veškeré ruční uspořádání a tuto akci nelze vrátit zpět. Doporučujeme nejprve vytvořit zálohu ve formátu JSON.</string>
     <string name="theme">Motiv</string>
     <string name="theme_system">Systém</string>
     <string name="theme_light">Světlý</string>

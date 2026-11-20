@@ -51,6 +51,13 @@
     <string name="import_token_images">Importar imagens dos tokens</string>
     <string name="export_token_images">Exportar imagens dos tokens</string>
     <string name="import_token_images_failed_text">Falha ao importar as imagens dos tokens. O arquivo ZIP é inválido.</string>
+    <string name="sort">Ordenar</string>
+    <string name="sort_by_account_asc">Ordenar por Conta crescente</string>
+    <string name="sort_by_account_desc">Ordenar por Conta decrescente</string>
+    <string name="sort_by_issuer_asc">Ordenar por Emissor crescente</string>
+    <string name="sort_by_issuer_desc">Ordenar por Emissor decrescente</string>
+    <string name="sort_tokens_warning_title">Ordenar tokens?</string>
+    <string name="sort_tokens_warning_message">O uso da ordenação automática reverterá toda a ordem manual e não pode ser desfeito. Recomenda-se criar primeiro um backup em JSON.</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>

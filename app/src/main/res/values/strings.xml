@@ -56,6 +56,13 @@
     <string name="import_token_images">Import token images</string>
     <string name="export_token_images">Export token images</string>
     <string name="import_token_images_failed_text">Failed to import token images. The ZIP file is invalid.</string>
+    <string name="sort">Sort</string>
+    <string name="sort_by_account_asc">Sort by Account Ascending</string>
+    <string name="sort_by_account_desc">Sort by Account Descending</string>
+    <string name="sort_by_issuer_asc">Sort by Issuer Ascending</string>
+    <string name="sort_by_issuer_desc">Sort by Issuer Descending</string>
+    <string name="sort_tokens_warning_title">Sort tokens?</string>
+    <string name="sort_tokens_warning_message">Using automatic sorting will revert all manual ordering and cannot be undone. Creating a JSON backup first is recommended.</string>
     <string name="theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">استيراد صور الرموز</string>
     <string name="export_token_images">تصدير صور الرموز</string>
     <string name="import_token_images_failed_text">فشل استيراد صور الرموز. ملف ZIP غير صالح.</string>
+    <string name="sort">فرز</string>
+    <string name="sort_by_account_asc">الفرز حسب الحساب تصاعديًا</string>
+    <string name="sort_by_account_desc">الفرز حسب الحساب تنازليًا</string>
+    <string name="sort_by_issuer_asc">الفرز حسب الجهة المُصدِرة تصاعديًا</string>
+    <string name="sort_by_issuer_desc">الفرز حسب الجهة المُصدِرة تنازليًا</string>
+    <string name="sort_tokens_warning_title">فرز الرموز؟</string>
+    <string name="sort_tokens_warning_message">سيؤدي استخدام الفرز التلقائي إلى إلغاء كل الترتيب اليدوي ولا يمكن التراجع عنه. يُنصح بإنشاء نسخة احتياطية بتنسيق JSON أولاً.</string>
     <string name="theme">المظهر</string>
     <string name="theme_system">النظام</string>
     <string name="theme_light">فاتح</string>

@@ -51,6 +51,13 @@
     <string name="import_token_images">トークン画像をインポート</string>
     <string name="export_token_images">トークン画像をエクスポート</string>
     <string name="import_token_images_failed_text">トークン画像のインポートに失敗しました。ZIPファイルが無効です。</string>
+    <string name="sort">並べ替え</string>
+    <string name="sort_by_account_asc">アカウントの昇順で並べ替え</string>
+    <string name="sort_by_account_desc">アカウントの降順で並べ替え</string>
+    <string name="sort_by_issuer_asc">発行者の昇順で並べ替え</string>
+    <string name="sort_by_issuer_desc">発行者の降順で並べ替え</string>
+    <string name="sort_tokens_warning_title">トークンを並べ替えますか？</string>
+    <string name="sort_tokens_warning_message">自動並べ替えを使用すると手動で設定した並び順がすべてリセットされ、元に戻すことはできません。事前にJSONバックアップを作成することをおすすめします。</string>
     <string name="theme">テーマ</string>
     <string name="theme_system">システム</string>
     <string name="theme_light">ライト</string>

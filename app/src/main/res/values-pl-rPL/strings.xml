@@ -51,6 +51,13 @@
     <string name="import_token_images">Importuj ikony tokenów</string>
     <string name="export_token_images">Eksportuj ikony tokenów</string>
     <string name="import_token_images_failed_text">Nie udało się zaimportować ikon tokenów. Plik ZIP jest nieprawidłowy.</string>
+    <string name="sort">Sortuj</string>
+    <string name="sort_by_account_asc">Sortuj według Konta rosnąco</string>
+    <string name="sort_by_account_desc">Sortuj według Konta malejąco</string>
+    <string name="sort_by_issuer_asc">Sortuj według Wydawcy rosnąco</string>
+    <string name="sort_by_issuer_desc">Sortuj według Wydawcy malejąco</string>
+    <string name="sort_tokens_warning_title">Posortować tokeny?</string>
+    <string name="sort_tokens_warning_message">Użycie automatycznego sortowania nadpisze całe ręczne uporządkowanie i nie można tego cofnąć. Zaleca się wcześniejsze utworzenie kopii zapasowej JSON.</string>
     <string name="theme">Motyw</string>
     <string name="theme_system">Systemowy</string>
     <string name="theme_light">Jasny</string>

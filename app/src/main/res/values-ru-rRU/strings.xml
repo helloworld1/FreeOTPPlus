@@ -51,6 +51,13 @@
     <string name="import_token_images">Импортировать изображения токенов</string>
     <string name="export_token_images">Экспортировать изображения токенов</string>
     <string name="import_token_images_failed_text">Не удалось импортировать изображения токенов. Недопустимый ZIP-файл.</string>
+    <string name="sort">Сортировка</string>
+    <string name="sort_by_account_asc">Сортировать по Аккаунту (по возрастанию)</string>
+    <string name="sort_by_account_desc">Сортировать по Аккаунту (по убыванию)</string>
+    <string name="sort_by_issuer_asc">Сортировать по Издателю (по возрастанию)</string>
+    <string name="sort_by_issuer_desc">Сортировать по Издателю (по убыванию)</string>
+    <string name="sort_tokens_warning_title">Отсортировать токены?</string>
+    <string name="sort_tokens_warning_message">Автоматическая сортировка сбросит весь ручной порядок, и это действие нельзя отменить. Рекомендуется сначала создать резервную копию в формате JSON.</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системная</string>
     <string name="theme_light">Светлая</string>
