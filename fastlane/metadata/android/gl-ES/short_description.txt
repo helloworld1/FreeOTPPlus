@@ -1,0 +1,1 @@
+Autenticador de dous factores (2FA) con contrasinais dun só uso (OTP)

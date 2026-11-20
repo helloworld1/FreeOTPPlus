@@ -1,0 +1,23 @@
+FreeOTP+ engade unha segunda capa de seguranza para as túas contas en liña.
+Funciona xerando contrasinais dun só uso (OTP) nos teus dispositivos móbiles que se poden empregar xunto co teu contrasinal habitual para facer que o teu inicio de sesión sexa practicamente imposible de vulnerar.
+Estes contrasinais pódense xerar mesmo cando o teléfono está en modo avión.
+Os tokens pódense engadir facilmente escaneando un código QR ou introducindo manualmente a configuración do token.
+Isto denomínase autenticación de dous factores (2FA).
+
+FreeOTP funciona con moitos dos servizos en liña que xa empregas, incluídos Google, Facebook, Evernote, GitHub e moitos máis!
+FreeOTP tamén pode funcionar para a seguranza corporativa privada se implementan os protocolos estandarizados <a href="https://en.wikipedia.org/wiki/Time-based_one-time_password">TOTP</a> ou <a href="https://en.wikipedia.org/wiki/HMAC-based_one-time_password_algorithm">HOTP</a>.
+Isto inclúe excelentes solucións empresariais como <a href="https://www.freeipa.org/">FreeIPA</a>.
+
+<b>Características:</b>
+<ul>
+<li>Escaneo de códigos QR.</li>
+<li>Exportación e importación de tokens (en texto simple ou cifrados) a Google Drive ou outros provedores de documentos.</li>
+<li>Material Design con compatibilidade co tema escuro.</li>
+<li>Barra de busca para buscar tokens e filtrar por categoría.</li>
+<li>Consulta dos detalles do token.</li>
+<li>Tres modos de autenticación: Ningún, Inicio da aplicación (biometría / PIN) e Token cifrado (claves secretas dos tokens cifradas con AES-256-GCM e desbloqueadas mediante biometría ou clave manual).</li>
+<li>Iconas sen conexión baseadas en heurística para tokens de máis de 250 sitios web.</li>
+<li>Múltiples axustes para personalizar a funcionalidade da aplicación.</li>
+</ul>
+
+FreeOTP Plus é unha bifurcación (fork) de FreeOTP.
