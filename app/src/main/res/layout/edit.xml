@@ -243,18 +243,23 @@
         android:paddingEnd="16dp"
         android:paddingBottom="10dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/restore"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="@string/restore_defaults" />
-
-        <Space
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/restore"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:enabled="false"
+                android:gravity="start|center_vertical"
+                android:text="@string/restore_defaults"
+                android:textAlignment="viewStart" />
+        </FrameLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancel"
