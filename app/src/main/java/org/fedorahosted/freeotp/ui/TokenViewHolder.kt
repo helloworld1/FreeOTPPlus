@@ -1,8 +1,8 @@
 package org.fedorahosted.freeotp.ui
 
 import android.content.Intent
-import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken

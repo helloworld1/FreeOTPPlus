@@ -3,11 +3,12 @@ package org.fedorahosted.freeotp.token
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import com.google.android.material.card.MaterialCardView
 import org.fedorahosted.freeotp.R
@@ -57,7 +58,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mCounterValue = findViewById(R.id.counter_value)
         mMenu = findViewById(R.id.menu)
 
-        mPopupMenu = PopupMenu(context, mMenu)
+        mPopupMenu = PopupMenu(context, mMenu, Gravity.END)
         mMenu.setOnClickListener(this)
     }
 

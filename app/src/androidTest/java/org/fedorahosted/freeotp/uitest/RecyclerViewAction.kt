@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.os.Build
 import android.view.View
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
@@ -18,7 +19,15 @@ object RecyclerViewAction {
 
         override fun perform(uiController: UiController?, view: View?) {
             val child = view?.findViewById<View>(id)
-            child?.performClick()?: throw AssertionError("Cannot find view with id: $id")
+                ?: throw AssertionError("Cannot find view with id: $id")
+            child.performClick()
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+                // Android 6.0 PopupWindow runs an internal EpicenterTranslateClipReveal transition
+                // not tracked by Espresso; pump the main looper so clipBounds reach 100%.
+                uiController?.loopMainThreadForAtLeast(350)
+            } else {
+                uiController?.loopMainThreadUntilIdle()
+            }
         }
     }
 }
