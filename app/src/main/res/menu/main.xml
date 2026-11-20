@@ -114,12 +114,28 @@
         </menu>
     </item>
     <item
+        android:id="@+id/authentication_mode"
+        android:title="@string/authentication_mode">
+        <menu>
+            <group
+                android:id="@+id/auth_mode_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/auth_mode_none"
+                    android:title="@string/auth_mode_none" />
+                <item
+                    android:id="@+id/auth_mode_app_launch"
+                    android:title="@string/auth_mode_app_launch" />
+                <item
+                    android:id="@+id/auth_mode_token_encrypted"
+                    android:title="@string/auth_mode_token_encrypted" />
+            </group>
+        </menu>
+    </item>
+    <item
         android:id="@+id/copy_to_clipboard"
         android:title="@string/copy_to_clipboard"
         android:checkable="true"/>
-    <item
-        android:id="@+id/authentication_mode"
-        android:title="@string/authentication_mode"/>
     <item
         android:id="@+id/action_about"
         android:icon="@drawable/info_24px"

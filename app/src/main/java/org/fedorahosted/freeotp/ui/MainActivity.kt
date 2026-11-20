@@ -568,29 +568,13 @@ class MainActivity : AppCompatActivity() {
         showTrackedDialog(dialog)
     }
 
-    internal fun showAuthenticationModeDialog() {
+    internal fun selectAuthenticationMode(selectedMode: AuthMode) {
+        invalidateMenu()
         if (!isSessionAuthenticated()) return
-        val modes = arrayOf(AuthMode.NONE, AuthMode.APP_LAUNCH, AuthMode.TOKEN_ENCRYPTED)
-        val labels = arrayOf(
-            getString(R.string.auth_mode_none),
-            getString(R.string.auth_mode_app_launch),
-            getString(R.string.auth_mode_token_encrypted)
-        )
         val currentMode = settings.authMode
-        val currentIndex = modes.indexOf(currentMode).coerceAtLeast(0)
-
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.authentication_mode)
-            .setSingleChoiceItems(labels, currentIndex) { pickerDialog, which ->
-                pickerDialog.dismiss()
-                val selectedMode = modes[which]
-                if (selectedMode != currentMode) {
-                    handleAuthModeSelection(currentMode, selectedMode)
-                }
-            }
-            .setNegativeButton(R.string.cancel_text, null)
-            .create()
-        showTrackedDialog(dialog)
+        if (selectedMode != currentMode) {
+            handleAuthModeSelection(currentMode, selectedMode)
+        }
     }
 
     private fun handleAuthModeSelection(currentMode: AuthMode, targetMode: AuthMode) {

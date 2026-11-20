@@ -109,15 +109,9 @@ class FlagSecureTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).check(matches(isDisplayed()))
-
-            scenario.onActivity { activity ->
-                val dialogWindows = activity.getOpenDialogWindows()
-                assertThat(dialogWindows).isNotEmpty()
-                assertFlagSecureSet(dialogWindows.first())
-            }
-
-            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_token_encrypted))
+                .check(matches(isDisplayed()))
+                .perform(click())
             onView(withId(R.id.key_edit_text)).inRoot(isDialog()).check(matches(isDisplayed()))
 
             scenario.onActivity { activity ->

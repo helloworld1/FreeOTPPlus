@@ -2,6 +2,8 @@ package org.fedorahosted.freeotp.uitest
 
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
+import android.widget.RadioButton
+import androidx.appcompat.view.menu.ListMenuItemView
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
@@ -17,8 +19,10 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isChecked
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -36,6 +40,7 @@ import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
+import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -171,10 +176,10 @@ class TokenEncryptionTest {
                 }
             }
 
-            // Open Authentication mode dialog and choose "Token encrypted"
+            // Open Authentication mode popup selector and choose "Token encrypted"
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
 
             // Test key < 6 chars rejected
             onView(withId(R.id.key_edit_text)).inRoot(isDialog())
@@ -276,7 +281,7 @@ class TokenEncryptionTest {
 
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
             onView(withId(R.id.key_edit_text)).inRoot(isDialog())
                 .perform(scrollTo(), replaceText("myMasterKey"), closeSoftKeyboard())
             onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
@@ -384,7 +389,7 @@ class TokenEncryptionTest {
             // Enable Token encrypted mode
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
             onView(withId(R.id.key_edit_text)).inRoot(isDialog())
                 .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
             onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
@@ -396,10 +401,22 @@ class TokenEncryptionTest {
                 assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isTrue()
             }
 
-            // Switch back to "None" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
+            // Switch back to "None" -> verify "Token encrypted" radio is currently checked -> select "None" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_none)).inRoot(isDialog()).perform(click())
+            onView(
+                allOf(
+                    isAssignableFrom(ListMenuItemView::class.java),
+                    hasDescendant(withText(R.string.auth_mode_token_encrypted))
+                )
+            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isChecked()))))
+            onView(
+                allOf(
+                    isAssignableFrom(ListMenuItemView::class.java),
+                    hasDescendant(withText(R.string.auth_mode_none))
+                )
+            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isNotChecked()))))
+            onView(withText(R.string.auth_mode_none)).perform(click())
 
             onView(withText(R.string.disable_token_encryption_warning)).inRoot(isDialog())
                 .check(matches(isDisplayed()))

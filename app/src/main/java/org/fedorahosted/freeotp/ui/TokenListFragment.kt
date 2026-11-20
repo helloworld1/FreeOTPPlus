@@ -230,6 +230,11 @@ class TokenListFragment : Fragment() {
                         ThemeMode.LIGHT -> menu.findItem(R.id.theme_light)?.isChecked = true
                         ThemeMode.DARK -> menu.findItem(R.id.theme_dark)?.isChecked = true
                     }
+                    when (settings.authMode) {
+                        AuthMode.NONE -> menu.findItem(R.id.auth_mode_none)?.isChecked = true
+                        AuthMode.APP_LAUNCH -> menu.findItem(R.id.auth_mode_app_launch)?.isChecked = true
+                        AuthMode.TOKEN_ENCRYPTED -> menu.findItem(R.id.auth_mode_token_encrypted)?.isChecked = true
+                    }
                     menu.findItem(R.id.copy_to_clipboard)?.isChecked = settings.copyToClipboard
                     menu.findItem(R.id.quit_and_lock)?.isVisible = settings.authMode != AuthMode.NONE
                     updateFilterMenuIconTint(menu)
@@ -362,15 +367,25 @@ class TokenListFragment : Fragment() {
                             true
                         }
 
+                        R.id.auth_mode_none -> {
+                            mainActivity.selectAuthenticationMode(AuthMode.NONE)
+                            true
+                        }
+
+                        R.id.auth_mode_app_launch -> {
+                            mainActivity.selectAuthenticationMode(AuthMode.APP_LAUNCH)
+                            true
+                        }
+
+                        R.id.auth_mode_token_encrypted -> {
+                            mainActivity.selectAuthenticationMode(AuthMode.TOKEN_ENCRYPTED)
+                            true
+                        }
+
                         R.id.copy_to_clipboard -> {
                             settings.copyToClipboard = !settings.copyToClipboard
                             item.isChecked = settings.copyToClipboard
                             mainActivity.invalidateMenu()
-                            true
-                        }
-
-                        R.id.authentication_mode -> {
-                            mainActivity.showAuthenticationModeDialog()
                             true
                         }
 

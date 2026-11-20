@@ -1,7 +1,10 @@
 package org.fedorahosted.freeotp.uitest
 
 import android.os.SystemClock
+import android.widget.RadioButton
 import android.widget.TextView
+import androidx.appcompat.view.menu.ListMenuItemView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +16,11 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.isChecked
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -28,6 +35,7 @@ import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -290,9 +298,18 @@ class AuthenticationGateTest {
         AuthenticationUtil.hasScreenLockOverride = false
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
+                val titles = (0 until toolbar.menu.size()).map { toolbar.menu.getItem(it).title.toString() }
+                val themeIdx = titles.indexOf(activity.getString(R.string.theme))
+                val authIdx = titles.indexOf(activity.getString(R.string.authentication_mode))
+                assertThat(themeIdx).isAtLeast(0)
+                assertThat(authIdx).isEqualTo(themeIdx + 1)
+            }
+
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
             onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_app_launch)).inRoot(isDialog()).perform(click())
+            onView(withText(R.string.auth_mode_app_launch)).perform(click())
 
             onView(withText(R.string.screen_lock_required_title)).inRoot(isDialog())
                 .check(matches(isDisplayed()))
@@ -303,6 +320,22 @@ class AuthenticationGateTest {
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
             }
+
+            // Reopen Authentication mode popup selector -> "None" remains checked and "App launch" is unchecked
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(
+                allOf(
+                    isAssignableFrom(ListMenuItemView::class.java),
+                    hasDescendant(withText(R.string.auth_mode_none))
+                )
+            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isChecked()))))
+            onView(
+                allOf(
+                    isAssignableFrom(ListMenuItemView::class.java),
+                    hasDescendant(withText(R.string.auth_mode_app_launch))
+                )
+            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isNotChecked()))))
         }
     }
 
