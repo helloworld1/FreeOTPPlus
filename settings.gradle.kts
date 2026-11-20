@@ -34,6 +34,7 @@ dependencyResolutionManagement {
             version("zxing", "3.5.4") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.14.0")
             version("glide", "5.0.7")
+            version("androidSvg", "1.4")
             version("room", "2.8.4")
             version("androidxTestCore", "1.7.0")
             version("androidxTestOrchestrator", "1.6.1")
@@ -48,6 +49,8 @@ dependencyResolutionManagement {
             library("zxing", "com.google.zxing", "core").versionRef("zxing")
             library("gson", "com.google.code.gson", "gson").versionRef("gson")
             library("glide", "com.github.bumptech.glide", "glide").versionRef("glide")
+            library("glideKsp", "com.github.bumptech.glide", "ksp").versionRef("glide")
+            library("androidSvg", "com.caverock", "androidsvg-aar").versionRef("androidSvg")
             library("coreKtx", "androidx.core", "core-ktx").versionRef("coreKtx")
             library("activityKtx", "androidx.activity", "activity-ktx").versionRef("activityKtx")
             library("fragmentKtx", "androidx.fragment", "fragment-ktx").versionRef("fragmentKtx")

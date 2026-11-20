@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.zxing)
     implementation(libs.gson)
     implementation(libs.glide)
+    ksp(libs.glideKsp)
+    implementation(libs.androidSvg)
     implementation(libs.coreKtx)
     implementation(libs.activityKtx)
     implementation(libs.fragmentKtx)

@@ -14,6 +14,7 @@ fun ImageView.setTokenImage(token: OtpToken) {
         Glide.with(this)
             .load(token.imagePath)
             .placeholder(R.drawable.logo)
+            .error(R.drawable.logo)
             .into(this)
         return
     }
