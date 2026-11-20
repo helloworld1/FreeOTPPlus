@@ -55,4 +55,28 @@ class TokenImageTest {
         assertThat(firstMatchingTokenImage("Ecobee")).isEqualTo(TokenImage.Ecobee)
         assertThat(firstMatchingTokenImage("ecobee")).isEqualTo(TokenImage.Ecobee)
     }
+
+    @Test
+    fun matchesUsMobileVariants() {
+        assertThat(firstMatchingTokenImage("US Mobile")).isEqualTo(TokenImage.USMobile)
+        assertThat(firstMatchingTokenImage("us mobile")).isEqualTo(TokenImage.USMobile)
+        assertThat(firstMatchingTokenImage("USMobile")).isEqualTo(TokenImage.USMobile)
+        assertThat(firstMatchingTokenImage("usmobile.com")).isEqualTo(TokenImage.USMobile)
+    }
+
+    @Test
+    fun matchesUbiquitiAndPreservesUbiquitiNetworks() {
+        assertThat(firstMatchingTokenImage("Ubiquiti")).isEqualTo(TokenImage.Ubiquiti)
+        assertThat(firstMatchingTokenImage("Ubiquiti Inc.")).isEqualTo(TokenImage.Ubiquiti)
+        assertThat(firstMatchingTokenImage("UniFi")).isEqualTo(TokenImage.Ubiquiti)
+        assertThat(firstMatchingTokenImage("UI.com")).isEqualTo(TokenImage.Ubiquiti)
+        assertThat(firstMatchingTokenImage("UbiquitiNetworks")).isEqualTo(TokenImage.UbiquitiNetworks)
+    }
+
+    @Test
+    fun matchesMorganStanleyVariants() {
+        assertThat(firstMatchingTokenImage("Morgan Stanley")).isEqualTo(TokenImage.MorganStanley)
+        assertThat(firstMatchingTokenImage("morgan stanley")).isEqualTo(TokenImage.MorganStanley)
+        assertThat(firstMatchingTokenImage("MorganStanley")).isEqualTo(TokenImage.MorganStanley)
+    }
 }
