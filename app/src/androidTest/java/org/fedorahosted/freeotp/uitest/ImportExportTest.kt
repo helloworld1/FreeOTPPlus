@@ -199,4 +199,45 @@ class ImportExportTest {
 
         keyUriFile.delete()
     }
+
+    @Test
+    fun testHotpRfc4226UriAndJsonBackupRoundTrip(): Unit = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val jsonFile = File(context.cacheDir, "test_hotp_rfc4226.json")
+        val uriFile = File(context.cacheDir, "test_hotp_rfc4226.txt")
+
+        lateinit var activity: MainActivity
+        activityRule.scenario.onActivity { activity = it }
+        val dao = activity.otpTokenDatabase.otpTokenDao()
+
+        val initialToken = OtpTokenFactory.createFromUri(
+            Uri.parse("otpauth://hotp/RFC4226:alice?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&digits=6&counter=0")
+        ).copy(id = 1, ordinal = 1)
+        assertThat(initialToken.counter).isEqualTo(0L)
+        assertThat(OtpTokenFactory.toUri(initialToken).getQueryParameter("counter")).isEqualTo("0")
+
+        dao.insert(initialToken)
+        // Simulate using token once -> counter advances from 0 to 1
+        dao.incrementCounter(1L)
+        val afterFirstUse = dao.get(1L).first()!!
+        assertThat(afterFirstUse.counter).isEqualTo(1L)
+        assertThat(OtpTokenFactory.toUri(afterFirstUse).getQueryParameter("counter")).isEqualTo("1")
+
+        // Export both JSON and Key URI formats
+        activity.importFromUtil.exportJsonFile(jsonFile.toUri())
+        activity.importFromUtil.exportKeyUriFile(uriFile.toUri())
+
+        // Re-import JSON -> preserves exact counter 1
+        dao.deleteAll()
+        activity.importFromUtil.importJsonFile(jsonFile.toUri())
+        assertThat(dao.getAll().first().single().counter).isEqualTo(1L)
+
+        // Re-import Key URI -> preserves exact counter 1
+        dao.deleteAll()
+        activity.importFromUtil.importKeyUriFile(uriFile.toUri())
+        assertThat(dao.getAll().first().single().counter).isEqualTo(1L)
+
+        jsonFile.delete()
+        uriFile.delete()
+    }
 }

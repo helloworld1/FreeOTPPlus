@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.Converters
 
-@Database(entities = [OtpToken::class], version = 3, exportSchema = false)
+@Database(entities = [OtpToken::class], version = 4, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class OtpTokenDatabase : RoomDatabase() {
     abstract fun otpTokenDao(): OtpTokenDao
@@ -71,6 +71,13 @@ abstract class OtpTokenDatabase : RoomDatabase() {
                 }
                 database.execSQL("DROP TABLE `otp_tokens`")
                 database.execSQL("ALTER TABLE `otp_tokens_new` RENAME TO `otp_tokens`")
+            }
+        }
+
+        // Preserve all synced HOTP counters >= 0 unchanged; normalize only legacy unused -1 counters to 0.
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("UPDATE `otp_tokens` SET `counter` = 0 WHERE `tokenType` = 'HOTP' AND `counter` < 0")
             }
         }
     }

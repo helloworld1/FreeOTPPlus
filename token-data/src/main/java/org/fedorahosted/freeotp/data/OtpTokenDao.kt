@@ -69,7 +69,7 @@ interface OtpTokenDao {
     @Query("update otp_tokens set ordinal = :ordinal where id = :id")
     suspend fun updateOrdinal(id: Long, ordinal: Long)
 
-    @Query("update otp_tokens set counter = counter + 1 where id = :id")
+    @Query("update otp_tokens set counter = counter + 1 where id = :id and counter < 9223372036854775807")
     suspend fun incrementCounter(id: Long)
 
     @Transaction

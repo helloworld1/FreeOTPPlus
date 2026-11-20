@@ -18,6 +18,7 @@ import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
@@ -274,7 +275,11 @@ class ImportExportUtil @Inject constructor(
                         algorithm = exportedToken.algorithm,
                         secret = plainSecret,
                         digits = if (exportedToken.digits > 0) exportedToken.digits else 6,
-                        counter = exportedToken.counter,
+                        counter = if (exportedToken.tokenType == OtpTokenType.HOTP) {
+                            exportedToken.counter.coerceAtLeast(0L)
+                        } else {
+                            0L
+                        },
                         period = if (exportedToken.period > 0) exportedToken.period else 30,
                         encryptionType = EncryptionType.PLAIN_TEXT,
                         categories = resolvedCategories

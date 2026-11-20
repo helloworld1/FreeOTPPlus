@@ -38,7 +38,7 @@ class MigrationTest {
         val globalPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit()
             .putString("microsoft.com:token1totp", "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"microsoft.com\",\"label\":\"account1totp\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}")
-            .putString("github.com:token2hotp", "{\"algo\":\"SHA256\",\"counter\":0,\"digits\":6,\"issuerExt\":\"github.com\",\"label\":\"account2hotp\",\"period\":30,\"secret\":[8,66,29,111,-99],\"type\":\"HOTP\"}")
+            .putString("github.com:token2hotp", "{\"algo\":\"SHA256\",\"counter\":15,\"digits\":6,\"issuerExt\":\"github.com\",\"label\":\"account2hotp\",\"period\":30,\"secret\":[8,66,29,111,-99],\"type\":\"HOTP\"}")
             .putString("tokenOrder", "[\"microsoft.com:token1totp\",\"github.com:token2hotp\"]")
             .commit()
 
@@ -127,6 +127,10 @@ class MigrationTest {
 
     @Test
     fun testHotpToken() {
+        // Verify migrated HOTP token preserves exact existing count ("15") on main card and Edit screen
+        onView(withId(R.id.token_list))
+            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
+            .check(matches(hasDescendant(withText("15"))))
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1,
                 RecyclerViewAction.clickChildViewWithId(R.id.menu)))
@@ -142,6 +146,9 @@ class MigrationTest {
         onView(withId(R.id.digits))
             .perform(scrollTo())
             .check(matches(withText("6")))
+        onView(withId(R.id.interval))
+            .perform(scrollTo())
+            .check(matches(withText("15")))
         onView(withId(R.id.secret))
             .perform(scrollTo())
             .check(matches(withText(R.string.click_to_display)))

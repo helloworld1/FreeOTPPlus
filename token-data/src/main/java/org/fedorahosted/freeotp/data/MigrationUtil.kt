@@ -124,15 +124,24 @@ class MigrationUtil private constructor(
                 } else {
                     CategoryUtil.normalizeCategories(listOf(legacyToken.category))
                 }
+                val resolvedTokenType = if (legacyToken.type == Token.TokenType.HOTP) {
+                    OtpTokenType.HOTP
+                } else {
+                    OtpTokenType.TOTP
+                }
                 OtpToken(
                     id = index.toLong() + 1,
                     ordinal = index.toLong() + 1,
                     issuer = legacyToken.issuer.takeIf { !it.isNullOrBlank() },
                     label = legacyToken.label,
                     imagePath = legacyToken.image?.toString(),
-                    tokenType = if (legacyToken.type == Token.TokenType.HOTP) OtpTokenType.HOTP else OtpTokenType.TOTP,
+                    tokenType = resolvedTokenType,
                     algorithm = legacyToken.algorithm ?: "SHA1",
-                    counter = legacyToken.counter,
+                    counter = if (resolvedTokenType == OtpTokenType.HOTP) {
+                        legacyToken.counter.coerceAtLeast(0L)
+                    } else {
+                        0L
+                    },
                     secret = legacyToken.secret,
                     digits = if (legacyToken.digits > 0) legacyToken.digits else 6,
                     period = if (legacyToken.period > 0) legacyToken.period else 30,

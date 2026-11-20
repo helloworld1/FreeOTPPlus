@@ -62,8 +62,11 @@ object OtpTokenFactory {
         if (period <= 0) {
             throw IllegalArgumentException("Period must be positive")
         }
+        if (type == OtpTokenType.HOTP && initialCounter < 0L) {
+            throw IllegalArgumentException("HOTP counter must be non-negative")
+        }
 
-        val storedCounter = if (type == OtpTokenType.HOTP) initialCounter - 1 else 0L
+        val storedCounter = if (type == OtpTokenType.HOTP) initialCounter else 0L
 
         return OtpToken(
             id = 0,
@@ -198,7 +201,7 @@ object OtpTokenFactory {
         when (token.tokenType) {
             OtpTokenType.HOTP -> {
                 builder.authority("hotp")
-                builder.appendQueryParameter("counter", (token.counter + 1).toString())
+                builder.appendQueryParameter("counter", token.counter.coerceAtLeast(0L).toString())
             }
             OtpTokenType.TOTP -> builder.authority("totp")
         }

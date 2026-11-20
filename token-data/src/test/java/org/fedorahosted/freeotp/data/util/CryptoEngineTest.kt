@@ -111,13 +111,13 @@ class CryptoEngineTest {
             algorithm = "SHA256",
             secret = "abcd5432",
             digits = 6,
-            counter = -1L,
+            counter = 0L,
             period = 30,
             encryptionType = EncryptionType.PLAIN_TEXT
         )
 
         val code = TokenCodeUtil().generateTokenCode(token)
-        assertThat(code.currentCode).isEqualTo("248759")
+        assertThat(code.currentCode).isEqualTo("047701")
     }
 
     @Test
@@ -133,12 +133,12 @@ class CryptoEngineTest {
             algorithm = "SHA256",
             secret = "abcd\n5432\t\u00A0====",
             digits = 6,
-            counter = -1L,
+            counter = 0L,
             period = 30,
             encryptionType = EncryptionType.PLAIN_TEXT
         )
         assertThat(TokenCodeUtil().generateTokenCode(formattedSecretToken).currentCode)
-            .isEqualTo("248759")
+            .isEqualTo("047701")
 
         // Corrupted non-Base32 secret already in DB returns empty code instead of crashing
         val corruptedToken = formattedSecretToken.copy(secret = "0189_INVALID_BASE32!", period = 0)

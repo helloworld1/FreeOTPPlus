@@ -182,9 +182,8 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     }
 
     companion object {
-        internal fun formatHotpCounter(storedCounter: Long): String {
-            val displayValue = if (storedCounter == Long.MAX_VALUE) Long.MAX_VALUE else storedCounter + 1L
-            return String.format(Locale.US, "%d", displayValue)
+        internal fun formatHotpCounter(counter: Long): String {
+            return String.format(Locale.US, "%d", counter.coerceAtLeast(0L))
         }
 
         internal fun formatCodeForDisplay(raw: String): String {

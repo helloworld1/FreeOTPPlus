@@ -206,14 +206,14 @@ class MainActivityTest {
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
             .check(matches(RecyclerViewAssertion.atPosition(1, hasDescendant(allOf(withId(R.id.counter_container), not(isDisplayed()))))))
 
-        // Tap HOTP token -> reveals code AND increments counter badge live to "1"
+        // Tap HOTP token -> reveals RFC 4226 counter=0 code ("047 701") AND increments counter badge live to "1"
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github.com")))))
             .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github account 1")))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("248 759")))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("047 701")))))
             .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("1"), isDisplayed())))))
 
         // Open Edit screen and verify Counter matches "1"
@@ -232,30 +232,31 @@ class MainActivityTest {
         onView(withText(R.string.add_token))
             .perform(click())
         onView(withId(R.id.issuer))
-            .perform(replaceText("HotpService"), closeSoftKeyboard())
+            .perform(replaceText("RFC4226"), closeSoftKeyboard())
         onView(withId(R.id.label))
             .perform(replaceText("alice@example.com"), closeSoftKeyboard())
         onView(withId(R.id.secret))
-            .perform(replaceText("JBSWY3DPEHPK3PXP"), closeSoftKeyboard())
+            .perform(replaceText("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"), closeSoftKeyboard())
         onView(withId(R.id.hotp))
             .perform(scrollTo(), click())
         onView(withId(R.id.counter))
-            .perform(scrollTo(), replaceText("341"), closeSoftKeyboard())
+            .perform(scrollTo(), replaceText("5"), closeSoftKeyboard())
         onView(withId(R.id.add))
             .check(matches(isEnabled()))
             .perform(click())
 
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("341"), isDisplayed())))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("5"), isDisplayed())))))
 
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
 
+        // RFC 4226 Appendix D Count=5 code is "254 676", and counter advances to "6"
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("342"), isDisplayed())))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.code), not(withText("--- ---")))))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("6"), isDisplayed())))))
+            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("254 676")))))
     }
 
     @Test

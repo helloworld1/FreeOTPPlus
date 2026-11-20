@@ -213,12 +213,12 @@ class TokenEncryptionTest {
                 }
             }
 
-            // Tap HOTP token card and verify exact OTP code generation ("248 759")
+            // Tap HOTP token card and verify exact RFC 4226 counter=0 OTP code generation ("047 701")
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("248 759"))))
+                .check(matches(hasDescendant(withText("047 701"))))
 
             // Add a new token while in Token encrypted mode and verify it is stored encrypted too
             openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
@@ -548,7 +548,7 @@ class TokenEncryptionTest {
         }
 
         // 2. Relaunch MainActivity -> reconciles pending metadata into active TOKEN_ENCRYPTED mode,
-        //    prompts for manual key, unlocks token, and generates exact OTP code "248 759"!
+        //    prompts for manual key, unlocks token, and generates exact OTP code "047 701"!
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 attachCryptoIdlingResource(activity.tokenCryptoManager)
@@ -565,7 +565,7 @@ class TokenEncryptionTest {
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("248 759"))))
+                .check(matches(hasDescendant(withText("047 701"))))
         }
     }
 }

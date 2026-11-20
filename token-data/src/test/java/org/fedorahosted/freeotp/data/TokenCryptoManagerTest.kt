@@ -202,7 +202,7 @@ class TokenCryptoManagerTest {
         algorithm = "SHA256",
         secret = secret,
         digits = 6,
-        counter = -1L,
+        counter = 0L,
         period = 30,
         encryptionType = EncryptionType.PLAIN_TEXT
     )
@@ -275,7 +275,7 @@ class TokenCryptoManagerTest {
             algorithm = "SHA256",
             secret = "abcd5432",
             digits = 6,
-            counter = -1L,
+            counter = 0L,
             period = 30,
             encryptionType = EncryptionType.PLAIN_TEXT
         )
@@ -283,7 +283,7 @@ class TokenCryptoManagerTest {
         assertThat(encryptedToken.encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
         assertThat(encryptedToken.secret).startsWith("v1:")
         assertThat(TokenCodeUtil(manager).generateTokenCode(encryptedToken).currentCode)
-            .isEqualTo("248759")
+            .isEqualTo("047701")
 
         // 3. Lock session -> decrypting while locked throws IllegalStateException
         manager.lock()
@@ -479,7 +479,7 @@ class TokenCryptoManagerTest {
         assertThat(restartedManagerB.decryptSecret(recoveredTokens[0])).isEqualTo("abcd5432")
         assertThat(restartedManagerB.decryptSecret(recoveredTokens[1])).isEqualTo("JBSWY3DPEHPK3PXP")
         assertThat(TokenCodeUtil(restartedManagerB).generateTokenCode(recoveredTokens[0]).currentCode)
-            .isEqualTo("248759")
+            .isEqualTo("047701")
 
         // Also verify promoted biometric blob unlocks cleanly after locking
         restartedManagerB.lock()

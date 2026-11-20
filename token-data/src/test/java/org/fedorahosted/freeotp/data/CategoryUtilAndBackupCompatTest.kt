@@ -7,6 +7,7 @@ import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
+import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.junit.Test
 
 class CategoryUtilAndBackupCompatTest {
@@ -177,7 +178,7 @@ class CategoryUtilAndBackupCompatTest {
         assertThat(hotp.label).isEqualTo("alice+1@example.com")
         assertThat(hotp.algorithm).isEqualTo("SHA256")
         assertThat(hotp.digits).isEqualTo(8)
-        assertThat(hotp.counter).isEqualTo(4L)
+        assertThat(hotp.counter).isEqualTo(5L)
         assertThat(hotp.imagePath).isEqualTo("file:///data/user/0/app/files/my+icon 1.png")
         assertThat(hotp.categories).containsExactly("Work", "Infra").inOrder()
 
@@ -216,5 +217,85 @@ class CategoryUtilAndBackupCompatTest {
                 algorithm = "NOT_A_MAC"
             )
         }
+        org.junit.Assert.assertThrows(IllegalArgumentException::class.java) {
+            OtpTokenFactory.create(
+                type = OtpTokenType.HOTP,
+                issuer = "GitHub",
+                label = "alice",
+                secret = "JBSWY3DPEHPK3PXP",
+                initialCounter = -1L
+            )
+        }
+    }
+
+    @Test
+    fun hotpCreationAndBackupMigration_followsRfc4226AndPreservesExistingSyncedCounts() {
+        val codeUtil = TokenCodeUtil()
+        val rfcSecret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+
+        // 1. Newly created HOTP token at counter = 0 generates RFC 4226 Count=0 ("755224") on first use
+        val newHotp0 = OtpTokenFactory.create(
+            type = OtpTokenType.HOTP,
+            issuer = "RFC4226",
+            label = "alice",
+            secret = rfcSecret,
+            algorithm = "SHA1",
+            digits = 6,
+            initialCounter = 0L
+        )
+        assertThat(newHotp0.counter).isEqualTo(0L)
+        assertThat(codeUtil.generateTokenCode(newHotp0).currentCode).isEqualTo("755224")
+        assertThat(codeUtil.generateTokenCode(newHotp0.copy(counter = 1L)).currentCode).isEqualTo("287082")
+
+        // 2. Newly created HOTP token at counter = 5 generates RFC 4226 Count=5 ("254676") on first use
+        val newHotp5 = OtpTokenFactory.create(
+            type = OtpTokenType.HOTP,
+            issuer = "RFC4226",
+            label = "bob",
+            secret = rfcSecret,
+            algorithm = "SHA1",
+            digits = 6,
+            initialCounter = 5L
+        )
+        assertThat(newHotp5.counter).isEqualTo(5L)
+        assertThat(codeUtil.generateTokenCode(newHotp5).currentCode).isEqualTo("254676")
+
+        // 3. Existing legacy JSON / tokens.xml backup: active counter (e.g. 7) is preserved unchanged,
+        //    while legacy unused counter (-1) is normalized to 0
+        val gson = Gson()
+        val legacyJson = """
+            {
+              "tokens": [
+                {
+                  "issuerExt": "SyncedServer",
+                  "label": "activeUser",
+                  "type": "HOTP",
+                  "algo": "SHA1",
+                  "secret": [49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48],
+                  "digits": 6,
+                  "counter": 7,
+                  "period": 30
+                },
+                {
+                  "issuerExt": "UnusedLegacy",
+                  "label": "newUser",
+                  "type": "HOTP",
+                  "algo": "SHA1",
+                  "secret": [49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48],
+                  "digits": 6,
+                  "counter": -1,
+                  "period": 30
+                }
+              ],
+              "tokenOrder": ["SyncedServer:activeUser", "UnusedLegacy:newUser"]
+            }
+        """.trimIndent()
+
+        val migratedLegacy = MigrationUtil.convertSavedTokens(gson.fromJson(legacyJson, SavedTokens::class.java))
+        assertThat(migratedLegacy).hasSize(2)
+        assertThat(migratedLegacy[0].counter).isEqualTo(7L)
+        assertThat(codeUtil.generateTokenCode(migratedLegacy[0]).currentCode).isEqualTo("162583") // RFC 4226 Count=7
+        assertThat(migratedLegacy[1].counter).isEqualTo(0L)
+        assertThat(codeUtil.generateTokenCode(migratedLegacy[1]).currentCode).isEqualTo("755224") // RFC 4226 Count=0
     }
 }

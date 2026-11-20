@@ -197,24 +197,33 @@ class CategoryFilterTintTest {
                 INSERT INTO `otp_tokens` VALUES
                 (1, 1, 'GitHub', 'alice', NULL, 'TOTP', 'SHA1', 'JBSWY3DPEHPK3PXP', 6, 0, 30, 'PLAIN_TEXT', 'Work'),
                 (2, 2, 'AWS', 'prod', NULL, 'TOTP', 'SHA1', 'JBSWY3DPEHPK3PXP', 6, 0, 30, 'PLAIN_TEXT', 'Cloud, "Infra"'),
-                (3, 3, 'PersonalApp', 'bob', NULL, 'TOTP', 'SHA1', 'JBSWY3DPEHPK3PXP', 6, 0, 30, 'PLAIN_TEXT', NULL)
+                (3, 3, 'PersonalApp', 'bob', NULL, 'TOTP', 'SHA1', 'JBSWY3DPEHPK3PXP', 6, 0, 30, 'PLAIN_TEXT', NULL),
+                (4, 4, 'SyncedHotp', 'carol', NULL, 'HOTP', 'SHA1', 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', 6, 42, 30, 'PLAIN_TEXT', NULL),
+                (5, 5, 'UnusedLegacyHotp', 'dave', NULL, 'HOTP', 'SHA1', 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', 6, -1, 30, 'PLAIN_TEXT', NULL)
                 """.trimIndent()
             )
             sqlDb.version = 2
         }
 
         val migratedDb = Room.databaseBuilder(context, OtpTokenDatabase::class.java, dbName)
-            .addMigrations(OtpTokenDatabase.MIGRATION_1_2, OtpTokenDatabase.MIGRATION_2_3)
+            .addMigrations(
+                OtpTokenDatabase.MIGRATION_1_2,
+                OtpTokenDatabase.MIGRATION_2_3,
+                OtpTokenDatabase.MIGRATION_3_4
+            )
             .build()
 
         try {
             val tokens = runBlocking(Dispatchers.IO) { migratedDb.otpTokenDao().getAll().first() }
             val allCategories = runBlocking(Dispatchers.IO) { migratedDb.otpTokenDao().getAllCategories().first() }
 
-            assertThat(tokens).hasSize(3)
+            assertThat(tokens).hasSize(5)
             assertThat(tokens[0].categories).containsExactly("Work")
             assertThat(tokens[1].categories).containsExactly("Cloud, \"Infra\"")
             assertThat(tokens[2].categories).isEmpty()
+            // Active HOTP token preserves exact synced counter (42); unused legacy -1 normalizes to 0
+            assertThat(tokens[3].counter).isEqualTo(42L)
+            assertThat(tokens[4].counter).isEqualTo(0L)
             assertThat(allCategories).containsExactly("Cloud, \"Infra\"", "Work").inOrder()
         } finally {
             migratedDb.close()

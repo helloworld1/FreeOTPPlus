@@ -131,7 +131,9 @@ public class Token {
                 String c = uri.getQueryParameter("counter");
                 if (c == null)
                     c = "0";
-                counter = Long.parseLong(c) - 1;
+                counter = Long.parseLong(c);
+                if (counter < 0)
+                    throw new TokenUriInvalidException();
             } catch (NumberFormatException e) {
                 throw new TokenUriInvalidException();
             }
@@ -309,7 +311,7 @@ public class Token {
         switch (type) {
         case HOTP:
             builder.authority("hotp");
-            builder.appendQueryParameter("counter", Long.toString(counter + 1));
+            builder.appendQueryParameter("counter", Long.toString(Math.max(0L, counter)));
             break;
         case TOTP:
             builder.authority("totp");
