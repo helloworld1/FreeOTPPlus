@@ -505,4 +505,67 @@ class TokenEncryptionTest {
         decJsonFile.delete()
         encUriFile.delete()
     }
+
+    @Test
+    fun testInterruptedEnableEncryptionAfterSqliteCommitRecoversOnNextLaunch() {
+        val context = getInstrumentation().targetContext
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        AuthenticationUtil.hasStrongBiometricOverride = false
+
+        // 1. Seed token in Room and simulate a process crash right AFTER SQLite encrypted the token
+        //    with a random-salt key, BEFORE active KDF_SALT_KEY / AUTH_MODE_KEY were committed (Issue F2).
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.tokenCryptoManager.kdfIterationsOverride = 2_000
+                runBlocking(Dispatchers.IO) {
+                    val dao = activity.otpTokenDatabase.otpTokenDao()
+                    activity.otpTokenDatabase.clearAllTables()
+                    dao.insert(TestData.OTP_HOTP_TOKEN_1)
+
+                    val setup = activity.tokenCryptoManager.deriveSetupMaterial("recoverKey99".toCharArray())
+                    val storedPlain = dao.getAll().first().single()
+                    val encryptedToken = storedPlain.copy(
+                        secret = org.fedorahosted.freeotp.data.util.CryptoEngine.encryptSecret(
+                            storedPlain.secret,
+                            setup.keyBytes
+                        ),
+                        encryptionType = EncryptionType.ENCRYPTED
+                    )
+                    dao.update(encryptedToken)
+
+                    prefs.edit()
+                        .clear()
+                        .putString(TokenCryptoManager.PENDING_KDF_SALT_KEY, setup.kdfSalt)
+                        .putInt(TokenCryptoManager.PENDING_KDF_ITERATIONS_KEY, setup.kdfIterations)
+                        .putString(TokenCryptoManager.PENDING_KEY_VERIFIER_KEY, setup.keyVerifier)
+                        .putLong(TokenCryptoManager.PENDING_SAMPLE_TOKEN_ID_KEY, encryptedToken.id)
+                        .putString(TokenCryptoManager.PENDING_SAMPLE_TOKEN_SECRET_KEY, encryptedToken.secret)
+                        .commit()
+                    setup.clear()
+                }
+                activity.tokenCryptoManager.lock()
+            }
+        }
+
+        // 2. Relaunch MainActivity -> reconciles pending metadata into active TOKEN_ENCRYPTED mode,
+        //    prompts for manual key, unlocks token, and generates exact OTP code "248 759"!
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                assertThat(activity.tokenCryptoManager.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
+                assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
+                assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isTrue()
+            }
+
+            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
+                .perform(scrollTo(), replaceText("recoverKey99"), closeSoftKeyboard())
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+                .check(matches(hasDescendant(withText("248 759"))))
+        }
+    }
 }

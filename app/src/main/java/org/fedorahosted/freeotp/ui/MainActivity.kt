@@ -30,6 +30,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
@@ -697,6 +698,12 @@ class MainActivity : AppCompatActivity() {
             onAuthCompleted()
             invalidateMenu()
             showSnackbar(R.string.token_encryption_enabled_manual_only, Snackbar.LENGTH_LONG)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed enabling token encryption", e)
+            setupDialog?.let { AuthenticationUtil.dismissKeyDialogSafely(it) }
+            showSnackbar(R.string.authentication_failed)
         } finally {
             setupMaterial.clear()
         }
@@ -738,6 +745,9 @@ class MainActivity : AppCompatActivity() {
                         invalidateMenu()
                         showSnackbar(R.string.token_encryption_enabled)
                         setupMaterial.clear()
+                    } catch (e: CancellationException) {
+                        setupMaterial.clear()
+                        throw e
                     } catch (e: Exception) {
                         Log.e(TAG, "Biometric key wrapping failed, falling back to manual key", e)
                         tokenCryptoManager.cancelPendingBiometricKeySetup()
@@ -808,12 +818,19 @@ class MainActivity : AppCompatActivity() {
             positiveButtonRes = R.string.ok_text
         ) { chars, _, dismissSafely ->
             if (tokenCryptoManager.unlockWithPassphrase(chars)) {
-                tokenCryptoManager.disableTokenEncryption(targetMode)
-                dismissSafely()
-                viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                invalidateMenu()
-                showSnackbar(R.string.token_encryption_disabled)
-                null
+                try {
+                    tokenCryptoManager.disableTokenEncryption(targetMode)
+                    dismissSafely()
+                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    invalidateMenu()
+                    showSnackbar(R.string.token_encryption_disabled)
+                    null
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed disabling token encryption", e)
+                    getString(R.string.authentication_failed)
+                }
             } else {
                 getString(R.string.incorrect_encryption_key)
             }
@@ -823,10 +840,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun performDisableEncryption(targetMode: AuthMode) {
         lifecycleScope.launch {
-            tokenCryptoManager.disableTokenEncryption(targetMode)
-            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-            invalidateMenu()
-            showSnackbar(R.string.token_encryption_disabled)
+            try {
+                tokenCryptoManager.disableTokenEncryption(targetMode)
+                viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                invalidateMenu()
+                showSnackbar(R.string.token_encryption_disabled)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed disabling token encryption", e)
+                showSnackbar(R.string.authentication_failed)
+            }
         }
     }
 
@@ -837,7 +861,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyAuthentication() {
-        if (settings.authMode == AuthMode.APP_LAUNCH) {
+        val currentMode = tokenCryptoManager.getAuthMode()
+        if (currentMode == AuthMode.APP_LAUNCH) {
             val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
                 AuthenticationUtil.hasScreenLock(this)
             if (!hasAppLaunchCredential && activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_RETRY) {
@@ -851,7 +876,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        when (settings.authMode) {
+        when (currentMode) {
             AuthMode.NONE -> {
                 onAuthCompleted()
             }

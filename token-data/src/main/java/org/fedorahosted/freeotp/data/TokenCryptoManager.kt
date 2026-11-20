@@ -9,9 +9,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.CryptoEngine
+import java.io.IOException
 import java.security.GeneralSecurityException
 import java.security.KeyStore
 import java.util.concurrent.atomic.AtomicInteger
@@ -129,6 +133,12 @@ class TokenCryptoManager private constructor(
     var kdfIterationsOverride: Int? = null
 
     @VisibleForTesting
+    @Volatile
+    var transactionRunner: suspend (suspend () -> Unit) -> Unit = { block ->
+        otpTokenDatabase.withTransaction { block() }
+    }
+
+    @VisibleForTesting
     val activeAsyncOperations = AtomicInteger(0)
 
     @VisibleForTesting
@@ -147,9 +157,184 @@ class TokenCryptoManager private constructor(
     }
 
     private val lockObject = Any()
+    private val reconcileLock = Any()
+    private val transitionMutex = Mutex()
+    @Volatile
+    private var transitionInProgress = false
     private var unlockedKeyBytes: ByteArray? = null
 
+    init {
+        reconcilePendingTransitionIfNeeded()
+    }
+
+    private fun hasPendingTransition(): Boolean {
+        return sharedPreferences.contains(PENDING_KDF_SALT_KEY) ||
+            sharedPreferences.contains(PENDING_DISABLE_TARGET_MODE_KEY)
+    }
+
+    fun reconcilePendingTransitionIfNeeded() {
+        if (transitionInProgress || !hasPendingTransition()) {
+            return
+        }
+        synchronized(reconcileLock) {
+            if (transitionInProgress || !hasPendingTransition()) {
+                return
+            }
+            runBlocking(Dispatchers.IO) {
+                reconcilePendingTransitionInternal()
+            }
+        }
+    }
+
+    private suspend fun reconcilePendingTransitionInternal() {
+        if (sharedPreferences.contains(PENDING_KDF_SALT_KEY)) {
+            val pendingSalt = sharedPreferences.getString(PENDING_KDF_SALT_KEY, null)
+            val pendingVerifier = sharedPreferences.getString(PENDING_KEY_VERIFIER_KEY, null)
+            val pendingIterations = sharedPreferences.getInt(
+                PENDING_KDF_ITERATIONS_KEY,
+                CryptoEngine.DEFAULT_KDF_ITERATIONS
+            )
+            val pendingBio = sharedPreferences.getString(PENDING_BIOMETRIC_ENCRYPTED_KEY, null)
+            val hasSampleId = sharedPreferences.contains(PENDING_SAMPLE_TOKEN_ID_KEY)
+            val sampleId = sharedPreferences.getLong(PENDING_SAMPLE_TOKEN_ID_KEY, -1L)
+            val sampleSecret = sharedPreferences.getString(PENDING_SAMPLE_TOKEN_SECRET_KEY, null)
+
+            if (pendingSalt == null || pendingVerifier == null || !hasSampleId || sampleSecret == null) {
+                rollbackPendingEncryptionMetadata()
+                return
+            }
+
+            val storedToken = otpTokenDatabase.otpTokenDao().get(sampleId).first()
+            if (storedToken != null && storedToken.secret == sampleSecret) {
+                promotePendingEncryptionMetadata(
+                    kdfSalt = pendingSalt,
+                    kdfIterations = pendingIterations,
+                    keyVerifier = pendingVerifier,
+                    biometricEncryptedKeyBlob = pendingBio,
+                    requireCommitSuccess = false
+                )
+            } else {
+                rollbackPendingEncryptionMetadata()
+            }
+            return
+        }
+
+        if (sharedPreferences.contains(PENDING_DISABLE_TARGET_MODE_KEY)) {
+            val rawTarget = sharedPreferences.getString(PENDING_DISABLE_TARGET_MODE_KEY, null)
+            val targetMode = rawTarget
+                ?.let { runCatching { AuthMode.valueOf(it) }.getOrNull() }
+                ?.takeIf { it != AuthMode.TOKEN_ENCRYPTED }
+                ?: AuthMode.NONE
+            val hasSampleId = sharedPreferences.contains(PENDING_SAMPLE_TOKEN_ID_KEY)
+            val sampleId = sharedPreferences.getLong(PENDING_SAMPLE_TOKEN_ID_KEY, -1L)
+
+            if (!hasSampleId) {
+                clearPendingTransitionKeys()
+                return
+            }
+
+            val storedToken = otpTokenDatabase.otpTokenDao().get(sampleId).first()
+            if (storedToken != null && storedToken.encryptionType == EncryptionType.PLAIN_TEXT) {
+                finalizeDisableEncryptionMetadata(targetMode, requireCommitSuccess = false)
+            } else {
+                clearPendingTransitionKeys()
+            }
+        }
+    }
+
+    private fun clearPendingTransitionKeys() {
+        sharedPreferences.edit()
+            .remove(PENDING_KDF_SALT_KEY)
+            .remove(PENDING_KDF_ITERATIONS_KEY)
+            .remove(PENDING_KEY_VERIFIER_KEY)
+            .remove(PENDING_BIOMETRIC_ENCRYPTED_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_ID_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_SECRET_KEY)
+            .remove(PENDING_DISABLE_TARGET_MODE_KEY)
+            .commit()
+    }
+
+    private fun rollbackPendingEncryptionMetadata() {
+        clearPendingTransitionKeys()
+        if (sharedPreferences.getString(BIOMETRIC_ENCRYPTED_KEY, null).isNullOrEmpty()) {
+            keyStoreBackend.deleteKey()
+        }
+    }
+
+    private fun promotePendingEncryptionMetadata(
+        kdfSalt: String,
+        kdfIterations: Int,
+        keyVerifier: String,
+        biometricEncryptedKeyBlob: String?,
+        requireCommitSuccess: Boolean
+    ) {
+        if (biometricEncryptedKeyBlob == null) {
+            keyStoreBackend.deleteKey()
+        }
+
+        val committed = sharedPreferences.edit()
+            .putString(KDF_SALT_KEY, kdfSalt)
+            .putInt(KDF_ITERATIONS_KEY, kdfIterations)
+            .putString(KEY_VERIFIER_KEY, keyVerifier)
+            .apply {
+                if (biometricEncryptedKeyBlob != null) {
+                    putString(BIOMETRIC_ENCRYPTED_KEY, biometricEncryptedKeyBlob)
+                } else {
+                    remove(BIOMETRIC_ENCRYPTED_KEY)
+                }
+            }
+            .putBoolean(BIOMETRIC_INVALIDATED_KEY, false)
+            .putString(AUTH_MODE_KEY, AuthMode.TOKEN_ENCRYPTED.name)
+            .putBoolean(REQUIRE_AUTHENTICATION_KEY, true)
+            .remove(PENDING_KDF_SALT_KEY)
+            .remove(PENDING_KDF_ITERATIONS_KEY)
+            .remove(PENDING_KEY_VERIFIER_KEY)
+            .remove(PENDING_BIOMETRIC_ENCRYPTED_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_ID_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_SECRET_KEY)
+            .remove(PENDING_DISABLE_TARGET_MODE_KEY)
+            .commit()
+
+        if (requireCommitSuccess && !committed) {
+            throw IOException("Failed to commit active encryption metadata to SharedPreferences")
+        }
+
+        if (committed && tokenPersistence?.isLegacyTokenMigrated() == true) {
+            tokenPersistence.clearLegacyTokens()
+        }
+    }
+
+    private fun finalizeDisableEncryptionMetadata(
+        targetMode: AuthMode,
+        requireCommitSuccess: Boolean
+    ) {
+        keyStoreBackend.deleteKey()
+        val committed = sharedPreferences.edit()
+            .remove(KDF_SALT_KEY)
+            .remove(KDF_ITERATIONS_KEY)
+            .remove(KEY_VERIFIER_KEY)
+            .remove(BIOMETRIC_ENCRYPTED_KEY)
+            .remove(BIOMETRIC_INVALIDATED_KEY)
+            .putString(AUTH_MODE_KEY, targetMode.name)
+            .putBoolean(REQUIRE_AUTHENTICATION_KEY, targetMode != AuthMode.NONE)
+            .remove(PENDING_KDF_SALT_KEY)
+            .remove(PENDING_KDF_ITERATIONS_KEY)
+            .remove(PENDING_KEY_VERIFIER_KEY)
+            .remove(PENDING_BIOMETRIC_ENCRYPTED_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_ID_KEY)
+            .remove(PENDING_SAMPLE_TOKEN_SECRET_KEY)
+            .remove(PENDING_DISABLE_TARGET_MODE_KEY)
+            .commit()
+
+        if (requireCommitSuccess && !committed) {
+            throw IOException("Failed to commit disabled encryption state to SharedPreferences")
+        }
+
+        lock()
+    }
+
     fun getAuthMode(): AuthMode {
+        reconcilePendingTransitionIfNeeded()
         val raw = sharedPreferences.getString(AUTH_MODE_KEY, null)
         if (raw != null) {
             return runCatching { AuthMode.valueOf(raw) }.getOrDefault(AuthMode.NONE)
@@ -192,14 +377,17 @@ class TokenCryptoManager private constructor(
     }
 
     fun isBiometricKeyConfigured(): Boolean {
+        reconcilePendingTransitionIfNeeded()
         return !sharedPreferences.getString(BIOMETRIC_ENCRYPTED_KEY, null).isNullOrEmpty()
     }
 
     fun wasBiometricInvalidated(): Boolean {
+        reconcilePendingTransitionIfNeeded()
         return sharedPreferences.getBoolean(BIOMETRIC_INVALIDATED_KEY, false)
     }
 
     fun getEncryptionMetadata(): EncryptionMetadata? {
+        reconcilePendingTransitionIfNeeded()
         val salt = sharedPreferences.getString(KDF_SALT_KEY, null) ?: return null
         val verifier = sharedPreferences.getString(KEY_VERIFIER_KEY, null) ?: return null
         val iterations = sharedPreferences.getInt(KDF_ITERATIONS_KEY, CryptoEngine.DEFAULT_KDF_ITERATIONS)
@@ -248,6 +436,7 @@ class TokenCryptoManager private constructor(
     }
 
     fun prepareBiometricDecryptCipher(): BiometricDecryptPreparation {
+        reconcilePendingTransitionIfNeeded()
         val blob = sharedPreferences.getString(BIOMETRIC_ENCRYPTED_KEY, null)
         if (blob.isNullOrEmpty()) {
             val status = if (wasBiometricInvalidated()) {
@@ -283,6 +472,7 @@ class TokenCryptoManager private constructor(
     }
 
     fun unlockWithBiometricCipher(authenticatedDecryptCipher: Cipher?): Boolean {
+        reconcilePendingTransitionIfNeeded()
         if (authenticatedDecryptCipher == null) return false
         val blob = sharedPreferences.getString(BIOMETRIC_ENCRYPTED_KEY, null) ?: return false
         val verifier = sharedPreferences.getString(KEY_VERIFIER_KEY, null) ?: return false
@@ -341,6 +531,7 @@ class TokenCryptoManager private constructor(
     }
 
     suspend fun verifyPassphrase(passphrase: CharArray): ByteArray? = trackAsync {
+        reconcilePendingTransitionIfNeeded()
         withContext(Dispatchers.Default) {
             val saltStr = sharedPreferences.getString(KDF_SALT_KEY, null) ?: return@withContext null
             val verifier = sharedPreferences.getString(KEY_VERIFIER_KEY, null) ?: return@withContext null
@@ -377,10 +568,24 @@ class TokenCryptoManager private constructor(
         biometricEncryptedKeyBlob: String?
     ) = trackAsync {
         withContext(Dispatchers.IO) {
-            val dao = otpTokenDatabase.otpTokenDao()
-            otpTokenDatabase.withTransaction {
-                val allTokens = dao.getAll().first()
-                if (allTokens.isNotEmpty()) {
+            transitionMutex.withLock {
+                reconcilePendingTransitionInternal()
+                transitionInProgress = true
+                try {
+                    val dao = otpTokenDatabase.otpTokenDao()
+                    val allTokens = dao.getAll().first()
+                    if (allTokens.isEmpty()) {
+                        promotePendingEncryptionMetadata(
+                            kdfSalt = setupMaterial.kdfSalt,
+                            kdfIterations = setupMaterial.kdfIterations,
+                            keyVerifier = setupMaterial.keyVerifier,
+                            biometricEncryptedKeyBlob = biometricEncryptedKeyBlob,
+                            requireCommitSuccess = true
+                        )
+                        setSessionKey(setupMaterial.keyBytes)
+                        return@withLock
+                    }
+
                     val encryptedTokens = allTokens.map { token ->
                         val plainSecret = if (token.encryptionType == EncryptionType.ENCRYPTED) {
                             decryptSecret(token)
@@ -392,35 +597,80 @@ class TokenCryptoManager private constructor(
                             encryptionType = EncryptionType.ENCRYPTED
                         )
                     }
-                    dao.updateAll(encryptedTokens)
-                }
-            }
+                    val sampleToken = encryptedTokens.first()
 
-            if (biometricEncryptedKeyBlob == null) {
-                keyStoreBackend.deleteKey()
-            }
-
-            sharedPreferences.edit()
-                .putString(KDF_SALT_KEY, setupMaterial.kdfSalt)
-                .putInt(KDF_ITERATIONS_KEY, setupMaterial.kdfIterations)
-                .putString(KEY_VERIFIER_KEY, setupMaterial.keyVerifier)
-                .apply {
-                    if (biometricEncryptedKeyBlob != null) {
-                        putString(BIOMETRIC_ENCRYPTED_KEY, biometricEncryptedKeyBlob)
-                    } else {
-                        remove(BIOMETRIC_ENCRYPTED_KEY)
+                    // Stage new key metadata in SharedPreferences BEFORE modifying SQLite so a crash
+                    // after the SQLite commit can deterministically promote the pending key instead of
+                    // losing the newly generated KDF salt.
+                    val staged = sharedPreferences.edit()
+                        .putString(PENDING_KDF_SALT_KEY, setupMaterial.kdfSalt)
+                        .putInt(PENDING_KDF_ITERATIONS_KEY, setupMaterial.kdfIterations)
+                        .putString(PENDING_KEY_VERIFIER_KEY, setupMaterial.keyVerifier)
+                        .apply {
+                            if (biometricEncryptedKeyBlob != null) {
+                                putString(PENDING_BIOMETRIC_ENCRYPTED_KEY, biometricEncryptedKeyBlob)
+                            } else {
+                                remove(PENDING_BIOMETRIC_ENCRYPTED_KEY)
+                            }
+                        }
+                        .putLong(PENDING_SAMPLE_TOKEN_ID_KEY, sampleToken.id)
+                        .putString(PENDING_SAMPLE_TOKEN_SECRET_KEY, sampleToken.secret)
+                        .remove(PENDING_DISABLE_TARGET_MODE_KEY)
+                        .commit()
+                    if (!staged) {
+                        throw IOException("Failed to stage encryption metadata to SharedPreferences")
                     }
+
+                    try {
+                        val precomputedById = encryptedTokens.associateBy { it.id }
+                        val originalById = allTokens.associateBy { it.id }
+                        transactionRunner {
+                            val latestTokens = dao.getAll().first()
+                            val rowsToUpdate = latestTokens.map { latest ->
+                                val precomputed = precomputedById[latest.id]
+                                val original = originalById[latest.id]
+                                if (precomputed != null &&
+                                    original != null &&
+                                    latest.secret == original.secret &&
+                                    latest.encryptionType == original.encryptionType
+                                ) {
+                                    latest.copy(
+                                        secret = precomputed.secret,
+                                        encryptionType = EncryptionType.ENCRYPTED
+                                    )
+                                } else {
+                                    val plainSecret = if (latest.encryptionType == EncryptionType.ENCRYPTED) {
+                                        decryptSecret(latest)
+                                    } else {
+                                        latest.secret
+                                    }
+                                    latest.copy(
+                                        secret = CryptoEngine.encryptSecret(plainSecret, setupMaterial.keyBytes),
+                                        encryptionType = EncryptionType.ENCRYPTED
+                                    )
+                                }
+                            }
+                            if (rowsToUpdate.isNotEmpty()) {
+                                dao.updateAll(rowsToUpdate)
+                            }
+                        }
+                    } catch (t: Throwable) {
+                        rollbackPendingEncryptionMetadata()
+                        throw t
+                    }
+
+                    promotePendingEncryptionMetadata(
+                        kdfSalt = setupMaterial.kdfSalt,
+                        kdfIterations = setupMaterial.kdfIterations,
+                        keyVerifier = setupMaterial.keyVerifier,
+                        biometricEncryptedKeyBlob = biometricEncryptedKeyBlob,
+                        requireCommitSuccess = true
+                    )
+                    setSessionKey(setupMaterial.keyBytes)
+                } finally {
+                    transitionInProgress = false
                 }
-                .putBoolean(BIOMETRIC_INVALIDATED_KEY, false)
-                .putString(AUTH_MODE_KEY, AuthMode.TOKEN_ENCRYPTED.name)
-                .putBoolean(REQUIRE_AUTHENTICATION_KEY, true)
-                .commit()
-
-            if (tokenPersistence?.isLegacyTokenMigrated() == true) {
-                tokenPersistence.clearLegacyTokens()
             }
-
-            setSessionKey(setupMaterial.keyBytes)
         }
     }
 
@@ -429,41 +679,85 @@ class TokenCryptoManager private constructor(
             require(targetMode != AuthMode.TOKEN_ENCRYPTED) {
                 "Target mode must not be TOKEN_ENCRYPTED"
             }
-            val keyBytes = requireUnlockedKey()
-            try {
-                val dao = otpTokenDatabase.otpTokenDao()
-                val allTokens = dao.getAll().first()
-                val decryptedTokens = allTokens.map { token ->
-                    if (token.encryptionType == EncryptionType.ENCRYPTED) {
-                        token.copy(
-                            secret = CryptoEngine.decryptSecret(token.secret, keyBytes),
-                            encryptionType = EncryptionType.PLAIN_TEXT
-                        )
-                    } else {
-                        token
+            transitionMutex.withLock {
+                reconcilePendingTransitionInternal()
+                transitionInProgress = true
+                val keyBytes = requireUnlockedKey()
+                try {
+                    val dao = otpTokenDatabase.otpTokenDao()
+                    val allTokens = dao.getAll().first()
+                    val sampleEncryptedToken = allTokens.firstOrNull {
+                        it.encryptionType == EncryptionType.ENCRYPTED
                     }
-                }
-
-                otpTokenDatabase.withTransaction {
-                    if (decryptedTokens.isNotEmpty()) {
-                        dao.updateAll(decryptedTokens)
+                    if (sampleEncryptedToken == null) {
+                        finalizeDisableEncryptionMetadata(targetMode, requireCommitSuccess = true)
+                        return@withLock
                     }
+
+                    val decryptedTokens = allTokens.map { token ->
+                        if (token.encryptionType == EncryptionType.ENCRYPTED) {
+                            token.copy(
+                                secret = CryptoEngine.decryptSecret(token.secret, keyBytes),
+                                encryptionType = EncryptionType.PLAIN_TEXT
+                            )
+                        } else {
+                            token
+                        }
+                    }
+
+                    val staged = sharedPreferences.edit()
+                        .putString(PENDING_DISABLE_TARGET_MODE_KEY, targetMode.name)
+                        .putLong(PENDING_SAMPLE_TOKEN_ID_KEY, sampleEncryptedToken.id)
+                        .remove(PENDING_KDF_SALT_KEY)
+                        .remove(PENDING_KDF_ITERATIONS_KEY)
+                        .remove(PENDING_KEY_VERIFIER_KEY)
+                        .remove(PENDING_BIOMETRIC_ENCRYPTED_KEY)
+                        .remove(PENDING_SAMPLE_TOKEN_SECRET_KEY)
+                        .commit()
+                    if (!staged) {
+                        throw IOException("Failed to stage disable encryption state to SharedPreferences")
+                    }
+
+                    try {
+                        val decryptedById = decryptedTokens.associateBy { it.id }
+                        val originalById = allTokens.associateBy { it.id }
+                        transactionRunner {
+                            val latestTokens = dao.getAll().first()
+                            val rowsToUpdate = latestTokens.map { latest ->
+                                val precomputed = decryptedById[latest.id]
+                                val original = originalById[latest.id]
+                                if (precomputed != null &&
+                                    original != null &&
+                                    latest.secret == original.secret &&
+                                    latest.encryptionType == original.encryptionType
+                                ) {
+                                    latest.copy(
+                                        secret = precomputed.secret,
+                                        encryptionType = EncryptionType.PLAIN_TEXT
+                                    )
+                                } else if (latest.encryptionType == EncryptionType.ENCRYPTED) {
+                                    latest.copy(
+                                        secret = CryptoEngine.decryptSecret(latest.secret, keyBytes),
+                                        encryptionType = EncryptionType.PLAIN_TEXT
+                                    )
+                                } else {
+                                    latest
+                                }
+                            }
+                            if (rowsToUpdate.isNotEmpty()) {
+                                dao.updateAll(rowsToUpdate)
+                            }
+                        }
+                    } catch (t: Throwable) {
+                        clearPendingTransitionKeys()
+                        throw t
+                    }
+
+                    finalizeDisableEncryptionMetadata(targetMode, requireCommitSuccess = true)
+                } finally {
+                    keyBytes.fill(0)
+                    transitionInProgress = false
                 }
-
-                keyStoreBackend.deleteKey()
-                sharedPreferences.edit()
-                    .remove(KDF_SALT_KEY)
-                    .remove(KDF_ITERATIONS_KEY)
-                    .remove(KEY_VERIFIER_KEY)
-                    .remove(BIOMETRIC_ENCRYPTED_KEY)
-                    .remove(BIOMETRIC_INVALIDATED_KEY)
-                    .putString(AUTH_MODE_KEY, targetMode.name)
-                    .putBoolean(REQUIRE_AUTHENTICATION_KEY, targetMode != AuthMode.NONE)
-                    .commit()
-
-                lock()
-            } finally {
-                keyBytes.fill(0)
             }
         }
     }
@@ -542,6 +836,21 @@ class TokenCryptoManager private constructor(
         const val KEY_VERIFIER_KEY = "encryptionKeyVerifier"
         const val BIOMETRIC_ENCRYPTED_KEY = "biometricEncryptedKey"
         const val BIOMETRIC_INVALIDATED_KEY = "biometricInvalidated"
+
+        @VisibleForTesting
+        const val PENDING_KDF_SALT_KEY = "pendingEncryptionKdfSalt"
+        @VisibleForTesting
+        const val PENDING_KDF_ITERATIONS_KEY = "pendingEncryptionKdfIterations"
+        @VisibleForTesting
+        const val PENDING_KEY_VERIFIER_KEY = "pendingEncryptionKeyVerifier"
+        @VisibleForTesting
+        const val PENDING_BIOMETRIC_ENCRYPTED_KEY = "pendingBiometricEncryptedKey"
+        @VisibleForTesting
+        const val PENDING_SAMPLE_TOKEN_ID_KEY = "pendingSampleTokenId"
+        @VisibleForTesting
+        const val PENDING_SAMPLE_TOKEN_SECRET_KEY = "pendingSampleTokenSecret"
+        @VisibleForTesting
+        const val PENDING_DISABLE_TARGET_MODE_KEY = "pendingDisableTargetMode"
 
         private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val KEYSTORE_ALIAS = "freeotp_biometric_master_key"

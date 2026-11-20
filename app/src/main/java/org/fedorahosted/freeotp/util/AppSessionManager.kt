@@ -23,7 +23,6 @@ import javax.inject.Singleton
 @Singleton
 class AppSessionManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val settings: Settings,
     private val tokenCryptoManager: TokenCryptoManager
 ) : Application.ActivityLifecycleCallbacks {
 
@@ -35,7 +34,7 @@ class AppSessionManager @Inject constructor(
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val backgroundLockRunnable = Runnable {
-        if (startedActivityCount == 0 && settings.authMode != AuthMode.NONE) {
+        if (startedActivityCount == 0 && tokenCryptoManager.getAuthMode() != AuthMode.NONE) {
             lockSession()
         }
     }
@@ -53,7 +52,7 @@ class AppSessionManager @Inject constructor(
     }
 
     private fun computeCurrentAuthState(): AuthState {
-        return when (settings.authMode) {
+        return when (tokenCryptoManager.getAuthMode()) {
             AuthMode.NONE -> AuthState.AUTHENTICATED
             AuthMode.APP_LAUNCH -> {
                 if (hasAuthenticatedSession && isAppLaunchCredentialAvailable()) {
@@ -77,7 +76,7 @@ class AppSessionManager @Inject constructor(
 
     @MainThread
     fun refreshSessionState(): Boolean {
-        val mode = settings.authMode
+        val mode = tokenCryptoManager.getAuthMode()
         if (mode == AuthMode.NONE) {
             cancelBackgroundLockTimer()
             backgroundedAtElapsedRealtime = null
@@ -105,7 +104,7 @@ class AppSessionManager @Inject constructor(
     @MainThread
     fun setAuthState(state: AuthState) {
         if (state == AuthState.AUTHENTICATED) {
-            if (settings.authMode == AuthMode.APP_LAUNCH && !isAppLaunchCredentialAvailable()) {
+            if (tokenCryptoManager.getAuthMode() == AuthMode.APP_LAUNCH && !isAppLaunchCredentialAvailable()) {
                 lockSession()
                 return
             }
@@ -129,7 +128,7 @@ class AppSessionManager @Inject constructor(
         hasAuthenticatedSession = false
         backgroundedAtElapsedRealtime = null
         tokenCryptoManager.lock()
-        _authState.value = if (settings.authMode == AuthMode.NONE) {
+        _authState.value = if (tokenCryptoManager.getAuthMode() == AuthMode.NONE) {
             AuthState.AUTHENTICATED
         } else {
             AuthState.UNAUTHENTICATED
@@ -167,7 +166,7 @@ class AppSessionManager @Inject constructor(
         }
         startedActivityCount = (startedActivityCount - 1).coerceAtLeast(0)
         if (startedActivityCount == 0 && !activity.isChangingConfigurations) {
-            if (settings.authMode != AuthMode.NONE && _authState.value == AuthState.AUTHENTICATED) {
+            if (tokenCryptoManager.getAuthMode() != AuthMode.NONE && _authState.value == AuthState.AUTHENTICATED) {
                 backgroundedAtElapsedRealtime = elapsedRealtimeProvider()
                 scheduleBackgroundLockTimer()
             }
