@@ -342,4 +342,24 @@ class TokenImageTest {
         assertThat(firstMatchingTokenImage("T-Mobile")).isEqualTo(TokenImage.TMobile)
         assertThat(firstMatchingTokenImage("Vodafone")).isEqualTo(TokenImage.Vodafone)
     }
+
+    @Test
+    fun matchesLabelFallbackWhenIssuerIsBlankAndModernAliases() {
+        // When issuer is blank/null, all built-in icons fall back to matching label
+        assertThat(firstMatchingTokenImage(null, "Google (alice@example.com)")).isEqualTo(TokenImage.Google)
+        assertThat(firstMatchingTokenImage("", "AWS production")).isEqualTo(TokenImage.AmazonWebServices)
+        assertThat(firstMatchingTokenImage("   ", "Discord personal")).isEqualTo(TokenImage.Discord)
+
+        // When issuer is non-blank and unmatched, non-GitHub icons do not bleed into label
+        assertThat(firstMatchingTokenImage("Acme Internal", "alice@google.com")).isNull()
+        assertThat(firstMatchingTokenImage("Custom Service", "user@github.com")).isEqualTo(TokenImage.GitHub)
+
+        // Modern rebrand aliases
+        assertThat(firstMatchingTokenImage("Microsoft 365")).isEqualTo(TokenImage.Office)
+        assertThat(firstMatchingTokenImage("Office 365")).isEqualTo(TokenImage.Office)
+        assertThat(firstMatchingTokenImage("Microsoft")).isEqualTo(TokenImage.Microsoft)
+        assertThat(firstMatchingTokenImage("EA App")).isEqualTo(TokenImage.Origin)
+        assertThat(firstMatchingTokenImage("Equinix Metal")).isEqualTo(TokenImage.Packet)
+        assertThat(firstMatchingTokenImage("x.com")).isEqualTo(TokenImage.Twitter)
+    }
 }

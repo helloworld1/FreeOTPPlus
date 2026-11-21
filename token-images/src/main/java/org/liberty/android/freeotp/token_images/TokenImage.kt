@@ -256,6 +256,11 @@ enum class TokenImage(val resource: Int,
     MercadoLibre(R.drawable.token_image_mercadolibre, altIssuers = listOf("Mercado Libre")),
     Meta(R.drawable.token_image_meta, matchWordBoundary = true),
     MicrosoftTeams(R.drawable.token_image_microsoft_teams, altIssuers = listOf("Microsoft Teams")),
+    Office(
+        R.drawable.token_image_office,
+        altIssuers = listOf("Microsoft 365", "Office 365"),
+        matchWordBoundary = true
+    ),
     Microsoft(R.drawable.token_image_microsoft),
     Migadu(R.drawable.token_image_migadu),
     Milesandmore(
@@ -296,7 +301,6 @@ enum class TokenImage(val resource: Int,
     Nvidia(R.drawable.token_image_nvidia),
     Obsidian(R.drawable.token_image_obsidian, altIssuers = listOf("ObsidianMD")),
     Oculus(R.drawable.token_image_oculus),
-    Office(R.drawable.token_image_office, matchWordBoundary = true),
     Okta(R.drawable.token_image_okta),
     OKX(R.drawable.token_image_okx, matchWordBoundary = true),
     OnlineNet(R.drawable.token_image_online, altIssuers = listOf("Online.net")),
@@ -307,10 +311,10 @@ enum class TokenImage(val resource: Int,
     OPNsense(R.drawable.token_image_opnsense),
     Oracle(R.drawable.token_image_oracle, altIssuers = listOf("Oracle Cloud")),
     ORCiD(R.drawable.token_image_orcid),
-    Origin(R.drawable.token_image_origin),
+    Origin(R.drawable.token_image_origin, altIssuers = listOf("EA App"), matchWordBoundary = true),
     OVH(R.drawable.token_image_ovh, matchWordBoundary = true),
     Packagist(R.drawable.token_image_packagist),
-    Packet(R.drawable.token_image_packet),
+    Packet(R.drawable.token_image_packet, altIssuers = listOf("Equinix Metal")),
     PaloAltoNetworks(
         R.drawable.token_image_palo_alto_networks,
         "Palo Alto Networks",
@@ -444,7 +448,7 @@ enum class TokenImage(val resource: Int,
     TUWien(R.drawable.token_image_tuwien_ac_at, altIssuers = listOf("TU Wien", "tuwien.ac.at")),
     Twilio(R.drawable.token_image_twilio),
     Twitch(R.drawable.token_image_twitch),
-    Twitter(R.drawable.token_image_twitter),
+    Twitter(R.drawable.token_image_twitter, altIssuers = listOf("x.com"), matchWordBoundary = true),
     Uber(R.drawable.token_image_uber, matchWordBoundary = true),
     UbiquitiNetworks(R.drawable.token_image_ubnt),
     Ubiquiti(R.drawable.token_image_ubiquiti, altIssuers = listOf("UniFi", "UI.com"), matchWordBoundary = true),
@@ -529,6 +533,12 @@ private fun containsCandidate(text: String, candidate: String, matchWordBoundary
     }
 }
 
+fun TokenImage.displayName(): String {
+    if (!issuer.isNullOrBlank()) return issuer
+    if (altIssuers.isNotEmpty() && altIssuers.first().contains(' ')) return altIssuers.first()
+    return name
+}
+
 fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
     val primary = this.issuer ?: this.name
     val candidates = if (altIssuers.isEmpty()) {
@@ -537,12 +547,13 @@ fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
         listOf(primary) + altIssuers
     }
 
-    val issuerMatched = issuer != null && candidates.any { candidate ->
-        containsCandidate(issuer, candidate, matchWordBoundary)
+    val hasIssuer = !issuer.isNullOrBlank()
+    val issuerMatched = hasIssuer && candidates.any { candidate ->
+        containsCandidate(issuer!!, candidate, matchWordBoundary)
     }
 
-    return if (!issuerMatched && this.alsoMatchLabel) {
-        label != null && candidates.any { candidate ->
+    return if (!issuerMatched && (this.alsoMatchLabel || !hasIssuer)) {
+        !label.isNullOrBlank() && candidates.any { candidate ->
             containsCandidate(label, candidate, matchWordBoundary)
         }
     } else {
