@@ -3,9 +3,15 @@ package org.fedorahosted.freeotp.data
 import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
@@ -14,6 +20,8 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.IOException
 import java.security.GeneralSecurityException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -584,5 +592,178 @@ class TokenCryptoManagerTest {
         manager.lock()
         assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedHotp).currentCode).isEmpty()
         assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedTotp).currentCode).isEmpty()
+    }
+
+    @Test
+    fun enableAndDisableTokenEncryption_outerScopeCancelledMidTransaction_completesWithoutDataLoss(): Unit = runBlocking {
+        val prefs = InMemorySharedPreferences()
+        val db = FakeDatabase(
+            FakeOtpTokenDao(
+                listOf(
+                    sampleHotpToken(1L, "abcd5432"),
+                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
+                )
+            )
+        )
+        val manager = createManagerWithFakeDb(prefs, db)
+        val defaultRunner = manager.transactionRunner
+
+        // 1. Simulate Activity.lifecycleScope cancellation + caller setup.clear() mid-SQLite transaction
+        val enteredTx = CountDownLatch(1)
+        val proceedTx = CountDownLatch(1)
+        manager.transactionRunner = { block ->
+            enteredTx.countDown()
+            assertThat(proceedTx.await(5, TimeUnit.SECONDS)).isTrue()
+            defaultRunner(block)
+        }
+
+        val setup = manager.deriveSetupMaterial("rotateKey123".toCharArray())
+        val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val enableJob = activityScope.launch {
+            try {
+                manager.enableTokenEncryption(setup, null)
+            } finally {
+                setup.clear()
+            }
+        }
+
+        assertThat(enteredTx.await(5, TimeUnit.SECONDS)).isTrue()
+        // Cancel the Activity scope and wipe caller's SetupMaterial buffer while transaction is in flight
+        activityScope.cancel()
+        setup.clear()
+        proceedTx.countDown()
+        enableJob.join()
+
+        assertThat(manager.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
+        assertThat(manager.isUnlocked()).isTrue()
+        assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
+        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+        assertThat(manager.decryptSecret(db.dao.snapshot()[0])).isEqualTo("abcd5432")
+        assertThat(manager.decryptSecret(db.dao.snapshot()[1])).isEqualTo("JBSWY3DPEHPK3PXP")
+
+        // Lock and verify passphrase unlock still works
+        manager.lock()
+        assertThat(manager.unlockWithPassphrase("rotateKey123".toCharArray())).isTrue()
+
+        // 2. Simulate Activity.lifecycleScope cancellation mid-SQLite transaction during disableTokenEncryption
+        val enteredDisableTx = CountDownLatch(1)
+        val proceedDisableTx = CountDownLatch(1)
+        manager.transactionRunner = { block ->
+            enteredDisableTx.countDown()
+            assertThat(proceedDisableTx.await(5, TimeUnit.SECONDS)).isTrue()
+            defaultRunner(block)
+        }
+
+        val disableScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val disableJob = disableScope.launch {
+            manager.disableTokenEncryption(AuthMode.APP_LAUNCH)
+        }
+        assertThat(enteredDisableTx.await(5, TimeUnit.SECONDS)).isTrue()
+        disableScope.cancel()
+        proceedDisableTx.countDown()
+        disableJob.join()
+
+        assertThat(manager.getAuthMode()).isEqualTo(AuthMode.APP_LAUNCH)
+        assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
+        assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
+        assertThat(db.dao.snapshot().map { it.encryptionType to it.secret }).containsExactly(
+            EncryptionType.PLAIN_TEXT to "abcd5432",
+            EncryptionType.PLAIN_TEXT to "JBSWY3DPEHPK3PXP"
+        )
+    }
+
+    @Test
+    fun enableAndDisableTokenEncryption_cancellationThrownAfterSqliteCommit_promotesMetadataInsteadOfLockout(): Unit = runBlocking {
+        val prefs = InMemorySharedPreferences()
+        val db = FakeDatabase(
+            FakeOtpTokenDao(
+                listOf(
+                    sampleHotpToken(1L, "abcd5432"),
+                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
+                )
+            )
+        )
+        val backend = FakeKeyStoreBackend()
+        val manager = createManagerWithFakeDb(prefs, db, backend)
+
+        val setup = manager.deriveSetupMaterial("f14PostCommitKey".toCharArray())
+        val bioCipher = manager.createBiometricEncryptCipher()
+        val bioBlob = manager.wrapKeyWithBiometricCipher(bioCipher, setup.keyBytes)
+
+        // Exact F14 failure mode: SQLite commits encrypted rows, then transactionRunner throws CancellationException
+        manager.transactionRunner = { block ->
+            block()
+            throw CancellationException("Simulated coroutine cancellation immediately after SQLite commit")
+        }
+
+        assertThrows(CancellationException::class.java) {
+            runBlocking {
+                try {
+                    manager.enableTokenEncryption(setup, bioBlob)
+                } finally {
+                    setup.clear()
+                }
+            }
+        }
+
+        // Metadata MUST be promoted (never rolled back!), keeping all tokens unlockable
+        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+        assertThat(manager.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
+        assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
+        assertThat(prefs.getString(TokenCryptoManager.KDF_SALT_KEY, null)).isEqualTo(setup.kdfSalt)
+        assertThat(manager.isUnlocked()).isTrue()
+        assertThat(manager.decryptSecret(db.dao.snapshot()[0])).isEqualTo("abcd5432")
+
+        manager.lock()
+        assertThat(manager.unlockWithPassphrase("f14PostCommitKey".toCharArray())).isTrue()
+        assertThat(manager.decryptSecret(db.dao.snapshot()[1])).isEqualTo("JBSWY3DPEHPK3PXP")
+
+        // Same post-commit CancellationException during disableTokenEncryption -> finalizes target mode cleanly
+        assertThrows(CancellationException::class.java) {
+            runBlocking {
+                manager.disableTokenEncryption(AuthMode.NONE)
+            }
+        }
+        assertThat(manager.getAuthMode()).isEqualTo(AuthMode.NONE)
+        assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
+        assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
+        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
+        assertThat(db.dao.snapshot().map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP")
+    }
+
+    @Test
+    fun enableTokenEncryption_concurrentSampleTokenDeletionBeforeTx_restagesAndRecoversOnCrash(): Unit = runBlocking {
+        val prefs = InMemorySharedPreferences()
+        val db = FakeDatabase(
+            FakeOtpTokenDao(
+                listOf(
+                    sampleHotpToken(1L, "abcd5432"),
+                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
+                )
+            )
+        )
+        val manager = createManagerWithFakeDb(prefs, db)
+        val defaultRunner = manager.transactionRunner
+
+        val setup = manager.deriveSetupMaterial("restageKey99".toCharArray())
+        manager.transactionRunner = { block ->
+            // Simulate token #1 (initial staged sample) deleted right before SQLite transaction runs
+            db.dao.deleteById(1L)
+            defaultRunner(block)
+        }
+        prefs.onBeforeCommit = { staged, _ ->
+            // Fail final promotion commit after SQLite committed token #2 so startup reconciliation is exercised
+            !staged.containsKey(TokenCryptoManager.KDF_SALT_KEY)
+        }
+
+        assertThrows(IOException::class.java) {
+            runBlocking { manager.enableTokenEncryption(setup, null) }
+        }
+
+        prefs.onBeforeCommit = null
+        val restarted = createManagerWithFakeDb(prefs, db)
+        assertThat(restarted.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
+        assertThat(restarted.unlockWithPassphrase("restageKey99".toCharArray())).isTrue()
+        assertThat(restarted.decryptSecret(db.dao.snapshot().single())).isEqualTo("JBSWY3DPEHPK3PXP")
     }
 }

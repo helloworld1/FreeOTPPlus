@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -97,6 +98,17 @@ class MainActivity : AppCompatActivity() {
     private var pendingExportEncrypted = false
 
     private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US)
+
+    private val authModePrefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == TokenCryptoManager.AUTH_MODE_KEY) {
+            runOnUiThread {
+                if (!isFinishing && !isDestroyed) {
+                    appSessionManager.refreshSessionState()
+                    invalidateMenu()
+                }
+            }
+        }
+    }
 
     private val openJsonLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -258,8 +270,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        settings.sharedPreferences.registerOnSharedPreferenceChangeListener(authModePrefListener)
         viewModel.onSessionStart()
         invalidateMenu()
+    }
+
+    override fun onStop() {
+        settings.sharedPreferences.unregisterOnSharedPreferenceChangeListener(authModePrefListener)
+        super.onStop()
     }
 
     override fun onResume() {
@@ -831,6 +849,7 @@ class MainActivity : AppCompatActivity() {
             cipher = encryptCipher,
             onSuccess = { authenticatedCipher ->
                 lifecycleScope.launch {
+                    var delegatedToManualFallback = false
                     try {
                         val wrappedBlob = tokenCryptoManager.wrapKeyWithBiometricCipher(
                             authenticatedCipher,
@@ -840,14 +859,17 @@ class MainActivity : AppCompatActivity() {
                         onAuthCompleted()
                         invalidateMenu()
                         showSnackbar(R.string.token_encryption_enabled)
-                        setupMaterial.clear()
                     } catch (e: CancellationException) {
-                        setupMaterial.clear()
                         throw e
                     } catch (e: Exception) {
                         Log.e(TAG, "Biometric key wrapping failed, falling back to manual key", e)
                         tokenCryptoManager.cancelPendingBiometricKeySetup()
+                        delegatedToManualFallback = true
                         enableManualOnlyEncryption(setupMaterial)
+                    } finally {
+                        if (!delegatedToManualFallback) {
+                            setupMaterial.clear()
+                        }
                     }
                 }
             },

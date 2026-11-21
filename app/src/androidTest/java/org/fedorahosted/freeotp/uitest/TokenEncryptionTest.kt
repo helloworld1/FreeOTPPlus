@@ -6,6 +6,8 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.widget.RadioButton
 import androidx.appcompat.view.menu.ListMenuItemView
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
@@ -48,6 +50,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -701,6 +705,93 @@ class TokenEncryptionTest {
                 val allTokens = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first() }
                 assertThat(allTokens).hasSize(2)
                 assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+            }
+        }
+    }
+
+    @Test
+    fun testActivityRecreationMidEncryptionTransitionPreservesTokens() {
+        AuthenticationUtil.hasStrongBiometricOverride = false
+        val enteredEnableTx = CountDownLatch(1)
+        val proceedEnableTx = CountDownLatch(1)
+        lateinit var cryptoManager: TokenCryptoManager
+        lateinit var defaultRunner: suspend (suspend () -> Unit) -> Unit
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                cryptoManager = activity.tokenCryptoManager
+                cryptoManager.kdfIterationsOverride = 1_500
+                defaultRunner = cryptoManager.transactionRunner
+                cryptoManager.transactionRunner = { block ->
+                    enteredEnableTx.countDown()
+                    assertThat(proceedEnableTx.await(5, TimeUnit.SECONDS)).isTrue()
+                    defaultRunner(block)
+                }
+                activity.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_DESTROY) {
+                        proceedEnableTx.countDown()
+                    }
+                })
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.clearAllTables()
+                    activity.otpTokenDatabase.otpTokenDao().insert(
+                        TestData.OTP_HOTP_TOKEN_1.copy(id = 1L, ordinal = 1L, counter = 0L)
+                    )
+                }
+            }
+
+            try {
+                openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+                onView(withText(R.string.authentication_mode)).perform(click())
+                onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
+
+                onView(withId(R.id.key_edit_text)).inRoot(isDialog())
+                    .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
+                onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
+                    .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
+                onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+
+                // Wait until enableTokenEncryption enters Room's transactionRunner, then recreate MainActivity
+                // (cancelling the original Activity.lifecycleScope while SQLite commits)
+                assertThat(enteredEnableTx.await(5, TimeUnit.SECONDS)).isTrue()
+                scenario.recreate()
+
+                val deadline = System.currentTimeMillis() + 5_000L
+                while (cryptoManager.activeAsyncOperations.get() > 0 && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(25)
+                }
+            } finally {
+                proceedEnableTx.countDown()
+                cryptoManager.transactionRunner = defaultRunner
+            }
+
+            scenario.onActivity { recreatedActivity ->
+                attachCryptoIdlingResource(recreatedActivity.tokenCryptoManager)
+                assertThat(recreatedActivity.settings.authMode).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
+                assertThat(recreatedActivity.tokenCryptoManager.isUnlocked()).isTrue()
+                val stored = runBlocking { recreatedActivity.otpTokenDatabase.otpTokenDao().getAll().first() }
+                assertThat(stored).hasSize(1)
+                assertThat(stored[0].encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
+                assertThat(stored[0].secret).startsWith("v1:")
+            }
+
+            // Verify the recreated Activity can immediately generate the encrypted HOTP code
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
+                .check(matches(hasDescendant(withText("047 701"))))
+
+            // Lock and verify unlocking with the passphrase succeeds (KDF salt was never rolled back)
+            scenario.onActivity { recreatedActivity ->
+                recreatedActivity.appSessionManager.lockSession()
+            }
+            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
+                .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+
+            scenario.onActivity { recreatedActivity ->
+                assertThat(recreatedActivity.tokenCryptoManager.isUnlocked()).isTrue()
             }
         }
     }
