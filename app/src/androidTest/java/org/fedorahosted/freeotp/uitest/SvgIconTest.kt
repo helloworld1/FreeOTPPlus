@@ -2,9 +2,12 @@ package org.fedorahosted.freeotp.uitest
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
@@ -30,6 +33,7 @@ import org.fedorahosted.freeotp.util.ImageUtil
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.liberty.android.freeotp.token_images.TokenImage
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -203,6 +207,34 @@ class SvgIconTest {
             }
         } finally {
             xxeFile.delete()
+        }
+    }
+
+    @Test
+    fun testAllBuiltInTokenImageVectorDrawablesInflateAndRender() {
+        val context = getInstrumentation().targetContext
+        val bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        try {
+            for (entry in TokenImage.values()) {
+                val drawable = AppCompatResources.getDrawable(context, entry.resource)
+                assertThat(drawable).isNotNull()
+                bitmap.eraseColor(Color.TRANSPARENT)
+                drawable!!.setBounds(0, 0, 128, 128)
+                drawable.draw(canvas)
+                // Ensure the center area drew non-transparent pixels
+                var nonTransparent = 0
+                for (y in 24 until 104 step 8) {
+                    for (x in 24 until 104 step 8) {
+                        if (Color.alpha(bitmap.getPixel(x, y)) > 0) {
+                            nonTransparent++
+                        }
+                    }
+                }
+                assertThat(nonTransparent).isGreaterThan(0)
+            }
+        } finally {
+            bitmap.recycle()
         }
     }
 }
