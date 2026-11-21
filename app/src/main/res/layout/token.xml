@@ -53,7 +53,7 @@
                     android:id="@+id/progressInner"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="16dp"
+                    android:padding="14dp"
                     android:visibility="gone"
                     app:hollow="false"
                     app:max="1000" />
@@ -62,7 +62,7 @@
                     android:id="@+id/progressOuter"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="10dp"
+                    android:padding="3dp"
                     android:visibility="gone"
                     app:hollow="true"
                     app:max="1000" />

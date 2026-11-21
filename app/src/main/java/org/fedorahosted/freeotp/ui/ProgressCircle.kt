@@ -15,6 +15,7 @@ import org.fedorahosted.freeotp.R
 
 class ProgressCircle : View {
     private lateinit var mPaint: Paint
+    private lateinit var mEdgePaint: Paint
     private lateinit var mRectF: RectF
     private lateinit var mRect: Rect
     private var mProgress: Int = 0
@@ -27,6 +28,7 @@ class ProgressCircle : View {
         }
     private var mPadding: Float = 0f
     private var mStrokeWidth: Float = 0f
+    private var mEdgeStrokeWidth: Float = 0f
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
         setup(context, attrs)
@@ -44,11 +46,17 @@ class ProgressCircle : View {
         val dm = resources.displayMetrics
         mPadding = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, dm)
         mStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3.5f, dm)
+        mEdgeStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, dm)
 
         mRectF = RectF()
         mRect = Rect()
 
         mPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            strokeCap = Paint.Cap.ROUND
+        }
+        mEdgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Style.STROKE
+            strokeWidth = mEdgeStrokeWidth
             strokeCap = Paint.Cap.ROUND
         }
 
@@ -78,15 +86,16 @@ class ProgressCircle : View {
         } else {
             MaterialColors.getColor(this, androidx.appcompat.R.attr.colorError)
         }
-        val alpha = if (hollow) 0xE6 else 0xB3
+        val alpha = if (hollow) 0xF2 else 0x5C
         mPaint.color = ColorUtils.setAlphaComponent(baseColor, alpha)
+        mEdgePaint.color = ColorUtils.setAlphaComponent(baseColor, 0xCC)
     }
 
     override fun onDraw(canvas: Canvas) {
         val safeMax = if (max > 0) max else 100
         getDrawingRect(mRect)
 
-        val inset = mPadding + if (hollow) mStrokeWidth / 2f else 0f
+        val inset = mPadding + if (hollow) mStrokeWidth / 2f else mEdgeStrokeWidth / 2f
         mRectF.set(
             mRect.left + paddingLeft + inset,
             mRect.top + paddingTop + inset,
@@ -94,6 +103,10 @@ class ProgressCircle : View {
             mRect.bottom - paddingBottom - inset
         )
 
-        canvas.drawArc(mRectF, -90f, (mProgress * 360f / safeMax), !hollow, mPaint)
+        val sweepAngle = mProgress * 360f / safeMax
+        canvas.drawArc(mRectF, -90f, sweepAngle, !hollow, mPaint)
+        if (!hollow && sweepAngle > 0f) {
+            canvas.drawArc(mRectF, -90f, sweepAngle, false, mEdgePaint)
+        }
     }
 }
