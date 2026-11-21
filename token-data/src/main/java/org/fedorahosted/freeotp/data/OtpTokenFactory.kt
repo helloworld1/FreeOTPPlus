@@ -90,7 +90,7 @@ object OtpTokenFactory {
             throw IllegalArgumentException("Encrypted token URI requires decryption key")
         }
         val secret = uri.getQueryParameter("secret") ?: throw IllegalArgumentException("Secret is null")
-        return parseTokenUri(uri, secret, includeCategoryFromQuery = false)
+        return parseTokenUri(uri, secret, includeCategoryFromQuery = true)
     }
 
     fun createFromEncryptedUri(uri: Uri, decryptedSecret: String): OtpToken {
@@ -117,15 +117,8 @@ object OtpTokenFactory {
             throw IllegalArgumentException("Token path is empty")
         }
 
-        val colonIndex = path.indexOf(':')
-        val issuerExt = if (colonIndex < 0) "" else path.substring(0, colonIndex)
         val issuerInt = uri.getQueryParameter("issuer")
-        val issuer = when {
-            !issuerInt.isNullOrBlank() -> issuerInt
-            issuerExt.isNotBlank() -> issuerExt
-            else -> null
-        }
-        val label = path.substring(if (colonIndex >= 0) colonIndex + 1 else 0)
+        val (issuer, label, issuerExt) = splitIssuerAndLabel(path, issuerInt)
 
         val isSteam = issuer == "Steam" || issuerExt == "Steam"
         val digits = (uri.getQueryParameter("digits") ?: if (isSteam) "5" else "6").toInt()
@@ -156,8 +149,37 @@ object OtpTokenFactory {
         )
     }
 
-    fun toUri(token: OtpToken, includeImage: Boolean = false): Uri {
+    internal fun splitIssuerAndLabel(path: String, issuerInt: String?): Triple<String?, String, String> {
+        val issuerExt: String
+        val label: String
+        if (!issuerInt.isNullOrBlank() && path.startsWith("$issuerInt:")) {
+            issuerExt = issuerInt
+            label = path.substring(issuerInt.length + 1)
+        } else {
+            val colonIndex = path.indexOf(':')
+            issuerExt = if (colonIndex < 0) "" else path.substring(0, colonIndex)
+            label = path.substring(if (colonIndex >= 0) colonIndex + 1 else 0)
+        }
+        val issuer = when {
+            !issuerInt.isNullOrBlank() -> issuerInt
+            issuerExt.isNotBlank() -> issuerExt
+            else -> null
+        }
+        return Triple(issuer, label, issuerExt)
+    }
+
+    @JvmOverloads
+    fun toUri(
+        token: OtpToken,
+        includeImage: Boolean = false,
+        includeCategories: Boolean = false
+    ): Uri {
         val builder = buildBaseUriBuilder(token)
+        if (includeCategories) {
+            for (cat in CategoryUtil.normalizeCategories(token.categories)) {
+                builder.appendQueryParameter(QUERY_CATEGORY, cat)
+            }
+        }
         if (includeImage && !token.imagePath.isNullOrBlank()) {
             builder.appendQueryParameter("image", token.imagePath)
         }

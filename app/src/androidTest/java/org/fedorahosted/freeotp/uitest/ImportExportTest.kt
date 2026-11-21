@@ -9,7 +9,10 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +22,18 @@ import java.io.File
 class ImportExportTest {
     @get:Rule
     var activityRule = activityScenarioRule<MainActivity>()
+
+    @Before
+    fun setUp(): Unit = clearTokens()
+
+    @After
+    fun tearDown(): Unit = clearTokens()
+
+    private fun clearTokens() = runBlocking {
+        lateinit var activity: MainActivity
+        activityRule.scenario.onActivity { activity = it }
+        activity.otpTokenDatabase.otpTokenDao().deleteAll()
+    }
 
     @Test
     fun testOtpTokenFactoryWithoutIssuer() {
@@ -239,5 +254,85 @@ class ImportExportTest {
 
         jsonFile.delete()
         uriFile.delete()
+    }
+
+    @Test
+    fun testOverwriteTruncationIssuerOnlyColonIssuerAndKeyUriCategoriesRoundTrip(): Unit = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val jsonFile = File(context.cacheDir, "test_f4_overwrite.json")
+        val uriFile = File(context.cacheDir, "test_f4_overwrite.txt")
+        val zipFile = File(context.cacheDir, "test_f4_overwrite.zip")
+
+        // Pre-populate all 3 target files with 32 KB of non-zero trailing garbage to verify truncation
+        val largeJunk = "X".repeat(32 * 1024)
+        jsonFile.writeText(largeJunk)
+        uriFile.writeText(largeJunk)
+        zipFile.writeText(largeJunk)
+
+        lateinit var activity: MainActivity
+        activityRule.scenario.onActivity { activity = it }
+        val dao = activity.otpTokenDatabase.otpTokenDao()
+        dao.deleteAll()
+
+        val issuerOnlyToken = OtpTokenFactory.create(
+            type = OtpTokenType.TOTP,
+            issuer = "GitHub",
+            label = "",
+            secret = "JBSWY3DPEHPK3PXP",
+            categories = listOf("Work")
+        ).copy(id = 1, ordinal = 1)
+
+        val colonInIssuerToken = OtpTokenFactory.create(
+            type = OtpTokenType.TOTP,
+            issuer = "Company:Prod",
+            label = "env:admin",
+            secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+            categories = listOf("Work", "Infra")
+        ).copy(id = 2, ordinal = 2)
+
+        // Default QR share URI stays compact without category= query params
+        assertThat(OtpTokenFactory.toUri(colonInIssuerToken).getQueryParameters("category")).isEmpty()
+
+        dao.insertAll(listOf(issuerOnlyToken, colonInIssuerToken))
+
+        // Overwrite all 3 pre-existing 32 KB files
+        activity.importFromUtil.exportJsonFile(jsonFile.toUri())
+        activity.importFromUtil.exportKeyUriFile(uriFile.toUri())
+        activity.importFromUtil.exportTokenImagesZip(zipFile.toUri())
+
+        assertThat(jsonFile.length()).isLessThan(largeJunk.length.toLong())
+        assertThat(uriFile.length()).isLessThan(largeJunk.length.toLong())
+        assertThat(zipFile.length()).isLessThan(largeJunk.length.toLong())
+
+        // 1. Verify unencrypted JSON import preserves issuer-only token, colon-in-issuer, and categories
+        dao.deleteAll()
+        activity.importFromUtil.importJsonFile(jsonFile.toUri())
+        val fromJson = dao.getAll().first()
+        assertThat(fromJson).hasSize(2)
+        assertThat(fromJson[0].issuer).isEqualTo("GitHub")
+        assertThat(fromJson[0].label).isEmpty()
+        assertThat(fromJson[0].categories).containsExactly("Work")
+        assertThat(fromJson[1].issuer).isEqualTo("Company:Prod")
+        assertThat(fromJson[1].label).isEqualTo("env:admin")
+        assertThat(fromJson[1].categories).containsExactly("Work", "Infra").inOrder()
+
+        // 2. Verify unencrypted Key-URI import preserves issuer-only token, colon-in-issuer, and categories
+        dao.deleteAll()
+        activity.importFromUtil.importKeyUriFile(uriFile.toUri())
+        val fromKeyUri = dao.getAll().first()
+        assertThat(fromKeyUri).hasSize(2)
+        assertThat(fromKeyUri[0].issuer).isEqualTo("GitHub")
+        assertThat(fromKeyUri[0].label).isEmpty()
+        assertThat(fromKeyUri[0].categories).containsExactly("Work")
+        assertThat(fromKeyUri[1].issuer).isEqualTo("Company:Prod")
+        assertThat(fromKeyUri[1].label).isEqualTo("env:admin")
+        assertThat(fromKeyUri[1].categories).containsExactly("Work", "Infra").inOrder()
+
+        // 3. Verify overwritten ZIP also parses cleanly with no trailing EOCD corruption
+        activity.importFromUtil.importTokenImagesZip(zipFile.toUri())
+
+        jsonFile.delete()
+        uriFile.delete()
+        zipFile.delete()
     }
 }

@@ -87,10 +87,15 @@ public class Token {
         if (path.length() == 0)
             throw new TokenUriInvalidException();
 
-        int i = path.indexOf(':');
-        issuerExt = i < 0 ? "" : path.substring(0, i);
         issuerInt = uri.getQueryParameter("issuer");
-        label = path.substring(i >= 0 ? i + 1 : 0);
+        if (issuerInt != null && !issuerInt.isEmpty() && path.startsWith(issuerInt + ":")) {
+            issuerExt = issuerInt;
+            label = path.substring(issuerInt.length() + 1);
+        } else {
+            int i = path.indexOf(':');
+            issuerExt = i < 0 ? "" : path.substring(0, i);
+            label = path.substring(i >= 0 ? i + 1 : 0);
+        }
 
         algo = uri.getQueryParameter("algorithm");
         if (algo == null)
@@ -102,16 +107,17 @@ public class Token {
             throw new TokenUriInvalidException();
         }
 
+        boolean isSteam = Objects.equals(issuerExt, "Steam") || Objects.equals(issuerInt, "Steam");
         try {
             String d = uri.getQueryParameter("digits");
             if (d == null) {
-                if (Objects.equals(issuerExt, "Steam"))
+                if (isSteam)
                     d = "5";
                 else
                     d = "6";
             }
             digits = Integer.parseInt(d);
-            if (!Objects.equals(issuerExt, "Steam") && digits != 6 && digits != 7 && digits != 8 && digits != 5)
+            if (!isSteam && digits != 6 && digits != 7 && digits != 8 && digits != 5)
                 throw new TokenUriInvalidException();
         } catch (NumberFormatException e) {
             throw new TokenUriInvalidException();

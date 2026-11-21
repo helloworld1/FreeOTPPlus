@@ -298,4 +298,25 @@ class CategoryUtilAndBackupCompatTest {
         assertThat(migratedLegacy[1].counter).isEqualTo(0L)
         assertThat(codeUtil.generateTokenCode(migratedLegacy[1]).currentCode).isEqualTo("755224") // RFC 4226 Count=0
     }
+
+    @Test
+    fun splitIssuerAndLabel_preservesColonsInIssuerAndLabelAndSupportsIssuerOnly() {
+        assertThat(OtpTokenFactory.splitIssuerAndLabel("Company:Prod:admin", "Company:Prod"))
+            .isEqualTo(Triple("Company:Prod", "admin", "Company:Prod"))
+
+        assertThat(OtpTokenFactory.splitIssuerAndLabel("Company:Prod:env:admin", "Company:Prod"))
+            .isEqualTo(Triple("Company:Prod", "env:admin", "Company:Prod"))
+
+        assertThat(OtpTokenFactory.splitIssuerAndLabel("Company:Prod:", "Company:Prod"))
+            .isEqualTo(Triple("Company:Prod", "", "Company:Prod"))
+
+        assertThat(OtpTokenFactory.splitIssuerAndLabel("GitHub:", "GitHub"))
+            .isEqualTo(Triple("GitHub", "", "GitHub"))
+
+        assertThat(OtpTokenFactory.splitIssuerAndLabel(":service:alice", null))
+            .isEqualTo(Triple(null, "service:alice", ""))
+
+        assertThat(OtpTokenFactory.splitIssuerAndLabel("alice@example.com", null))
+            .isEqualTo(Triple(null, "alice@example.com", ""))
+    }
 }

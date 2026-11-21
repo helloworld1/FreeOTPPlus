@@ -4,10 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import androidx.core.net.toUri
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -20,6 +22,7 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.hamcrest.Matcher
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -31,6 +34,24 @@ class TokenImageImportExportTest {
     companion object {
         private const val TELEKOM_SVG =
             """<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="60" fill="#e20074"/></svg>"""
+    }
+
+    private fun awaitViewDisplayed(matcher: Matcher<View>, timeoutMs: Long = 5_000L) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastError: Throwable? = null
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                onView(matcher).check(matches(isDisplayed()))
+                return
+            } catch (e: NoMatchingViewException) {
+                lastError = e
+            } catch (e: AssertionError) {
+                lastError = e
+            }
+            Thread.sleep(50L)
+        }
+        if (lastError != null) throw lastError
+        onView(matcher).check(matches(isDisplayed()))
     }
 
     @Test
@@ -114,7 +135,7 @@ class TokenImageImportExportTest {
                 scenario.onActivity { act ->
                     act.onDocumentPicked(MainActivity.DocumentAction.IMPORT_IMAGES, imagesZipFile.toUri())
                 }
-                onView(withText(R.string.import_succeeded_text)).check(matches(isDisplayed()))
+                awaitViewDisplayed(withText(R.string.import_succeeded_text))
 
                 val restoredFromJson = runBlocking { dao.getAll().first() }
                 assertThat(restoredFromJson).hasSize(2)
@@ -159,7 +180,7 @@ class TokenImageImportExportTest {
                 scenario.onActivity { activity ->
                     activity.onDocumentPicked(MainActivity.DocumentAction.IMPORT_IMAGES, badZip.toUri())
                 }
-                onView(withText(R.string.import_token_images_failed_text)).check(matches(isDisplayed()))
+                awaitViewDisplayed(withText(R.string.import_token_images_failed_text))
             }
         } finally {
             badZip.delete()

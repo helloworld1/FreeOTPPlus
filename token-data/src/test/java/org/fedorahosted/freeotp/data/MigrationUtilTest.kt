@@ -3,6 +3,7 @@ package org.fedorahosted.freeotp.data
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class MigrationUtilTest {
@@ -173,5 +174,53 @@ class MigrationUtilTest {
         assertThat(result).hasSize(1)
         assertThat(result[0].label).isEqualTo("valid_account")
         assertThat(result[0].issuer).isNull()
+    }
+
+    @Test
+    fun convertSavedTokens_preservesIssuerOnlyTokensAndRejectsMissingArraysGracefully() {
+        val json = """
+            {
+              "tokenOrder": [
+                "GitHub:",
+                "InferredOnly:"
+              ],
+              "tokens": [
+                {
+                  "algo": "SHA1",
+                  "counter": 0,
+                  "digits": 6,
+                  "issuerExt": "GitHub",
+                  "issuerInt": "GitHub",
+                  "label": "",
+                  "period": 30,
+                  "secret": [0, 0, 13, 111, -99],
+                  "type": "TOTP"
+                },
+                {
+                  "algo": "SHA256",
+                  "counter": 0,
+                  "digits": 6,
+                  "label": "",
+                  "period": 30,
+                  "secret": [8, 66, 29, 111, -99],
+                  "type": "TOTP"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val savedTokens = gson.fromJson(json, SavedTokens::class.java)
+        val result = MigrationUtil.convertSavedTokens(savedTokens)
+
+        assertThat(result).hasSize(2)
+        assertThat(result[0].issuer).isEqualTo("GitHub")
+        assertThat(result[0].label).isEmpty()
+        assertThat(result[1].issuer).isEqualTo("InferredOnly")
+        assertThat(result[1].label).isEmpty()
+
+        val emptyObj = gson.fromJson("{}", SavedTokens::class.java)
+        assertThrows(IllegalArgumentException::class.java) {
+            MigrationUtil.convertSavedTokens(emptyObj)
+        }
     }
 }

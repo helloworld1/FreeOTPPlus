@@ -61,7 +61,7 @@ class MigrationUtil private constructor(
     }
 
     suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
-        tokens.mapNotNull { otpToken ->
+        tokens.map { otpToken ->
             try {
                 val uri = OtpTokenFactory.toUri(otpToken, includeImage = true)
                 val normalizedCategories = CategoryUtil.normalizeCategories(otpToken.categories)
@@ -70,17 +70,22 @@ class MigrationUtil private constructor(
                     categories = normalizedCategories
                 }
             } catch (e: Token.TokenUriInvalidException) {
-                e.printStackTrace()
-                null
+                throw IllegalArgumentException("Invalid token cannot be exported: ${otpToken.issuer ?: otpToken.label}", e)
             }
         }
     }
 
     companion object {
+        @Suppress("USELESS_CAST", "UNCHECKED_CAST")
         internal fun convertSavedTokens(savedTokens: SavedTokens): List<OtpToken> {
-            val remainingTokens = savedTokens.tokens.toMutableList()
+            val rawTokens = (savedTokens.tokens as List<Token?>?)
+                ?: throw IllegalArgumentException("Malformed JSON backup: missing tokens")
+            val rawOrder = (savedTokens.tokenOrder as List<String?>?)
+                ?: throw IllegalArgumentException("Malformed JSON backup: missing tokenOrder")
 
-            val legacyTokens = savedTokens.tokenOrder.mapNotNull { tokenKey ->
+            val remainingTokens = rawTokens.filterNotNull().toMutableList()
+
+            val legacyTokens = rawOrder.filterNotNull().mapNotNull { tokenKey ->
                 var matchIndex = remainingTokens.indexOfFirst { it.id == tokenKey }
                 if (matchIndex < 0 && tokenKey.startsWith(":")) {
                     val strippedKey = tokenKey.substring(1)
@@ -108,7 +113,10 @@ class MigrationUtil private constructor(
                 }
 
                 if (matchIndex >= 0) {
-                    remainingTokens.removeAt(matchIndex).takeIf { it.label.isNotEmpty() }
+                    remainingTokens.removeAt(matchIndex).takeIf { token ->
+                        (token.label.isNotEmpty() || !token.issuer.isNullOrBlank()) &&
+                            runCatching { token.secret.isNotEmpty() }.getOrDefault(false)
+                    }
                 } else {
                     null
                 }

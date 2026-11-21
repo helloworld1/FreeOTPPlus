@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.data.legacy
 
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import com.google.android.apps.authenticator.Base32String
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -23,10 +24,15 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
+import java.io.BufferedOutputStream
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.IOException
+import java.io.InputStream
 import java.io.InputStreamReader
-import java.io.PrintWriter
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.security.GeneralSecurityException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,25 +47,28 @@ class ImportExportUtil @Inject constructor(
 ) {
     suspend fun isJsonFileEncrypted(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         val text = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            BufferedReader(InputStreamReader(inputStream)).readText()
+            BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).readText()
         } ?: return@withContext false
 
         isJsonStringEncrypted(text)
     }
 
     suspend fun isKeyUriFileEncrypted(fileUri: Uri): Boolean = withContext(Dispatchers.IO) {
-        val lines = context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
-            reader.readLines()
-        } ?: return@withContext false
+        val lines = context.contentResolver.openInputStream(fileUri)
+            ?.reader(StandardCharsets.UTF_8)
+            ?.use { reader -> reader.readLines() }
+            ?: return@withContext false
 
         isKeyUriLinesEncrypted(lines)
     }
 
     suspend fun importJsonFile(uri: Uri, backupPassphrase: CharArray? = null) {
         withContext(Dispatchers.IO) {
-            val jsonText = context.contentResolver.openInputStream(uri).use { inputStream ->
-                val reader = BufferedReader(InputStreamReader(inputStream))
-                reader.readText()
+            val jsonText = openRequiredInputStream(uri).use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).readText()
+            }
+            if (jsonText.isBlank()) {
+                throw IllegalArgumentException("Empty JSON backup")
             }
 
             val plaintextTokens = if (isJsonStringEncrypted(jsonText)) {
@@ -67,6 +76,7 @@ class ImportExportUtil @Inject constructor(
                 decryptJsonBackup(gson, jsonText, passphrase)
             } else {
                 val savedTokens = gson.fromJson(jsonText, SavedTokens::class.java)
+                    ?: throw IllegalArgumentException("Malformed JSON backup")
                 migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens)
             }
 
@@ -84,33 +94,36 @@ class ImportExportUtil @Inject constructor(
 
     suspend fun exportJsonFile(uri: Uri, encrypt: Boolean = false) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(uri, "w").use { outputStream ->
-                val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first()
+            val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first()
 
-                val jsonString = if (encrypt) {
-                    val metadata = tokenCryptoManager.getEncryptionMetadata()
-                        ?: throw IllegalStateException("Encryption metadata not available")
-                    val encryptedTokens = otpTokens.map { token ->
-                        EncryptedExportToken.fromOtpToken(tokenCryptoManager.encryptTokenForStorage(token))
-                    }
-                    gson.toJson(
-                        EncryptedExportBundle(
-                            version = 1,
-                            encrypted = true,
-                            kdfSalt = metadata.kdfSalt,
-                            kdfIterations = metadata.kdfIterations,
-                            keyVerifier = metadata.keyVerifier,
-                            tokens = encryptedTokens
-                        )
-                    )
-                } else {
-                    val plainTokens = otpTokens.map { tokenCryptoManager.decryptToken(it) }
-                    val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(plainTokens)
-                    val tokenOrder = legacyTokens.map { it.id }
-                    gson.toJson(SavedTokens(legacyTokens, tokenOrder))
+            val jsonString = if (encrypt) {
+                val metadata = tokenCryptoManager.getEncryptionMetadata()
+                    ?: throw IllegalStateException("Encryption metadata not available")
+                val encryptedTokens = otpTokens.map { token ->
+                    EncryptedExportToken.fromOtpToken(tokenCryptoManager.encryptTokenForStorage(token))
                 }
+                gson.toJson(
+                    EncryptedExportBundle(
+                        version = 1,
+                        encrypted = true,
+                        kdfSalt = metadata.kdfSalt,
+                        kdfIterations = metadata.kdfIterations,
+                        keyVerifier = metadata.keyVerifier,
+                        tokens = encryptedTokens
+                    )
+                )
+            } else {
+                val plainTokens = otpTokens.map { tokenCryptoManager.decryptToken(it) }
+                val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(plainTokens)
+                val tokenOrder = legacyTokens.map { it.id }
+                gson.toJson(SavedTokens(legacyTokens, tokenOrder))
+            }
 
-                outputStream?.write(jsonString.toByteArray())
+            openTruncatedOutputStream(uri).use { outputStream ->
+                BufferedOutputStream(outputStream).use { buffered ->
+                    buffered.write(jsonString.toByteArray(StandardCharsets.UTF_8))
+                    buffered.flush()
+                }
             }
         }
     }
@@ -119,9 +132,9 @@ class ImportExportUtil @Inject constructor(
         withContext(Dispatchers.IO) {
             val currentLastOrdinal = otpTokenDatabase.otpTokenDao().getLastOrdinal() ?: 0
 
-            val lines = context.contentResolver.openInputStream(fileUri)?.reader()?.use { reader ->
-                reader.readLines()
-            } ?: return@withContext
+            val lines = openRequiredInputStream(fileUri)
+                .reader(StandardCharsets.UTF_8)
+                .use { reader -> reader.readLines() }
 
             val nonBlankLines = lines.map { it.trim() }.filter { it.isNotEmpty() }
             val plaintextTokens = if (isKeyUriLinesEncrypted(nonBlankLines)) {
@@ -201,22 +214,32 @@ class ImportExportUtil @Inject constructor(
 
     suspend fun exportKeyUriFile(fileUri: Uri, encrypt: Boolean = false) {
         withContext(Dispatchers.IO) {
-            context.contentResolver.openOutputStream(fileUri, "w")?.use { outputStream ->
-                PrintWriter(outputStream).use { printWriter ->
-                    val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
-                    if (encrypt) {
-                        val metadata = tokenCryptoManager.getEncryptionMetadata()
-                            ?: throw IllegalStateException("Encryption metadata not available")
-                        for (token in tokens) {
-                            val encryptedToken = tokenCryptoManager.encryptTokenForStorage(token)
-                            printWriter.println(OtpTokenFactory.toEncryptedUri(encryptedToken, metadata).toString())
-                        }
-                    } else {
-                        for (token in tokens) {
-                            val plainToken = tokenCryptoManager.decryptToken(token)
-                            printWriter.println(OtpTokenFactory.toUri(plainToken, includeImage = true).toString())
-                        }
+            val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
+            val lines = if (encrypt) {
+                val metadata = tokenCryptoManager.getEncryptionMetadata()
+                    ?: throw IllegalStateException("Encryption metadata not available")
+                tokens.map { token ->
+                    val encryptedToken = tokenCryptoManager.encryptTokenForStorage(token)
+                    OtpTokenFactory.toEncryptedUri(encryptedToken, metadata).toString()
+                }
+            } else {
+                tokens.map { token ->
+                    val plainToken = tokenCryptoManager.decryptToken(token)
+                    OtpTokenFactory.toUri(
+                        plainToken,
+                        includeImage = true,
+                        includeCategories = true
+                    ).toString()
+                }
+            }
+
+            openTruncatedOutputStream(fileUri).use { outputStream ->
+                BufferedWriter(OutputStreamWriter(outputStream, StandardCharsets.UTF_8)).use { writer ->
+                    for (line in lines) {
+                        writer.write(line)
+                        writer.write("\n")
                     }
+                    writer.flush()
                 }
             }
         }
@@ -225,9 +248,7 @@ class ImportExportUtil @Inject constructor(
     suspend fun exportTokenImagesZip(fileUri: Uri) {
         withContext(Dispatchers.IO) {
             val tokens = otpTokenDatabase.otpTokenDao().getAll().first()
-            val outputStream = context.contentResolver.openOutputStream(fileUri, "w")
-                ?: throw IOException("Unable to open output stream for $fileUri")
-            outputStream.use { out ->
+            openTruncatedOutputStream(fileUri).use { out ->
                 TokenImageBackupUtil.exportTokenImagesToZip(
                     tokens = tokens,
                     filesDir = context.filesDir,
@@ -244,9 +265,7 @@ class ImportExportUtil @Inject constructor(
     suspend fun importTokenImagesZip(fileUri: Uri) {
         withContext(Dispatchers.IO) {
             val currentTokens = otpTokenDatabase.otpTokenDao().getAll().first()
-            val inputStream = context.contentResolver.openInputStream(fileUri)
-                ?: throw IOException("Unable to open input stream for $fileUri")
-            val updatedTokens = inputStream.use { input ->
+            val updatedTokens = openRequiredInputStream(fileUri).use { input ->
                 TokenImageBackupUtil.importTokenImagesFromZip(
                     currentTokens = currentTokens,
                     filesDir = context.filesDir,
@@ -258,6 +277,26 @@ class ImportExportUtil @Inject constructor(
                 otpTokenDatabase.otpTokenDao().updateAll(updatedTokens)
             }
         }
+    }
+
+    @Throws(IOException::class)
+    private fun openTruncatedOutputStream(uri: Uri): OutputStream {
+        val pfd = runCatching { context.contentResolver.openFileDescriptor(uri, "wt") }.getOrNull()
+            ?: runCatching { context.contentResolver.openFileDescriptor(uri, "w") }.getOrNull()
+        if (pfd != null) {
+            return ParcelFileDescriptor.AutoCloseOutputStream(pfd).also { stream ->
+                runCatching { stream.channel.truncate(0L) }
+            }
+        }
+        return runCatching { context.contentResolver.openOutputStream(uri, "wt") }.getOrNull()
+            ?: context.contentResolver.openOutputStream(uri, "w")
+            ?: throw IOException("Unable to open output stream for $uri")
+    }
+
+    @Throws(IOException::class)
+    private fun openRequiredInputStream(uri: Uri): InputStream {
+        return context.contentResolver.openInputStream(uri)
+            ?: throw IOException("Unable to open input stream for $uri")
     }
 
     companion object {
