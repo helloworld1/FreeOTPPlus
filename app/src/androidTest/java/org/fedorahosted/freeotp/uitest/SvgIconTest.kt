@@ -291,39 +291,41 @@ class SvgIconTest {
     }
 
     @Test
-    fun testBuiltInIconSavedViaImageUtilAndSetTokenImagePreview() {
+    fun testBuiltInIconRefAndSetTokenImagePreview() {
         val context = getInstrumentation().targetContext
-        val imageUtil = ImageUtil(context)
-        val savedUri = runBlocking {
-            imageUtil.saveDrawableResToFile(TokenImage.GitHub.resource)
-        }
-        val savedFile = savedUri.toFile()
-        try {
-            assertThat(savedFile.exists()).isTrue()
-            val decoded = BitmapFactory.decodeFile(savedFile.absolutePath)
-            assertThat(decoded).isNotNull()
-            assertThat(decoded.width).isEqualTo(512)
-            assertThat(decoded.height).isEqualTo(512)
-            decoded.recycle()
+        getInstrumentation().runOnMainSync {
+            val imageView = android.widget.ImageView(context)
 
-            getInstrumentation().runOnMainSync {
-                val imageView = android.widget.ImageView(context)
-                // Matched issuer renders built-in drawable (not TextDrawable)
-                imageView.setTokenImagePreview(null, "GitHub", "user@example.com")
-                assertThat(imageView.drawable).isNotNull()
-                assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+            // Explicit builtin:<Name> reference overrides unmatched issuer and renders vector drawable
+            imageView.setTokenImagePreview(
+                TokenImageBackupUtil.toBuiltInImagePath(TokenImage.GitHub.name),
+                "Unmatched Custom Service",
+                "user@example.com"
+            )
+            assertThat(imageView.drawable).isNotNull()
+            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
 
-                // Unmatched issuer with emoji renders proportional TextDrawable without throwing
-                imageView.setTokenImagePreview(null, "🔑 CustomVault", "user@example.com")
-                assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+            // Unknown future builtin:<Name> falls back cleanly without crashing
+            imageView.setTokenImagePreview(
+                "builtin:FutureUnknownServiceIcon",
+                "Unmatched Custom Service",
+                "user@example.com"
+            )
+            assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
 
-                // Blank issuer & label renders default logo
-                imageView.setTokenImagePreview(null, "", "")
-                assertThat(imageView.drawable).isNotNull()
-                assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
-            }
-        } finally {
-            savedFile.delete()
+            // Matched issuer renders built-in drawable (not TextDrawable)
+            imageView.setTokenImagePreview(null, "GitHub", "user@example.com")
+            assertThat(imageView.drawable).isNotNull()
+            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+
+            // Unmatched issuer with emoji renders proportional TextDrawable without throwing
+            imageView.setTokenImagePreview(null, "🔑 CustomVault", "user@example.com")
+            assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+
+            // Blank issuer & label renders default logo
+            imageView.setTokenImagePreview(null, "", "")
+            assertThat(imageView.drawable).isNotNull()
+            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
         }
     }
 }

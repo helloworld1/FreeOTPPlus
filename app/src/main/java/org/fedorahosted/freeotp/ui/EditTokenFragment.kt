@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.ui
 
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.ActionMode
@@ -13,7 +12,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
@@ -48,7 +46,7 @@ class EditTokenFragment : Fragment() {
         val issuer: String,
         val label: String,
         val categories: List<String>,
-        val imageUri: Uri?
+        val imagePath: String?
     )
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
@@ -62,7 +60,7 @@ class EditTokenFragment : Fragment() {
 
     private lateinit var categoryChipHelper: CategoryChipHelper
     private var initialState: InitialTokenState? = null
-    private var displayedImageUri: Uri? = null
+    private var displayedImagePath: String? = null
     private var tokenId: Long = 0L
     private var imagePickerDialog: AlertDialog? = null
 
@@ -73,7 +71,7 @@ class EditTokenFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val path = imageUtil.saveImageUriToFile(sourceUri)
-                showImage(path)
+                showImagePath(path.toString())
             } catch (_: Exception) {
                 context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
             }
@@ -129,10 +127,10 @@ class EditTokenFragment : Fragment() {
                 issuer = token.issuer ?: "",
                 label = token.label,
                 categories = CategoryUtil.normalizeCategories(token.categories),
-                imageUri = TokenImageBackupUtil.resolveSafeLocalImageFile(
+                imagePath = TokenImageBackupUtil.resolveSafeTokenImagePath(
                     token.imagePath,
                     requireContext().filesDir
-                )?.toUri()
+                )
             )
 
             categoryChipHelper = CategoryChipHelper(
@@ -151,13 +149,13 @@ class EditTokenFragment : Fragment() {
             )
 
             b.issuer.doAfterTextChanged {
-                if (displayedImageUri == null) {
+                if (displayedImagePath == null) {
                     updateTokenImagePreview()
                 }
                 updateButtonStates()
             }
             b.label.doAfterTextChanged {
-                if (displayedImageUri == null) {
+                if (displayedImagePath == null) {
                     updateTokenImagePreview()
                 }
                 updateButtonStates()
@@ -169,16 +167,7 @@ class EditTokenFragment : Fragment() {
                     context = requireContext(),
                     titleRes = R.string.change_token_image,
                     onBuiltInSelected = { tokenImage ->
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            try {
-                                val path = imageUtil.saveDrawableResToFile(tokenImage.resource)
-                                showImage(path)
-                            } catch (_: Exception) {
-                                context?.let {
-                                    Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
+                        showImagePath(TokenImageBackupUtil.toBuiltInImagePath(tokenImage.name))
                     },
                     onDeviceImageRequested = {
                         pickImageLauncher.launch("image/*")
@@ -189,25 +178,24 @@ class EditTokenFragment : Fragment() {
                 )
             }
             b.removeUserTokenImage.setOnClickListener {
-                showImage(null)
+                showImagePath(null)
             }
             b.restore.setOnClickListener {
                 b.label.setText(initial.label)
                 b.issuer.setText(initial.issuer)
                 categoryChipHelper.setSelectedCategories(initial.categories)
                 b.issuer.setSelection(b.issuer.text?.length ?: 0)
-                showImage(initial.imageUri)
+                showImagePath(initial.imagePath)
             }
             b.save.setOnClickListener {
                 saveTokenChanges()
             }
 
             val restoredHasCustomImageState = savedInstanceState?.containsKey(STATE_IMAGE_DISPLAY) == true
-            val initialImage = if (restoredHasCustomImageState) {
-                @Suppress("DEPRECATION")
-                savedInstanceState?.getParcelable(STATE_IMAGE_DISPLAY)
+            val initialImagePath = if (restoredHasCustomImageState) {
+                savedInstanceState?.getString(STATE_IMAGE_DISPLAY)
             } else {
-                initial.imageUri
+                initial.imagePath
             }
 
             if (savedInstanceState == null) {
@@ -300,27 +288,26 @@ class EditTokenFragment : Fragment() {
             }
 
             initialState = initial
-            showImage(initialImage)
+            showImagePath(initialImagePath)
             updateButtonStates()
         }
     }
 
-    private fun showImage(imageUri: Uri?) {
+    private fun showImagePath(rawImagePath: String?) {
         val b = _binding ?: return
-        val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
-            imageUri?.toString(),
+        displayedImagePath = TokenImageBackupUtil.resolveSafeTokenImagePath(
+            rawImagePath,
             requireContext().filesDir
         )
-        displayedImageUri = safeFile?.toUri()
         updateTokenImagePreview()
-        b.removeUserTokenImage.isEnabled = displayedImageUri != null
+        b.removeUserTokenImage.isEnabled = displayedImagePath != null
         updateButtonStates()
     }
 
     private fun updateTokenImagePreview() {
         val b = _binding ?: return
         b.image.setTokenImagePreview(
-            imagePath = displayedImageUri?.toString(),
+            imagePath = displayedImagePath,
             issuer = b.issuer.text?.toString(),
             label = b.label.text?.toString()
         )
@@ -344,7 +331,7 @@ class EditTokenFragment : Fragment() {
         val hasChanges = label != initial.label ||
             issuer != initial.issuer ||
             categoriesDiffer(selectedCategories, initial.categories) ||
-            displayedImageUri != initial.imageUri
+            displayedImagePath != initial.imagePath
 
         b.save.isEnabled = label.isNotEmpty() && hasChanges
         b.restore.isEnabled = hasChanges
@@ -362,7 +349,7 @@ class EditTokenFragment : Fragment() {
                 issuer = b.issuer.text?.toString()?.takeIf { it.isNotBlank() },
                 label = b.label.text?.toString().orEmpty(),
                 categories = categoryChipHelper.getSelectedCategories(),
-                imagePath = displayedImageUri?.toString()
+                imagePath = displayedImagePath
             )
             otpTokenDatabase.otpTokenDao().update(newToken)
             if (isAdded) {
@@ -377,7 +364,7 @@ class EditTokenFragment : Fragment() {
             categoryChipHelper.saveInstanceState(outState)
         }
         if (initialState != null) {
-            outState.putParcelable(STATE_IMAGE_DISPLAY, displayedImageUri)
+            outState.putString(STATE_IMAGE_DISPLAY, displayedImagePath)
         }
     }
 

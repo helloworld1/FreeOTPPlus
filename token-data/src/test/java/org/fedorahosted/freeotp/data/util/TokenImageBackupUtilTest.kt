@@ -458,6 +458,66 @@ class TokenImageBackupUtilTest {
         assertThat(String(zipOut.toByteArray(), StandardCharsets.ISO_8859_1)).doesNotContain("outside.png")
     }
 
+    @Test
+    fun builtInImageRefs_surviveSanitizationAndRestoreWithoutImagesZip() {
+        val ref = TokenImageBackupUtil.toBuiltInImagePath("GitHub")
+        assertThat(ref).isEqualTo("builtin:GitHub")
+        assertThat(TokenImageBackupUtil.parseBuiltInImageName(ref)).isEqualTo("GitHub")
+        assertThat(TokenImageBackupUtil.parseBuiltInImageName("BUILTIN:Discord")).isEqualTo("Discord")
+        assertThat(TokenImageBackupUtil.sanitizeImportedImagePath(ref, newFilesDir)).isEqualTo("builtin:GitHub")
+        assertThat(TokenImageBackupUtil.sanitizeImportedImagePath("BUILTIN:Discord", newFilesDir)).isEqualTo("builtin:Discord")
+        assertThat(TokenImageBackupUtil.resolveSafeTokenImagePath(ref, newFilesDir)).isEqualTo("builtin:GitHub")
+        assertThat(TokenImageBackupUtil.resolveSafeLocalImageFile(ref, newFilesDir)).isNull()
+
+        // Reject malformed or injection-like built-in references
+        for (invalid in listOf("builtin:", "builtin:../evil", "builtin:a/b", "builtin:Git Hub", "builtin:a?b=c")) {
+            assertThat(TokenImageBackupUtil.parseBuiltInImageName(invalid)).isNull()
+            assertThat(TokenImageBackupUtil.sanitizeImportedImagePath(invalid, newFilesDir)).isNull()
+            assertThat(TokenImageBackupUtil.resolveSafeTokenImagePath(invalid, newFilesDir)).isNull()
+        }
+
+        // Built-in icon references are preserved during restore even if a cached ZIP manifest matches the token,
+        // and are not redundantly exported into custom image ZIP archives.
+        val stalePng = File(newFilesDir, "stale_custom.png").apply { writeBytes(SAMPLE_PNG_BYTES) }
+        val staleManifest = org.fedorahosted.freeotp.data.TokenImageManifest(
+            version = 1,
+            entries = listOf(
+                org.fedorahosted.freeotp.data.TokenImageManifestEntry(
+                    fileName = stalePng.name,
+                    originalImagePath = TokenImageBackupUtil.toFileUriString(stalePng),
+                    issuer = "Custom Server",
+                    label = "ops@example.com",
+                    tokenType = OtpTokenType.TOTP,
+                    algorithm = "SHA1",
+                    digits = 6,
+                    period = 30
+                )
+            )
+        )
+        val tokenWithBuiltIn = makeToken(
+            id = 50L,
+            issuer = "Custom Server",
+            label = "ops@example.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            imagePath = "builtin:GitHub"
+        )
+        val resolved = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+            tokens = listOf(tokenWithBuiltIn),
+            filesDir = newFilesDir,
+            manifest = staleManifest
+        )
+        assertThat(resolved.single().imagePath).isEqualTo("builtin:GitHub")
+
+        val zipOut = ByteArrayOutputStream()
+        TokenImageBackupUtil.exportTokenImagesToZip(
+            tokens = listOf(tokenWithBuiltIn),
+            filesDir = newFilesDir,
+            gson = gson,
+            zipOutputStream = zipOut
+        )
+        assertThat(String(zipOut.toByteArray(), StandardCharsets.ISO_8859_1)).doesNotContain("GitHub")
+    }
+
     private fun makeToken(
         id: Long,
         issuer: String?,

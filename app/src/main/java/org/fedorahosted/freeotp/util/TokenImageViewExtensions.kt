@@ -36,6 +36,14 @@ fun ImageView.setTokenImagePreview(
     issuer: String?,
     label: String?
 ) {
+    TokenImageBackupUtil.parseBuiltInImageName(imagePath)?.let { builtInName ->
+        TokenImage.fromName(builtInName)?.let { builtInIcon ->
+            runCatching { Glide.with(this).clear(this) }
+            setImageResource(builtInIcon.resource)
+            return
+        }
+    }
+
     val safeImageFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
         imagePath,
         context.filesDir

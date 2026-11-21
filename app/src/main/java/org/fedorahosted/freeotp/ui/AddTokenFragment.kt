@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.ui
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,7 +41,7 @@ class AddTokenFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var categoryChipHelper: CategoryChipHelper
-    private var selectedImageUri: Uri? = null
+    private var selectedImagePath: String? = null
     private var isFormattingSecret = false
     private var imagePickerDialog: AlertDialog? = null
 
@@ -53,26 +52,25 @@ class AddTokenFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val savedUri = imageUtil.saveImageUriToFile(sourceUri)
-                applySavedImageUri(savedUri)
+                applySelectedImagePath(savedUri.toString())
             } catch (_: Exception) {
                 context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
             }
         }
     }
 
-    private fun applySavedImageUri(savedUri: Uri?) {
-        val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
-            savedUri?.toString(),
+    private fun applySelectedImagePath(rawImagePath: String?) {
+        selectedImagePath = TokenImageBackupUtil.resolveSafeTokenImagePath(
+            rawImagePath,
             requireContext().filesDir
         )
-        selectedImageUri = safeFile?.let { Uri.fromFile(it) }
         updateTokenImagePreview()
     }
 
     private fun updateTokenImagePreview() {
         val b = _binding ?: return
         b.image.setTokenImagePreview(
-            imagePath = selectedImageUri?.toString(),
+            imagePath = selectedImagePath,
             issuer = b.issuer.text?.toString(),
             label = b.label.text?.toString()
         )
@@ -113,9 +111,7 @@ class AddTokenFragment : Fragment() {
         binding.algorithm.setText(initialAlgo, false)
 
         if (savedInstanceState != null) {
-            @Suppress("DEPRECATION")
-            val restoredUri: Uri? = savedInstanceState.getParcelable(STATE_IMAGE_URI)
-            applySavedImageUri(restoredUri)
+            applySelectedImagePath(savedInstanceState.getString(STATE_IMAGE_PATH))
         } else {
             updateTokenImagePreview()
         }
@@ -135,13 +131,13 @@ class AddTokenFragment : Fragment() {
             if (binding.typeToggleGroup.checkedButtonId == R.id.hotp) View.VISIBLE else View.GONE
 
         binding.issuer.doAfterTextChanged {
-            if (selectedImageUri == null) {
+            if (selectedImagePath == null) {
                 updateTokenImagePreview()
             }
             validateForm()
         }
         binding.label.doAfterTextChanged {
-            if (selectedImageUri == null) {
+            if (selectedImagePath == null) {
                 updateTokenImagePreview()
             }
             validateForm()
@@ -175,16 +171,7 @@ class AddTokenFragment : Fragment() {
                 context = requireContext(),
                 titleRes = R.string.select_token_image,
                 onBuiltInSelected = { tokenImage ->
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        try {
-                            val savedUri = imageUtil.saveDrawableResToFile(tokenImage.resource)
-                            applySavedImageUri(savedUri)
-                        } catch (_: Exception) {
-                            context?.let {
-                                Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
+                    applySelectedImagePath(TokenImageBackupUtil.toBuiltInImagePath(tokenImage.name))
                 },
                 onDeviceImageRequested = {
                     pickImageLauncher.launch("image/*")
@@ -266,7 +253,7 @@ class AddTokenFragment : Fragment() {
                     digits = digits,
                     period = interval,
                     initialCounter = initialCounter,
-                    imagePath = selectedImageUri?.toString(),
+                    imagePath = selectedImagePath,
                     categories = categoryChipHelper.getSelectedCategories()
                 )
                 otpTokenDatabase.otpTokenDao().insert(tokenCryptoManager.encryptTokenForStorage(token))
@@ -298,7 +285,7 @@ class AddTokenFragment : Fragment() {
         _binding?.algorithm?.text?.toString()?.let {
             outState.putString(STATE_ALGORITHM, it)
         }
-        outState.putParcelable(STATE_IMAGE_URI, selectedImageUri)
+        outState.putString(STATE_IMAGE_PATH, selectedImagePath)
     }
 
     override fun onDestroyView() {
@@ -314,6 +301,6 @@ class AddTokenFragment : Fragment() {
     companion object {
         private const val SHA1_OFFSET = 1
         private const val STATE_ALGORITHM = "state_selected_algorithm"
-        private const val STATE_IMAGE_URI = "state_selected_image_uri"
+        private const val STATE_IMAGE_PATH = "state_selected_image_path"
     }
 }

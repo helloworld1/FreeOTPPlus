@@ -362,4 +362,16 @@ class TokenImageTest {
         assertThat(firstMatchingTokenImage("Equinix Metal")).isEqualTo(TokenImage.Packet)
         assertThat(firstMatchingTokenImage("x.com")).isEqualTo(TokenImage.Twitter)
     }
+
+    @Test
+    fun fromNameResolvesBuiltInIconsExactlyAndCaseInsensitively() {
+        assertThat(TokenImage.fromName("GitHub")).isEqualTo(TokenImage.GitHub)
+        assertThat(TokenImage.fromName("github")).isEqualTo(TokenImage.GitHub)
+        assertThat(TokenImage.fromName("  AmazonWebServices  ")).isEqualTo(TokenImage.AmazonWebServices)
+        assertThat(TokenImage.fromName("OnePassword")).isEqualTo(TokenImage.OnePassword)
+        assertThat(TokenImage.fromName(null)).isNull()
+        assertThat(TokenImage.fromName("")).isNull()
+        assertThat(TokenImage.fromName("   ")).isNull()
+        assertThat(TokenImage.fromName("DoesNotExist")).isNull()
+    }
 }

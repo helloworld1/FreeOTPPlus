@@ -3,10 +3,7 @@ package org.fedorahosted.freeotp.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.net.Uri
-import androidx.annotation.DrawableRes
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -26,16 +23,6 @@ class ImageUtil @Inject constructor(@ApplicationContext val context: Context) {
 
     suspend fun saveImageUriToFile(uri: Uri): Uri = withContext(Dispatchers.IO) {
         val bitmap = decodeUriToBitmap(uri)
-        saveBitmapToFile(bitmap)
-    }
-
-    suspend fun saveDrawableResToFile(@DrawableRes drawableResId: Int): Uri = withContext(Dispatchers.IO) {
-        val drawable = ContextCompat.getDrawable(context, drawableResId)?.mutate()
-            ?: throw IOException("Unable to load drawable resource $drawableResId")
-        val bitmap = Bitmap.createBitmap(MAX_SAVED_ICON_PX, MAX_SAVED_ICON_PX, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, MAX_SAVED_ICON_PX, MAX_SAVED_ICON_PX)
-        drawable.draw(canvas)
         saveBitmapToFile(bitmap)
     }
 

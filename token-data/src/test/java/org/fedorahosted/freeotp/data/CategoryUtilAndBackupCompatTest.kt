@@ -120,7 +120,7 @@ class CategoryUtilAndBackupCompatTest {
             ordinal = 1L,
             issuer = "AWS",
             label = "prod",
-            imagePath = null,
+            imagePath = "builtin:AmazonWebServices",
             tokenType = OtpTokenType.TOTP,
             algorithm = "SHA1",
             secret = encryptedSecret,
@@ -153,10 +153,11 @@ class CategoryUtilAndBackupCompatTest {
         assertThat(tokenJsonObj.getAsJsonArray("categories").map { it.asString })
             .containsExactly("Work", "Cloud").inOrder()
 
-        // Round-trip decrypt in new app preserves full multi-category list
+        // Round-trip decrypt in new app preserves full multi-category list and builtin icon reference
         val decrypted = ImportExportUtil.decryptJsonBackup(gson, bundleJson, "backupKey123".toCharArray())
         assertThat(decrypted).hasSize(1)
         assertThat(decrypted[0].categories).containsExactly("Work", "Cloud").inOrder()
+        assertThat(decrypted[0].imagePath).isEqualTo("builtin:AmazonWebServices")
     }
 
     @Test

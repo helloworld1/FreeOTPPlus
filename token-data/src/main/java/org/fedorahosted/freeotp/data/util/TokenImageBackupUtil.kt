@@ -27,7 +27,9 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 object TokenImageBackupUtil {
+    const val BUILTIN_IMAGE_SCHEME = "builtin:"
     const val MANIFEST_ENTRY_NAME = "manifest.json"
+    private val BUILTIN_IMAGE_NAME_REGEX = Regex("^[A-Za-z0-9_]{1,100}$")
     private const val CACHED_MANIFEST_DIR = ".image_manifest"
     private const val CACHED_MANIFEST_FILE = "manifest.json"
     private const val MAX_ZIP_ENTRIES = 2000
@@ -264,6 +266,9 @@ object TokenImageBackupUtil {
         return tokens.map { token ->
             val currentPath = token.imagePath
             if (!currentPath.isNullOrBlank()) {
+                parseBuiltInImageName(currentPath)?.let { builtInName ->
+                    return@map token.copy(imagePath = toBuiltInImagePath(builtInName))
+                }
                 if (isRemoteHttpUrl(currentPath)) {
                     return@map token
                 }
@@ -524,6 +529,44 @@ object TokenImageBackupUtil {
     }
 
     /**
+     * Builds a portable `builtin:<Name>` reference for a user-selected built-in [TokenImage].
+     */
+    fun toBuiltInImagePath(name: String): String {
+        val trimmed = name.trim()
+        require(BUILTIN_IMAGE_NAME_REGEX.matches(trimmed)) {
+            "Invalid built-in token image name: $name"
+        }
+        return "$BUILTIN_IMAGE_SCHEME$trimmed"
+    }
+
+    /**
+     * Extracts the built-in icon identifier from a `builtin:<Name>` reference, or returns `null`
+     * if [imagePath] is not a valid built-in icon reference.
+     */
+    fun parseBuiltInImageName(imagePath: String?): String? {
+        val raw = imagePath?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        if (!raw.startsWith(BUILTIN_IMAGE_SCHEME, ignoreCase = true)) {
+            return null
+        }
+        val candidate = raw.substring(BUILTIN_IMAGE_SCHEME.length)
+        return candidate.takeIf { BUILTIN_IMAGE_NAME_REGEX.matches(it) }
+    }
+
+    /**
+     * Resolves [imagePath] to a canonical safe persisted representation:
+     * - `"builtin:<Name>"` for a valid built-in icon reference, or
+     * - a canonical `file://...` URI for an existing safe image file directly inside [filesDir], or
+     * - `null` otherwise.
+     */
+    fun resolveSafeTokenImagePath(imagePath: String?, filesDir: File): String? {
+        parseBuiltInImageName(imagePath)?.let { builtInName ->
+            return toBuiltInImagePath(builtInName)
+        }
+        val safeFile = resolveSafeLocalImageFile(imagePath, filesDir) ?: return null
+        return toFileUriString(safeFile)
+    }
+
+    /**
      * Resolves [imagePath] strictly to an existing regular image file located directly inside
      * [filesDir] (rejecting remote URLs, content/resource schemes, hidden files/directories,
      * symlinks escaping [filesDir], and path traversal).
@@ -553,12 +596,16 @@ object TokenImageBackupUtil {
     }
 
     /**
-     * Sanitizes an `imagePath` from an imported backup or legacy store so only safe image
-     * filenames mapped directly inside [filesDir] are retained in SQLite, while remote URLs,
-     * `content://` URIs, and non-image internal paths (`databases/`, `shared_prefs/`) become `null`.
+     * Sanitizes an `imagePath` from an imported backup or legacy store so only valid built-in icon
+     * references (`builtin:<Name>`) or safe image filenames mapped directly inside [filesDir] are
+     * retained in SQLite, while remote URLs, `content://` URIs, and non-image internal paths
+     * (`databases/`, `shared_prefs/`) become `null`.
      */
     fun sanitizeImportedImagePath(imagePath: String?, filesDir: File): String? {
         val raw = imagePath?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        parseBuiltInImageName(raw)?.let { builtInName ->
+            return toBuiltInImagePath(builtInName)
+        }
         if (!hasAllowedLocalPathScheme(raw)) {
             return null
         }

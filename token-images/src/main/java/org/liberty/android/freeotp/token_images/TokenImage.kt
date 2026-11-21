@@ -1,5 +1,7 @@
 package org.liberty.android.freeotp.token_images
 
+import java.util.Locale
+
 enum class TokenImage(val resource: Int,
                       val issuer: String? = null,
                       val alsoMatchLabel: Boolean = false,
@@ -512,6 +514,21 @@ enum class TokenImage(val resource: Int,
     ZeroTier(R.drawable.token_image_zerotier, altIssuers = listOf("Zero Tier")),
     Zoho(R.drawable.token_image_zoho),
     Zoom(R.drawable.token_image_zoom);
+
+    companion object {
+        private val byExactName: Map<String, TokenImage> by lazy {
+            values().associateBy { it.name }
+        }
+
+        private val byLowerName: Map<String, TokenImage> by lazy {
+            values().associateBy { it.name.lowercase(Locale.ROOT) }
+        }
+
+        fun fromName(name: String?): TokenImage? {
+            val trimmed = name?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+            return byExactName[trimmed] ?: byLowerName[trimmed.lowercase(Locale.ROOT)]
+        }
+    }
 }
 
 private fun containsCandidate(text: String, candidate: String, matchWordBoundary: Boolean): Boolean {

@@ -163,7 +163,7 @@ class MigrationUtil private constructor(
                     ordinal = index.toLong() + 1,
                     issuer = legacyToken.issuer.takeIf { !it.isNullOrBlank() },
                     label = legacyToken.label,
-                    imagePath = legacyToken.image?.toString(),
+                    imagePath = legacyToken.imageString,
                     tokenType = resolvedTokenType,
                     algorithm = legacyToken.algorithm ?: "SHA1",
                     counter = if (resolvedTokenType == OtpTokenType.HOTP) {

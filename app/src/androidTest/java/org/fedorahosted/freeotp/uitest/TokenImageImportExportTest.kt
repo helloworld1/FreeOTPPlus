@@ -20,8 +20,11 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.setTokenImage
+import org.liberty.android.freeotp.token_images.TokenImage
 import org.hamcrest.Matcher
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -166,6 +169,83 @@ class TokenImageImportExportTest {
             keyUriBackupFile.delete()
             imagesZipFile.delete()
             context.filesDir.listFiles()?.forEach { it.deleteRecursively() }
+        }
+    }
+
+    @Test
+    fun testBuiltInIconRestoresFromJsonAndKeyUriWithoutImagesZip() {
+        val context = getInstrumentation().targetContext
+        val jsonBackupFile = File(context.cacheDir, "tokens_builtin_backup.json")
+        val keyUriBackupFile = File(context.cacheDir, "tokens_builtin_backup.txt")
+        val discordRef = TokenImageBackupUtil.toBuiltInImagePath(TokenImage.Discord.name)
+        val githubRef = TokenImageBackupUtil.toBuiltInImagePath(TokenImage.GitHub.name)
+
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                lateinit var activity: MainActivity
+                scenario.onActivity { activity = it }
+                val dao = activity.otpTokenDatabase.otpTokenDao()
+
+                runBlocking {
+                    dao.deleteAll()
+                    dao.insertAll(
+                        listOf(
+                            TestData.OTP_HOTP_TOKEN_1.copy(
+                                id = 1L,
+                                ordinal = 1L,
+                                issuer = "My Custom Server",
+                                label = "ops@internal.local",
+                                imagePath = discordRef
+                            ),
+                            TestData.OTP_TOTP_TOKEN_2.copy(
+                                id = 2L,
+                                ordinal = 2L,
+                                issuer = "Google",
+                                label = "override@example.com",
+                                imagePath = githubRef
+                            )
+                        )
+                    )
+
+                    activity.importFromUtil.exportJsonFile(jsonBackupFile.toUri())
+                    activity.importFromUtil.exportKeyUriFile(keyUriBackupFile.toUri())
+                }
+
+                // Wipe tokens AND local filesDir completely (no Token Images ZIP imported)
+                runBlocking { dao.deleteAll() }
+                context.filesDir.listFiles()?.forEach { it.deleteRecursively() }
+
+                // 1) Restore from JSON backup alone -> customized built-in icons are preserved & rendered
+                runBlocking {
+                    activity.importFromUtil.importJsonFile(jsonBackupFile.toUri())
+                }
+                val restoredFromJson = runBlocking { dao.getAll().first() }
+                assertThat(restoredFromJson).hasSize(2)
+                assertThat(restoredFromJson[0].imagePath).isEqualTo(discordRef)
+                assertThat(restoredFromJson[1].imagePath).isEqualTo(githubRef)
+
+                getInstrumentation().runOnMainSync {
+                    val imageView = android.widget.ImageView(context)
+                    imageView.setTokenImage(restoredFromJson[0])
+                    assertThat(imageView.drawable).isNotNull()
+                    assertThat(imageView.drawable).isNotInstanceOf(
+                        com.amulyakhare.textdrawable.TextDrawable::class.java
+                    )
+                }
+
+                // 2) Wipe DB again and restore from Key URI backup alone -> customized built-in icons preserved
+                runBlocking {
+                    dao.deleteAll()
+                    activity.importFromUtil.importKeyUriFile(keyUriBackupFile.toUri())
+                }
+                val restoredFromKeyUri = runBlocking { dao.getAll().first() }
+                assertThat(restoredFromKeyUri).hasSize(2)
+                assertThat(restoredFromKeyUri[0].imagePath).isEqualTo(discordRef)
+                assertThat(restoredFromKeyUri[1].imagePath).isEqualTo(githubRef)
+            }
+        } finally {
+            jsonBackupFile.delete()
+            keyUriBackupFile.delete()
         }
     }
 

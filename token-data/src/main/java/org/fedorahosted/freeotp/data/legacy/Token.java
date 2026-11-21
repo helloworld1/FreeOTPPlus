@@ -351,6 +351,13 @@ public class Token {
         return null;
     }
 
+    public String getImageString() {
+        if (imageAlt != null)
+            return imageAlt;
+
+        return image;
+    }
+
     public String getSecret() {
         return Base32String.encode(secret);
     }

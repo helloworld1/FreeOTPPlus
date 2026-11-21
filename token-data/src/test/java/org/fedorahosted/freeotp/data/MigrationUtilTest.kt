@@ -223,4 +223,36 @@ class MigrationUtilTest {
             MigrationUtil.convertSavedTokens(emptyObj)
         }
     }
+
+    @Test
+    fun convertSavedTokens_preservesBuiltInIconImageReference() {
+        val json = """
+            {
+              "tokenOrder": [
+                "Custom Vault:alice@example.com"
+              ],
+              "tokens": [
+                {
+                  "algo": "SHA1",
+                  "counter": 0,
+                  "digits": 6,
+                  "image": "builtin:GitHub",
+                  "issuerExt": "Custom Vault",
+                  "issuerInt": "Custom Vault",
+                  "label": "alice@example.com",
+                  "period": 30,
+                  "secret": [0, 0, 13, 111, -99],
+                  "type": "TOTP"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val savedTokens = gson.fromJson(json, SavedTokens::class.java)
+        val result = MigrationUtil.convertSavedTokens(savedTokens)
+
+        assertThat(result).hasSize(1)
+        assertThat(result.single().issuer).isEqualTo("Custom Vault")
+        assertThat(result.single().imagePath).isEqualTo("builtin:GitHub")
+    }
 }
