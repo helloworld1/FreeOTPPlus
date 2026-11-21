@@ -86,7 +86,11 @@ class ImportExportUtil @Inject constructor(
                     filesDir = context.filesDir,
                     manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
                 )
-            }.getOrDefault(plaintextTokens)
+            }.getOrDefault(plaintextTokens).map { token ->
+                token.copy(
+                    imagePath = TokenImageBackupUtil.sanitizeImportedImagePath(token.imagePath, context.filesDir)
+                )
+            }
             val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().replaceAll(tokensToStore)
         }
@@ -142,7 +146,7 @@ class ImportExportUtil @Inject constructor(
                 decryptKeyUriLines(nonBlankLines, passphrase, currentLastOrdinal)
             } else {
                 nonBlankLines.mapIndexed { index, line ->
-                    OtpTokenFactory.createFromUri(Uri.parse(line)).copy(
+                    OtpTokenFactory.createFromUri(Uri.parse(line), allowImageParam = true).copy(
                         ordinal = currentLastOrdinal + index + 1
                     )
                 }
@@ -154,7 +158,11 @@ class ImportExportUtil @Inject constructor(
                     filesDir = context.filesDir,
                     manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
                 )
-            }.getOrDefault(plaintextTokens)
+            }.getOrDefault(plaintextTokens).map { token ->
+                token.copy(
+                    imagePath = TokenImageBackupUtil.sanitizeImportedImagePath(token.imagePath, context.filesDir)
+                )
+            }
             val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().insertAll(tokensToStore)
         }
@@ -199,9 +207,9 @@ class ImportExportUtil @Inject constructor(
                         throw InvalidEncryptionKeyException()
                     }
 
-                    OtpTokenFactory.createFromEncryptedUri(uri, decryptedSecret)
+                    OtpTokenFactory.createFromEncryptedUri(uri, decryptedSecret, allowImageParam = true)
                 } else {
-                    OtpTokenFactory.createFromUri(uri)
+                    OtpTokenFactory.createFromUri(uri, allowImageParam = true)
                 }
 
                 token.copy(ordinal = currentLastOrdinal + index + 1)
@@ -253,10 +261,7 @@ class ImportExportUtil @Inject constructor(
                     tokens = tokens,
                     filesDir = context.filesDir,
                     gson = gson,
-                    zipOutputStream = out,
-                    fallbackStreamOpener = { rawUri ->
-                        TokenImageBackupUtil.openUriFallback(context, rawUri)
-                    }
+                    zipOutputStream = out
                 )
             }
         }

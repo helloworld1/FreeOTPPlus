@@ -2,7 +2,6 @@ package org.fedorahosted.freeotp.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -26,11 +25,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -202,46 +196,10 @@ class ScanTokenFragment : Fragment() {
             }
             try {
                 val token = OtpTokenFactory.createFromUri(tokenString.toUri())
-                // Persist immediately so navigating back during any image preview never loses the token
                 otpTokenDatabase.otpTokenDao().insert(
                     tokenCryptoManager.encryptTokenForStorage(token)
                 )
-
-                val activeBinding = _binding
-                if (token.imagePath != null && activeBinding != null && isAdded) {
-                    Glide.with(this@ScanTokenFragment)
-                        .load(token.imagePath)
-                        .placeholder(R.drawable.scan)
-                        .listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                Log.w(TAG, "Failed to load scanned token image, finishing scan", e)
-                                activeBinding.image.post { popScanDestination() }
-                                return false
-                            }
-
-                            override fun onResourceReady(
-                                resource: Drawable,
-                                model: Any,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                val b = _binding ?: return false
-                                b.progress.visibility = View.INVISIBLE
-                                b.image.alpha = 0.9f
-                                b.image.postDelayed({ popScanDestination() }, 1500)
-                                return false
-                            }
-                        })
-                        .into(activeBinding.image)
-                } else {
-                    popScanDestination()
-                }
+                popScanDestination()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IllegalStateException) {

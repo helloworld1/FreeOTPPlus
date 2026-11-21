@@ -400,6 +400,64 @@ class TokenImageBackupUtilTest {
         }.toByteArray()
     }
 
+    @Test
+    fun safeLocalImageConfinement_blocksRemoteContentAndOutOfFilesDirPaths() {
+        val safePng = File(newFilesDir, "icon_safe.png").apply { writeBytes(SAMPLE_PNG_BYTES) }
+        val outsideDbDir = File(newFilesDir.parentFile, "databases").apply { mkdirs() }
+        val fakeDbFile = File(outsideDbDir, "otp-token-db").apply { writeBytes("SECRET_DB".toByteArray()) }
+        val fakeOutsidePng = File(outsideDbDir, "outside.png").apply { writeBytes(SAMPLE_PNG_BYTES) }
+        val hiddenDir = File(newFilesDir, ".image_manifest").apply { mkdirs() }
+        val hiddenFile = File(hiddenDir, "hidden.png").apply { writeBytes(SAMPLE_PNG_BYTES) }
+        val nonImageInFilesDir = File(newFilesDir, "notes.txt").apply { writeBytes("text".toByteArray()) }
+
+        assertThat(
+            TokenImageBackupUtil.resolveSafeLocalImageFile(
+                TokenImageBackupUtil.toFileUriString(safePng),
+                newFilesDir
+            )?.canonicalFile
+        ).isEqualTo(safePng.canonicalFile)
+
+        // Rejects remote HTTP(S), content://, DB files, outside directories, hidden directories, traversal, and non-image extensions
+        val rejectedPaths = listOf(
+            "https://evil.example/pixel.png",
+            "http://192.168.1.1/probe.svg",
+            "content://com.evil.provider/icon.png",
+            TokenImageBackupUtil.toFileUriString(fakeDbFile),
+            TokenImageBackupUtil.toFileUriString(fakeOutsidePng),
+            TokenImageBackupUtil.toFileUriString(hiddenFile),
+            TokenImageBackupUtil.toFileUriString(nonImageInFilesDir),
+            "file://${newFilesDir.absolutePath}/../databases/outside.png"
+        )
+        for (badPath in rejectedPaths) {
+            assertThat(TokenImageBackupUtil.resolveSafeLocalImageFile(badPath, newFilesDir)).isNull()
+        }
+
+        // sanitizeImportedImagePath strips remote/content/non-image paths and re-roots valid image filenames into filesDir
+        assertThat(TokenImageBackupUtil.sanitizeImportedImagePath("https://evil.example/a.png", newFilesDir)).isNull()
+        assertThat(TokenImageBackupUtil.sanitizeImportedImagePath("content://media/external/images/1", newFilesDir)).isNull()
+        assertThat(TokenImageBackupUtil.sanitizeImportedImagePath(TokenImageBackupUtil.toFileUriString(fakeDbFile), newFilesDir)).isNull()
+        assertThat(
+            TokenImageBackupUtil.sanitizeImportedImagePath(
+                "file:///data/user/0/org.liberty.android.freeotpplus/files/icon_safe.png",
+                newFilesDir
+            )
+        ).isEqualTo(TokenImageBackupUtil.toFileUriString(safePng))
+
+        // exportTokenImagesToZip never packages files outside filesDir even if referenced in token.imagePath
+        val zipOut = ByteArrayOutputStream()
+        TokenImageBackupUtil.exportTokenImagesToZip(
+            tokens = listOf(
+                makeToken(1L, "EvilDb", "db", "JBSWY3DPEHPK3PXP", imagePath = TokenImageBackupUtil.toFileUriString(fakeDbFile)),
+                makeToken(2L, "EvilOut", "out", "JBSWY3DPEHPK3PXP", imagePath = TokenImageBackupUtil.toFileUriString(fakeOutsidePng))
+            ),
+            filesDir = newFilesDir,
+            gson = gson,
+            zipOutputStream = zipOut
+        )
+        assertThat(String(zipOut.toByteArray(), StandardCharsets.ISO_8859_1)).doesNotContain("SECRET_DB")
+        assertThat(String(zipOut.toByteArray(), StandardCharsets.ISO_8859_1)).doesNotContain("outside.png")
+    }
+
     private fun makeToken(
         id: Long,
         issuer: String?,

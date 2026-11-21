@@ -35,6 +35,9 @@ object TokenImageBackupUtil {
     private const val MAX_SINGLE_ENTRY_BYTES = 10 * 1024 * 1024 // 10 MB (raster images)
     const val MAX_SVG_ENTRY_BYTES = 2 * 1024 * 1024 // 2 MB (shared with SvgUtil.MAX_SVG_BYTES)
     private const val MAX_TOTAL_EXTRACTED_BYTES = 200L * 1024L * 1024L // 200 MB
+    private val ALLOWED_IMAGE_EXTENSIONS = setOf(
+        "png", "jpg", "jpeg", "webp", "gif", "bmp", "ico", "heic", "heif", "avif", "svg", "svgz"
+    )
 
     /**
      * Exports all custom local token images referenced by [tokens] into [zipOutputStream],
@@ -65,16 +68,21 @@ object TokenImageBackupUtil {
                     continue
                 }
 
-                val localFile = resolveExistingLocalImageFile(rawPath, filesDir)
-                if (localFile != null && localFile.isFile) {
-                    val zipFileName = allocateUniqueSafeFileName(localFile.name, writtenEntryNames)
-                    zos.putNextEntry(ZipEntry(zipFileName))
-                    FileInputStream(localFile).use { input ->
-                        input.copyTo(zos)
+                val localFile = resolveSafeLocalImageFile(rawPath, filesDir)
+                if (localFile != null) {
+                    val bytes = runCatching {
+                        FileInputStream(localFile).use { input ->
+                            readBoundedBytes(input, MAX_SINGLE_ENTRY_BYTES)
+                        }
+                    }.getOrNull()
+                    if (bytes != null && bytes.isNotEmpty() && isSupportedImageBytes(bytes)) {
+                        val zipFileName = allocateUniqueSafeFileName(localFile.name, writtenEntryNames)
+                        zos.putNextEntry(ZipEntry(zipFileName))
+                        zos.write(bytes)
+                        zos.closeEntry()
+                        sourcePathToZipName[rawPath] = zipFileName
+                        manifestEntries.add(buildManifestEntry(token, zipFileName, rawPath))
                     }
-                    zos.closeEntry()
-                    sourcePathToZipName[rawPath] = zipFileName
-                    manifestEntries.add(buildManifestEntry(token, zipFileName, rawPath))
                 } else if (fallbackStreamOpener != null) {
                     val bytes = runCatching {
                         fallbackStreamOpener(rawPath)?.use { stream ->
@@ -304,10 +312,10 @@ object TokenImageBackupUtil {
                     }
                 }
 
-                // 3. If currentPath already resolves to an existing readable file elsewhere on disk, keep it
-                val existingOtherFile = resolveExistingLocalImageFile(currentPath, filesDir)
-                if (existingOtherFile != null && existingOtherFile.isFile) {
-                    return@map token
+                // 3. If currentPath already resolves to a safe existing file inside filesDir, normalize it
+                val existingSafeFile = resolveSafeLocalImageFile(currentPath, filesDir)
+                if (existingSafeFile != null) {
+                    return@map token.copy(imagePath = toFileUriString(existingSafeFile))
                 }
             }
 
@@ -536,24 +544,83 @@ object TokenImageBackupUtil {
         )
     }
 
-    private fun resolveExistingLocalImageFile(imagePath: String, filesDir: File): File? {
-        if (imagePath.startsWith("file:", ignoreCase = true)) {
-            val parsedFile = runCatching { File(URI(imagePath)) }.getOrNull()
-                ?: Uri.parse(imagePath)?.path?.let(::File)
-            if (parsedFile != null && parsedFile.isFile) {
-                return parsedFile
-            }
-        } else if (imagePath.startsWith("/")) {
-            val direct = File(imagePath)
-            if (direct.isFile) return direct
+    /**
+     * Resolves [imagePath] strictly to an existing regular image file located directly inside
+     * [filesDir] (rejecting remote URLs, content/resource schemes, hidden files/directories,
+     * symlinks escaping [filesDir], and path traversal).
+     */
+    fun resolveSafeLocalImageFile(imagePath: String?, filesDir: File): File? {
+        val raw = imagePath?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        if (!hasAllowedLocalPathScheme(raw)) {
+            return null
         }
 
-        val name = extractSafeFileName(imagePath)
-        if (name != null) {
-            val inFilesDir = File(filesDir, name)
-            if (inFilesDir.isFile) return inFilesDir
+        if (raw.startsWith("file:", ignoreCase = true)) {
+            val parsedFile = runCatching { File(URI(raw)) }.getOrNull()
+                ?: runCatching { Uri.parse(raw)?.path?.let(::File) }.getOrNull()
+            if (parsedFile != null && isDirectSafeImageInFilesDir(parsedFile, filesDir)) {
+                return parsedFile
+            }
+        } else if (raw.startsWith("/")) {
+            val direct = File(raw)
+            if (isDirectSafeImageInFilesDir(direct, filesDir)) {
+                return direct
+            }
         }
-        return null
+
+        val name = extractSafeFileName(raw) ?: return null
+        val inFilesDir = File(filesDir, name)
+        return inFilesDir.takeIf { isDirectSafeImageInFilesDir(it, filesDir) }
+    }
+
+    /**
+     * Sanitizes an `imagePath` from an imported backup or legacy store so only safe image
+     * filenames mapped directly inside [filesDir] are retained in SQLite, while remote URLs,
+     * `content://` URIs, and non-image internal paths (`databases/`, `shared_prefs/`) become `null`.
+     */
+    fun sanitizeImportedImagePath(imagePath: String?, filesDir: File): String? {
+        val raw = imagePath?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        if (!hasAllowedLocalPathScheme(raw)) {
+            return null
+        }
+        val safeName = extractSafeFileName(raw) ?: return null
+        if (!hasAllowedImageExtension(safeName) || safeName.equals(MANIFEST_ENTRY_NAME, ignoreCase = true)) {
+            return null
+        }
+        return toFileUriString(File(filesDir, safeName))
+    }
+
+    private fun hasAllowedLocalPathScheme(pathOrUri: String): Boolean {
+        if (isRemoteHttpUrl(pathOrUri)) return false
+        val colonIndex = pathOrUri.indexOf(':')
+        if (colonIndex < 0) return true
+        val slashIndex = pathOrUri.indexOf('/')
+        if (slashIndex in 0 until colonIndex) return true
+        val scheme = pathOrUri.substring(0, colonIndex)
+        return scheme.equals("file", ignoreCase = true)
+    }
+
+    private fun isDirectSafeImageInFilesDir(candidate: File, filesDir: File): Boolean {
+        val name = candidate.name
+        if (!isSafeSimpleFileName(name) ||
+            name.equals(MANIFEST_ENTRY_NAME, ignoreCase = true) ||
+            !hasAllowedImageExtension(name)
+        ) {
+            return false
+        }
+        if (!candidate.isFile) {
+            return false
+        }
+        val canonicalFilesDir = runCatching { filesDir.canonicalFile }.getOrNull() ?: return false
+        val canonicalCandidate = runCatching { candidate.canonicalFile }.getOrNull() ?: return false
+        return canonicalCandidate.parentFile == canonicalFilesDir
+    }
+
+    internal fun hasAllowedImageExtension(fileName: String): Boolean {
+        val dot = fileName.lastIndexOf('.')
+        if (dot <= 0 || dot == fileName.length - 1) return false
+        val ext = fileName.substring(dot + 1).lowercase(Locale.ROOT)
+        return ext in ALLOWED_IMAGE_EXTENSIONS
     }
 
     internal fun extractSafeFileName(pathOrUri: String): String? {

@@ -25,6 +25,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.databinding.AddBinding
 import org.fedorahosted.freeotp.util.ImageUtil
 import javax.inject.Inject
@@ -50,12 +51,18 @@ class AddTokenFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val savedUri = imageUtil.saveImageUriToFile(sourceUri)
-                selectedImageUri = savedUri
+                val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
+                    savedUri.toString(),
+                    requireContext().filesDir
+                )
+                selectedImageUri = safeFile?.let { Uri.fromFile(it) }
                 _binding?.let { b ->
-                    Glide.with(this@AddTokenFragment)
-                        .load(savedUri)
-                        .placeholder(R.drawable.logo)
-                        .into(b.image)
+                    if (safeFile != null) {
+                        Glide.with(this@AddTokenFragment)
+                            .load(safeFile)
+                            .placeholder(R.drawable.logo)
+                            .into(b.image)
+                    }
                 }
             } catch (_: Exception) {
                 context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
@@ -99,10 +106,15 @@ class AddTokenFragment : Fragment() {
 
         if (savedInstanceState != null) {
             @Suppress("DEPRECATION")
-            selectedImageUri = savedInstanceState.getParcelable(STATE_IMAGE_URI)
-            if (selectedImageUri != null) {
+            val restoredUri: Uri? = savedInstanceState.getParcelable(STATE_IMAGE_URI)
+            val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
+                restoredUri?.toString(),
+                requireContext().filesDir
+            )
+            selectedImageUri = safeFile?.let { Uri.fromFile(it) }
+            if (safeFile != null) {
                 Glide.with(this)
-                    .load(selectedImageUri)
+                    .load(safeFile)
                     .placeholder(R.drawable.logo)
                     .into(binding.image)
             }

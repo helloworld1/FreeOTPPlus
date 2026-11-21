@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.util
 
-import android.net.Uri
 import android.widget.ImageView
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
@@ -8,20 +7,22 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.liberty.android.freeotp.token_images.TokenImage
 import org.liberty.android.freeotp.token_images.matchToken
-import java.io.File
 
 fun ImageView.setTokenImage(token: OtpToken) {
-    if (token.imagePath != null) {
-        var request = Glide.with(this)
-            .load(token.imagePath)
+    val safeImageFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
+        token.imagePath,
+        context.filesDir
+    )
+    if (safeImageFile != null) {
+        Glide.with(this)
+            .load(safeImageFile)
             .placeholder(R.drawable.logo)
             .error(R.drawable.logo)
-        localFileSignature(token.imagePath)?.let { signature ->
-            request = request.signature(signature)
-        }
-        request.into(this)
+            .signature(ObjectKey("${safeImageFile.length()}_${safeImageFile.lastModified()}"))
+            .into(this)
         return
     }
 
@@ -39,16 +40,6 @@ fun ImageView.setTokenImage(token: OtpToken) {
     } else {
         setImageResource(R.drawable.logo)
     }
-}
-
-internal fun localFileSignature(imagePath: String?): ObjectKey? {
-    if (imagePath.isNullOrBlank()) return null
-    val parsed = runCatching { Uri.parse(imagePath) }.getOrNull() ?: return null
-    if (!parsed.scheme.equals("file", ignoreCase = true)) return null
-    val filePath = parsed.path ?: return null
-    val file = File(filePath)
-    if (!file.isFile) return null
-    return ObjectKey("${file.length()}_${file.lastModified()}")
 }
 
 private fun matchIssuerWithTokenThumbnail(token: OtpToken): Int? {

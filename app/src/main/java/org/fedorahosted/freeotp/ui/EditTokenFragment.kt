@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.bumptech.glide.signature.ObjectKey
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -29,6 +30,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.AuthenticationUtil
@@ -126,7 +128,10 @@ class EditTokenFragment : Fragment() {
                 issuer = token.issuer ?: "",
                 label = token.label,
                 categories = CategoryUtil.normalizeCategories(token.categories),
-                imageUri = token.imagePath?.toUri()
+                imageUri = TokenImageBackupUtil.resolveSafeLocalImageFile(
+                    token.imagePath,
+                    requireContext().filesDir
+                )?.toUri()
             )
 
             categoryChipHelper = CategoryChipHelper(
@@ -269,15 +274,21 @@ class EditTokenFragment : Fragment() {
 
     private fun showImage(imageUri: Uri?) {
         val b = _binding ?: return
-        displayedImageUri = imageUri
-        var request = Glide.with(this)
-            .load(imageUri)
-            .placeholder(R.drawable.logo)
-            .error(R.drawable.logo)
-        org.fedorahosted.freeotp.util.localFileSignature(imageUri?.toString())?.let { signature ->
-            request = request.signature(signature)
+        val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
+            imageUri?.toString(),
+            requireContext().filesDir
+        )
+        displayedImageUri = safeFile?.toUri()
+        if (safeFile != null) {
+            Glide.with(this)
+                .load(safeFile)
+                .placeholder(R.drawable.logo)
+                .error(R.drawable.logo)
+                .signature(ObjectKey("${safeFile.length()}_${safeFile.lastModified()}"))
+                .into(b.image)
+        } else {
+            b.image.setImageResource(R.drawable.logo)
         }
-        request.into(b.image)
         b.removeUserTokenImage.isEnabled = displayedImageUri != null
         updateButtonStates()
     }

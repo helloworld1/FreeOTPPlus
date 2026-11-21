@@ -1,7 +1,10 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +23,8 @@ import com.bumptech.glide.Glide
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.junit.Assert.assertThrows
@@ -104,13 +109,13 @@ class SvgIconTest {
     @Test
     fun testGlideDecodesSvgDirectlyAndRendersTokenCard() {
         val context = getInstrumentation().targetContext
-        val svgFile = File(context.cacheDir, "direct-token-icon.svg")
+        val svgFile = File(context.filesDir, "direct-token-icon.svg")
         svgFile.writeText(TELEKOM_SVG, StandardCharsets.UTF_8)
 
         try {
             val decoded = Glide.with(context)
                 .asBitmap()
-                .load(svgFile.toUri().toString())
+                .load(svgFile)
                 .submit(256, 256)
                 .get()
             assertThat(decoded).isNotNull()
@@ -121,6 +126,7 @@ class SvgIconTest {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 scenario.onActivity { activity ->
                     runBlocking {
+                        activity.otpTokenDatabase.otpTokenDao().deleteAll()
                         activity.otpTokenDatabase.otpTokenDao().insert(
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 0L,
@@ -142,6 +148,42 @@ class SvgIconTest {
         } finally {
             svgFile.delete()
         }
+    }
+
+    @Test
+    fun testManifestOmitsNetworkAndStoragePermissionsAndStripsExternalImageParams() {
+        val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
+        val pkgInfo = context.packageManager.getPackageInfo(
+            context.packageName,
+            PackageManager.GET_PERMISSIONS
+        )
+        val requested = pkgInfo.requestedPermissions.orEmpty().toSet()
+        assertThat(requested).contains(Manifest.permission.CAMERA)
+        assertThat(requested).doesNotContain(Manifest.permission.INTERNET)
+        assertThat(requested).doesNotContain(Manifest.permission.ACCESS_NETWORK_STATE)
+        assertThat(requested).doesNotContain(Manifest.permission.READ_EXTERNAL_STORAGE)
+        assertThat(requested).doesNotContain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        // External QR / deep-link URI parsing ignores untrusted image= parameters by default
+        val fromExternalQr = OtpTokenFactory.createFromUri(
+            Uri.parse("otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&image=https%3A%2F%2Fevil.example%2Ftrack.png")
+        )
+        assertThat(fromExternalQr.imagePath).isNull()
+
+        val fromExternalLocal = OtpTokenFactory.createFromUri(
+            Uri.parse("otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&image=file%3A%2F%2F%2Fdata%2Fdata%2Fpkg%2Fdatabases%2Fotp-token-db")
+        )
+        assertThat(fromExternalLocal.imagePath).isNull()
+
+        // Internal backup restore parsing allows image= only for filename relinking inside filesDir
+        val fromBackup = OtpTokenFactory.createFromUri(
+            Uri.parse("otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&image=file%3A%2F%2F%2Fdata%2Fuser%2F0%2Fpkg%2Ffiles%2Fimage_1.png"),
+            allowImageParam = true
+        )
+        assertThat(
+            TokenImageBackupUtil.sanitizeImportedImagePath(fromBackup.imagePath, context.filesDir)
+        ).isEqualTo(File(context.filesDir, "image_1.png").toUri().toString())
     }
 
     @Test

@@ -85,22 +85,39 @@ object OtpTokenFactory {
         )
     }
 
-    fun createFromUri(uri: Uri): OtpToken {
+    @JvmOverloads
+    fun createFromUri(uri: Uri, allowImageParam: Boolean = false): OtpToken {
         if (isEncryptedUri(uri)) {
             throw IllegalArgumentException("Encrypted token URI requires decryption key")
         }
         val secret = uri.getQueryParameter("secret") ?: throw IllegalArgumentException("Secret is null")
-        return parseTokenUri(uri, secret, includeCategoryFromQuery = true)
+        return parseTokenUri(
+            uri = uri,
+            plaintextSecret = secret,
+            includeCategoryFromQuery = true,
+            includeImageFromQuery = allowImageParam
+        )
     }
 
-    fun createFromEncryptedUri(uri: Uri, decryptedSecret: String): OtpToken {
-        return parseTokenUri(uri, decryptedSecret, includeCategoryFromQuery = true)
+    @JvmOverloads
+    fun createFromEncryptedUri(
+        uri: Uri,
+        decryptedSecret: String,
+        allowImageParam: Boolean = false
+    ): OtpToken {
+        return parseTokenUri(
+            uri = uri,
+            plaintextSecret = decryptedSecret,
+            includeCategoryFromQuery = true,
+            includeImageFromQuery = allowImageParam
+        )
     }
 
     private fun parseTokenUri(
         uri: Uri,
         plaintextSecret: String,
-        includeCategoryFromQuery: Boolean
+        includeCategoryFromQuery: Boolean,
+        includeImageFromQuery: Boolean
     ): OtpToken {
         if (uri.scheme != "otpauth") {
             throw IllegalArgumentException("URI does not starts with otpauth")
@@ -134,6 +151,12 @@ object OtpTokenFactory {
             emptyList()
         }
 
+        val imagePath = if (includeImageFromQuery) {
+            uri.getQueryParameter("image")?.takeIf { it.isNotBlank() }
+        } else {
+            null
+        }
+
         return create(
             type = type,
             issuer = issuer,
@@ -143,7 +166,7 @@ object OtpTokenFactory {
             digits = digits,
             period = period,
             initialCounter = initialCounter,
-            imagePath = uri.getQueryParameter("image"),
+            imagePath = imagePath,
             categories = categories,
             isSteamIssuerOverride = isSteam
         )
