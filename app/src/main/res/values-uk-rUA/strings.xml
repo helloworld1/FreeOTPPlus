@@ -132,4 +132,9 @@
     <string name="export_decrypted">Експортувати розшифрованими</string>
     <string name="import_encrypted_backup_title">Імпорт зашифрованих ключів</string>
     <string name="import_encrypted_backup_message">Ці ключі зашифровано. Введіть ключ шифрування, використаний під час експорту цієї резервної копії.</string>
+    <string name="select_token_image">Вибрати зображення токена</string>
+    <string name="change_token_image">Змінити зображення токена</string>
+    <string name="choose_builtin_icon">Вибрати вбудовану піктограму</string>
+    <string name="choose_image_from_device">Вибрати зображення з пристрою</string>
+    <string name="search_icons">Пошук піктограм</string>
 </resources>

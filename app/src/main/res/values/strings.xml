@@ -145,4 +145,9 @@
     <string name="export_decrypted">Export decrypted</string>
     <string name="import_encrypted_backup_title">Import encrypted tokens</string>
     <string name="import_encrypted_backup_message">These tokens are encrypted. Enter the encryption key used when exporting this backup.</string>
+    <string name="select_token_image">Select token image</string>
+    <string name="change_token_image">Change token image</string>
+    <string name="choose_builtin_icon">Choose built-in icon</string>
+    <string name="choose_image_from_device">Choose image from device</string>
+    <string name="search_icons">Search icons</string>
 </resources>

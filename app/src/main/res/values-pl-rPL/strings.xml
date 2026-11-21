@@ -132,4 +132,9 @@
     <string name="export_decrypted">Eksportuj odszyfrowane</string>
     <string name="import_encrypted_backup_title">Importuj zaszyfrowane tokeny</string>
     <string name="import_encrypted_backup_message">Te tokeny są zaszyfrowane. Wprowadź klucz szyfrowania użyty podczas eksportowania tej kopii zapasowej.</string>
+    <string name="select_token_image">Wybierz obraz tokenu</string>
+    <string name="change_token_image">Zmień obraz tokenu</string>
+    <string name="choose_builtin_icon">Wybierz wbudowaną ikonę</string>
+    <string name="choose_image_from_device">Wybierz obraz z urządzenia</string>
+    <string name="search_icons">Szukaj ikon</string>
 </resources>

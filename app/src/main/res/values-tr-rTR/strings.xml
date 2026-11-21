@@ -132,4 +132,9 @@
     <string name="export_decrypted">Şifresi çözülmüş dışa aktar</string>
     <string name="import_encrypted_backup_title">Şifrelenmiş token\'ları içe aktar</string>
     <string name="import_encrypted_backup_message">Bu token\'lar şifrelenmiştir. Bu yedek dışa aktarılırken kullanılan şifreleme anahtarını girin.</string>
+    <string name="select_token_image">Belirteç görseli seç</string>
+    <string name="change_token_image">Belirteç görselini değiştir</string>
+    <string name="choose_builtin_icon">Yerleşik simge seç</string>
+    <string name="choose_image_from_device">Cihazdan görsel seç</string>
+    <string name="search_icons">Simge ara</string>
 </resources>

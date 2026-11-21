@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,7 +16,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
@@ -28,6 +28,7 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.databinding.AddBinding
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.setTokenImagePreview
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -43,6 +44,7 @@ class AddTokenFragment : Fragment() {
     private lateinit var categoryChipHelper: CategoryChipHelper
     private var selectedImageUri: Uri? = null
     private var isFormattingSecret = false
+    private var imagePickerDialog: AlertDialog? = null
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -51,23 +53,29 @@ class AddTokenFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val savedUri = imageUtil.saveImageUriToFile(sourceUri)
-                val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
-                    savedUri.toString(),
-                    requireContext().filesDir
-                )
-                selectedImageUri = safeFile?.let { Uri.fromFile(it) }
-                _binding?.let { b ->
-                    if (safeFile != null) {
-                        Glide.with(this@AddTokenFragment)
-                            .load(safeFile)
-                            .placeholder(R.drawable.logo)
-                            .into(b.image)
-                    }
-                }
+                applySavedImageUri(savedUri)
             } catch (_: Exception) {
                 context?.let { Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show() }
             }
         }
+    }
+
+    private fun applySavedImageUri(savedUri: Uri?) {
+        val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
+            savedUri?.toString(),
+            requireContext().filesDir
+        )
+        selectedImageUri = safeFile?.let { Uri.fromFile(it) }
+        updateTokenImagePreview()
+    }
+
+    private fun updateTokenImagePreview() {
+        val b = _binding ?: return
+        b.image.setTokenImagePreview(
+            imagePath = selectedImageUri?.toString(),
+            issuer = b.issuer.text?.toString(),
+            label = b.label.text?.toString()
+        )
     }
 
     override fun onCreateView(
@@ -107,17 +115,9 @@ class AddTokenFragment : Fragment() {
         if (savedInstanceState != null) {
             @Suppress("DEPRECATION")
             val restoredUri: Uri? = savedInstanceState.getParcelable(STATE_IMAGE_URI)
-            val safeFile = TokenImageBackupUtil.resolveSafeLocalImageFile(
-                restoredUri?.toString(),
-                requireContext().filesDir
-            )
-            selectedImageUri = safeFile?.let { Uri.fromFile(it) }
-            if (safeFile != null) {
-                Glide.with(this)
-                    .load(safeFile)
-                    .placeholder(R.drawable.logo)
-                    .into(binding.image)
-            }
+            applySavedImageUri(restoredUri)
+        } else {
+            updateTokenImagePreview()
         }
 
         categoryChipHelper = CategoryChipHelper(
@@ -134,8 +134,18 @@ class AddTokenFragment : Fragment() {
         binding.counterRow.visibility =
             if (binding.typeToggleGroup.checkedButtonId == R.id.hotp) View.VISIBLE else View.GONE
 
-        binding.issuer.doAfterTextChanged { validateForm() }
-        binding.label.doAfterTextChanged { validateForm() }
+        binding.issuer.doAfterTextChanged {
+            if (selectedImageUri == null) {
+                updateTokenImagePreview()
+            }
+            validateForm()
+        }
+        binding.label.doAfterTextChanged {
+            if (selectedImageUri == null) {
+                updateTokenImagePreview()
+            }
+            validateForm()
+        }
         binding.interval.doAfterTextChanged { validateForm() }
         binding.counter.doAfterTextChanged { validateForm() }
 
@@ -160,7 +170,29 @@ class AddTokenFragment : Fragment() {
         }
 
         binding.image.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+            imagePickerDialog?.dismiss()
+            TokenImagePickerHelper.showSourceChooserDialog(
+                context = requireContext(),
+                titleRes = R.string.select_token_image,
+                onBuiltInSelected = { tokenImage ->
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        try {
+                            val savedUri = imageUtil.saveDrawableResToFile(tokenImage.resource)
+                            applySavedImageUri(savedUri)
+                        } catch (_: Exception) {
+                            context?.let {
+                                Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                },
+                onDeviceImageRequested = {
+                    pickImageLauncher.launch("image/*")
+                },
+                onDialogChanged = { dialog ->
+                    imagePickerDialog = dialog
+                }
+            )
         }
 
         binding.cancel.setOnClickListener {
@@ -270,6 +302,8 @@ class AddTokenFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        imagePickerDialog?.dismiss()
+        imagePickerDialog = null
         if (::categoryChipHelper.isInitialized) {
             categoryChipHelper.dismissDialog()
         }

@@ -132,4 +132,9 @@
     <string name="export_decrypted">ייצוא מפוענח</string>
     <string name="import_encrypted_backup_title">ייבוא אסימונים מוצפנים</string>
     <string name="import_encrypted_backup_message">אסימונים אלה מוצפנים. נא להזין את מפתח ההצפנה ששימש בעת ייצוא גיבוי זה.</string>
+    <string name="select_token_image">בחר תמונת אסימון</string>
+    <string name="change_token_image">שנה תמונת אסימון</string>
+    <string name="choose_builtin_icon">בחר סמל מובנה</string>
+    <string name="choose_image_from_device">בחר תמונה מהמכשיר</string>
+    <string name="search_icons">חפש סמלים</string>
 </resources>

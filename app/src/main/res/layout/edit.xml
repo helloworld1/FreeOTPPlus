@@ -39,26 +39,54 @@
             android:paddingEnd="20dp"
             android:paddingBottom="24dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:layout_gravity="center_horizontal"
-                app:cardBackgroundColor="@color/surface_container_high"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/outline_variant"
-                app:strokeWidth="1dp">
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_gravity="center_horizontal">
 
-                <ImageButton
-                    android:id="@+id/image"
-                    style="?android:borderlessButtonStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@string/edit"
-                    android:padding="14dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/logo" />
-            </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_gravity="center"
+                    app:cardBackgroundColor="@color/surface_container_high"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/outline_variant"
+                    app:strokeWidth="1dp">
+
+                    <ImageButton
+                        android:id="@+id/image"
+                        style="?android:borderlessButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/change_token_image"
+                        android:padding="8dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/logo" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|end"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:importantForAccessibility="no"
+                    app:cardBackgroundColor="@color/primary_container"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/surface"
+                    app:strokeWidth="2dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        android:padding="5dp"
+                        android:src="@drawable/edit_16px"
+                        app:tint="@color/on_primary_container" />
+                </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/remove_user_token_image"

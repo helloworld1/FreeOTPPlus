@@ -132,4 +132,9 @@
     <string name="export_decrypted">Экспортировать расшифрованными</string>
     <string name="import_encrypted_backup_title">Импорт зашифрованных токенов</string>
     <string name="import_encrypted_backup_message">Эти токены зашифрованы. Введите ключ шифрования, использованный при экспорте этой резервной копии.</string>
+    <string name="select_token_image">Выбрать значок токена</string>
+    <string name="change_token_image">Изменить значок токена</string>
+    <string name="choose_builtin_icon">Выбрать встроенный значок</string>
+    <string name="choose_image_from_device">Выбрать изображение с устройства</string>
+    <string name="search_icons">Поиск значков</string>
 </resources>

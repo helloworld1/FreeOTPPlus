@@ -132,4 +132,9 @@
     <string name="export_decrypted">Exportálás visszafejtve</string>
     <string name="import_encrypted_backup_title">Titkosított tokenek importálása</string>
     <string name="import_encrypted_backup_message">Ezek a tokenek titkosítva vannak. Adja meg a biztonsági mentés exportálásakor használt titkosítási kulcsot.</string>
+    <string name="select_token_image">Token képének kiválasztása</string>
+    <string name="change_token_image">Token képének módosítása</string>
+    <string name="choose_builtin_icon">Beépített ikon választása</string>
+    <string name="choose_image_from_device">Kép választása az eszközről</string>
+    <string name="search_icons">Ikonok keresése</string>
 </resources>

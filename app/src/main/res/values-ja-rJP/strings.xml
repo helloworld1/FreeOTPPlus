@@ -132,4 +132,9 @@
     <string name="export_decrypted">復号してエクスポート</string>
     <string name="import_encrypted_backup_title">暗号化されたトークンのインポート</string>
     <string name="import_encrypted_backup_message">これらのトークンは暗号化されています。このバックアップのエクスポート時に使用した暗号化キーを入力してください。</string>
+    <string name="select_token_image">トークン画像を選択</string>
+    <string name="change_token_image">トークン画像を変更</string>
+    <string name="choose_builtin_icon">内蔵アイコンを選択</string>
+    <string name="choose_image_from_device">端末から画像を選択</string>
+    <string name="search_icons">アイコンを検索</string>
 </resources>

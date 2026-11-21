@@ -132,4 +132,9 @@
     <string name="export_decrypted">Ontsleuteld exporteren</string>
     <string name="import_encrypted_backup_title">Versleutelde tokens importeren</string>
     <string name="import_encrypted_backup_message">Deze tokens zijn versleuteld. Voer de versleutelingssleutel in die is gebruikt bij het exporteren van deze back-up.</string>
+    <string name="select_token_image">Tokenafbeelding selecteren</string>
+    <string name="change_token_image">Tokenafbeelding wijzigen</string>
+    <string name="choose_builtin_icon">Ingebouwd pictogram kiezen</string>
+    <string name="choose_image_from_device">Afbeelding van apparaat kiezen</string>
+    <string name="search_icons">Pictogrammen zoeken</string>
 </resources>

@@ -132,4 +132,9 @@
     <string name="export_decrypted">Entschlüsselt exportieren</string>
     <string name="import_encrypted_backup_title">Verschlüsselte Token importieren</string>
     <string name="import_encrypted_backup_message">Diese Token sind verschlüsselt. Geben Sie den Verschlüsselungsschlüssel ein, der beim Export dieser Sicherung verwendet wurde.</string>
+    <string name="select_token_image">Token-Bild auswählen</string>
+    <string name="change_token_image">Token-Bild ändern</string>
+    <string name="choose_builtin_icon">Integriertes Symbol wählen</string>
+    <string name="choose_image_from_device">Bild vom Gerät wählen</string>
+    <string name="search_icons">Symbole suchen</string>
 </resources>

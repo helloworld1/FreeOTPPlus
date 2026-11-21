@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -19,8 +20,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.signature.ObjectKey
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -37,6 +36,7 @@ import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
+import org.fedorahosted.freeotp.util.setTokenImagePreview
 import java.security.GeneralSecurityException
 import java.util.Locale
 import javax.inject.Inject
@@ -64,6 +64,7 @@ class EditTokenFragment : Fragment() {
     private var initialState: InitialTokenState? = null
     private var displayedImageUri: Uri? = null
     private var tokenId: Long = 0L
+    private var imagePickerDialog: AlertDialog? = null
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -149,11 +150,43 @@ class EditTokenFragment : Fragment() {
                 savedInstanceState = savedInstanceState
             )
 
-            b.issuer.doAfterTextChanged { updateButtonStates() }
-            b.label.doAfterTextChanged { updateButtonStates() }
+            b.issuer.doAfterTextChanged {
+                if (displayedImageUri == null) {
+                    updateTokenImagePreview()
+                }
+                updateButtonStates()
+            }
+            b.label.doAfterTextChanged {
+                if (displayedImageUri == null) {
+                    updateTokenImagePreview()
+                }
+                updateButtonStates()
+            }
 
             b.image.setOnClickListener {
-                pickImageLauncher.launch("image/*")
+                imagePickerDialog?.dismiss()
+                TokenImagePickerHelper.showSourceChooserDialog(
+                    context = requireContext(),
+                    titleRes = R.string.change_token_image,
+                    onBuiltInSelected = { tokenImage ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            try {
+                                val path = imageUtil.saveDrawableResToFile(tokenImage.resource)
+                                showImage(path)
+                            } catch (_: Exception) {
+                                context?.let {
+                                    Toast.makeText(it, R.string.fail_to_add_image, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    },
+                    onDeviceImageRequested = {
+                        pickImageLauncher.launch("image/*")
+                    },
+                    onDialogChanged = { dialog ->
+                        imagePickerDialog = dialog
+                    }
+                )
             }
             b.removeUserTokenImage.setOnClickListener {
                 showImage(null)
@@ -279,18 +312,18 @@ class EditTokenFragment : Fragment() {
             requireContext().filesDir
         )
         displayedImageUri = safeFile?.toUri()
-        if (safeFile != null) {
-            Glide.with(this)
-                .load(safeFile)
-                .placeholder(R.drawable.logo)
-                .error(R.drawable.logo)
-                .signature(ObjectKey("${safeFile.length()}_${safeFile.lastModified()}"))
-                .into(b.image)
-        } else {
-            b.image.setImageResource(R.drawable.logo)
-        }
+        updateTokenImagePreview()
         b.removeUserTokenImage.isEnabled = displayedImageUri != null
         updateButtonStates()
+    }
+
+    private fun updateTokenImagePreview() {
+        val b = _binding ?: return
+        b.image.setTokenImagePreview(
+            imagePath = displayedImageUri?.toString(),
+            issuer = b.issuer.text?.toString(),
+            label = b.label.text?.toString()
+        )
     }
 
     private fun categoriesDiffer(first: List<String>, second: List<String>): Boolean {
@@ -349,6 +382,8 @@ class EditTokenFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        imagePickerDialog?.dismiss()
+        imagePickerDialog = null
         if (::categoryChipHelper.isInitialized) {
             categoryChipHelper.dismissDialog()
         }

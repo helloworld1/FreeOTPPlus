@@ -132,4 +132,9 @@
     <string name="export_decrypted">Voer gedekripteer uit</string>
     <string name="import_encrypted_backup_title">Voer geënkripteerde kentekens in</string>
     <string name="import_encrypted_backup_message">Hierdie kentekens is geënkripteer. Voer die enkripsiesleutel in wat gebruik is toe hierdie rugsteun uitgevoer is.</string>
+    <string name="select_token_image">Kies token-beeld</string>
+    <string name="change_token_image">Verander token-beeld</string>
+    <string name="choose_builtin_icon">Kies ingeboude ikoon</string>
+    <string name="choose_image_from_device">Kies beeld vanaf toestel</string>
+    <string name="search_icons">Soek ikone</string>
 </resources>

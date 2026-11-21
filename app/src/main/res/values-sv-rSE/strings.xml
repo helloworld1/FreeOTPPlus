@@ -132,4 +132,9 @@
     <string name="export_decrypted">Exportera dekrypterade</string>
     <string name="import_encrypted_backup_title">Importera krypterade tokens</string>
     <string name="import_encrypted_backup_message">Dessa tokens är krypterade. Ange krypteringsnyckeln som användes när säkerhetskopian exporterades.</string>
+    <string name="select_token_image">Välj tokenbild</string>
+    <string name="change_token_image">Byt tokenbild</string>
+    <string name="choose_builtin_icon">Välj inbyggd ikon</string>
+    <string name="choose_image_from_device">Välj bild från enheten</string>
+    <string name="search_icons">Sök ikoner</string>
 </resources>

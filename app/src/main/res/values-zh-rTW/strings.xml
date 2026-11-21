@@ -132,4 +132,9 @@
     <string name="export_decrypted">解密匯出</string>
     <string name="import_encrypted_backup_title">匯入加密權杖</string>
     <string name="import_encrypted_backup_message">這些權杖已加密。請輸入匯出此備份時所使用的加密金鑰。</string>
+    <string name="select_token_image">選擇權杖圖示</string>
+    <string name="change_token_image">變更權杖圖示</string>
+    <string name="choose_builtin_icon">選擇內建圖示</string>
+    <string name="choose_image_from_device">從裝置選擇圖片</string>
+    <string name="search_icons">搜尋圖示</string>
 </resources>

@@ -132,4 +132,9 @@
     <string name="export_decrypted">විකේතනය කර නිර්යාත කරන්න</string>
     <string name="import_encrypted_backup_title">සංකේතනය කළ ටෝකන ආයාත කරන්න</string>
     <string name="import_encrypted_backup_message">මෙම ටෝකන සංකේතනය කර ඇත. මෙම උපස්ථය නිර්යාත කිරීමේදී භාවිතා කළ සංකේතන යතුර ඇතුළත් කරන්න.</string>
+    <string name="select_token_image">ටෝකන් රූපය තෝරන්න</string>
+    <string name="change_token_image">ටෝකන් රූපය වෙනස් කරන්න</string>
+    <string name="choose_builtin_icon">තිළැලි අයිකනයක් තෝරන්න</string>
+    <string name="choose_image_from_device">උපාංගයෙන් රූපයක් තෝරන්න</string>
+    <string name="search_icons">අයිකන සොයන්න</string>
 </resources>

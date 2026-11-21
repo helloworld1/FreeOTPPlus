@@ -132,4 +132,9 @@
     <string name="export_decrypted">Exporter déchiffré</string>
     <string name="import_encrypted_backup_title">Importer des jetons chiffrés</string>
     <string name="import_encrypted_backup_message">Ces jetons sont chiffrés. Saisissez la clé de chiffrement utilisée lors de l’exportation de cette sauvegarde.</string>
+    <string name="select_token_image">Sélectionner l\'image du jeton</string>
+    <string name="change_token_image">Modifier l\'image du jeton</string>
+    <string name="choose_builtin_icon">Choisir une icône intégrée</string>
+    <string name="choose_image_from_device">Choisir une image sur l\'appareil</string>
+    <string name="search_icons">Rechercher des icônes</string>
 </resources>

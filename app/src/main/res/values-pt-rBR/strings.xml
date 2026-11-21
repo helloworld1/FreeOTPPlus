@@ -132,4 +132,9 @@
     <string name="export_decrypted">Exportar descriptografado</string>
     <string name="import_encrypted_backup_title">Importar tokens criptografados</string>
     <string name="import_encrypted_backup_message">Estes tokens estão criptografados. Digite a chave de criptografia usada ao exportar este backup.</string>
+    <string name="select_token_image">Selecionar imagem do token</string>
+    <string name="change_token_image">Alterar imagem do token</string>
+    <string name="choose_builtin_icon">Escolher ícone integrado</string>
+    <string name="choose_image_from_device">Escolher imagem do dispositivo</string>
+    <string name="search_icons">Pesquisar ícones</string>
 </resources>

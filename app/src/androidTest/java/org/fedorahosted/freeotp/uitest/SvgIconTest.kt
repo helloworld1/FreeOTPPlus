@@ -30,6 +30,7 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.util.ImageUtil
+import org.fedorahosted.freeotp.util.setTokenImagePreview
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -216,8 +217,12 @@ class SvgIconTest {
         val bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         try {
-            for (entry in TokenImage.values()) {
-                val drawable = AppCompatResources.getDrawable(context, entry.resource)
+            val allResIds = TokenImage.values().map { it.resource } + listOf(
+                org.fedorahosted.freeotp.R.drawable.logo,
+                org.fedorahosted.freeotp.R.drawable.edit_16px
+            )
+            for (resId in allResIds) {
+                val drawable = AppCompatResources.getDrawable(context, resId)
                 assertThat(drawable).isNotNull()
                 bitmap.eraseColor(Color.TRANSPARENT)
                 drawable!!.setBounds(0, 0, 128, 128)
@@ -235,6 +240,90 @@ class SvgIconTest {
             }
         } finally {
             bitmap.recycle()
+        }
+    }
+
+    @Test
+    fun testProportionalTextDrawableAndDarkMonochromeCustomImageDetection() {
+        val drawable = com.amulyakhare.textdrawable.TextDrawable.builder()
+            .beginConfig()
+            .bold()
+            .endConfig()
+            .buildRoundRectProportional("A", Color.rgb(0x19, 0x76, 0xD2), 0.17f)
+        val bmp = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+        val darkMono = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+        val colorful = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+        try {
+            // 1. Proportional TextDrawable rounds corners (corner pixel transparent) and honors setAlpha on background
+            drawable.setBounds(0, 0, 128, 128)
+            drawable.draw(Canvas(bmp))
+            assertThat(Color.alpha(bmp.getPixel(0, 0))).isEqualTo(0)
+            assertThat(Color.alpha(bmp.getPixel(64, 64))).isEqualTo(255)
+
+            bmp.eraseColor(Color.TRANSPARENT)
+            drawable.alpha = 80
+            drawable.draw(Canvas(bmp))
+            assertThat(Color.alpha(bmp.getPixel(32, 32))).isLessThan(120)
+
+            // 2. Dark monochrome transparent bitmap is detected for Dark Mode backing, colorful is not
+            darkMono.eraseColor(Color.TRANSPARENT)
+            val darkCanvas = Canvas(darkMono)
+            val blackPaint = android.graphics.Paint().apply { color = Color.BLACK }
+            darkCanvas.drawCircle(64f, 64f, 36f, blackPaint)
+            assertThat(
+                org.fedorahosted.freeotp.util.TokenCustomImageTransformation
+                    .isDarkMonochromeOnTransparent(darkMono)
+            ).isTrue()
+
+            colorful.eraseColor(Color.TRANSPARENT)
+            val colorCanvas = Canvas(colorful)
+            val bluePaint = android.graphics.Paint().apply { color = Color.rgb(0x1E, 0x88, 0xE5) }
+            colorCanvas.drawCircle(64f, 64f, 36f, bluePaint)
+            assertThat(
+                org.fedorahosted.freeotp.util.TokenCustomImageTransformation
+                    .isDarkMonochromeOnTransparent(colorful)
+            ).isFalse()
+        } finally {
+            bmp.recycle()
+            darkMono.recycle()
+            colorful.recycle()
+        }
+    }
+
+    @Test
+    fun testBuiltInIconSavedViaImageUtilAndSetTokenImagePreview() {
+        val context = getInstrumentation().targetContext
+        val imageUtil = ImageUtil(context)
+        val savedUri = runBlocking {
+            imageUtil.saveDrawableResToFile(TokenImage.GitHub.resource)
+        }
+        val savedFile = savedUri.toFile()
+        try {
+            assertThat(savedFile.exists()).isTrue()
+            val decoded = BitmapFactory.decodeFile(savedFile.absolutePath)
+            assertThat(decoded).isNotNull()
+            assertThat(decoded.width).isEqualTo(512)
+            assertThat(decoded.height).isEqualTo(512)
+            decoded.recycle()
+
+            getInstrumentation().runOnMainSync {
+                val imageView = android.widget.ImageView(context)
+                // Matched issuer renders built-in drawable (not TextDrawable)
+                imageView.setTokenImagePreview(null, "GitHub", "user@example.com")
+                assertThat(imageView.drawable).isNotNull()
+                assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+
+                // Unmatched issuer with emoji renders proportional TextDrawable without throwing
+                imageView.setTokenImagePreview(null, "🔑 CustomVault", "user@example.com")
+                assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+
+                // Blank issuer & label renders default logo
+                imageView.setTokenImagePreview(null, "", "")
+                assertThat(imageView.drawable).isNotNull()
+                assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+            }
+        } finally {
+            savedFile.delete()
         }
     }
 }

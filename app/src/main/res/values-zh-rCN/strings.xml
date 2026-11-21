@@ -132,4 +132,9 @@
     <string name="export_decrypted">解密导出</string>
     <string name="import_encrypted_backup_title">导入加密令牌</string>
     <string name="import_encrypted_backup_message">这些令牌已加密。请输入导出此备份时使用的加密密钥。</string>
+    <string name="select_token_image">选择令牌图标</string>
+    <string name="change_token_image">更改令牌图标</string>
+    <string name="choose_builtin_icon">选择内置图标</string>
+    <string name="choose_image_from_device">从设备选择图片</string>
+    <string name="search_icons">搜索图标</string>
 </resources>
