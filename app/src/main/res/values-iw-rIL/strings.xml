@@ -6,6 +6,7 @@
     <string name="edit">עריכה</string>
     <string name="restore_defaults">שחזור לברירת מחדל</string>
     <string name="no_keys">לא מותקנים מפתחות OTP.</string>
+    <string name="no_matching_tokens">לא נמצאו אסימונים תואמים.</string>
     <string name="add_token">הוספת אסימון</string>
     <string name="scan_qr_code">סריקת קוד QR</string>
     <string name="interval">מרווח</string>

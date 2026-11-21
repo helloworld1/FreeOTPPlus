@@ -6,6 +6,7 @@
     <string name="edit">Edit</string>
     <string name="restore_defaults">Restore Defaults</string>
     <string name="no_keys">No OTP keys installed.</string>
+    <string name="no_matching_tokens">No matching tokens found.</string>
     <string name="add_token">Add Token</string>
     <string name="scan_qr_code">Scan QR Code</string>
     <string name="interval">Interval</string>

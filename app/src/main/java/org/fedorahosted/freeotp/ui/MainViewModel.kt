@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
@@ -115,10 +116,27 @@ class MainViewModel @Inject constructor(
 
     fun getAllCategories(): Flow<List<String>> = otpTokenDatabase.otpTokenDao().getAllCategories()
 
-    fun getTokenList(): Flow<List<OtpToken>> {
-        return combine(appSessionManager.authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) { auth, searchQuery, category, tokens ->
+    data class TokenListState(
+        val tokens: List<OtpToken>,
+        val hasInstalledTokens: Boolean,
+        val hasActiveFilterOrSearch: Boolean,
+        val isAuthenticated: Boolean
+    )
+
+    fun getTokenListState(): Flow<TokenListState> {
+        return combine(
+            appSessionManager.authState,
+            tokenSearchQuery,
+            categoryFilter,
+            otpTokenDatabase.otpTokenDao().getAll()
+        ) { auth, searchQuery, category, tokens ->
             if (auth != AuthState.AUTHENTICATED) {
-                return@combine emptyList()
+                return@combine TokenListState(
+                    tokens = emptyList(),
+                    hasInstalledTokens = false,
+                    hasActiveFilterOrSearch = false,
+                    isAuthenticated = false
+                )
             }
 
             var filteredTokens = tokens
@@ -139,8 +157,17 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            filteredTokens
+            TokenListState(
+                tokens = filteredTokens,
+                hasInstalledTokens = tokens.isNotEmpty(),
+                hasActiveFilterOrSearch = searchQuery.isNotEmpty() || category != null,
+                isAuthenticated = true
+            )
         }
+    }
+
+    fun getTokenList(): Flow<List<OtpToken>> {
+        return getTokenListState().map { it.tokens }
     }
 
     fun lockSession() {

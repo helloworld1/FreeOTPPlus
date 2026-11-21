@@ -6,6 +6,7 @@
     <string name="edit">編輯</string>
     <string name="restore_defaults">恢復預設值</string>
     <string name="no_keys">未安裝 OTP 金鑰。</string>
+    <string name="no_matching_tokens">找不到相符的權杖。</string>
     <string name="add_token">新增權杖</string>
     <string name="scan_qr_code">掃描 QR Code</string>
     <string name="interval">間隔</string>

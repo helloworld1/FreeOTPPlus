@@ -6,6 +6,7 @@
     <string name="edit">Edita</string>
     <string name="restore_defaults">Restaura els valors per defecte</string>
     <string name="no_keys">Cap clau OTP instal·lada.</string>
+    <string name="no_matching_tokens">No s\'ha trobat cap OTP coincident.</string>
     <string name="add_token">Afegeix un OTP</string>
     <string name="scan_qr_code">Escaneja un codi QR</string>
     <string name="interval">Interval</string>

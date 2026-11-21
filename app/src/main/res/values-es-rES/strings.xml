@@ -6,6 +6,7 @@
     <string name="edit">Editar</string>
     <string name="restore_defaults">Restaurar valores predeterminados</string>
     <string name="no_keys">No hay claves OTP instaladas.</string>
+    <string name="no_matching_tokens">No se encontraron tokens coincidentes.</string>
     <string name="add_token">Añadir token</string>
     <string name="scan_qr_code">Escanear código QR</string>
     <string name="interval">Intervalo</string>

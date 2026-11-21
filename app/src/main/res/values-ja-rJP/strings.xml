@@ -6,6 +6,7 @@
     <string name="edit">編集</string>
     <string name="restore_defaults">デフォルトに戻す</string>
     <string name="no_keys">OTPキーが登録されていません。</string>
+    <string name="no_matching_tokens">一致するトークンが見つかりません。</string>
     <string name="add_token">トークンを追加</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
     <string name="interval">間隔</string>

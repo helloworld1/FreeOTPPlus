@@ -2,12 +2,14 @@ package org.fedorahosted.freeotp.uitest
 
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -17,6 +19,7 @@ import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isChecked
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -32,6 +35,7 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.ScanTokenFragment
+import org.hamcrest.Matcher
 import org.hamcrest.Matchers.not
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -39,6 +43,24 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class CategoryFilterTintTest {
+
+    private fun awaitViewDisplayed(matcher: Matcher<View>, timeoutMs: Long = 5_000L) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastError: Throwable? = null
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                onView(matcher).check(matches(isDisplayed()))
+                return
+            } catch (e: NoMatchingViewException) {
+                lastError = e
+            } catch (e: AssertionError) {
+                lastError = e
+            }
+            Thread.sleep(50L)
+        }
+        if (lastError != null) throw lastError
+        onView(matcher).check(matches(isDisplayed()))
+    }
 
     @Test
     fun testFilterIconTintedAndMultiCategoryFiltering() {
@@ -63,6 +85,7 @@ class CategoryFilterTintTest {
                 }
             }
             // Category labels are not displayed on the main token list card
+            awaitViewDisplayed(withId(R.id.token_list))
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
                 .check(matches(not(hasDescendant(withText("Work • Cloud")))))
@@ -265,9 +288,10 @@ class CategoryFilterTintTest {
                 }
             }
 
+            awaitViewDisplayed(withId(R.id.token_list))
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withText(R.string.invalid_token)).check(matches(withText(R.string.invalid_token)))
+            awaitViewDisplayed(withText(R.string.invalid_token))
         }
     }
 
@@ -304,5 +328,69 @@ class CategoryFilterTintTest {
                 hasAnyCamera = false
             )
         ).isEqualTo(ScanTokenFragment.CameraChoice.NONE)
+    }
+
+    @Test
+    fun testEmptyViewDistinguishesNoKeysFromZeroFilterAndSearchMatches() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                }
+            }
+
+            // 1. Truly empty database with no active search/filter -> shows "No OTP keys installed."
+            awaitViewDisplayed(withId(R.id.empty_view))
+            onView(withId(R.id.empty_view))
+                .check(matches(withText(R.string.no_keys)))
+
+            // 2. Insert a categorized token -> list appears
+            scenario.onActivity { activity ->
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.otpTokenDao().insert(
+                        TestData.OTP_HOTP_TOKEN_1.copy(
+                            id = 0L,
+                            ordinal = 0L,
+                            categories = listOf("Work")
+                        )
+                    )
+                }
+            }
+            awaitViewDisplayed(withId(R.id.token_list))
+            onView(withId(R.id.token_list))
+                .check(matches(hasDescendant(withText("github.com"))))
+
+            // 3. Filter by "Uncategorized" (0 matches while tokens exist) -> shows "No matching tokens found."
+            onView(withId(R.id.action_filter)).perform(click())
+            onView(withText(R.string.uncategorized)).perform(click())
+            awaitViewDisplayed(withId(R.id.empty_view))
+            onView(withId(R.id.empty_view))
+                .check(matches(withText(R.string.no_matching_tokens)))
+
+            // 4. Reset filter to "All categories", then search for a non-matching query -> shows "No matching tokens found."
+            onView(withId(R.id.action_filter)).perform(click())
+            onView(withText(R.string.all_categories)).perform(click())
+            awaitViewDisplayed(withId(R.id.token_list))
+            onView(withId(R.id.search_view)).perform(click())
+            onView(withId(R.id.search_view)).perform(SearchViewAction.typeSearchViewText("zzz_no_match"))
+            awaitViewDisplayed(withId(R.id.empty_view))
+            onView(withId(R.id.empty_view))
+                .check(matches(withText(R.string.no_matching_tokens)))
+
+            // 5. Clear search query -> token list reappears; wipe DB -> reverts to "No OTP keys installed."
+            onView(withId(R.id.search_view)).perform(SearchViewAction.typeSearchViewText(""), closeSoftKeyboard())
+            awaitViewDisplayed(withId(R.id.token_list))
+            onView(withId(R.id.token_list))
+                .check(matches(hasDescendant(withText("github.com"))))
+
+            scenario.onActivity { activity ->
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                }
+            }
+            awaitViewDisplayed(withId(R.id.empty_view))
+            onView(withId(R.id.empty_view))
+                .check(matches(withText(R.string.no_keys)))
+        }
     }
 }

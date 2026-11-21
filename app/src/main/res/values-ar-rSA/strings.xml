@@ -6,6 +6,7 @@
     <string name="edit">تعديل</string>
     <string name="restore_defaults">استعادة الإعدادات الافتراضية</string>
     <string name="no_keys">لا توجد مفاتيح OTP مثبّتة.</string>
+    <string name="no_matching_tokens">لم يتم العثور على رموز مطابقة.</string>
     <string name="add_token">إضافة رمز</string>
     <string name="scan_qr_code">مسح رمز QR</string>
     <string name="interval">الفاصل الزمني</string>

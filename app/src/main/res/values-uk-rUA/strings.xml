@@ -6,6 +6,7 @@
     <string name="edit">Редагувати</string>
     <string name="restore_defaults">Відновити типові значення</string>
     <string name="no_keys">Ключі OTP не встановлено.</string>
+    <string name="no_matching_tokens">Відповідних ключів не знайдено.</string>
     <string name="add_token">Додати ключ</string>
     <string name="scan_qr_code">Сканувати QR-код</string>
     <string name="interval">Інтервал</string>

@@ -6,6 +6,7 @@
     <string name="edit">Bewerken</string>
     <string name="restore_defaults">Standaardwaarden herstellen</string>
     <string name="no_keys">Geen OTP-sleutels geïnstalleerd.</string>
+    <string name="no_matching_tokens">Geen overeenkomende tokens gevonden.</string>
     <string name="add_token">Token toevoegen</string>
     <string name="scan_qr_code">QR-code scannen</string>
     <string name="interval">Interval</string>

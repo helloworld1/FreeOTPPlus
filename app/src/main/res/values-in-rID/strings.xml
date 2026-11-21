@@ -6,6 +6,7 @@
     <string name="edit">Edit</string>
     <string name="restore_defaults">Kembalikan ke Pengaturan Awal</string>
     <string name="no_keys">Tidak ada kunci OTP yang terpasang.</string>
+    <string name="no_matching_tokens">Tidak ada token yang cocok ditemukan.</string>
     <string name="add_token">Tambah Token</string>
     <string name="scan_qr_code">Pindai Kode QR</string>
     <string name="interval">Interval</string>

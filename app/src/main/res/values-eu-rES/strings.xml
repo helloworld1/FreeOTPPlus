@@ -6,6 +6,7 @@
     <string name="edit">Editatu</string>
     <string name="restore_defaults">Berrezarri balio lehenetsiak</string>
     <string name="no_keys">Ez dago OTP gakorik instalatuta.</string>
+    <string name="no_matching_tokens">Ez da bat datorren tokenik aurkitu.</string>
     <string name="add_token">Gehitu tokena</string>
     <string name="scan_qr_code">Eskaneatu QR kodea</string>
     <string name="interval">Tartea</string>

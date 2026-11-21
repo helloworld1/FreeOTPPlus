@@ -6,6 +6,7 @@
     <string name="edit">Wysig</string>
     <string name="restore_defaults">Herstel verstekwaardes</string>
     <string name="no_keys">Geen OTP-sleutels geïnstalleer nie.</string>
+    <string name="no_matching_tokens">Geen ooreenstemmende kentekens gevind nie.</string>
     <string name="add_token">Voeg kenteken by</string>
     <string name="scan_qr_code">Skandeer QR-kode</string>
     <string name="interval">Interval</string>

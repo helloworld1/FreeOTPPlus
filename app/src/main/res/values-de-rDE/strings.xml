@@ -6,6 +6,7 @@
     <string name="edit">Bearbeiten</string>
     <string name="restore_defaults">Zurücksetzen</string>
     <string name="no_keys">Keine OTP-Schlüssel installiert.</string>
+    <string name="no_matching_tokens">Keine passenden Token gefunden.</string>
     <string name="add_token">Token hinzufügen</string>
     <string name="scan_qr_code">QR-Code scannen</string>
     <string name="interval">Intervall</string>

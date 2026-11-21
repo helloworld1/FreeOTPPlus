@@ -6,6 +6,7 @@
     <string name="edit">Изменить</string>
     <string name="restore_defaults">Восстановить значения по умолчанию</string>
     <string name="no_keys">Ключи OTP не установлены.</string>
+    <string name="no_matching_tokens">Подходящие токены не найдены.</string>
     <string name="add_token">Добавить токен</string>
     <string name="scan_qr_code">Сканировать QR-код</string>
     <string name="interval">Интервал</string>

@@ -6,6 +6,7 @@
     <string name="edit">Düzenle</string>
     <string name="restore_defaults">Varsayılanları Geri Yükle</string>
     <string name="no_keys">Yüklü OTP anahtarı yok.</string>
+    <string name="no_matching_tokens">Eşleşen token bulunamadı.</string>
     <string name="add_token">Token Ekle</string>
     <string name="scan_qr_code">QR Kodunu Tara</string>
     <string name="interval">Aralık</string>

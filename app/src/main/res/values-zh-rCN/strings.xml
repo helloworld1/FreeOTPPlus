@@ -6,6 +6,7 @@
     <string name="edit">编辑</string>
     <string name="restore_defaults">恢复默认值</string>
     <string name="no_keys">未安装 OTP 密钥。</string>
+    <string name="no_matching_tokens">未找到匹配的令牌。</string>
     <string name="add_token">添加令牌</string>
     <string name="scan_qr_code">扫描二维码</string>
     <string name="interval">间隔</string>

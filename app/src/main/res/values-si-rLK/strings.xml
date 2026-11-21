@@ -6,6 +6,7 @@
     <string name="edit">සංස්කරණය</string>
     <string name="restore_defaults">පෙරනිමි ප්‍රතිසාධනය කරන්න</string>
     <string name="no_keys">OTP යතුරු ස්ථාපනය කර නැත.</string>
+    <string name="no_matching_tokens">ගැළපෙන ටෝකන හමු නොවීය.</string>
     <string name="add_token">ටෝකනයක් එක් කරන්න</string>
     <string name="scan_qr_code">QR කේතය පරිලෝකනය කරන්න</string>
     <string name="interval">කාල පරතරය</string>

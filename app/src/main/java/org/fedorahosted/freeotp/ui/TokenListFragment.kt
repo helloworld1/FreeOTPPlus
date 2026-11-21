@@ -158,7 +158,8 @@ class TokenListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.getTokenList().collect { tokens ->
+                    viewModel.getTokenListState().collect { state ->
+                        val tokens = state.tokens
                         val currentFilterKey = viewModel.getCurrentSearchQuery() to viewModel.getCurrentCategoryFilter()
                         val topId = tokens.firstOrNull()?.id
                         val shouldScrollToTop = previousFilterKey == currentFilterKey &&
@@ -174,7 +175,16 @@ class TokenListFragment : Fragment() {
                             }
                         }
 
-                        if (tokens.isEmpty()) {
+                        if (!state.isAuthenticated) {
+                            binding.emptyViewContainer.visibility = View.GONE
+                            binding.tokenList.visibility = View.GONE
+                        } else if (tokens.isEmpty()) {
+                            val emptyMessageRes = if (state.hasInstalledTokens || state.hasActiveFilterOrSearch) {
+                                R.string.no_matching_tokens
+                            } else {
+                                R.string.no_keys
+                            }
+                            binding.emptyView.setText(emptyMessageRes)
                             binding.emptyViewContainer.visibility = View.VISIBLE
                             binding.tokenList.visibility = View.GONE
                         } else {

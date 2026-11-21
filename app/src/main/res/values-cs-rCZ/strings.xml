@@ -6,6 +6,7 @@
     <string name="edit">Upravit</string>
     <string name="restore_defaults">Obnovit výchozí</string>
     <string name="no_keys">Žádné OTP klíče nejsou nainstalovány.</string>
+    <string name="no_matching_tokens">Nebyly nalezeny žádné odpovídající tokeny.</string>
     <string name="add_token">Přidat token</string>
     <string name="scan_qr_code">Naskenovat QR kód</string>
     <string name="interval">Interval</string>
