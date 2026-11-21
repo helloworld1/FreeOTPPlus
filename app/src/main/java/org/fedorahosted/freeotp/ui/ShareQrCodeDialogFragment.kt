@@ -141,10 +141,12 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                         return@setOnClickListener
                     }
                     clipboardUtil.copySensitiveText(getString(R.string.share_qr_code), uriString)
-                    if (mainActivity != null) {
-                        mainActivity.showSnackbar(R.string.token_uri_copied)
-                    } else {
-                        context?.let { Toast.makeText(it, R.string.token_uri_copied, Toast.LENGTH_SHORT).show() }
+                    if (ClipboardUtil.shouldShowAppCopyFeedback()) {
+                        if (mainActivity != null) {
+                            mainActivity.showSnackbar(R.string.token_uri_copied)
+                        } else {
+                            context?.let { Toast.makeText(it, R.string.token_uri_copied, Toast.LENGTH_SHORT).show() }
+                        }
                     }
                     dismissAllowingStateLoss()
                 }

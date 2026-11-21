@@ -20,6 +20,7 @@ import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
@@ -463,7 +464,11 @@ class AuthenticationGateTest {
             onView(withId(R.id.copy_uri_button)).inRoot(isDialog())
                 .perform(scrollTo(), click())
 
-            awaitViewMatching(withText(R.string.token_uri_copied), isDisplayed())
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                awaitViewMatching(withText(R.string.token_uri_copied), isDisplayed())
+            } else {
+                onView(withText(R.string.token_uri_copied)).check(doesNotExist())
+            }
 
             scenario.onActivity { activity ->
                 val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -500,9 +505,15 @@ class AuthenticationGateTest {
 
             awaitViewMatching(withId(R.id.token_list), isDisplayed())
 
-            // 1. Tap token card -> copies OTP with EXTRA_IS_SENSITIVE = true (API 24+), then auto-clears after 1.2s
+            // 1. Tap token card -> copies OTP with EXTRA_IS_SENSITIVE = true (API 24+), shows Snackbar only on API <= 32, then auto-clears after 1.2s
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                awaitViewMatching(withText(R.string.code_copied), isDisplayed())
+            } else {
+                onView(withText(R.string.code_copied)).check(doesNotExist())
+            }
 
             scenario.onActivity { activity ->
                 val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

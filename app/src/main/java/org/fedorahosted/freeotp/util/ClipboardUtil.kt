@@ -173,5 +173,13 @@ class ClipboardUtil @Inject constructor(
         const val EXTRA_IS_SENSITIVE_KEY = "android.content.extra.IS_SENSITIVE"
         private const val EXTRA_CLIP_ID = "org.fedorahosted.freeotp.CLIP_ID"
         private const val OWN_CLIP_CALLBACK_GRACE_MS = 500L
+
+        /**
+         * Android 13+ (API 33 / TIRAMISU) displays a system visual clipboard confirmation overlay,
+         * so custom in-app "Copied to clipboard" Snackbars/Toasts should only be shown on API <= 32.
+         */
+        fun shouldShowAppCopyFeedback(sdkInt: Int = Build.VERSION.SDK_INT): Boolean {
+            return sdkInt <= Build.VERSION_CODES.S_V2
+        }
     }
 }

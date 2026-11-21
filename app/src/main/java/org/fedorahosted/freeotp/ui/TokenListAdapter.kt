@@ -112,7 +112,9 @@ class TokenListAdapter(
 
                     if (settings.copyToClipboard) {
                         clipboardUtil.copySensitiveText(null, code)
-                        Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                        if (ClipboardUtil.shouldShowAppCopyFeedback()) {
+                            Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                        }
                     }
 
                     viewModel.putActiveTokenCode(token.id, codes)
