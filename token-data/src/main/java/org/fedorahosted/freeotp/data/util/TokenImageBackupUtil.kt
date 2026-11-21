@@ -1,6 +1,5 @@
 package org.fedorahosted.freeotp.data.util
 
-import android.content.Context
 import android.net.Uri
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -48,8 +47,7 @@ object TokenImageBackupUtil {
         tokens: List<OtpToken>,
         filesDir: File,
         gson: Gson,
-        zipOutputStream: OutputStream,
-        fallbackStreamOpener: ((String) -> InputStream?)? = null
+        zipOutputStream: OutputStream
     ) {
         val writtenEntryNames = mutableSetOf<String>()
         val sourcePathToZipName = mutableMapOf<String, String>()
@@ -58,46 +56,27 @@ object TokenImageBackupUtil {
         ZipOutputStream(BufferedOutputStream(zipOutputStream)).use { zos ->
             for (token in tokens) {
                 val rawPath = token.imagePath?.takeIf { it.isNotBlank() } ?: continue
-                if (isRemoteHttpUrl(rawPath)) {
-                    continue
-                }
+                val localFile = resolveSafeLocalImageFile(rawPath, filesDir) ?: continue
+                val canonicalUri = toFileUriString(localFile)
 
-                val existingZipName = sourcePathToZipName[rawPath]
+                val existingZipName = sourcePathToZipName[canonicalUri]
                 if (existingZipName != null) {
-                    manifestEntries.add(buildManifestEntry(token, existingZipName, rawPath))
+                    manifestEntries.add(buildManifestEntry(token, existingZipName, canonicalUri))
                     continue
                 }
 
-                val localFile = resolveSafeLocalImageFile(rawPath, filesDir)
-                if (localFile != null) {
-                    val bytes = runCatching {
-                        FileInputStream(localFile).use { input ->
-                            readBoundedBytes(input, MAX_SINGLE_ENTRY_BYTES)
-                        }
-                    }.getOrNull()
-                    if (bytes != null && bytes.isNotEmpty() && isSupportedImageBytes(bytes)) {
-                        val zipFileName = allocateUniqueSafeFileName(localFile.name, writtenEntryNames)
-                        zos.putNextEntry(ZipEntry(zipFileName))
-                        zos.write(bytes)
-                        zos.closeEntry()
-                        sourcePathToZipName[rawPath] = zipFileName
-                        manifestEntries.add(buildManifestEntry(token, zipFileName, rawPath))
+                val bytes = runCatching {
+                    FileInputStream(localFile).use { input ->
+                        readBoundedBytes(input, MAX_SINGLE_ENTRY_BYTES)
                     }
-                } else if (fallbackStreamOpener != null) {
-                    val bytes = runCatching {
-                        fallbackStreamOpener(rawPath)?.use { stream ->
-                            readBoundedBytes(stream, MAX_SINGLE_ENTRY_BYTES)
-                        }
-                    }.getOrNull()
-                    if (bytes != null && bytes.isNotEmpty() && isSupportedImageBytes(bytes)) {
-                        val candidateName = extractSafeFileName(rawPath) ?: "image_${rawPath.hashCode()}.png"
-                        val zipFileName = allocateUniqueSafeFileName(candidateName, writtenEntryNames)
-                        zos.putNextEntry(ZipEntry(zipFileName))
-                        zos.write(bytes)
-                        zos.closeEntry()
-                        sourcePathToZipName[rawPath] = zipFileName
-                        manifestEntries.add(buildManifestEntry(token, zipFileName, rawPath))
-                    }
+                }.getOrNull()
+                if (bytes != null && bytes.isNotEmpty() && isSupportedImageBytes(bytes)) {
+                    val zipFileName = allocateUniqueSafeFileName(localFile.name, writtenEntryNames)
+                    zos.putNextEntry(ZipEntry(zipFileName))
+                    zos.write(bytes)
+                    zos.closeEntry()
+                    sourcePathToZipName[canonicalUri] = zipFileName
+                    manifestEntries.add(buildManifestEntry(token, zipFileName, canonicalUri))
                 }
             }
 
@@ -798,12 +777,5 @@ object TokenImageBackupUtil {
             out.write(chunk, 0, n)
         }
         return out.toByteArray()
-    }
-
-    @Suppress("unused")
-    internal fun openUriFallback(context: Context, rawUri: String): InputStream? {
-        return runCatching {
-            context.contentResolver.openInputStream(Uri.parse(rawUri))
-        }.getOrNull()
     }
 }

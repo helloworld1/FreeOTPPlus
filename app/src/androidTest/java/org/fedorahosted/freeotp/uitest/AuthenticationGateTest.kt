@@ -186,6 +186,11 @@ class AuthenticationGateTest {
             onView(withText(R.string.export_text)).perform(click())
             onView(withText(R.string.export_key_uri_format)).perform(click())
             assertThat(authPromptCount).isEqualTo(2)
+
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.export_text)).perform(click())
+            onView(withText(R.string.export_token_images)).perform(click())
+            assertThat(authPromptCount).isEqualTo(3)
         }
     }
 

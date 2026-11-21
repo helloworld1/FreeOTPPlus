@@ -381,9 +381,11 @@ class MainActivity : AppCompatActivity() {
 
     internal fun startExportTokenImages() {
         if (!isSessionAuthenticated()) return
-        val timestamp = dateFormatter.format(Date())
-        launchSystemPicker {
-            createImagesZipLauncher.launch("freeotp_images_$timestamp.zip")
+        AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
+            val timestamp = dateFormatter.format(Date())
+            launchSystemPicker {
+                createImagesZipLauncher.launch("freeotp_images_$timestamp.zip")
+            }
         }
     }
 

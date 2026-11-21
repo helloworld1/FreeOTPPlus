@@ -1,11 +1,15 @@
 package org.fedorahosted.freeotp.data
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.CategoryUtil
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
+import java.io.File
 import java.security.GeneralSecurityException
 import javax.inject.Inject
 
@@ -13,19 +17,20 @@ class MigrationUtil private constructor(
     private val optTokenDatabase: OtpTokenDatabase,
     private val tokenPersistence: TokenPersistence,
     private val tokenCryptoManager: TokenCryptoManager?,
-    @Suppress("UNUSED_PARAMETER") unused: Unit
+    private val filesDir: File?
 ) {
     @Inject
     constructor(
+        @ApplicationContext context: Context,
         optTokenDatabase: OtpTokenDatabase,
         tokenPersistence: TokenPersistence,
         tokenCryptoManager: TokenCryptoManager
-    ) : this(optTokenDatabase, tokenPersistence, tokenCryptoManager, Unit)
+    ) : this(optTokenDatabase, tokenPersistence, tokenCryptoManager, context.filesDir)
 
     constructor(
         optTokenDatabase: OtpTokenDatabase,
         tokenPersistence: TokenPersistence
-    ) : this(optTokenDatabase, tokenPersistence, null, Unit)
+    ) : this(optTokenDatabase, tokenPersistence, null, null)
 
     fun isMigrated(): Boolean = tokenPersistence.isLegacyTokenMigrated()
 
@@ -36,7 +41,16 @@ class MigrationUtil private constructor(
             }
             val legacyTokens = tokenPersistence.getTokens()
             if (legacyTokens.isNotEmpty()) {
-                val tokenList = convertLegacyTokensToOtpTokens(legacyTokens)
+                val converted = convertLegacyTokensToOtpTokens(legacyTokens)
+                val tokenList = if (filesDir != null) {
+                    converted.map { token ->
+                        token.copy(
+                            imagePath = TokenImageBackupUtil.sanitizeImportedImagePath(token.imagePath, filesDir)
+                        )
+                    }
+                } else {
+                    converted
+                }
                 val tokensToInsert = try {
                     tokenCryptoManager?.encryptTokensForStorage(tokenList) ?: tokenList
                 } catch (_: IllegalStateException) {
