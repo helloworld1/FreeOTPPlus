@@ -27,7 +27,7 @@
     <string name="about_website">Další informace naleznete na %s.</string>
     <string name="about_feedback">Uvítáme vaši zpětnou vazbu:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Některé ikony použité v této aplikaci jsou převzaty z díla vytvořeného a sdíleného projektem Android Open Source Project a jsou používány v souladu s podmínkami popsanými v licenci Creative Commons 2.5 Attribution License.</string>
-    <string name="about_token_image">Náhledy tokenů token_image_*.xml v knihovně token-images pocházejí z andOTP pod &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;licencí MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Náhledy token_image_*.xml v knihovně token-images obsahují ikony z andOTP pod &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;licencí MIT&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) a od přispěvatelů FreeOTP+.</string>
     <string name="error_camera_open">Chyba při otevírání fotoaparátu!</string>
     <string name="delete_summary">Toto je vaše poslední šance: pokud smažete tento token, bude navždy ztracen. Na serveru nebude deaktivován.</string>
     <string name="delete_question">Smazat tento token?</string>

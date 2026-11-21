@@ -1,46 +1,15 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-        android:width="95dp"
-        android:height="29dp"
-        android:viewportWidth="95.0"
-        android:viewportHeight="29.0">
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
     <path
-        android:pathData="M0.16,25L11.944,25L11.944,22.312L3.112,22.312L3.112,8.2L0.16,8.2L0.16,25ZM14.848,25L17.752,25L17.752,12.328L14.848,12.328L14.848,25ZM31.096,28.84L34,28.84L34,12.328L31.096,12.328L31.096,14.296C30.184,13.12 28.864,12.064 26.776,12.064C23.752,12.064 20.896,14.44 20.896,18.64C20.896,22.888 23.8,25.264 26.776,25.264C28.84,25.264 30.16,24.208 31.096,22.888L31.096,28.84ZM27.472,22.744C25.504,22.744 23.824,21.136 23.824,18.688C23.824,16.12 25.48,14.584 27.472,14.584C29.416,14.584 31.144,16.192 31.144,18.64C31.144,21.112 29.416,22.744 27.472,22.744L27.472,22.744ZM41.992,25.264C43.96,25.264 45.136,24.232 45.952,23.032L45.952,25L48.856,25L48.856,12.328L45.952,12.328L45.952,19.48C45.952,21.448 44.776,22.624 43.096,22.624C41.368,22.624 40.384,21.496 40.384,19.528L40.384,12.328L37.48,12.328L37.48,20.392C37.48,23.344 39.136,25.264 41.992,25.264L41.992,25.264ZM52.672,25L55.576,25L55.576,12.328L52.672,12.328L52.672,25Z"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
-        android:fillColor="#202020"
-        android:strokeWidth="1"/>
-    <path
-        android:pathData="M75.856,10.984l3.644,-10.484l3.644,10.484z"
-        android:fillAlpha="0.6"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
         android:fillColor="#1A78FF"
-        android:strokeWidth="1"
-        android:strokeAlpha="0.6"/>
+        android:pathData="M 88 0 H 424 A 88 88 0 0 1 512 88 V 424 A 88 88 0 0 1 424 512 H 88 A 88 88 0 0 1 0 424 V 88 A 88 88 0 0 1 88 0 Z" />
     <path
-        android:pathData="M78.5,21.5l6.5,-4.5l3.611,11.54z"
-        android:fillAlpha="0.6"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
-        android:fillColor="#1A78FF"
-        android:strokeWidth="1"
-        android:strokeAlpha="0.6"/>
+        android:fillColor="#FFFFFF"
+        android:pathData="M 256 84 L 278 144 L 342 144 L 290 182 L 310 242 L 256 204 L 202 242 L 222 182 L 170 144 L 234 144 Z" />
     <path
-        android:pathData="M70.389,28.54l3.214,-10.624l-8.603,-6.916l30,0z"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
-        android:fillColor="#1A78FF"
-        android:strokeWidth="1"/>
-    <path
-        android:pathData="M14.2,9a2,2 0,1 0,4 0a2,2 0,1 0,-4 0z"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
-        android:fillColor="#202020"
-        android:strokeWidth="1"/>
-    <path
-        android:pathData="M52,9a2,2 0,1 0,4 0a2,2 0,1 0,-4 0z"
-        android:strokeColor="#00000000"
-        android:fillType="evenOdd"
-        android:fillColor="#202020"
-        android:strokeWidth="1"/>
+        android:fillColor="#FFFFFF"
+        android:pathData="M 101.9 390.3 V 298.9 H 126.6 V 370.3 H 161.8 V 390.3 Z M 187.4 291 Q 192.7 291 196.6 293.2 Q 200.5 295.4 200.5 301.9 Q 200.5 308.1 196.6 310.4 Q 192.7 312.6 187.4 312.6 Q 182 312.6 178.3 310.4 Q 174.5 308.1 174.5 301.9 Q 174.5 295.4 178.3 293.2 Q 182 291 187.4 291 Z M 199.6 319.5 V 390.3 H 175.1 V 319.5 Z M 257.5 391.7 Q 257.5 386.5 258.3 381.3 H 257.5 Q 255.1 385.6 250.6 388.6 Q 246.1 391.6 238.9 391.6 Q 227.6 391.6 220.6 382.2 Q 213.5 372.9 213.5 355 Q 213.5 337.1 220.7 327.7 Q 227.9 318.3 239.2 318.3 Q 246.7 318.3 251.2 321.1 Q 255.7 324 258.6 328.2 H 259.1 L 260.9 319.5 H 282 V 421 H 257.5 Z M 248.8 372.6 Q 254.8 372.6 257.2 368.9 Q 259.5 365.1 259.5 357.5 V 354.6 Q 259.5 346.3 257.2 341.7 Q 255 337.2 248.5 337.2 Q 238.3 337.2 238.3 355.4 Q 238.3 364.6 240.9 368.6 Q 243.5 372.6 248.8 372.6 Z M 367.7 319.5 V 390.3 H 349.3 L 346.2 381.5 H 344.8 Q 341.5 386.8 335.7 389.2 Q 330 391.6 323.4 391.6 Q 316.5 391.6 310.9 388.9 Q 305.3 386.2 302 380.4 Q 298.7 374.7 298.7 365.6 V 319.5 H 323.2 V 358.2 Q 323.2 365.1 325.2 368.7 Q 327.1 372.2 331.6 372.2 Q 338.5 372.2 340.9 366.6 Q 343.3 361 343.3 350.5 V 319.5 Z M 397 291 Q 402.2 291 406.2 293.2 Q 410.1 295.4 410.1 301.9 Q 410.1 308.1 406.2 310.4 Q 402.2 312.6 397 312.6 Q 391.6 312.6 387.9 310.4 Q 384.1 308.1 384.1 301.9 Q 384.1 295.4 387.9 293.2 Q 391.6 291 397 291 Z M 409.2 319.5 V 390.3 H 384.7 V 319.5 Z" />
 </vector>

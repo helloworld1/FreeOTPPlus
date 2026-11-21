@@ -27,7 +27,7 @@
     <string name="about_website">Per maggiori informazioni, visita il nostro %s.</string>
     <string name="about_feedback">Accogliamo con piacere i tuoi commenti:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Alcune icone utilizzate da questa applicazione sono riprodotte da lavori creati e condivisi dall\'Android Open Source Project e utilizzate secondo i termini descritti nella licenza Creative Commons 2.5 Attribution.</string>
-    <string name="about_token_image">Le miniature dei token token_image_*.xml nella libreria token-images provengono da andOTP sotto &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;licenza MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Le miniature token_image_*.xml nella libreria token-images includono icone da andOTP con &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;licenza MIT&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) e contributori di FreeOTP+.</string>
     <string name="error_camera_open">Errore durante l\'apertura della fotocamera!</string>
     <string name="delete_summary">Questa è l\'ultima possibilità: se elimini questo token, andrà perso per sempre. Non verrà disabilitato sul server.</string>
     <string name="delete_question">Eliminare questo token?</string>

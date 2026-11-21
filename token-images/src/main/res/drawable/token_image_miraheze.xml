@@ -1,76 +1,21 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="135dp"
-    android:height="135dp"
-    android:viewportWidth="135"
-    android:viewportHeight="135">
-  <path
-      android:pathData="m56.722,48.542 l21.19,0.062 10.969,18.946 -10.844,18.697 -21.377,0 -10.906,-18.759z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#8e7650"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="M56.722,0.016 L77.912,0.078 88.88,19.024l-10.844,18.697 -21.377,0 -10.906,-18.759z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="M56.722,97.295 L77.912,97.357 88.88,116.303 78.036,135 56.66,135 45.753,116.241Z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="m98.666,72.694 l21.19,0.062 10.969,18.946 -10.844,18.697 -21.377,0 -10.906,-18.759z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="m98.666,24.329 l21.19,0.062 10.969,18.946 -10.844,18.697 -21.377,0 -10.906,-18.759z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="m14.947,24.329 l21.146,0.062 10.946,18.946 -10.822,18.697 -21.333,0 -10.884,-18.759z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
-  <path
-      android:pathData="m14.969,72.694 l21.19,0.062 10.969,18.946 -10.844,18.697 -21.377,0L4,91.64Z"
-      android:strokeAlpha="1"
-      android:strokeLineJoin="miter"
-      android:strokeWidth="1"
-      android:fillColor="#ffc200"
-      android:strokeColor="#00000000"
-      android:fillType="evenOdd"
-      android:fillAlpha="1"
-      android:strokeLineCap="butt"/>
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:fillColor="#646F7E"
+        android:pathData="M 88 0 H 424 A 88 88 0 0 1 512 88 V 424 A 88 88 0 0 1 424 512 H 88 A 88 88 0 0 1 0 424 V 88 A 88 88 0 0 1 88 0 Z" />
+    <path
+        android:fillColor="#181A1F"
+        android:pathData="M 92 14 H 420 A 78 78 0 0 1 498 92 V 420 A 78 78 0 0 1 420 498 H 92 A 78 78 0 0 1 14 420 V 92 A 78 78 0 0 1 92 14 Z" />
+    <group
+        android:translateX="81.92"
+        android:translateY="81.92"
+        android:scaleX="14.5067"
+        android:scaleY="14.5067">
+        <path
+            android:fillColor="#FFC200"
+            android:pathData="m 2.68 12.92 l 3.77 0.01 l 1.95 3.37 l -1.93 3.32 H 2.67 L 0.73 16.29 l 1.95 -3.37 Z m 0 -8.6 l 3.76 0.01 l 1.94 3.37 l -1.92 3.33 H 2.66 L 0.73 7.69 l 1.95 -3.37 Z m 14.88 0 l 3.77 0.01 l 1.95 3.37 l -1.93 3.33 h -3.8 L 15.61 7.69 l 1.95 -3.37 Z m 0 8.6 l 3.77 0.01 l 1.95 3.37 l -1.93 3.32 h -3.8 l -1.94 -3.33 l 1.95 -3.37 Z m -7.46 4.37 l 3.77 0.01 l 1.95 3.37 L 13.89 24 h -3.8 l -1.94 -3.34 l 1.95 -3.37 Z m 0 -17.3 l 3.77 0.01 l 1.95 3.37 l -1.93 3.32 h -3.8 L 8.15 3.37 L 10.1 0 Z m 0 8.63 l 3.77 0.01 l 1.95 3.37 l -1.93 3.33 h -3.8 l -1.94 -3.34 l 1.95 -3.37 Z" />
+    </group>
 </vector>

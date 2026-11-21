@@ -1,21 +1,30 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="80dp"
-    android:height="75dp"
-    android:viewportWidth="80"
-    android:viewportHeight="75">
-  <path
-      android:pathData="M57.41,51.372m-20.345,0a20.345,20.345 0,1 1,40.69 0a20.345,20.345 0,1 1,-40.69 0"
-      android:strokeAlpha="0.5"
-      android:fillColor="#1E7CC0"
-      android:fillAlpha="0.5"/>
-  <path
-      android:pathData="M22.862,51.372m-20.345,0a20.345,20.345 0,1 1,40.69 0a20.345,20.345 0,1 1,-40.69 0"
-      android:strokeAlpha="0.5"
-      android:fillColor="#1E7CC0"
-      android:fillAlpha="0.5"/>
-  <path
-      android:pathData="M40.136,22.582m-20.345,0a20.345,20.345 0,1 1,40.69 0a20.345,20.345 0,1 1,-40.69 0"
-      android:strokeAlpha="0.5"
-      android:fillColor="#1E7CC0"
-      android:fillAlpha="0.5"/>
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M 88 0 H 424 A 88 88 0 0 1 512 88 V 424 A 88 88 0 0 1 424 512 H 88 A 88 88 0 0 1 0 424 V 88 A 88 88 0 0 1 88 0 Z" />
+    <group
+        android:translateX="64.90"
+        android:translateY="79.77"
+        android:scaleX="4.7588"
+        android:scaleY="4.7588">
+        <path
+            android:pathData="M 57.41 51.37 m -20.34 0 a 20.34 20.34 0 1 1 40.69 0 a 20.34 20.34 0 1 1 -40.69 0"
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.5"
+            android:strokeAlpha="0.5" />
+        <path
+            android:pathData="M 22.86 51.37 m -20.34 0 a 20.34 20.34 0 1 1 40.69 0 a 20.34 20.34 0 1 1 -40.69 0"
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.5"
+            android:strokeAlpha="0.5" />
+        <path
+            android:pathData="M 40.14 22.58 m -20.34 0 a 20.34 20.34 0 1 1 40.69 0 a 20.34 20.34 0 1 1 -40.69 0"
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.5"
+            android:strokeAlpha="0.5" />
+    </group>
 </vector>

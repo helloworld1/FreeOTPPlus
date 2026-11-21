@@ -27,7 +27,7 @@
     <string name="about_website">詳細については %s をご覧ください。</string>
     <string name="about_feedback">フィードバックをお待ちしています：&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">このアプリケーションで使用されている一部のアイコンは、Android オープンソースプロジェクトで作成・共有された著作物を複製したものであり、Creative Commons 2.5 Attribution License に記載された条件に従って使用されています。</string>
-    <string name="about_token_image">token-images ライブラリ内のトークンサムネイル token_image_*.xml は、&lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT License&lt;/a&gt; の下で andOTP から提供されています。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">token-images ライブラリのトークンサムネイル token_image_*.xml には、&lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT ライセンス&lt;/a&gt;下の andOTP (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer)、&lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0)、および FreeOTP+ 貢献者のアイコンが含まれます。</string>
     <string name="error_camera_open">カメラの起動中にエラーが発生しました！</string>
     <string name="delete_summary">これが最後の確認です：このトークンを削除すると、完全に失われ復元できません。サーバー側では無効化されません。</string>
     <string name="delete_question">このトークンを削除しますか？</string>

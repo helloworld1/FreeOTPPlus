@@ -27,7 +27,7 @@
     <string name="about_website">Daha fazla bilgi için %s sayfamıza bakın.</string>
     <string name="about_feedback">Geri bildiriminizi memnuniyetle karşılıyoruz:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Bu uygulama tarafından kullanılan bazı simgeler, Android Open Source Project tarafından oluşturulan ve paylaşılan çalışmalardan çoğaltılmıştır ve Creative Commons 2.5 Attribution License kapsamında açıklanan koşullara göre kullanılmaktadır.</string>
-    <string name="about_token_image">token-images kütüphanesindeki token_image_*.xml token küçük resimleri, &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT Lisansı&lt;/a&gt; altında andOTP\'den alınmıştır. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">token-images kitaplığındaki token_image_*.xml küçük resimleri &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT Lisansı&lt;/a&gt; altında andOTP (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) ve FreeOTP+ katılımcılarının simgelerini içerir.</string>
     <string name="error_camera_open">Kamera açılırken hata oluştu!</string>
     <string name="delete_summary">Bu son şansınız: Bu token\'ı silerseniz kalıcı olarak kaybolacaktır. Sunucu tarafında devre dışı bırakılmayacaktır.</string>
     <string name="delete_question">Bu token silinsin mi?</string>

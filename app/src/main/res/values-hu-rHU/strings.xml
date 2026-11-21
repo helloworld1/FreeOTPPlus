@@ -27,7 +27,7 @@
     <string name="about_website">További információkért tekintse meg a következőt: %s.</string>
     <string name="about_feedback">Szívesen vesszük a visszajelzését:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Az alkalmazás által használt egyes ikonok az Android Open Source Project által létrehozott és megosztott munkából származnak, és a Creative Commons 2.5 Nevezd meg! licencben leírt feltételek szerint kerülnek felhasználásra.</string>
-    <string name="about_token_image">A token-images könyvtárban lévő token_image_*.xml tokenbélyegképek az andOTP programból származnak &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT licenc&lt;/a&gt; alatt. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">A token-images könyvtár token_image_*.xml bélyegképei az andOTP ikonjait tartalmazzák &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT-licenc&lt;/a&gt; alatt (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), valamint a &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) és a FreeOTP+ közreműködőinek ikonjait.</string>
     <string name="error_camera_open">Hiba a kamera megnyitása közben!</string>
     <string name="delete_summary">Ez az utolsó esélye: ha törli ezt a tokent, akkor az örökre elvész. Nem lesz letiltva a kiszolgálón.</string>
     <string name="delete_question">Törli ezt a tokent?</string>

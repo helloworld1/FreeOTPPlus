@@ -27,7 +27,7 @@
     <string name="about_website">如需更多資訊，請參閱我們的 %s。</string>
     <string name="about_feedback">歡迎提供意見回饋：&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">此應用程式使用的部分圖示複製自 Android 開放原始碼專案 (Android Open Source Project) 建立並分享的作品，並依據創用 CC 姓名標示 2.5 授權條款 (Creative Commons 2.5 Attribution License) 中所述的條款使用。</string>
-    <string name="about_token_image">token-images 程式庫中的權杖縮圖 token_image_*.xml 來自 andOTP，依據 &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT 授權條款&lt;/a&gt;提供。Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">token-images 函式庫中的權杖圖示 token_image_*.xml 包含來自 &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT 授權條款&lt;/a&gt;下的 andOTP (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer)、&lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) 及 FreeOTP+ 貢獻者的圖示。</string>
     <string name="error_camera_open">開啟相機時發生錯誤！</string>
     <string name="delete_summary">這是您最後的機會：若刪除此權杖，它將會永遠消失，且不會在伺服器上停用。</string>
     <string name="delete_question">刪除此權杖？</string>

@@ -27,7 +27,7 @@
     <string name="about_website">மேலும் தகவலுக்கு, எங்கள் %s பக்கத்தைப் பார்க்கவும்.</string>
     <string name="about_feedback">உங்கள் கருத்துக்களை வரவேற்கிறோம்:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">இந்தச் செயலியில் பயன்படுத்தப்பட்டுள்ள சில சின்னங்கள் Android Open Source Project உருவாக்கிப் பகிர்ந்த படைப்புகளிலிருந்து எடுக்கப்பட்டு, Creative Commons 2.5 Attribution License விதிமுறைகளின்படி பயன்படுத்தப்படுகின்றன.</string>
-    <string name="about_token_image">token-images நூலகத்தில் உள்ள token_image_*.xml டோக்கன் சிறுபடங்கள் &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT உரிமத்தின்&lt;/a&gt; கீழ் andOTP-யிலிருந்து பெறப்பட்டவை. பதிப்புரிமை © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; பதிப்புரிமை © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">token-images நூலகத்தின் token_image_*.xml சின்னங்களில் &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT உரிமத்தின்&lt;/a&gt; கீழ் andOTP (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0), மற்றும் FreeOTP+ பங்களிப்பாளர்களின் சின்னங்கள் அடங்கும்.</string>
     <string name="error_camera_open">கேமராவைத் திறப்பதில் பிழை!</string>
     <string name="delete_summary">இதுவே உங்கள் கடைசி வாய்ப்பு: இந்த டோக்கனை நீக்கினால் அது நிரந்தரமாக அழிந்துவிடும். ஆனால் சேவையகத்தில் இது முடக்கப்படாது.</string>
     <string name="delete_question">இந்த டோக்கனை நீக்கவா?</string>

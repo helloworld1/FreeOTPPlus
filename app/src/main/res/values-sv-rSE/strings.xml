@@ -27,7 +27,7 @@
     <string name="about_website">För mer information, se vår %s.</string>
     <string name="about_feedback">Vi tar gärna emot dina synpunkter:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">Vissa ikoner som används av denna app återges från verk som skapats och delats av Android Open Source Project och används enligt villkoren i Creative Commons 2.5 Attribution License.</string>
-    <string name="about_token_image">Miniatyrbilderna för tokens token_image_*.xml i biblioteket token-images kommer från andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT-licensen&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">Tokenminiatyrerna token_image_*.xml i biblioteket token-images innehåller ikoner från andOTP under &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;MIT-licensen&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) och FreeOTP+-bidragsgivare.</string>
     <string name="error_camera_open">Fel vid öppning av kameran!</string>
     <string name="delete_summary">Detta är din sista chans: om du tar bort denna token försvinner den för alltid. Den kommer inte att inaktiveras på servern.</string>
     <string name="delete_question">Ta bort denna token?</string>

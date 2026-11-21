@@ -27,7 +27,7 @@
     <string name="about_website">למידע נוסף, ניתן לעיין ב-%s שלנו.</string>
     <string name="about_feedback">נשמח לקבל משוב:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">חלק מהסמלים שבהם נעשה שימוש ביישום זה משוחזרים מעבודות שנוצרו ושותפו על ידי פרויקט הקוד הפתוח של Android, ונעשה בהם שימוש בהתאם לתנאים המתוארים ברישיון Creative Commons 2.5 Attribution.</string>
-    <string name="about_token_image">התמונות הממוזערות של האסימונים token_image_*.xml בספריית token-images הן מ-andOTP תחת &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;רישיון MIT&lt;/a&gt;. Copyright © 2017-2020 Jakob Nixdorf. &lt;andotp@shadowice.org&gt; Copyright © 2015 Bruno Bierbaumer</string>
+    <string name="about_token_image">התמונות הממוזערות token_image_*.xml בספריית token-images כוללות סמלים מ-andOTP תחת &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;רישיון MIT&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer), &lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0), ותורמי FreeOTP+.</string>
     <string name="error_camera_open">שגיאה בפתיחת המצלמה!</string>
     <string name="delete_summary">זוהי ההזדמנות האחרונה שלך: מחיקת האסימון הזה תסיר אותו לצמיתות. הוא לא יושבת בשרת.</string>
     <string name="delete_question">למחוק את האסימון הזה?</string>
