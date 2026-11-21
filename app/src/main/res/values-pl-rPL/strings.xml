@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Nie udało się dodać obrazu</string>
     <string name="launch_file_browser_failure">Nie udało się uruchomić systemowego menedżera plików. Prawdopodobnie jest to problem systemu operacyjnego.</string>
     <string name="share_qr_code">Udostępnij kod QR</string>
+    <string name="copy_token_uri">Kopiuj URI tokenu</string>
+    <string name="token_uri_copied">URI tokenu skopiowane do schowka.</string>
     <string name="screenshot_mode">Tryb zrzutu ekranu</string>
     <string name="launch_with_screenshot_enabled">Uruchom z włączonymi zrzutami ekranu</string>
     <string name="token_details">Szczegóły tokenu</string>

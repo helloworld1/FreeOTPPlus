@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Non se puido engadir a imaxe</string>
     <string name="launch_file_browser_failure">Non é posible abrir o explorador de ficheiros do sistema. Probablemente sexa un problema do sistema operativo.</string>
     <string name="share_qr_code">Compartir código QR</string>
+    <string name="copy_token_uri">Copiar URI do token</string>
+    <string name="token_uri_copied">URI do token copiado no portapapeis.</string>
     <string name="screenshot_mode">Modo captura de pantalla</string>
     <string name="launch_with_screenshot_enabled">Iniciar con captura de pantalla activada</string>
     <string name="token_details">Detalles do token</string>

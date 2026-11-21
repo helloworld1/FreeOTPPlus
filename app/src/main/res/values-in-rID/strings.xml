@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Gagal menambahkan gambar</string>
     <string name="launch_file_browser_failure">Tidak dapat membuka pengelola file sistem. Kemungkinan ini masalah OS.</string>
     <string name="share_qr_code">Bagikan Kode QR</string>
+    <string name="copy_token_uri">Salin URI token</string>
+    <string name="token_uri_copied">URI token telah disalin ke papan klip.</string>
     <string name="screenshot_mode">Mode tangkapan layar</string>
     <string name="launch_with_screenshot_enabled">Buka dengan tangkapan layar diaktifkan</string>
     <string name="token_details">Detail token</string>

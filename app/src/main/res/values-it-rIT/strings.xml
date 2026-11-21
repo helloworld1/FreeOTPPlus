@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Impossibile aggiungere l\'immagine</string>
     <string name="launch_file_browser_failure">Impossibile avviare il gestore file di sistema. Probabilmente è un problema del sistema operativo.</string>
     <string name="share_qr_code">Condividi codice QR</string>
+    <string name="copy_token_uri">Copia URI del token</string>
+    <string name="token_uri_copied">URI del token copiato negli appunti.</string>
     <string name="screenshot_mode">Modalità screenshot</string>
     <string name="launch_with_screenshot_enabled">Avvia con screenshot abilitati</string>
     <string name="token_details">Dettagli del token</string>

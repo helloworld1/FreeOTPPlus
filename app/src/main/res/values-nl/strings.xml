@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Afbeelding toevoegen mislukt</string>
     <string name="launch_file_browser_failure">Kan de bestandsbeheerder van het systeem niet openen. Dit is waarschijnlijk een probleem met het besturingssysteem.</string>
     <string name="share_qr_code">QR-code delen</string>
+    <string name="copy_token_uri">Token-URI kopiëren</string>
+    <string name="token_uri_copied">Token-URI gekopieerd naar klembord.</string>
     <string name="screenshot_mode">Schermopnamemodus</string>
     <string name="launch_with_screenshot_enabled">Opstarten met schermopname ingeschakeld</string>
     <string name="token_details">Tokendetails</string>

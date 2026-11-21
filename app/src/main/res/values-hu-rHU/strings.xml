@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Nem sikerült hozzáadni a képet</string>
     <string name="launch_file_browser_failure">Nem sikerült elindítani a rendszer fájlböngészőjét. Valószínűleg operációsrendszer-hiba.</string>
     <string name="share_qr_code">QR-kód megosztása</string>
+    <string name="copy_token_uri">Token URI másolása</string>
+    <string name="token_uri_copied">A token URI a vágólapra másolva.</string>
     <string name="screenshot_mode">Képernyőkép mód</string>
     <string name="launch_with_screenshot_enabled">Indítás engedélyezett képernyőképpel</string>
     <string name="token_details">Token részletei</string>

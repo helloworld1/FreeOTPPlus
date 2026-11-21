@@ -1,42 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/root_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="24dp"
-    android:paddingBottom="8dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/qr_subtitle"
+    <LinearLayout
+        android:id="@+id/root_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:textColor="@color/on_surface_variant"
-        android:visibility="gone" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="8dp">
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/qr_surface"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/outline_variant"
-        app:strokeWidth="1dp">
+        <TextView
+            android:id="@+id/qr_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/on_surface_variant"
+            android:visibility="gone" />
 
-        <ImageView
-            android:id="@+id/qrcode"
-            android:layout_width="256dp"
-            android:layout_height="256dp"
-            android:contentDescription="@string/share_qr_code"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            app:srcCompat="@drawable/qrcode" />
-    </com.google.android.material.card.MaterialCardView>
-</LinearLayout>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/qr_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/outline_variant"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:id="@+id/qrcode"
+                android:layout_width="256dp"
+                android:layout_height="256dp"
+                android:contentDescription="@string/share_qr_code"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/qrcode" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/copy_uri_button"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:enabled="false"
+            android:text="@string/copy_token_uri"
+            app:icon="@drawable/content_copy_24px" />
+    </LinearLayout>
+</ScrollView>

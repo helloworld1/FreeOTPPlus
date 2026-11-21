@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Det gick inte att lägga till bild</string>
     <string name="launch_file_browser_failure">Det gick inte att starta systemets filhanterare. Det är troligtvis ett OS-problem.</string>
     <string name="share_qr_code">Dela QR-kod</string>
+    <string name="copy_token_uri">Kopiera token-URI</string>
+    <string name="token_uri_copied">Token-URI kopierades till urklipp.</string>
     <string name="screenshot_mode">Skärmbildsläge</string>
     <string name="launch_with_screenshot_enabled">Starta med skärmbilder aktiverade</string>
     <string name="token_details">Tokendetaljer</string>

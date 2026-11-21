@@ -1,9 +1,14 @@
 package org.fedorahosted.freeotp.ui
 
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -98,9 +103,9 @@ class ShareQrCodeDialogFragment : DialogFragment() {
 
             val qrCodeSize = resources.getDimensionPixelSize(R.dimen.qr_code_size)
 
-            val qrBitmap = try {
+            val uriAndBitmap = try {
                 val uriString = OtpTokenFactory.toUri(token).toString()
-                withContext(Dispatchers.Default) {
+                val bitmap = withContext(Dispatchers.Default) {
                     val encoded = QRCodeWriter().encode(
                         uriString,
                         BarcodeFormat.QR_CODE,
@@ -116,6 +121,7 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                     }
                     Bitmap.createBitmap(pixels, qrCodeSize, qrCodeSize, Bitmap.Config.RGB_565)
                 }
+                uriString to bitmap
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -125,8 +131,26 @@ class ShareQrCodeDialogFragment : DialogFragment() {
 
             if (!isAdded) return@launch
 
-            if (qrBitmap != null) {
+            if (uriAndBitmap != null) {
+                val (uriString, qrBitmap) = uriAndBitmap
                 binding.qrcode.setImageBitmap(qrBitmap)
+                binding.copyUriButton.isEnabled = true
+                binding.copyUriButton.setOnClickListener {
+                    if (!isAdded) return@setOnClickListener
+                    val mainActivity = activity as? MainActivity
+                    if (!tokenCryptoManager.isUnlocked() || mainActivity?.isSessionAuthenticated() == false) {
+                        mainActivity?.isSessionAuthenticated()
+                        dismissAllowingStateLoss()
+                        return@setOnClickListener
+                    }
+                    copyTokenUriToClipboard(uriString)
+                    if (mainActivity != null) {
+                        mainActivity.showSnackbar(R.string.token_uri_copied)
+                    } else {
+                        context?.let { Toast.makeText(it, R.string.token_uri_copied, Toast.LENGTH_SHORT).show() }
+                    }
+                    dismissAllowingStateLoss()
+                }
             } else {
                 showInvalidTokenError()
                 dismissAllowingStateLoss()
@@ -134,6 +158,17 @@ class ShareQrCodeDialogFragment : DialogFragment() {
         }
 
         return alertDialog
+    }
+
+    private fun copyTokenUriToClipboard(uriString: String) {
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText(getString(R.string.share_qr_code), uriString)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            clip.description.extras = PersistableBundle().apply {
+                putBoolean(EXTRA_IS_SENSITIVE_KEY, true)
+            }
+        }
+        clipboard.setPrimaryClip(clip)
     }
 
     private fun showInvalidTokenError() {
@@ -148,6 +183,7 @@ class ShareQrCodeDialogFragment : DialogFragment() {
 
     companion object {
         private val TAG = ShareQrCodeDialogFragment::class.java.simpleName
+        private const val EXTRA_IS_SENSITIVE_KEY = "android.content.extra.IS_SENSITIVE"
         const val ARG_TOKEN_ID = "token_id"
 
         fun args(tokenId: Long): Bundle = Bundle().apply {

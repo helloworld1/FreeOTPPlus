@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Не вдалося додати зображення</string>
     <string name="launch_file_browser_failure">Неможливо запустити системний файловий менеджер. Ймовірно, це проблема ОС.</string>
     <string name="share_qr_code">Поділитися QR-кодом</string>
+    <string name="copy_token_uri">Копіювати URI ключа</string>
+    <string name="token_uri_copied">URI ключа скопійовано до буфера обміну.</string>
     <string name="screenshot_mode">Режим знімків екрана</string>
     <string name="launch_with_screenshot_enabled">Запустити з дозволеними знімками екрана</string>
     <string name="token_details">Деталі ключа</string>

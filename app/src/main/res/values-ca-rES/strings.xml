@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">No s\'ha pogut afegir la imatge</string>
     <string name="launch_file_browser_failure">No es pot iniciar el navegador de fitxers del sistema. És probable que sigui un problema del sistema operatiu.</string>
     <string name="share_qr_code">Comparteix el codi QR</string>
+    <string name="copy_token_uri">Copia l\'URI de l\'OTP</string>
+    <string name="token_uri_copied">URI de l\'OTP copiat al porta-retalls.</string>
     <string name="screenshot_mode">Mode de captura de pantalla</string>
     <string name="launch_with_screenshot_enabled">Inicia amb la captura de pantalla activada</string>
     <string name="token_details">Detalls de l\'OTP</string>

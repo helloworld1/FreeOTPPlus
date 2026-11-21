@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">படத்தைச் சேர்க்க முடியவில்லை</string>
     <string name="launch_file_browser_failure">கணினியின் கோப்பு உலாவியைத் திறக்க முடியவில்லை. இது இயங்குதளச் சிக்கலாக இருக்கலாம்.</string>
     <string name="share_qr_code">QR குறியீட்டைப் பகிர்</string>
+    <string name="copy_token_uri">டோக்கன் URI-ஐ நகலெடு</string>
+    <string name="token_uri_copied">டோக்கன் URI கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது.</string>
     <string name="screenshot_mode">திரைப்பிடிப்பு பயன்முறை</string>
     <string name="launch_with_screenshot_enabled">திரைப்பிடிப்பை அனுமதித்துத் தொடங்கு</string>
     <string name="token_details">டோக்கன் விவரங்கள்</string>

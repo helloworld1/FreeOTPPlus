@@ -1,6 +1,10 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Build
 import android.os.SystemClock
+import android.view.View
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.appcompat.view.menu.ListMenuItemView
@@ -11,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -20,6 +25,7 @@ import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isChecked
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -29,12 +35,14 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
+import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Test
@@ -429,12 +437,93 @@ class AuthenticationGateTest {
         }
     }
 
+    @Test
+    fun testShareQrCodeCopyTokenUriButtonCopiesExactSensitiveUriToClipboard() {
+        AuthenticationUtil.hasScreenLockOverride = false
+        insertTestToken()
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            awaitViewMatching(withId(R.id.token_list), isDisplayed())
+            onView(withId(R.id.token_list))
+                .perform(
+                    actionOnItemAtPosition<RecyclerView.ViewHolder>(
+                        0,
+                        RecyclerViewAction.clickChildViewWithId(R.id.menu)
+                    )
+                )
+            onView(withText(R.string.share_qr_code)).perform(click())
+
+            awaitDialogViewMatching(withId(R.id.copy_uri_button), allOf(isDisplayed(), isEnabled()))
+            onView(withId(R.id.copy_uri_button)).inRoot(isDialog())
+                .perform(scrollTo(), click())
+
+            awaitViewMatching(withText(R.string.token_uri_copied), isDisplayed())
+
+            scenario.onActivity { activity ->
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = clipboard.primaryClip
+                assertThat(clip).isNotNull()
+                val copiedText = clip!!.getItemAt(0).text.toString()
+                assertThat(copiedText).isEqualTo(OtpTokenFactory.toUri(TestData.OTP_TOTP_TOKEN_2).toString())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    assertThat(clip.description.extras?.getBoolean("android.content.extra.IS_SENSITIVE"))
+                        .isTrue()
+                }
+            }
+        }
+    }
+
+    private fun awaitViewMatching(
+        viewMatcher: Matcher<View>,
+        assertionMatcher: Matcher<View>,
+        timeoutMs: Long = 5_000L
+    ) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastError: Throwable? = null
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                onView(viewMatcher).check(matches(assertionMatcher))
+                return
+            } catch (e: NoMatchingViewException) {
+                lastError = e
+            } catch (e: AssertionError) {
+                lastError = e
+            }
+            Thread.sleep(50L)
+        }
+        if (lastError != null) throw lastError
+        onView(viewMatcher).check(matches(assertionMatcher))
+    }
+
+    private fun awaitDialogViewMatching(
+        viewMatcher: Matcher<View>,
+        assertionMatcher: Matcher<View>,
+        timeoutMs: Long = 5_000L
+    ) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastError: Throwable? = null
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
+                return
+            } catch (e: NoMatchingViewException) {
+                lastError = e
+            } catch (e: AssertionError) {
+                lastError = e
+            }
+            Thread.sleep(50L)
+        }
+        if (lastError != null) throw lastError
+        onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
+    }
+
     private fun insertTestToken(): Long {
         var tokenId = 1L
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 activity.settings.requireAuthentication = false
                 runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().deleteAll()
                     activity.otpTokenDatabase.otpTokenDao()
                         .insert(TestData.OTP_TOTP_TOKEN_2.copy(id = 1, ordinal = 1))
                     tokenId = 1L

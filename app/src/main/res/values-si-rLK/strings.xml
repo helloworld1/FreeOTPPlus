@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">රූපය එක් කිරීමට අසමත් විය</string>
     <string name="launch_file_browser_failure">පද්ධතියේ ගොනු ගවේෂකය විවෘත කළ නොහැක. එය බොහෝ විට මෙහෙයුම් පද්ධතියේ ගැටලුවක් විය හැකිය.</string>
     <string name="share_qr_code">QR කේතය බෙදා ගන්න</string>
+    <string name="copy_token_uri">ටෝකන URI පිටපත් කරන්න</string>
+    <string name="token_uri_copied">ටෝකන URI පසුරු පුවරුවට පිටපත් කරන ලදී.</string>
     <string name="screenshot_mode">තිර රූ මාදිලිය</string>
     <string name="launch_with_screenshot_enabled">තිර රූ සබල කර දියත් කරන්න</string>
     <string name="token_details">ටෝකන විස්තර</string>

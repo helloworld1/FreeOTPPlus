@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">הוספת התמונה נכשלה</string>
     <string name="launch_file_browser_failure">לא ניתן להפעיל את סייר הקבצים של המערכת. ככל הנראה מדובר בבעיה במערכת ההפעלה.</string>
     <string name="share_qr_code">שיתוף קוד QR</string>
+    <string name="copy_token_uri">העתקת URI של האסימון</string>
+    <string name="token_uri_copied">URI של האסימון הועתק ללוח.</string>
     <string name="screenshot_mode">מצב צילום מסך</string>
     <string name="launch_with_screenshot_enabled">הפעלה עם אפשרות לצילום מסך</string>
     <string name="token_details">פרטי אסימון</string>

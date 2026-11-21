@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Не удалось добавить изображение</string>
     <string name="launch_file_browser_failure">Не удалось запустить системный файловый менеджер. Вероятно, это проблема операционной системы.</string>
     <string name="share_qr_code">Поделиться QR-кодом</string>
+    <string name="copy_token_uri">Копировать URI токена</string>
+    <string name="token_uri_copied">URI токена скопирован в буфер обмена.</string>
     <string name="screenshot_mode">Режим скриншотов</string>
     <string name="launch_with_screenshot_enabled">Запустить с разрешёнными скриншотами</string>
     <string name="token_details">Сведения о токене</string>

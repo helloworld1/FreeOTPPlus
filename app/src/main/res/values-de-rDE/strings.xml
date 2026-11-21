@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Fehler beim Hinzufügen des Bildes</string>
     <string name="launch_file_browser_failure">Der Dateimanager des Systems konnte nicht gestartet werden. Wahrscheinlich liegt ein Betriebssystemproblem vor.</string>
     <string name="share_qr_code">QR-Code teilen</string>
+    <string name="copy_token_uri">Token-URI kopieren</string>
+    <string name="token_uri_copied">Token-URI in die Zwischenablage kopiert.</string>
     <string name="screenshot_mode">Screenshot-Modus</string>
     <string name="launch_with_screenshot_enabled">Mit erlaubten Screenshots starten</string>
     <string name="token_details">Token-Details</string>

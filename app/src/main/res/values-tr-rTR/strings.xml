@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Resim eklenemedi</string>
     <string name="launch_file_browser_failure">Sistemin dosya yöneticisi başlatılamıyor. Muhtemelen bir işletim sistemi sorunudur.</string>
     <string name="share_qr_code">QR Kodunu Paylaş</string>
+    <string name="copy_token_uri">Token URI\'sini kopyala</string>
+    <string name="token_uri_copied">Token URI\'si panoya kopyalandı.</string>
     <string name="screenshot_mode">Ekran görüntüsü modu</string>
     <string name="launch_with_screenshot_enabled">Ekran görüntüsü etkin olarak başlat</string>
     <string name="token_details">Token ayrıntıları</string>

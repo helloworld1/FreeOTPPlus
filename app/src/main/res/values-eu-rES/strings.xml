@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Ezin izan da irudia gehitu</string>
     <string name="launch_file_browser_failure">Ezin izan da sistemaren fitxategi-arakatzailea abiarazi. Ziurrenik sistema eragilearen arazo bat da.</string>
     <string name="share_qr_code">Partekatu QR kodea</string>
+    <string name="copy_token_uri">Kopiatu tokenaren URIa</string>
+    <string name="token_uri_copied">Tokenaren URIa arbelera kopiatu da.</string>
     <string name="screenshot_mode">Pantaila-argazki modua</string>
     <string name="launch_with_screenshot_enabled">Abiarazi pantaila-argazkiak gaituta</string>
     <string name="token_details">Tokenaren xehetasunak</string>

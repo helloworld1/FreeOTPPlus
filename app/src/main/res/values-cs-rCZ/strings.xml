@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Nepodařilo se přidat obrázek</string>
     <string name="launch_file_browser_failure">Nelze spustit systémového správce souborů. Pravděpodobně jde o problém operačního systému.</string>
     <string name="share_qr_code">Sdílet QR kód</string>
+    <string name="copy_token_uri">Kopírovat URI tokenu</string>
+    <string name="token_uri_copied">URI tokenu zkopírováno do schránky.</string>
     <string name="screenshot_mode">Režim snímků obrazovky</string>
     <string name="launch_with_screenshot_enabled">Spustit s povolenými snímky obrazovky</string>
     <string name="token_details">Podrobnosti tokenu</string>

@@ -97,6 +97,8 @@
     <string name="fail_to_add_image">Fail to add image</string>
     <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>
     <string name="share_qr_code">Share QR Code</string>
+    <string name="copy_token_uri">Copy token URI</string>
+    <string name="token_uri_copied">Token URI copied to clipboard.</string>
     <string name="screenshot_mode">Screenshot mode</string>
     <string name="launch_with_screenshot_enabled">Launch with screenshot enabled</string>
     <string name="token_details">Token details</string>

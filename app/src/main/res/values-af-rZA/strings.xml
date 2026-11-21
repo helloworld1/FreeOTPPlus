@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">Kon nie prent byvoeg nie</string>
     <string name="launch_file_browser_failure">Kan nie die stelsel se lêerblaaier oopmaak nie. Dit is waarskynlik \'n bedryfstelselprobleem.</string>
     <string name="share_qr_code">Deel QR-kode</string>
+    <string name="copy_token_uri">Kopieer kenteken-URI</string>
+    <string name="token_uri_copied">Kenteken-URI na knipbord gekopieer.</string>
     <string name="screenshot_mode">Skermkiekie-modus</string>
     <string name="launch_with_screenshot_enabled">Begin met skermkiekies geaktiveer</string>
     <string name="token_details">Kentekenbesonderhede</string>

@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">新增圖片失敗</string>
     <string name="launch_file_browser_failure">無法啟動系統的檔案管理器。這可能是作業系統的問題。</string>
     <string name="share_qr_code">分享 QR Code</string>
+    <string name="copy_token_uri">複製權杖 URI</string>
+    <string name="token_uri_copied">權杖 URI 已複製到剪貼簿。</string>
     <string name="screenshot_mode">螢幕截圖模式</string>
     <string name="launch_with_screenshot_enabled">以允許螢幕截圖模式啟動</string>
     <string name="token_details">權杖詳細資訊</string>

@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">画像の追加に失敗しました</string>
     <string name="launch_file_browser_failure">システムのファイルマネージャーを起動できません。OSの問題である可能性があります。</string>
     <string name="share_qr_code">QRコードを共有</string>
+    <string name="copy_token_uri">トークンURIをコピー</string>
+    <string name="token_uri_copied">トークンURIをクリップボードにコピーしました。</string>
     <string name="screenshot_mode">スクリーンショットモード</string>
     <string name="launch_with_screenshot_enabled">スクリーンショットを有効にして起動</string>
     <string name="token_details">トークンの詳細</string>

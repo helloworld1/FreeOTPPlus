@@ -85,6 +85,8 @@
     <string name="fail_to_add_image">添加图片失败</string>
     <string name="launch_file_browser_failure">无法启动系统文件管理器，这可能是操作系统问题。</string>
     <string name="share_qr_code">分享二维码</string>
+    <string name="copy_token_uri">复制令牌 URI</string>
+    <string name="token_uri_copied">令牌 URI 已复制到剪贴板。</string>
     <string name="screenshot_mode">截屏模式</string>
     <string name="launch_with_screenshot_enabled">允许截屏并启动</string>
     <string name="token_details">令牌详情</string>
