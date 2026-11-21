@@ -8,10 +8,10 @@ data class TokenImageManifest(
 )
 
 data class TokenImageManifestEntry(
-    @SerializedName("fileName") val fileName: String,
+    @SerializedName("fileName") val fileName: String = "",
     @SerializedName("originalImagePath") val originalImagePath: String? = null,
     @SerializedName("issuer") val issuer: String? = null,
-    @SerializedName("label") val label: String,
+    @SerializedName("label") val label: String = "",
     @SerializedName("tokenType") val tokenType: OtpTokenType = OtpTokenType.TOTP,
     @SerializedName("algorithm") val algorithm: String = "SHA1",
     @SerializedName("digits") val digits: Int = 6,

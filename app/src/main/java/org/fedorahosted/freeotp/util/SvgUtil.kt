@@ -7,6 +7,7 @@ import android.graphics.RectF
 import com.caverock.androidsvg.PreserveAspectRatio
 import com.caverock.androidsvg.SVG
 import com.caverock.androidsvg.SVGParseException
+import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -17,7 +18,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.math.roundToInt
 
 object SvgUtil {
-    const val MAX_SVG_BYTES: Int = 2 * 1024 * 1024
+    const val MAX_SVG_BYTES: Int = TokenImageBackupUtil.MAX_SVG_ENTRY_BYTES
     const val DEFAULT_RENDER_SIZE_PX: Int = 512
     const val MAX_RENDER_SIZE_PX: Int = 1024
     private const val HEADER_SNIFF_BYTES: Int = 8192

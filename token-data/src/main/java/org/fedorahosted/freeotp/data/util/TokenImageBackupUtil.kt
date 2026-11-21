@@ -3,7 +3,9 @@ package org.fedorahosted.freeotp.data.util
 import android.content.Context
 import android.net.Uri
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import org.fedorahosted.freeotp.data.OtpToken
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenImageManifest
 import org.fedorahosted.freeotp.data.TokenImageManifestEntry
 import java.io.BufferedInputStream
@@ -30,7 +32,8 @@ object TokenImageBackupUtil {
     private const val CACHED_MANIFEST_DIR = ".image_manifest"
     private const val CACHED_MANIFEST_FILE = "manifest.json"
     private const val MAX_ZIP_ENTRIES = 2000
-    private const val MAX_SINGLE_ENTRY_BYTES = 10 * 1024 * 1024 // 10 MB
+    private const val MAX_SINGLE_ENTRY_BYTES = 10 * 1024 * 1024 // 10 MB (raster images)
+    const val MAX_SVG_ENTRY_BYTES = 2 * 1024 * 1024 // 2 MB (shared with SvgUtil.MAX_SVG_BYTES)
     private const val MAX_TOTAL_EXTRACTED_BYTES = 200L * 1024L * 1024L // 200 MB
 
     /**
@@ -99,8 +102,8 @@ object TokenImageBackupUtil {
     }
 
     /**
-     * Imports custom token images from [zipInputStream] into [filesDir], caches the manifest,
-     * and returns the updated list of [OtpToken]s whose `imagePath` changed.
+     * Imports custom token images from [zipInputStream] into [filesDir] transactionally, caches
+     * the sanitized manifest, and returns the updated list of [OtpToken]s whose `imagePath` changed.
      */
     @Throws(IOException::class)
     fun importTokenImagesFromZip(
@@ -123,65 +126,74 @@ object TokenImageBackupUtil {
             throw IOException("Input is not a valid ZIP archive")
         }
 
+        val stagingDir = File(filesDir, ".tmp_zip_stage_${UUID.randomUUID()}")
+        val backupDir = File(stagingDir, ".backup")
+        val stagedFileNames = LinkedHashSet<String>()
         var parsedManifest: TokenImageManifest? = null
+        var seenManifest = false
         var entryCount = 0
         var totalExtractedBytes = 0L
 
-        ZipInputStream(buffered).use { zis ->
-            while (true) {
-                val entry = zis.nextEntry ?: break
-                entryCount++
-                if (entryCount > MAX_ZIP_ENTRIES) {
-                    throw IOException("ZIP archive exceeds maximum entry count ($MAX_ZIP_ENTRIES)")
-                }
-                if (entry.isDirectory) {
+        try {
+            ZipInputStream(buffered).use { zis ->
+                while (true) {
+                    val entry = zis.nextEntry ?: break
+                    entryCount++
+                    if (entryCount > MAX_ZIP_ENTRIES) {
+                        throw IOException("ZIP archive exceeds maximum entry count ($MAX_ZIP_ENTRIES)")
+                    }
+                    if (entry.isDirectory) {
+                        zis.closeEntry()
+                        continue
+                    }
+
+                    val safeName = validateAndExtractZipEntryFileName(entry.name)
+                    val entryBytes = readBoundedBytes(zis, MAX_SINGLE_ENTRY_BYTES)
                     zis.closeEntry()
-                    continue
-                }
 
-                val safeName = validateAndExtractZipEntryFileName(entry.name)
-                val entryBytes = readBoundedBytes(zis, MAX_SINGLE_ENTRY_BYTES)
-                zis.closeEntry()
-
-                totalExtractedBytes += entryBytes.size
-                if (totalExtractedBytes > MAX_TOTAL_EXTRACTED_BYTES) {
-                    throw IOException("ZIP archive exceeds maximum total extracted size")
-                }
-
-                if (safeName == MANIFEST_ENTRY_NAME) {
-                    val text = String(entryBytes, StandardCharsets.UTF_8)
-                    parsedManifest = try {
-                        gson.fromJson(text, TokenImageManifest::class.java)
-                    } catch (e: Exception) {
-                        throw IOException("Malformed manifest.json in token images ZIP", e)
+                    totalExtractedBytes += entryBytes.size
+                    if (totalExtractedBytes > MAX_TOTAL_EXTRACTED_BYTES) {
+                        throw IOException("ZIP archive exceeds maximum total extracted size")
                     }
-                    continue
-                }
 
-                if (!isSupportedImageBytes(entryBytes)) {
-                    throw IOException("Unsupported or invalid image entry in ZIP: $safeName")
-                }
+                    if (safeName == MANIFEST_ENTRY_NAME) {
+                        if (seenManifest) {
+                            throw IOException("Duplicate manifest.json entry in token images ZIP")
+                        }
+                        seenManifest = true
+                        val text = String(entryBytes, StandardCharsets.UTF_8)
+                        parsedManifest = parseAndValidateZipManifest(text, gson)
+                        continue
+                    }
 
-                val targetFile = File(filesDir, safeName)
-                val canonicalTarget = targetFile.canonicalPath
-                if (!canonicalTarget.startsWith(canonicalFilesDir + File.separator)) {
-                    throw IOException("Blocked path traversal entry: ${entry.name}")
-                }
+                    if (!isSupportedImageBytes(entryBytes)) {
+                        throw IOException("Unsupported or invalid image entry in ZIP: $safeName")
+                    }
 
-                val tempFile = File(filesDir, ".tmp_img_${UUID.randomUUID()}")
-                try {
-                    FileOutputStream(tempFile).use { out -> out.write(entryBytes) }
-                    if (targetFile.exists() && !targetFile.delete()) {
-                        throw IOException("Unable to overwrite image file: $targetFile")
+                    val targetFile = File(filesDir, safeName)
+                    val canonicalTarget = targetFile.canonicalPath
+                    if (!canonicalTarget.startsWith(canonicalFilesDir + File.separator)) {
+                        throw IOException("Blocked path traversal entry: ${entry.name}")
                     }
-                    if (!tempFile.renameTo(targetFile)) {
-                        tempFile.copyTo(targetFile, overwrite = true)
+
+                    if (!stagingDir.exists() && !stagingDir.mkdirs()) {
+                        throw IOException("Unable to create staging directory")
                     }
-                } finally {
-                    if (tempFile.exists()) {
-                        tempFile.delete()
-                    }
+                    val stagedFile = File(stagingDir, safeName)
+                    FileOutputStream(stagedFile).use { out -> out.write(entryBytes) }
+                    stagedFileNames.add(safeName)
                 }
+            }
+
+            commitStagedFilesAtomically(
+                filesDir = filesDir,
+                stagingDir = stagingDir,
+                backupDir = backupDir,
+                stagedFileNames = stagedFileNames
+            )
+        } finally {
+            if (stagingDir.exists()) {
+                stagingDir.deleteRecursively()
             }
         }
 
@@ -189,6 +201,63 @@ object TokenImageBackupUtil {
         val resolvedTokens = resolveRestoredTokenImageLinks(currentTokens, filesDir, mergedManifest)
         return resolvedTokens.zip(currentTokens).mapNotNull { (updated, original) ->
             if (updated.imagePath != original.imagePath) updated else null
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun commitStagedFilesAtomically(
+        filesDir: File,
+        stagingDir: File,
+        backupDir: File,
+        stagedFileNames: Set<String>
+    ) {
+        if (stagedFileNames.isEmpty()) return
+
+        val replacedOriginals = mutableListOf<String>()
+        val newlyCreated = mutableListOf<String>()
+        try {
+            for (name in stagedFileNames) {
+                val stagedFile = File(stagingDir, name)
+                val targetFile = File(filesDir, name)
+                if (targetFile.exists()) {
+                    if (!backupDir.exists() && !backupDir.mkdirs()) {
+                        throw IOException("Unable to create rollback directory")
+                    }
+                    val backupFile = File(backupDir, name)
+                    if (!targetFile.renameTo(backupFile)) {
+                        targetFile.copyTo(backupFile, overwrite = true)
+                        if (!targetFile.delete()) {
+                            throw IOException("Unable to replace existing image file: $targetFile")
+                        }
+                    }
+                    replacedOriginals.add(name)
+                } else {
+                    newlyCreated.add(name)
+                }
+
+                if (!stagedFile.renameTo(targetFile)) {
+                    stagedFile.copyTo(targetFile, overwrite = true)
+                }
+            }
+        } catch (e: Exception) {
+            // Roll back any partial filesystem changes before rethrowing
+            for (name in newlyCreated) {
+                runCatching { File(filesDir, name).delete() }
+            }
+            for (name in replacedOriginals) {
+                runCatching {
+                    val targetFile = File(filesDir, name)
+                    val backupFile = File(backupDir, name)
+                    if (backupFile.exists()) {
+                        if (targetFile.exists()) targetFile.delete()
+                        if (!backupFile.renameTo(targetFile)) {
+                            backupFile.copyTo(targetFile, overwrite = true)
+                        }
+                    }
+                }
+            }
+            if (e is IOException) throw e
+            throw IOException("Failed to commit imported token images", e)
         }
     }
 
@@ -201,7 +270,8 @@ object TokenImageBackupUtil {
         filesDir: File,
         manifest: TokenImageManifest? = null
     ): List<OtpToken> {
-        val manifestEntries = manifest?.entries.orEmpty()
+        val sanitizedManifest = sanitizeManifest(manifest)
+        val manifestEntries = sanitizedManifest?.entries.orEmpty()
         val usedManifestIndices = mutableSetOf<Int>()
 
         return tokens.map { token ->
@@ -264,8 +334,102 @@ object TokenImageBackupUtil {
         if (!manifestFile.isFile) return null
         return runCatching {
             val json = manifestFile.readText(StandardCharsets.UTF_8)
-            gson.fromJson(json, TokenImageManifest::class.java)
+            val raw = gson.fromJson(json, TokenImageManifest::class.java)
+            sanitizeManifest(raw)
         }.getOrNull()
+    }
+
+    @Throws(IOException::class)
+    internal fun parseAndValidateZipManifest(jsonText: String, gson: Gson): TokenImageManifest {
+        if (jsonText.isBlank()) {
+            throw IOException("Empty manifest.json in token images ZIP")
+        }
+        val rootElement = try {
+            JsonParser.parseString(jsonText)
+        } catch (e: Exception) {
+            throw IOException("Malformed manifest.json in token images ZIP", e)
+        }
+        if (!rootElement.isJsonObject) {
+            throw IOException("Malformed manifest.json in token images ZIP: root must be a JSON object")
+        }
+
+        val rootObj = rootElement.asJsonObject
+        val entriesEl = rootObj.get("entries")
+        if (entriesEl != null && !entriesEl.isJsonNull) {
+            if (!entriesEl.isJsonArray) {
+                throw IOException("Malformed manifest.json in token images ZIP: 'entries' must be an array")
+            }
+            for (item in entriesEl.asJsonArray) {
+                if (item == null || !item.isJsonObject) {
+                    throw IOException("Malformed manifest.json in token images ZIP: entry must be an object")
+                }
+                val itemObj = item.asJsonObject
+                val fileNameEl = itemObj.get("fileName")
+                if (fileNameEl == null || !fileNameEl.isJsonPrimitive || !fileNameEl.asJsonPrimitive.isString) {
+                    throw IOException("Malformed manifest.json in token images ZIP: entry missing string 'fileName'")
+                }
+                val fileName = fileNameEl.asString
+                if (!isSafeSimpleFileName(fileName) || fileName.equals(MANIFEST_ENTRY_NAME, ignoreCase = true)) {
+                    throw IOException("Malformed manifest.json in token images ZIP: unsafe 'fileName' ($fileName)")
+                }
+
+                val labelEl = itemObj.get("label")
+                if (labelEl == null || !labelEl.isJsonPrimitive || !labelEl.asJsonPrimitive.isString) {
+                    throw IOException("Malformed manifest.json in token images ZIP: entry missing string 'label'")
+                }
+
+                val tokenTypeEl = itemObj.get("tokenType")
+                if (tokenTypeEl != null && !tokenTypeEl.isJsonNull) {
+                    if (!tokenTypeEl.isJsonPrimitive || !tokenTypeEl.asJsonPrimitive.isString) {
+                        throw IOException("Malformed manifest.json in token images ZIP: invalid 'tokenType'")
+                    }
+                    val validType = OtpTokenType.entries.any { it.name == tokenTypeEl.asString }
+                    if (!validType) {
+                        throw IOException("Malformed manifest.json in token images ZIP: unknown 'tokenType'")
+                    }
+                }
+            }
+        }
+
+        val raw = try {
+            gson.fromJson(rootObj, TokenImageManifest::class.java)
+        } catch (e: Exception) {
+            throw IOException("Malformed manifest.json in token images ZIP", e)
+        } ?: throw IOException("Malformed manifest.json in token images ZIP")
+
+        return sanitizeManifest(raw) ?: TokenImageManifest(version = 1, entries = emptyList())
+    }
+
+    @Suppress("USELESS_CAST", "UNCHECKED_CAST")
+    internal fun sanitizeManifest(raw: TokenImageManifest?): TokenImageManifest? {
+        if (raw == null) return null
+        val rawEntries = (raw.entries as List<Any?>?).orEmpty()
+        val cleanEntries = rawEntries.mapNotNull { item ->
+            val entry = item as? TokenImageManifestEntry ?: return@mapNotNull null
+            val safeFileName = (entry.fileName as String?)
+                ?.takeIf { isSafeSimpleFileName(it) && !it.equals(MANIFEST_ENTRY_NAME, ignoreCase = true) }
+                ?: return@mapNotNull null
+            val safeLabel = (entry.label as String?) ?: return@mapNotNull null
+            val safeOriginalPath = (entry.originalImagePath as String?)?.takeIf { it.isNotBlank() }
+            val safeIssuer = (entry.issuer as String?)?.takeIf { it.isNotBlank() }
+            val safeTokenType = (entry.tokenType as OtpTokenType?) ?: OtpTokenType.TOTP
+            val safeAlgorithm = (entry.algorithm as String?)?.takeIf { it.isNotBlank() } ?: "SHA1"
+            val safeDigits = entry.digits.takeIf { it > 0 } ?: 6
+            val safePeriod = entry.period.takeIf { it > 0 } ?: 30
+
+            TokenImageManifestEntry(
+                fileName = safeFileName,
+                originalImagePath = safeOriginalPath,
+                issuer = safeIssuer,
+                label = safeLabel,
+                tokenType = safeTokenType,
+                algorithm = safeAlgorithm,
+                digits = safeDigits,
+                period = safePeriod
+            )
+        }
+        val safeVersion = if (raw.version > 0) raw.version else 1
+        return TokenImageManifest(version = safeVersion, entries = cleanEntries)
     }
 
     private fun mergeAndSaveCachedManifest(
@@ -274,10 +438,10 @@ object TokenImageBackupUtil {
         incoming: TokenImageManifest?
     ): TokenImageManifest? {
         val existing = loadCachedManifest(filesDir, gson)
-        if (incoming == null) return existing
+        val sanitizedIncoming = sanitizeManifest(incoming) ?: return existing
 
         val combined = LinkedHashMap<String, TokenImageManifestEntry>()
-        for (entry in existing?.entries.orEmpty() + incoming.entries) {
+        for (entry in existing?.entries.orEmpty() + sanitizedIncoming.entries) {
             val key = "${entry.issuer.orEmpty()}|${entry.label}|${entry.tokenType}|${entry.fileName}"
             combined[key] = entry
         }
@@ -285,7 +449,19 @@ object TokenImageBackupUtil {
         runCatching {
             val dir = File(filesDir, CACHED_MANIFEST_DIR)
             if (dir.exists() || dir.mkdirs()) {
-                File(dir, CACHED_MANIFEST_FILE).writeText(gson.toJson(merged), StandardCharsets.UTF_8)
+                val target = File(dir, CACHED_MANIFEST_FILE)
+                val temp = File(dir, ".tmp_manifest_${UUID.randomUUID()}.json")
+                try {
+                    temp.writeText(gson.toJson(merged), StandardCharsets.UTF_8)
+                    if (target.exists() && !target.delete()) {
+                        throw IOException("Unable to replace cached manifest")
+                    }
+                    if (!temp.renameTo(target)) {
+                        temp.copyTo(target, overwrite = true)
+                    }
+                } finally {
+                    if (temp.exists()) temp.delete()
+                }
             }
         }
         return merged
@@ -507,16 +683,18 @@ object TokenImageBackupUtil {
             bytes[6] == 'y'.code.toByte() &&
             bytes[7] == 'p'.code.toByte()
         ) return true
-        // Gzipped SVGZ
+        // Gzipped SVGZ (must fit within MAX_SVG_ENTRY_BYTES = 2 MB both compressed and decompressed)
         if (bytes[0] == 0x1f.toByte() && bytes[1] == 0x8b.toByte()) {
+            if (bytes.size > MAX_SVG_ENTRY_BYTES) return false
             val decompressed = runCatching {
                 GZIPInputStream(ByteArrayInputStream(bytes)).use { gz ->
-                    readBoundedBytes(gz, MAX_SINGLE_ENTRY_BYTES)
+                    readBoundedBytes(gz, MAX_SVG_ENTRY_BYTES)
                 }
             }.getOrNull() ?: return false
             return isSafeSvgText(decompressed)
         }
-        // Plain XML SVG
+        // Plain XML SVG (must fit within MAX_SVG_ENTRY_BYTES = 2 MB to match SvgUtil.MAX_SVG_BYTES)
+        if (bytes.size > MAX_SVG_ENTRY_BYTES) return false
         return isSafeSvgText(bytes)
     }
 

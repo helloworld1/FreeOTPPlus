@@ -15,6 +15,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -206,6 +207,197 @@ class TokenImageBackupUtilTest {
                 zipInputStream = ByteArrayInputStream(badEntryZip)
             )
         }
+    }
+
+    @Test
+    fun importZip_handlesEmptyOrPartialManifestWithoutNpe_andRejectsInvalidManifestWithoutPoisoning() {
+        // 1. Empty JSON object "{}" and explicit null entries "{\"entries\":null}" succeed without NPE
+        for (manifestJson in listOf("{}", """{"entries":null}""")) {
+            val zipBytes = buildZip(
+                "image_custom.png" to SAMPLE_PNG_BYTES,
+                TokenImageBackupUtil.MANIFEST_ENTRY_NAME to manifestJson.toByteArray(StandardCharsets.UTF_8)
+            )
+            val updates = TokenImageBackupUtil.importTokenImagesFromZip(
+                currentTokens = emptyList(),
+                filesDir = newFilesDir,
+                gson = gson,
+                zipInputStream = ByteArrayInputStream(zipBytes)
+            )
+            assertThat(updates).isEmpty()
+            assertThat(File(newFilesDir, "image_custom.png").isFile).isTrue()
+        }
+
+        // 2. Entry omitting optional fields ("algorithm", "tokenType", "digits", "period") defaults cleanly
+        val minimalManifest = """{"entries":[{"fileName":"minimal.png","label":"alice@example.com"}]}"""
+        val minimalZip = buildZip(
+            "minimal.png" to SAMPLE_PNG_BYTES,
+            TokenImageBackupUtil.MANIFEST_ENTRY_NAME to minimalManifest.toByteArray(StandardCharsets.UTF_8)
+        )
+        val targetToken = makeToken(
+            id = 10L,
+            issuer = null,
+            label = "alice@example.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            imagePath = null
+        )
+        val relinkedUpdates = TokenImageBackupUtil.importTokenImagesFromZip(
+            currentTokens = listOf(targetToken),
+            filesDir = newFilesDir,
+            gson = gson,
+            zipInputStream = ByteArrayInputStream(minimalZip)
+        )
+        assertThat(relinkedUpdates).hasSize(1)
+        assertThat(relinkedUpdates.single().imagePath)
+            .isEqualTo(TokenImageBackupUtil.toFileUriString(File(newFilesDir, "minimal.png")))
+
+        // 3. Invalid manifests throw IOException (never NPE) and do NOT poison cached manifest on disk
+        val invalidManifests = listOf(
+            "null",
+            "[]",
+            """{"entries":[null]}""",
+            """{"entries":[{"label":"missing_filename"}]}""",
+            """{"entries":[{"fileName":"../evil.png","label":"alice"}]}""",
+            """{"entries":[{"fileName":"a.png"}]}""",
+            """{"entries":[{"fileName":"a.png","label":"alice","tokenType":"UNKNOWN_TYPE"}]}"""
+        )
+        for (badManifest in invalidManifests) {
+            val badZip = buildZip(
+                "should_not_persist.png" to SAMPLE_PNG_BYTES,
+                TokenImageBackupUtil.MANIFEST_ENTRY_NAME to badManifest.toByteArray(StandardCharsets.UTF_8)
+            )
+            assertThrows("Expected IOException for manifest: $badManifest", IOException::class.java) {
+                TokenImageBackupUtil.importTokenImagesFromZip(
+                    currentTokens = listOf(targetToken),
+                    filesDir = newFilesDir,
+                    gson = gson,
+                    zipInputStream = ByteArrayInputStream(badZip)
+                )
+            }
+            assertThat(File(newFilesDir, "should_not_persist.png").exists()).isFalse()
+        }
+
+        // Cached manifest from step 2 still works cleanly for subsequent imports
+        val cachedAfterRejected = TokenImageBackupUtil.loadCachedManifest(newFilesDir, gson)
+        assertThat(cachedAfterRejected).isNotNull()
+        assertThat(cachedAfterRejected!!.entries.map { it.fileName }).contains("minimal.png")
+    }
+
+    @Test
+    fun loadCachedManifest_selfHealsPreExistingPoisonedManifestOnDisk() {
+        val validImg = File(newFilesDir, "valid.png").apply { writeBytes(SAMPLE_PNG_BYTES) }
+        val manifestDir = File(newFilesDir, ".image_manifest").apply { mkdirs() }
+        // Simulate a poisoned manifest written by an older version with nulls & missing fields
+        File(manifestDir, "manifest.json").writeText(
+            """
+            {
+              "version": 0,
+              "entries": [
+                null,
+                {"fileName": null, "label": "broken1"},
+                {"fileName": "../escape.png", "label": "broken2"},
+                {"fileName": "valid.png", "label": null},
+                {"fileName": "valid.png", "issuer": "GitHub", "label": "bob@github.com", "tokenType": null, "algorithm": null, "digits": 0, "period": 0}
+              ]
+            }
+            """.trimIndent(),
+            StandardCharsets.UTF_8
+        )
+
+        val loaded = TokenImageBackupUtil.loadCachedManifest(newFilesDir, gson)
+        assertThat(loaded).isNotNull()
+        assertThat(loaded!!.entries).hasSize(1)
+
+        val token = makeToken(
+            id = 99L,
+            issuer = "GitHub",
+            label = "bob@github.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            imagePath = null
+        )
+        val resolved = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+            tokens = listOf(token),
+            filesDir = newFilesDir,
+            manifest = loaded
+        )
+        assertThat(resolved.single().imagePath)
+            .isEqualTo(TokenImageBackupUtil.toFileUriString(validImg))
+    }
+
+    @Test
+    fun importZip_isTransactionalWhenLaterEntryFailsValidation() {
+        val originalBytes = SAMPLE_PNG_BYTES + byteArrayOf(0x01, 0x02, 0x03)
+        val overwrittenBytes = SAMPLE_PNG_BYTES + byteArrayOf(0x09, 0x09, 0x09)
+        val existingIcon = File(newFilesDir, "existing.png").apply { writeBytes(originalBytes) }
+
+        // First entry tries to overwrite existing.png, second adds extra.png, third fails validation
+        val failingZip = buildZip(
+            "existing.png" to overwrittenBytes,
+            "extra.png" to SAMPLE_PNG_BYTES,
+            "corrupt.bin" to "not an image".toByteArray(StandardCharsets.UTF_8)
+        )
+
+        assertThrows(IOException::class.java) {
+            TokenImageBackupUtil.importTokenImagesFromZip(
+                currentTokens = emptyList(),
+                filesDir = newFilesDir,
+                gson = gson,
+                zipInputStream = ByteArrayInputStream(failingZip)
+            )
+        }
+
+        // Existing file must retain exact original bytes, extra.png must not exist, no staging dirs left
+        assertThat(existingIcon.readBytes()).isEqualTo(originalBytes)
+        assertThat(File(newFilesDir, "extra.png").exists()).isFalse()
+        assertThat(newFilesDir.listFiles().orEmpty().map { it.name })
+            .containsExactly("existing.png")
+    }
+
+    @Test
+    fun importZip_rejectsSvgAndSvgzExceeding2MbRenderLimit() {
+        // 1. Plain SVG > 2 MB (2.1 MB)
+        val padding = " ".repeat(TokenImageBackupUtil.MAX_SVG_ENTRY_BYTES + 100_000)
+        val hugeSvgBytes = "<svg xmlns=\"http://www.w3.org/2000/svg\">$padding</svg>"
+            .toByteArray(StandardCharsets.UTF_8)
+
+        val hugeSvgZip = buildZip("huge.svg" to hugeSvgBytes)
+        assertThrows(IOException::class.java) {
+            TokenImageBackupUtil.importTokenImagesFromZip(
+                currentTokens = emptyList(),
+                filesDir = newFilesDir,
+                gson = gson,
+                zipInputStream = ByteArrayInputStream(hugeSvgZip)
+            )
+        }
+        assertThat(File(newFilesDir, "huge.svg").exists()).isFalse()
+
+        // 2. Gzipped SVGZ whose compressed size is tiny (< 10 KB) but decompresses to > 2 MB
+        val svgzBytes = ByteArrayOutputStream().also { bos ->
+            GZIPOutputStream(bos).use { gz -> gz.write(hugeSvgBytes) }
+        }.toByteArray()
+        assertThat(svgzBytes.size).isLessThan(100_000)
+
+        val hugeSvgzZip = buildZip("huge.svgz" to svgzBytes)
+        assertThrows(IOException::class.java) {
+            TokenImageBackupUtil.importTokenImagesFromZip(
+                currentTokens = emptyList(),
+                filesDir = newFilesDir,
+                gson = gson,
+                zipInputStream = ByteArrayInputStream(hugeSvgzZip)
+            )
+        }
+        assertThat(File(newFilesDir, "huge.svgz").exists()).isFalse()
+    }
+
+    private fun buildZip(vararg entries: Pair<String, ByteArray>): ByteArray {
+        return ByteArrayOutputStream().also { bos ->
+            ZipOutputStream(bos).use { zos ->
+                for ((name, bytes) in entries) {
+                    zos.putNextEntry(ZipEntry(name))
+                    zos.write(bytes)
+                    zos.closeEntry()
+                }
+            }
+        }.toByteArray()
     }
 
     private fun makeToken(

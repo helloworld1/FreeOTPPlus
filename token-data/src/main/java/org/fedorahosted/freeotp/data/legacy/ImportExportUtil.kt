@@ -70,11 +70,13 @@ class ImportExportUtil @Inject constructor(
                 migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens)
             }
 
-            val linkedTokens = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
-                tokens = plaintextTokens,
-                filesDir = context.filesDir,
-                manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
-            )
+            val linkedTokens = runCatching {
+                TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+                    tokens = plaintextTokens,
+                    filesDir = context.filesDir,
+                    manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
+                )
+            }.getOrDefault(plaintextTokens)
             val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().replaceAll(tokensToStore)
         }
@@ -133,11 +135,13 @@ class ImportExportUtil @Inject constructor(
                 }
             }
 
-            val linkedTokens = TokenImageBackupUtil.resolveRestoredTokenImageLinks(
-                tokens = plaintextTokens,
-                filesDir = context.filesDir,
-                manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
-            )
+            val linkedTokens = runCatching {
+                TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+                    tokens = plaintextTokens,
+                    filesDir = context.filesDir,
+                    manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
+                )
+            }.getOrDefault(plaintextTokens)
             val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
             otpTokenDatabase.otpTokenDao().insertAll(tokensToStore)
         }
