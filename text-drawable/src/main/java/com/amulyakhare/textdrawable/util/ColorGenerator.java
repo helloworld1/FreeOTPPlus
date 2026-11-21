@@ -27,23 +27,23 @@ public class ColorGenerator {
                 0xff805781
         ));
         MATERIAL = create(Arrays.asList(
-                0xffe57373,
-                0xfff06292,
-                0xffba68c8,
-                0xff9575cd,
-                0xff7986cb,
-                0xff64b5f6,
-                0xff4fc3f7,
-                0xff4dd0e1,
-                0xff4db6ac,
-                0xff81c784,
-                0xffaed581,
-                0xffff8a65,
-                0xffd4e157,
-                0xffffd54f,
-                0xffffb74d,
-                0xffa1887f,
-                0xff90a4ae
+                0xffd32f2f,
+                0xffc2185b,
+                0xff9c27b0,
+                0xff6e44c7,
+                0xff4c5ec4,
+                0xff1976d2,
+                0xff0277bd,
+                0xff00838f,
+                0xff00796b,
+                0xff2e7d32,
+                0xff4a7f24,
+                0xffa65e00,
+                0xffcf3e12,
+                0xffb8336a,
+                0xff835d4f,
+                0xff546e7a,
+                0xff1b8270
         ));
     }
 
@@ -64,6 +64,6 @@ public class ColorGenerator {
     }
 
     public int getColor(Object key) {
-        return mColors.get(Math.abs(key.hashCode()) % mColors.size());
+        return mColors.get((key.hashCode() & 0x7fffffff) % mColors.size());
     }
 }

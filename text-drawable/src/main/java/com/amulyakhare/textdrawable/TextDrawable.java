@@ -6,6 +6,8 @@ import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
 import android.graphics.drawable.shapes.RoundRectShape;
 
+import java.util.Locale;
+
 /**
  * @author amulya
  * @datetime 14 Oct 2014, 3:53 PM
@@ -22,7 +24,10 @@ public class TextDrawable extends ShapeDrawable {
     private final int width;
     private final int fontSize;
     private final float radius;
+    private final float radiusFraction;
     private final int borderThickness;
+    private final RectF drawRectF = new RectF();
+    private int currentAlpha = 255;
 
     private TextDrawable(Builder builder) {
         super(builder.shape);
@@ -32,9 +37,10 @@ public class TextDrawable extends ShapeDrawable {
         height = builder.height;
         width = builder.width;
         radius = builder.radius;
+        radiusFraction = builder.radiusFraction;
 
         // text and color
-        text = builder.toUpperCase ? builder.text.toUpperCase() : builder.text;
+        text = builder.toUpperCase ? builder.text.toUpperCase(Locale.getDefault()) : builder.text;
         color = builder.color;
 
         // text paint settings
@@ -57,6 +63,7 @@ public class TextDrawable extends ShapeDrawable {
 
         // drawable paint color
         Paint paint = getPaint();
+        paint.setAntiAlias(true);
         paint.setColor(color);
 
     }
@@ -69,9 +76,18 @@ public class TextDrawable extends ShapeDrawable {
 
     @Override
     public void draw(Canvas canvas) {
-        super.draw(canvas);
         Rect r = getBounds();
-
+        if (radiusFraction > 0f) {
+            Paint bgPaint = getPaint();
+            int prevAlpha = bgPaint.getAlpha();
+            bgPaint.setAlpha((prevAlpha * currentAlpha) / 255);
+            drawRectF.set(r);
+            float effectiveRadius = Math.min(r.width(), r.height()) * radiusFraction;
+            canvas.drawRoundRect(drawRectF, effectiveRadius, effectiveRadius, bgPaint);
+            bgPaint.setAlpha(prevAlpha);
+        } else {
+            super.draw(canvas);
+        }
 
         // draw border
         if (borderThickness > 0) {
@@ -86,7 +102,7 @@ public class TextDrawable extends ShapeDrawable {
         int height = this.height < 0 ? r.height() : this.height;
         int fontSize = this.fontSize < 0 ? (Math.min(width, height) / 2) : this.fontSize;
         textPaint.setTextSize(fontSize);
-        canvas.drawText(text, width / 2, height / 2 - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
+        canvas.drawText(text, width / 2f, height / 2f - ((textPaint.descent() + textPaint.ascent()) / 2f), textPaint);
 
         canvas.restoreToCount(count);
 
@@ -94,9 +110,13 @@ public class TextDrawable extends ShapeDrawable {
 
     private void drawBorder(Canvas canvas) {
         RectF rect = new RectF(getBounds());
-        rect.inset(borderThickness/2, borderThickness/2);
+        rect.inset(borderThickness / 2f, borderThickness / 2f);
 
-        if (shape instanceof OvalShape) {
+        if (radiusFraction > 0f) {
+            float effectiveRadius = Math.min(rect.width(), rect.height()) * radiusFraction;
+            canvas.drawRoundRect(rect, effectiveRadius, effectiveRadius, borderPaint);
+        }
+        else if (shape instanceof OvalShape) {
             canvas.drawOval(rect, borderPaint);
         }
         else if (shape instanceof RoundRectShape) {
@@ -109,12 +129,17 @@ public class TextDrawable extends ShapeDrawable {
 
     @Override
     public void setAlpha(int alpha) {
+        currentAlpha = alpha;
+        super.setAlpha(alpha);
         textPaint.setAlpha(alpha);
+        borderPaint.setAlpha(alpha);
     }
 
     @Override
     public void setColorFilter(ColorFilter cf) {
+        super.setColorFilter(cf);
         textPaint.setColorFilter(cf);
+        borderPaint.setColorFilter(cf);
     }
 
     @Override
@@ -162,6 +187,8 @@ public class TextDrawable extends ShapeDrawable {
 
         public float radius;
 
+        public float radiusFraction;
+
         private Builder() {
             text = "";
             color = Color.GRAY;
@@ -174,6 +201,7 @@ public class TextDrawable extends ShapeDrawable {
             fontSize = -1;
             isBold = false;
             toUpperCase = false;
+            radiusFraction = 0f;
         }
 
         public IConfigBuilder width(int width) {
@@ -241,8 +269,16 @@ public class TextDrawable extends ShapeDrawable {
         @Override
         public IBuilder roundRect(int radius) {
             this.radius = radius;
+            this.radiusFraction = 0f;
             float[] radii = {radius, radius, radius, radius, radius, radius, radius, radius};
             this.shape = new RoundRectShape(radii, null, null);
+            return this;
+        }
+
+        @Override
+        public IBuilder roundRectProportional(float radiusFraction) {
+            this.radiusFraction = Math.max(0f, Math.min(0.5f, radiusFraction));
+            this.shape = new RectShape();
             return this;
         }
 
@@ -255,6 +291,12 @@ public class TextDrawable extends ShapeDrawable {
         @Override
         public TextDrawable buildRoundRect(String text, int color, int radius) {
             roundRect(radius);
+            return build(text, color);
+        }
+
+        @Override
+        public TextDrawable buildRoundRectProportional(String text, int color, float radiusFraction) {
+            roundRectProportional(radiusFraction);
             return build(text, color);
         }
 
@@ -307,9 +349,13 @@ public class TextDrawable extends ShapeDrawable {
 
         public IBuilder roundRect(int radius);
 
+        public IBuilder roundRectProportional(float radiusFraction);
+
         public TextDrawable buildRect(String text, int color);
 
         public TextDrawable buildRoundRect(String text, int color, int radius);
+
+        public TextDrawable buildRoundRectProportional(String text, int color, float radiusFraction);
 
         public TextDrawable buildRound(String text, int color);
     }
