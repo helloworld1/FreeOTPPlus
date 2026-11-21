@@ -1,10 +1,12 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.os.SystemClock
 import android.view.View
+import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.appcompat.view.menu.ListMenuItemView
@@ -42,6 +44,7 @@ import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.junit.After
@@ -53,6 +56,7 @@ import java.io.File
 class AuthenticationGateTest {
 
     private var configuredSessionManager: AppSessionManager? = null
+    private var configuredClipboardUtil: ClipboardUtil? = null
 
     @After
     fun tearDown() {
@@ -65,6 +69,8 @@ class AuthenticationGateTest {
             manager.elapsedRealtimeProvider = { SystemClock.elapsedRealtime() }
         }
         configuredSessionManager = null
+        configuredClipboardUtil?.expirationDurationMs = ClipboardUtil.DEFAULT_CLIP_EXPIRATION_MS
+        configuredClipboardUtil = null
     }
 
     @Test
@@ -473,6 +479,83 @@ class AuthenticationGateTest {
         }
     }
 
+    @Test
+    fun testSensitiveOtpClipboardMarksSensitiveAutoExpiresPreservesExternalClipsAndClearsOnLock() {
+        AuthenticationUtil.hasScreenLockOverride = false
+        insertTestToken()
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.settings.copyToClipboard = true
+                configuredClipboardUtil = activity.clipboardUtil
+                activity.clipboardUtil.expirationDurationMs = 1_200L
+
+                // Verify direct CharArray extraction & Editable scrubbing without String intermediaries
+                val editText = EditText(activity).apply { setText("secretPass!42") }
+                assertThat(AuthenticationUtil.extractCharArray(editText))
+                    .isEqualTo("secretPass!42".toCharArray())
+                AuthenticationUtil.clearAndCancelAutofill(activity, editText)
+                assertThat(editText.text.toString()).isEmpty()
+            }
+
+            awaitViewMatching(withId(R.id.token_list), isDisplayed())
+
+            // 1. Tap token card -> copies OTP with EXTRA_IS_SENSITIVE = true (API 24+), then auto-clears after 1.2s
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+
+            scenario.onActivity { activity ->
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = clipboard.primaryClip
+                assertThat(clip).isNotNull()
+                assertThat(clip!!.getItemAt(0).text.toString()).hasLength(6)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    assertThat(clip.description.extras?.getBoolean(ClipboardUtil.EXTRA_IS_SENSITIVE_KEY))
+                        .isTrue()
+                }
+            }
+
+            Thread.sleep(1_500L)
+            scenario.onActivity { activity ->
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val remaining = clipboard.primaryClip
+                    ?.takeIf { it.itemCount > 0 }
+                    ?.getItemAt(0)
+                    ?.text
+                    ?.toString()
+                    .orEmpty()
+                assertThat(remaining).isEmpty()
+            }
+
+            // 2. If another clip replaces ours before expiration, expiration never overwrites the external clip
+            scenario.onActivity { activity ->
+                activity.clipboardUtil.copySensitiveText("otp", "123456", ttlMs = 400L)
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("external", "https://external.example"))
+            }
+            Thread.sleep(650L)
+            scenario.onActivity { activity ->
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                assertThat(text).isEqualTo("https://external.example")
+            }
+
+            // 3. Locking session immediately clears an active owned sensitive clip
+            scenario.onActivity { activity ->
+                activity.clipboardUtil.copySensitiveText("otp", "654321", ttlMs = 60_000L)
+                activity.appSessionManager.lockSession()
+                val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val remaining = clipboard.primaryClip
+                    ?.takeIf { it.itemCount > 0 }
+                    ?.getItemAt(0)
+                    ?.text
+                    ?.toString()
+                    .orEmpty()
+                assertThat(remaining).isEmpty()
+            }
+        }
+    }
+
     private fun awaitViewMatching(
         viewMatcher: Matcher<View>,
         assertionMatcher: Matcher<View>,
@@ -521,7 +604,9 @@ class AuthenticationGateTest {
         var tokenId = 1L
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                activity.settings.requireAuthentication = false
+                activity.tokenCryptoManager.lock()
+                activity.settings.authMode = AuthMode.NONE
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                 runBlocking {
                     activity.otpTokenDatabase.otpTokenDao().deleteAll()
                     activity.otpTokenDatabase.otpTokenDao()

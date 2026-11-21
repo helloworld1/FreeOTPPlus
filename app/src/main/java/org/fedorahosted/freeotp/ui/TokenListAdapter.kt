@@ -1,8 +1,5 @@
 package org.fedorahosted.freeotp.ui
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +17,7 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.token.TokenLayout
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.fedorahosted.freeotp.util.Settings
 
 class TokenListAdapter(
@@ -29,14 +27,12 @@ class TokenListAdapter(
     private val tokenCodeUtil: TokenCodeUtil,
     private val settings: Settings,
     private val tokenCryptoManager: TokenCryptoManager,
+    private val clipboardUtil: ClipboardUtil,
     private val viewModel: MainViewModel,
     private val onEdit: (OtpToken) -> Unit,
     private val onDelete: (OtpToken) -> Unit,
     private val onShareQrCode: (OtpToken) -> Unit
 ) : ListAdapter<OtpToken, TokenViewHolder>(TokenItemCallback()) {
-
-    private val clipboardManager: ClipboardManager =
-        activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenViewHolder {
         val tokenLayout = LayoutInflater.from(activity).inflate(R.layout.token, parent, false) as TokenLayout
@@ -115,7 +111,7 @@ class TokenListAdapter(
                     }
 
                     if (settings.copyToClipboard) {
-                        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, code))
+                        clipboardUtil.copySensitiveText(null, code)
                         Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
                     }
 

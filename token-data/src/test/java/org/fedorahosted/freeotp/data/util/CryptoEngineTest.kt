@@ -198,4 +198,26 @@ class CryptoEngineTest {
             assertThat(code!!.all { it.isDigit() }).isTrue()
         }
     }
+
+    @Test
+    fun encodeUtf8AndDeriveKeyHmacSha256_matchUtf8AndStandardPbkdf2AcrossUnicodeAndEmptyInputs() {
+        val samples = listOf(
+            CharArray(0),
+            "correct horse battery staple".toCharArray(),
+            "pässwörd漢字Ñ".toCharArray(),
+            "🔐🔑Vault2026".toCharArray(),
+            charArrayOf('\uD800', 'x')
+        )
+        for (sample in samples) {
+            val expectedUtf8 = String(sample).toByteArray(Charsets.UTF_8)
+            assertThat(CryptoEngine.encodeUtf8(sample)).isEqualTo(expectedUtf8)
+        }
+
+        val salt = ByteArray(16) { (it + 7).toByte() }
+        for (passphrase in listOf("asciiKey123".toCharArray(), "ümlaut🔑漢字".toCharArray())) {
+            val standardKey = CryptoEngine.deriveKey(passphrase.copyOf(), salt, iterations = 1_000)
+            val fallbackKey = CryptoEngine.deriveKeyHmacSha256(passphrase.copyOf(), salt, iterations = 1_000)
+            assertThat(fallbackKey).isEqualTo(standardKey)
+        }
+    }
 }

@@ -45,6 +45,7 @@ import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.security.GeneralSecurityException
 import java.text.DateFormat
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var appSessionManager: AppSessionManager
+    @Inject lateinit var clipboardUtil: ClipboardUtil
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: MainBinding
@@ -741,28 +743,35 @@ class MainActivity : AppCompatActivity() {
             AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
-                val key = keyEditText.text?.toString().orEmpty()
-                val confirmKey = confirmKeyEditText.text?.toString().orEmpty()
+                val passphraseChars = AuthenticationUtil.extractCharArray(keyEditText)
+                val confirmChars = AuthenticationUtil.extractCharArray(confirmKeyEditText)
+                var handedOffToCoroutine = false
+                try {
+                    if (passphraseChars.size < CryptoEngine.MIN_KEY_LENGTH) {
+                        keyInputLayout.error = getString(R.string.encryption_key_too_short, CryptoEngine.MIN_KEY_LENGTH)
+                        return@setOnClickListener
+                    }
+                    if (!passphraseChars.contentEquals(confirmChars)) {
+                        confirmKeyInputLayout.error = getString(R.string.encryption_keys_do_not_match)
+                        return@setOnClickListener
+                    }
 
-                if (key.length < CryptoEngine.MIN_KEY_LENGTH) {
-                    keyInputLayout.error = getString(R.string.encryption_key_too_short, CryptoEngine.MIN_KEY_LENGTH)
-                    return@setOnClickListener
-                }
-                if (key != confirmKey) {
-                    confirmKeyInputLayout.error = getString(R.string.encryption_keys_do_not_match)
-                    return@setOnClickListener
-                }
-
-                positiveButton.isEnabled = false
-                val passphraseChars = key.toCharArray()
-                AuthenticationUtil.clearAndCancelAutofill(this, keyEditText, confirmKeyEditText)
-                lifecycleScope.launch {
-                    val setupMaterial = try {
-                        tokenCryptoManager.deriveSetupMaterial(passphraseChars)
-                    } finally {
+                    positiveButton.isEnabled = false
+                    AuthenticationUtil.clearAndCancelAutofill(this, keyEditText, confirmKeyEditText)
+                    handedOffToCoroutine = true
+                    lifecycleScope.launch {
+                        val setupMaterial = try {
+                            tokenCryptoManager.deriveSetupMaterial(passphraseChars)
+                        } finally {
+                            passphraseChars.fill('\u0000')
+                        }
+                        completeTokenEncryptionSetup(setupMaterial, dialog)
+                    }
+                } finally {
+                    confirmChars.fill('\u0000')
+                    if (!handedOffToCoroutine) {
                         passphraseChars.fill('\u0000')
                     }
-                    completeTokenEncryptionSetup(setupMaterial, dialog)
                 }
             }
         }

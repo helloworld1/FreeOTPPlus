@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.autofill.AutofillManager
@@ -233,24 +234,32 @@ object AuthenticationUtil {
             disableAutofillForDialog(dialog, dialogView)
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
-                val chars = keyEditText.text?.toString()?.toCharArray() ?: CharArray(0)
-                if (chars.isEmpty()) {
-                    keyInputLayout.error = activity.getString(R.string.incorrect_encryption_key)
-                    return@setOnClickListener
-                }
-                positiveButton.isEnabled = false
-                val biometricChecked = biometricCheckboxLabelRes != null && enableBiometricCheckbox.isChecked
-                activity.lifecycleScope.launch {
-                    val errorMessage = try {
-                        onSubmit(chars, biometricChecked) {
-                            dismissKeyDialogSafely(dialog, keyEditText)
-                        }
-                    } finally {
-                        chars.fill('\u0000')
+                val chars = extractCharArray(keyEditText)
+                var handedOffToCoroutine = false
+                try {
+                    if (chars.isEmpty()) {
+                        keyInputLayout.error = activity.getString(R.string.incorrect_encryption_key)
+                        return@setOnClickListener
                     }
-                    if (errorMessage != null) {
-                        positiveButton.isEnabled = true
-                        keyInputLayout.error = errorMessage
+                    positiveButton.isEnabled = false
+                    val biometricChecked = biometricCheckboxLabelRes != null && enableBiometricCheckbox.isChecked
+                    handedOffToCoroutine = true
+                    activity.lifecycleScope.launch {
+                        val errorMessage = try {
+                            onSubmit(chars, biometricChecked) {
+                                dismissKeyDialogSafely(dialog, keyEditText)
+                            }
+                        } finally {
+                            chars.fill('\u0000')
+                        }
+                        if (errorMessage != null) {
+                            positiveButton.isEnabled = true
+                            keyInputLayout.error = errorMessage
+                        }
+                    }
+                } finally {
+                    if (!handedOffToCoroutine) {
+                        chars.fill('\u0000')
                     }
                 }
             }
@@ -283,11 +292,26 @@ object AuthenticationUtil {
         dialog.dismiss()
     }
 
+    fun extractCharArray(editText: EditText): CharArray {
+        val editable = editText.text ?: return CharArray(0)
+        val length = editable.length
+        if (length == 0) return CharArray(0)
+        return CharArray(length) { index -> editable[index] }
+    }
+
     fun clearAndCancelAutofill(context: Context, vararg inputs: EditText) {
         for (input in inputs) {
-            input.text?.clear()
+            scrubEditable(input.text)
         }
         cancelAutofillSession(context)
+    }
+
+    private fun scrubEditable(editable: Editable?) {
+        if (editable == null) return
+        for (i in 0 until editable.length) {
+            editable.replace(i, i + 1, "\u0000")
+        }
+        editable.clear()
     }
 
     private fun cancelAutofillSession(context: Context) {

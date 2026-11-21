@@ -35,6 +35,7 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.fedorahosted.freeotp.databinding.FragmentTokenListBinding
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.ThemeMode
 import javax.inject.Inject
@@ -47,6 +48,7 @@ class TokenListFragment : Fragment() {
     @Inject lateinit var tokenCodeUtil: TokenCodeUtil
     @Inject lateinit var settings: Settings
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var clipboardUtil: ClipboardUtil
 
     private val viewModel: MainViewModel by activityViewModels()
 
@@ -104,6 +106,7 @@ class TokenListFragment : Fragment() {
             tokenCodeUtil = tokenCodeUtil,
             settings = settings,
             tokenCryptoManager = tokenCryptoManager,
+            clipboardUtil = clipboardUtil,
             viewModel = viewModel,
             onEdit = { token ->
                 navigateFromList(

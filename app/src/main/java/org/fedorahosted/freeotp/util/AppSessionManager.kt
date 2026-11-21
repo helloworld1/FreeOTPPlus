@@ -23,7 +23,8 @@ import javax.inject.Singleton
 @Singleton
 class AppSessionManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val tokenCryptoManager: TokenCryptoManager
+    private val tokenCryptoManager: TokenCryptoManager,
+    private val clipboardUtil: ClipboardUtil
 ) : Application.ActivityLifecycleCallbacks {
 
     @VisibleForTesting
@@ -128,6 +129,7 @@ class AppSessionManager @Inject constructor(
         hasAuthenticatedSession = false
         backgroundedAtElapsedRealtime = null
         tokenCryptoManager.lock()
+        clipboardUtil.clearSensitiveClipIfOwned()
         _authState.value = if (tokenCryptoManager.getAuthMode() == AuthMode.NONE) {
             AuthState.AUTHENTICATED
         } else {
@@ -156,7 +158,11 @@ class AppSessionManager @Inject constructor(
         backgroundedAtElapsedRealtime = null
     }
 
-    override fun onActivityResumed(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {
+        if (activity is MainActivity) {
+            mainHandler.postDelayed({ clipboardUtil.onAppForegrounded() }, 150L)
+        }
+    }
 
     override fun onActivityPaused(activity: Activity) {}
 

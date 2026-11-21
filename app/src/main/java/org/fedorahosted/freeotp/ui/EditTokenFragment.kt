@@ -3,7 +3,10 @@ package org.fedorahosted.freeotp.ui
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.ActionMode
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -29,6 +32,7 @@ import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.databinding.EditBinding
 import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
 import java.security.GeneralSecurityException
@@ -49,6 +53,7 @@ class EditTokenFragment : Fragment() {
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
     @Inject lateinit var settings: Settings
     @Inject lateinit var imageUtil: ImageUtil
+    @Inject lateinit var clipboardUtil: ClipboardUtil
 
     private var _binding: EditBinding? = null
     private val binding get() = _binding!!
@@ -227,6 +232,29 @@ class EditTokenFragment : Fragment() {
                     }
                     activeBinding.secret.setOnClickListener(null)
                     activeBinding.secret.setTextIsSelectable(true)
+                    activeBinding.secret.customSelectionActionModeCallback = object : ActionMode.Callback {
+                        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean = true
+                        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
+                        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                            if (item.itemId == android.R.id.copy) {
+                                val text = activeBinding.secret.text ?: return false
+                                val min = minOf(activeBinding.secret.selectionStart, activeBinding.secret.selectionEnd)
+                                    .coerceAtLeast(0)
+                                val max = maxOf(activeBinding.secret.selectionStart, activeBinding.secret.selectionEnd)
+                                    .coerceAtLeast(0)
+                                val selected = if (min < max && max <= text.length) {
+                                    text.subSequence(min, max)
+                                } else {
+                                    text
+                                }
+                                clipboardUtil.copySensitiveText(getString(R.string.secret), selected)
+                                mode.finish()
+                                return true
+                            }
+                            return false
+                        }
+                        override fun onDestroyActionMode(mode: ActionMode) {}
+                    }
                     // Never serialize revealed OTP secrets into Fragment savedInstanceState Bundles
                     activeBinding.secret.freezesText = false
                     activeBinding.secret.text = plaintextSecret

@@ -1,14 +1,9 @@
 package org.fedorahosted.freeotp.ui
 
 import android.app.Dialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -28,6 +23,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
+import org.fedorahosted.freeotp.util.ClipboardUtil
 import java.security.GeneralSecurityException
 import javax.inject.Inject
 
@@ -36,6 +32,7 @@ class ShareQrCodeDialogFragment : DialogFragment() {
 
     @Inject lateinit var otpTokenDatabase: OtpTokenDatabase
     @Inject lateinit var tokenCryptoManager: TokenCryptoManager
+    @Inject lateinit var clipboardUtil: ClipboardUtil
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = ShareQrcodeBinding.inflate(layoutInflater)
@@ -143,7 +140,7 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                         dismissAllowingStateLoss()
                         return@setOnClickListener
                     }
-                    copyTokenUriToClipboard(uriString)
+                    clipboardUtil.copySensitiveText(getString(R.string.share_qr_code), uriString)
                     if (mainActivity != null) {
                         mainActivity.showSnackbar(R.string.token_uri_copied)
                     } else {
@@ -160,17 +157,6 @@ class ShareQrCodeDialogFragment : DialogFragment() {
         return alertDialog
     }
 
-    private fun copyTokenUriToClipboard(uriString: String) {
-        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(getString(R.string.share_qr_code), uriString)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            clip.description.extras = PersistableBundle().apply {
-                putBoolean(EXTRA_IS_SENSITIVE_KEY, true)
-            }
-        }
-        clipboard.setPrimaryClip(clip)
-    }
-
     private fun showInvalidTokenError() {
         if (!isAdded) return
         val mainActivity = activity as? MainActivity
@@ -183,7 +169,6 @@ class ShareQrCodeDialogFragment : DialogFragment() {
 
     companion object {
         private val TAG = ShareQrCodeDialogFragment::class.java.simpleName
-        private const val EXTRA_IS_SENSITIVE_KEY = "android.content.extra.IS_SENSITIVE"
         const val ARG_TOKEN_ID = "token_id"
 
         fun args(tokenId: Long): Bundle = Bundle().apply {

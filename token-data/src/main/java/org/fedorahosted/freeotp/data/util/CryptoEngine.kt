@@ -1,6 +1,7 @@
 package org.fedorahosted.freeotp.data.util
 
 import java.nio.ByteBuffer
+import java.nio.CharBuffer
 import java.security.GeneralSecurityException
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
@@ -56,13 +57,29 @@ object CryptoEngine {
         }
     }
 
+    internal fun encodeUtf8(chars: CharArray): ByteArray {
+        if (chars.isEmpty()) {
+            return ByteArray(0)
+        }
+        val byteBuffer = Charsets.UTF_8.encode(CharBuffer.wrap(chars))
+        return try {
+            ByteArray(byteBuffer.remaining()).also { out ->
+                byteBuffer.get(out)
+            }
+        } finally {
+            if (byteBuffer.hasArray()) {
+                byteBuffer.array().fill(0)
+            }
+        }
+    }
+
     internal fun deriveKeyHmacSha256(
         passphrase: CharArray,
         salt: ByteArray,
         iterations: Int,
         keyLengthBytes: Int = KEY_LENGTH_BYTES
     ): ByteArray {
-        val passwordBytes = String(passphrase).toByteArray(Charsets.UTF_8)
+        val passwordBytes = encodeUtf8(passphrase)
         try {
             val mac = Mac.getInstance("HmacSHA256")
             mac.init(SecretKeySpec(passwordBytes.takeIf { it.isNotEmpty() } ?: ByteArray(1), "HmacSHA256"))
