@@ -46,6 +46,7 @@ import org.fedorahosted.freeotp.databinding.MainBinding
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
+import java.security.GeneralSecurityException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -316,10 +317,33 @@ class MainActivity : AppCompatActivity() {
             .setMessage(getString(R.string.add_token_confirmation_message, tokenDetails))
             .setIcon(R.drawable.alert)
             .setPositiveButton(R.string.add) { _, _ ->
+                if (!isSessionAuthenticated()) {
+                    pendingDeepLinkUri = uri
+                    verifyAuthentication()
+                    return@setPositiveButton
+                }
                 lifecycleScope.launch {
-                    otpTokenDatabase.otpTokenDao().insert(
-                        tokenCryptoManager.encryptTokenForStorage(token)
-                    )
+                    try {
+                        otpTokenDatabase.otpTokenDao().insert(
+                            tokenCryptoManager.encryptTokenForStorage(token)
+                        )
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: IllegalStateException) {
+                        Log.w(TAG, "Vault locked while adding deep-link token", e)
+                        if (!isSessionAuthenticated()) {
+                            pendingDeepLinkUri = uri
+                            verifyAuthentication()
+                        } else {
+                            showSnackbar(R.string.invalid_token)
+                        }
+                    } catch (e: GeneralSecurityException) {
+                        Log.e(TAG, "Failed encrypting deep-link token", e)
+                        showSnackbar(R.string.invalid_token)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed adding deep-link token", e)
+                        showSnackbar(R.string.invalid_token)
+                    }
                 }
             }
             .setNegativeButton(R.string.cancel_text, null)

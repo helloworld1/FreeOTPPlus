@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.content.Intent
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.widget.RadioButton
@@ -18,6 +19,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.RootMatchers.isPlatformPopup
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isChecked
@@ -583,6 +585,123 @@ class TokenEncryptionTest {
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
                 .check(matches(hasDescendant(withText("047 701"))))
+        }
+    }
+
+    @Test
+    fun testCorruptedEncryptedTokenAndConcurrentVaultLockNeverCrashAcrossUiPaths() {
+        val context = getInstrumentation().targetContext
+        AuthenticationUtil.hasStrongBiometricOverride = false
+        // Bypass screen-lock prompt during sensitive actions (Share / Share QR / Secret reveal)
+        AuthenticationUtil.authCallbackOverride = { onAuthenticated -> onAuthenticated() }
+
+        val corruptedTokenId = 1L
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                runBlocking(Dispatchers.IO) {
+                    val dao = activity.otpTokenDatabase.otpTokenDao()
+                    activity.otpTokenDatabase.clearAllTables()
+                    val setup = activity.tokenCryptoManager.deriveSetupMaterial("f12TestKey".toCharArray())
+                    try {
+                        activity.tokenCryptoManager.enableTokenEncryption(setup, null)
+                    } finally {
+                        setup.clear()
+                    }
+                    dao.insert(
+                        TestData.OTP_HOTP_TOKEN_1.copy(
+                            id = corruptedTokenId,
+                            ordinal = 1L,
+                            counter = 0L,
+                            secret = "v1:AAAA_CORRUPTED_CIPHERTEXT",
+                            encryptionType = EncryptionType.ENCRYPTED
+                        )
+                    )
+                }
+                activity.appSessionManager.setAuthState(org.fedorahosted.freeotp.ui.MainViewModel.AuthState.AUTHENTICATED)
+            }
+
+            // 1. Tap corrupted encrypted HOTP card -> shows invalid_token Snackbar without crashing or advancing counter
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+            scenario.onActivity { activity ->
+                val stored = runBlocking { activity.otpTokenDatabase.otpTokenDao().get(corruptedTokenId).first()!! }
+                assertThat(stored.counter).isEqualTo(0L)
+            }
+
+            // 2. Overflow -> Share QR Code -> shows invalid_token Snackbar and dismisses dialog without crashing
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+            onView(withText(R.string.share_qr_code)).inRoot(isPlatformPopup()).perform(click())
+            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+
+            // 3. Overflow -> Share to other apps -> shows invalid_token Snackbar without crashing
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, RecyclerViewAction.clickChildViewWithId(R.id.menu)))
+            onView(withText(R.string.share_to_other_apps)).inRoot(isPlatformPopup()).perform(click())
+            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+
+            // 4. EditTokenFragment -> Click to display secret -> shows invalid_token and keeps "Click to display"
+            scenario.onActivity { activity ->
+                activity.navigateTo(
+                    R.id.action_tokenList_to_editToken,
+                    EditTokenFragment.args(corruptedTokenId)
+                )
+            }
+            onView(withId(R.id.secret))
+                .perform(scrollTo())
+                .check(matches(withText(R.string.click_to_display)))
+                .perform(click())
+            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+            onView(withId(R.id.secret)).check(matches(withText(R.string.click_to_display)))
+
+            scenario.onActivity { activity ->
+                activity.navigateBack()
+            }
+
+            // 5. Concurrent vault lock right before tapping a token card -> transitions to Unlock dialog cleanly
+            scenario.onActivity { activity ->
+                activity.tokenCryptoManager.lock()
+            }
+            onView(withId(R.id.token_list))
+                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            onView(withText(R.string.unlock_tokens_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+            // Unlock again so vault is unlocked for deep-link confirmation test
+            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
+                .perform(scrollTo(), replaceText("f12TestKey"), closeSoftKeyboard())
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+        }
+
+        // 6. Deep-link otpauth:// add confirmation when vault locks concurrently before tapping Add ->
+        //    re-queues deep link, prompts Unlock, and adds token once unlocked without crashing
+        val deepLinkIntent = Intent(
+            Intent.ACTION_VIEW,
+            "otpauth://totp/DeepLink:alice?secret=JBSWY3DPEHPK3PXP".toUri()
+        ).setClass(context, MainActivity::class.java)
+
+        ActivityScenario.launch<MainActivity>(deepLinkIntent).use { deepLinkScenario ->
+            deepLinkScenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                // Simulate concurrent vault lock while confirmation dialog is open
+                activity.tokenCryptoManager.lock()
+            }
+            onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
+
+            // Unlock dialog appears instead of crashing
+            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
+                .perform(scrollTo(), replaceText("f12TestKey"), closeSoftKeyboard())
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+
+            // Re-queued deep-link confirmation dialog is re-presented and succeeds after unlock
+            onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
+            deepLinkScenario.onActivity { activity ->
+                val allTokens = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first() }
+                assertThat(allTokens).hasSize(2)
+                assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+            }
         }
     }
 }

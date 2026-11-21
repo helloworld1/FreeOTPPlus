@@ -244,6 +244,21 @@ class ScanTokenFragment : Fragment() {
                 }
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: IllegalStateException) {
+                Log.w(TAG, "Token vault locked while saving scanned token", e)
+                val mainActivity = activity as? MainActivity
+                if (!tokenCryptoManager.isUnlocked() && mainActivity != null) {
+                    mainActivity.isSessionAuthenticated()
+                } else {
+                    val now = SystemClock.elapsedRealtime()
+                    if (isAdded && now - lastInvalidToastElapsedMs > 2_500L) {
+                        lastInvalidToastElapsedMs = now
+                        context?.let {
+                            Toast.makeText(it, R.string.invalid_token, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                foundToken = false
             } catch (e: Exception) {
                 Log.w(TAG, "Invalid token URI scanned", e)
                 val now = SystemClock.elapsedRealtime()

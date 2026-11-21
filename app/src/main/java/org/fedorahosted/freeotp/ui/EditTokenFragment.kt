@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.ui
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -29,6 +31,7 @@ import org.fedorahosted.freeotp.token.TokenLayout
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ImageUtil
 import org.fedorahosted.freeotp.util.Settings
+import java.security.GeneralSecurityException
 import java.util.Locale
 import javax.inject.Inject
 
@@ -193,10 +196,35 @@ class EditTokenFragment : Fragment() {
                     tokenCryptoManager
                 ) {
                     val activeBinding = _binding ?: return@authenticateForSensitiveAction
-                    if (!isAdded || !tokenCryptoManager.isUnlocked()) {
+                    if (!isAdded) {
                         return@authenticateForSensitiveAction
                     }
-                    val plaintextSecret = tokenCryptoManager.decryptSecret(token)
+                    if (!tokenCryptoManager.isUnlocked()) {
+                        (host as? MainActivity)?.isSessionAuthenticated()
+                        return@authenticateForSensitiveAction
+                    }
+                    val plaintextSecret = try {
+                        tokenCryptoManager.decryptSecret(token)
+                    } catch (e: GeneralSecurityException) {
+                        Log.e(TAG, "Failed decrypting token secret", e)
+                        (host as? MainActivity)?.showSnackbar(R.string.invalid_token)
+                            ?: Snackbar.make(activeBinding.root, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        return@authenticateForSensitiveAction
+                    } catch (e: IllegalStateException) {
+                        Log.w(TAG, "Token vault locked before secret could be revealed", e)
+                        if (!tokenCryptoManager.isUnlocked()) {
+                            (host as? MainActivity)?.isSessionAuthenticated()
+                        } else {
+                            (host as? MainActivity)?.showSnackbar(R.string.invalid_token)
+                                ?: Snackbar.make(activeBinding.root, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        }
+                        return@authenticateForSensitiveAction
+                    } catch (e: IllegalArgumentException) {
+                        Log.e(TAG, "Invalid token secret state", e)
+                        (host as? MainActivity)?.showSnackbar(R.string.invalid_token)
+                            ?: Snackbar.make(activeBinding.root, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        return@authenticateForSensitiveAction
+                    }
                     activeBinding.secret.setOnClickListener(null)
                     activeBinding.secret.setTextIsSelectable(true)
                     // Never serialize revealed OTP secrets into Fragment savedInstanceState Bundles
@@ -290,6 +318,7 @@ class EditTokenFragment : Fragment() {
     }
 
     companion object {
+        private val TAG = EditTokenFragment::class.java.simpleName
         const val ARG_TOKEN_ID = "token_id"
         private const val STATE_IMAGE_DISPLAY = "state_edit_image_display"
 

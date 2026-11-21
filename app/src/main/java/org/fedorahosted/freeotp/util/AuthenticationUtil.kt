@@ -162,9 +162,7 @@ object AuthenticationUtil {
             messageRes = R.string.verify_encryption_key_message,
             positiveButtonRes = R.string.ok_text
         ) { chars, _, dismissSafely ->
-            val keyBytes = tokenCryptoManager.verifyPassphrase(chars)
-            if (keyBytes != null) {
-                keyBytes.fill(0)
+            if (tokenCryptoManager.unlockWithPassphrase(chars)) {
                 dismissSafely()
                 if (!activity.isFinishing && !activity.isDestroyed) {
                     onAuthenticated()

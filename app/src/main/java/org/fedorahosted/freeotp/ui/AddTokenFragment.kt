@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
@@ -227,6 +228,16 @@ class AddTokenFragment : Fragment() {
                 otpTokenDatabase.otpTokenDao().insert(tokenCryptoManager.encryptTokenForStorage(token))
                 if (isAdded) {
                     findNavController().popBackStack()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: IllegalStateException) {
+                _binding?.add?.isEnabled = true
+                val mainActivity = activity as? MainActivity
+                if (!tokenCryptoManager.isUnlocked() && mainActivity != null) {
+                    mainActivity.isSessionAuthenticated()
+                } else {
+                    mainActivity?.showSnackbar(R.string.invalid_token)
                 }
             } catch (_: Exception) {
                 _binding?.add?.isEnabled = true

@@ -6,6 +6,7 @@ import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.legacy.Token
 import org.fedorahosted.freeotp.data.legacy.TokenPersistence
 import org.fedorahosted.freeotp.data.util.CategoryUtil
+import java.security.GeneralSecurityException
 import javax.inject.Inject
 
 class MigrationUtil private constructor(
@@ -36,7 +37,13 @@ class MigrationUtil private constructor(
             val legacyTokens = tokenPersistence.getTokens()
             if (legacyTokens.isNotEmpty()) {
                 val tokenList = convertLegacyTokensToOtpTokens(legacyTokens)
-                val tokensToInsert = tokenCryptoManager?.encryptTokensForStorage(tokenList) ?: tokenList
+                val tokensToInsert = try {
+                    tokenCryptoManager?.encryptTokensForStorage(tokenList) ?: tokenList
+                } catch (_: IllegalStateException) {
+                    return@withContext
+                } catch (_: GeneralSecurityException) {
+                    return@withContext
+                }
                 optTokenDatabase.otpTokenDao().insertAll(tokensToInsert)
             }
             tokenPersistence.setLegacyTokenMigrated()

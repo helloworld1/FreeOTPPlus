@@ -23,6 +23,7 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.databinding.ShareQrcodeBinding
+import java.security.GeneralSecurityException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,7 +43,12 @@ class ShareQrCodeDialogFragment : DialogFragment() {
             .create()
 
         lifecycleScope.launch {
-            if (tokenId == 0L || !tokenCryptoManager.isUnlocked()) {
+            if (tokenId == 0L) {
+                dismissAllowingStateLoss()
+                return@launch
+            }
+            if (!tokenCryptoManager.isUnlocked()) {
+                (activity as? MainActivity)?.isSessionAuthenticated()
                 dismissAllowingStateLoss()
                 return@launch
             }
@@ -51,12 +57,39 @@ class ShareQrCodeDialogFragment : DialogFragment() {
                 dismissAllowingStateLoss()
                 return@launch
             }
-            if (!isAdded || !tokenCryptoManager.isUnlocked()) {
+            if (!isAdded) {
+                dismissAllowingStateLoss()
+                return@launch
+            }
+            if (!tokenCryptoManager.isUnlocked()) {
+                (activity as? MainActivity)?.isSessionAuthenticated()
                 dismissAllowingStateLoss()
                 return@launch
             }
 
-            val token = tokenCryptoManager.decryptToken(storedToken)
+            val token = try {
+                tokenCryptoManager.decryptToken(storedToken)
+            } catch (e: GeneralSecurityException) {
+                Log.e(TAG, "Failed decrypting token for QR code", e)
+                showInvalidTokenError()
+                dismissAllowingStateLoss()
+                return@launch
+            } catch (e: IllegalStateException) {
+                Log.w(TAG, "Token vault locked before QR code could be generated", e)
+                if (!tokenCryptoManager.isUnlocked()) {
+                    (activity as? MainActivity)?.isSessionAuthenticated()
+                } else {
+                    showInvalidTokenError()
+                }
+                dismissAllowingStateLoss()
+                return@launch
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Invalid token for QR code", e)
+                showInvalidTokenError()
+                dismissAllowingStateLoss()
+                return@launch
+            }
+
             alertDialog.setTitle(if (token.issuer.isNullOrBlank()) token.label else token.issuer)
             if (!token.issuer.isNullOrBlank() && token.label.isNotBlank()) {
                 binding.qrSubtitle.text = token.label
@@ -64,9 +97,9 @@ class ShareQrCodeDialogFragment : DialogFragment() {
             }
 
             val qrCodeSize = resources.getDimensionPixelSize(R.dimen.qr_code_size)
-            val uriString = OtpTokenFactory.toUri(token).toString()
 
             val qrBitmap = try {
+                val uriString = OtpTokenFactory.toUri(token).toString()
                 withContext(Dispatchers.Default) {
                     val encoded = QRCodeWriter().encode(
                         uriString,
@@ -95,12 +128,22 @@ class ShareQrCodeDialogFragment : DialogFragment() {
             if (qrBitmap != null) {
                 binding.qrcode.setImageBitmap(qrBitmap)
             } else {
-                context?.let { Toast.makeText(it, R.string.invalid_token, Toast.LENGTH_SHORT).show() }
+                showInvalidTokenError()
                 dismissAllowingStateLoss()
             }
         }
 
         return alertDialog
+    }
+
+    private fun showInvalidTokenError() {
+        if (!isAdded) return
+        val mainActivity = activity as? MainActivity
+        if (mainActivity != null) {
+            mainActivity.showSnackbar(R.string.invalid_token)
+        } else {
+            context?.let { Toast.makeText(it, R.string.invalid_token, Toast.LENGTH_SHORT).show() }
+        }
     }
 
     companion object {

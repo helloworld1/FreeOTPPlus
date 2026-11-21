@@ -9,9 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.EncryptionType
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenType
@@ -73,10 +75,31 @@ class TokenListAdapter(
             lifecycleScope.launch {
                 // Fetch the token again to refresh the HOTP token counter
                 otpTokenDatabase.otpTokenDao().get(currentToken.id).first()?.let { token ->
-                    val codes = tokenCodeUtil.generateTokenCode(token)
+                    if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                        viewModel.onSessionStart()
+                        return@let
+                    }
+
+                    val codes = try {
+                        tokenCodeUtil.generateTokenCode(token)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                            viewModel.onSessionStart()
+                        } else {
+                            Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        }
+                        return@let
+                    }
+
                     val code = codes.currentCode
                     if (code.isNullOrEmpty()) {
-                        Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                            viewModel.onSessionStart()
+                        } else {
+                            Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                        }
                         return@let
                     }
 

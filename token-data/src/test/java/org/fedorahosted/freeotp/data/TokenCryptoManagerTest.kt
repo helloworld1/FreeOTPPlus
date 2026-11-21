@@ -533,4 +533,56 @@ class TokenCryptoManagerTest {
         assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
         assertThat(db.dao.snapshot().single().secret).isEqualTo("abcd5432")
     }
+
+    @Test
+    fun tokenCodeUtil_handlesLockedVaultNullManagerAndCorruptedCiphertextWithoutCrash() = runBlocking {
+        val prefs = InMemorySharedPreferences()
+        val db = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken())))
+        val manager = createManagerWithFakeDb(prefs, db)
+
+        val setup = manager.deriveSetupMaterial("vaultKey123".toCharArray())
+        manager.enableTokenEncryption(setup, null)
+
+        val validEncryptedHotp = db.dao.snapshot().single()
+        val validEncryptedTotp = validEncryptedHotp.copy(id = 2L, tokenType = OtpTokenType.TOTP)
+        assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedHotp).currentCode)
+            .isEqualTo("047701")
+
+        // 1. Null TokenCryptoManager returns empty code instead of crashing
+        assertThat(TokenCodeUtil().generateTokenCode(validEncryptedHotp).currentCode).isEmpty()
+        assertThat(TokenCodeUtil().generateTokenCode(validEncryptedTotp).currentCode).isEmpty()
+
+        // 2. Corrupted ciphertext payloads (AEAD tag mismatch, truncated, bad Base64, missing prefix)
+        //    return empty code instead of throwing GeneralSecurityException
+        val corruptedPayloads = listOf(
+            validEncryptedHotp.secret.dropLast(4) + "AAAA",
+            "v1:AAAA",
+            "v1:%%%NOT_BASE64%%%",
+            "corrupted_without_prefix"
+        )
+        for (badSecret in corruptedPayloads) {
+            assertThat(
+                TokenCodeUtil(manager)
+                    .generateTokenCode(validEncryptedHotp.copy(secret = badSecret))
+                    .currentCode
+            ).isEmpty()
+            assertThat(
+                TokenCodeUtil(manager)
+                    .generateTokenCode(validEncryptedTotp.copy(secret = badSecret))
+                    .currentCode
+            ).isEmpty()
+        }
+
+        // 3. Invalid non-positive digits never infinite-loops or crashes
+        assertThat(
+            TokenCodeUtil(manager)
+                .generateTokenCode(validEncryptedHotp.copy(digits = 0))
+                .currentCode
+        ).isEmpty()
+
+        // 4. Locked TokenCryptoManager returns empty code instead of throwing IllegalStateException
+        manager.lock()
+        assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedHotp).currentCode).isEmpty()
+        assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedTotp).currentCode).isEmpty()
+    }
 }

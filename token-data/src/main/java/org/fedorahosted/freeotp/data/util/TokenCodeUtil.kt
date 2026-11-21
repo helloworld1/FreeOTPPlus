@@ -7,8 +7,7 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import java.nio.ByteBuffer
-import java.security.InvalidKeyException
-import java.security.NoSuchAlgorithmException
+import java.security.GeneralSecurityException
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
@@ -25,18 +24,23 @@ class TokenCodeUtil private constructor(
     fun generateTokenCode(otpToken: OtpToken): TokenCode {
         val cur = System.currentTimeMillis()
         val period = if (otpToken.period > 0) otpToken.period else 30
+        val plaintextSecret = resolvePlaintextSecret(otpToken)
 
         when (otpToken.tokenType) {
             OtpTokenType.HOTP ->
-                return TokenCode(getHOTP(otpToken, otpToken.counter), cur, cur + period * 1000L)
+                return TokenCode(
+                    if (plaintextSecret != null) getHOTP(otpToken, plaintextSecret, otpToken.counter) else "",
+                    cur,
+                    cur + period * 1000L
+                )
             OtpTokenType.TOTP -> {
                 val counter: Long = cur / 1000 / period
                 return TokenCode(
-                    getHOTP(otpToken, counter + 0),
+                    if (plaintextSecret != null) getHOTP(otpToken, plaintextSecret, counter + 0) else "",
                     (counter + 0) * period * 1000L,
                     (counter + 1) * period * 1000L,
                     TokenCode(
-                        getHOTP(otpToken, counter + 1),
+                        if (plaintextSecret != null) getHOTP(otpToken, plaintextSecret, counter + 1) else "",
                         (counter + 1) * period * 1000L,
                         (counter + 2) * period * 1000L
                     )
@@ -45,7 +49,30 @@ class TokenCodeUtil private constructor(
         }
     }
 
-    private fun getHOTP(otpToken: OtpToken, counter: Long): String {
+    private fun resolvePlaintextSecret(otpToken: OtpToken): String? {
+        if (otpToken.encryptionType != EncryptionType.ENCRYPTED) {
+            return otpToken.secret
+        }
+        val manager = tokenCryptoManager ?: return null
+        return try {
+            manager.decryptSecret(otpToken)
+        } catch (e: GeneralSecurityException) {
+            e.printStackTrace()
+            null
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            null
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun getHOTP(otpToken: OtpToken, plaintextSecret: String, counter: Long): String {
+        if (otpToken.digits <= 0) {
+            return ""
+        }
+
         // Encode counter in network byte order
         val bb = ByteBuffer.allocate(8)
         bb.putLong(counter)
@@ -53,14 +80,6 @@ class TokenCodeUtil private constructor(
         // Create digits divisor
         var div = 1
         for (i in otpToken.digits downTo 1) div *= 10
-
-        val plaintextSecret = if (otpToken.encryptionType == EncryptionType.ENCRYPTED) {
-            val manager = tokenCryptoManager
-                ?: throw IllegalStateException("TokenCryptoManager is required to generate code for encrypted token")
-            manager.decryptSecret(otpToken)
-        } else {
-            otpToken.secret
-        }
 
         // Create the HMAC
         try {
@@ -96,18 +115,18 @@ class TokenCodeUtil private constructor(
 
                 // Zero pad
                 hotp = binary.toString()
-                while (hotp.length != otpToken.digits) hotp = "0$hotp"
+                while (hotp.length < otpToken.digits) hotp = "0$hotp"
             }
             return hotp
         } catch (e: Base32String.DecodingException) {
+            e.printStackTrace()
+        } catch (e: GeneralSecurityException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
         } catch (e: IndexOutOfBoundsException) {
             e.printStackTrace()
-        } catch (e: InvalidKeyException) {
-            e.printStackTrace()
-        } catch (e: NoSuchAlgorithmException) {
+        } catch (e: ArithmeticException) {
             e.printStackTrace()
         }
         return ""
