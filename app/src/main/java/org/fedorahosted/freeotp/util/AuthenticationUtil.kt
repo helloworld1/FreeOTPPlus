@@ -70,8 +70,51 @@ object AuthenticationUtil {
 
     fun canAuthenticateStrongBiometric(context: Context): Boolean {
         hasStrongBiometricOverride?.let { return it }
-        return BiometricManager.from(context)
-            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+        val status = BiometricManager.from(context)
+            .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+        return resolveStrongBiometricAvailability(
+            sdkInt = Build.VERSION.SDK_INT,
+            biometricManagerStatus = status,
+            hasScreenLock = { hasScreenLock(context) },
+            fingerprintServiceProvider = { context.getSystemService("fingerprint") }
+        )
+    }
+
+    internal fun resolveStrongBiometricAvailability(
+        sdkInt: Int,
+        biometricManagerStatus: Int,
+        hasScreenLock: () -> Boolean,
+        fingerprintServiceProvider: () -> Any?
+    ): Boolean {
+        if (biometricManagerStatus == BiometricManager.BIOMETRIC_SUCCESS) {
+            return true
+        }
+        // Work around b/543076354: androidx.core 1.18+ turned FingerprintManagerCompat into a
+        // no-op, causing androidx.biometric 1.1.0's canAuthenticate(BIOMETRIC_STRONG) to return
+        // BIOMETRIC_STATUS_UNKNOWN / BIOMETRIC_ERROR_HW_NOT_PRESENT on Android 10 (API 29) and
+        // lower even when a Class 3 fingerprint is enrolled.
+        if (sdkInt < Build.VERSION_CODES.R) {
+            return hasEnrolledPlatformFingerprint(hasScreenLock, fingerprintServiceProvider)
+        }
+        return false
+    }
+
+    internal fun hasEnrolledPlatformFingerprint(
+        hasScreenLock: () -> Boolean,
+        fingerprintServiceProvider: () -> Any?
+    ): Boolean {
+        if (!hasScreenLock()) {
+            return false
+        }
+        return runCatching {
+            val service = fingerprintServiceProvider() ?: return false
+            val clazz = runCatching {
+                Class.forName("android.hardware.fingerprint.FingerprintManager")
+            }.getOrElse { service.javaClass }
+            val isHardwareDetected = clazz.getMethod("isHardwareDetected").invoke(service) as? Boolean ?: false
+            val hasEnrolled = clazz.getMethod("hasEnrolledFingerprints").invoke(service) as? Boolean ?: false
+            isHardwareDetected && hasEnrolled
+        }.getOrDefault(false)
     }
 
     fun authenticateIfScreenLockEnabled(
