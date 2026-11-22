@@ -27,9 +27,16 @@ Most of the codebase has been rewritten in Kotlin using modern Android Jetpack l
 ## Screenshots
 
 <div>
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/001.png" width="30%">
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/002.png" width="30%">
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/003.png" width="30%">
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/001.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/001.png" alt="Token List (Light Theme) with Active OTP Code" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/002.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/002.png" alt="Dark Theme with Category Filter" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/003.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/003.png" alt="Searchable Built-in Icon Picker" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/004.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/004.png" alt="Add Token with Live Icon Preview and Categories" width="24%"></a>
+</div>
+<div>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/005.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/005.png" alt="Edit Token and Protected Secret Reveal" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/006.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/006.png" alt="Share QR Code and Copy Token URI" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/007.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/007.png" alt="AES-256-GCM Token Encryption Key Setup" width="24%"></a>
+<a href="fastlane/metadata/android/en-US/images/phoneScreenshots/008.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/008.png" alt="Encrypted Vault Lock and Export Options" width="24%"></a>
 </div>
 
 ## Build Dependencies
