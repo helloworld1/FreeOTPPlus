@@ -46,10 +46,16 @@ class TokenCryptoManagerTest {
         override fun getLong(key: String?, defValue: Long): Long = (data[key] as? Long) ?: defValue
         override fun getFloat(key: String?, defValue: Float): Float = (data[key] as? Float) ?: defValue
         override fun getBoolean(key: String?, defValue: Boolean): Boolean = (data[key] as? Boolean) ?: defValue
+        private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
+
         override fun contains(key: String?): Boolean = data.containsKey(key)
         override fun edit(): SharedPreferences.Editor = EditorImpl()
-        override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {}
-        override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {}
+        override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
+            if (listener != null) listeners.add(listener)
+        }
+        override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
+            if (listener != null) listeners.remove(listener)
+        }
 
         private inner class EditorImpl : SharedPreferences.Editor {
             private val staged = mutableMapOf<String, Any?>()
@@ -73,13 +79,26 @@ class TokenCryptoManagerTest {
                 if (!allowed) {
                     return false
                 }
-                if (clearAll) data.clear()
+                val changedKeys = LinkedHashSet<String>()
+                if (clearAll) {
+                    changedKeys.addAll(data.keys)
+                    data.clear()
+                }
                 removals.forEach {
                     if (!staged.containsKey(it)) {
+                        if (data.containsKey(it)) changedKeys.add(it)
                         data.remove(it)
                     }
                 }
+                staged.forEach { (k, v) ->
+                    if (data[k] != v) changedKeys.add(k)
+                }
                 data.putAll(staged)
+                for (key in changedKeys) {
+                    for (listener in listeners.toList()) {
+                        listener.onSharedPreferenceChanged(this@InMemorySharedPreferences, key)
+                    }
+                }
                 return true
             }
             override fun apply() {
@@ -765,5 +784,32 @@ class TokenCryptoManagerTest {
         assertThat(restarted.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
         assertThat(restarted.unlockWithPassphrase("restageKey99".toCharArray())).isTrue()
         assertThat(restarted.decryptSecret(db.dao.snapshot().single())).isEqualTo("JBSWY3DPEHPK3PXP")
+    }
+
+    @Test
+    fun enableTokenEncryption_setsSessionKeyBeforePublishingAuthModeChange(): Unit = runBlocking {
+        val prefs = InMemorySharedPreferences()
+        val db = FakeDatabase(
+            FakeOtpTokenDao(
+                listOf(sampleHotpToken(1L, "JBSWY3DPEHPK3PXP"))
+            )
+        )
+        val manager = createManagerWithFakeDb(prefs, db)
+        var unlockedWhenAuthModeChanged: Boolean? = null
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == TokenCryptoManager.AUTH_MODE_KEY && manager.getAuthMode() == AuthMode.TOKEN_ENCRYPTED) {
+                unlockedWhenAuthModeChanged = manager.isUnlocked()
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+
+        val setup = manager.deriveSetupMaterial("noDoublePromptKey1".toCharArray())
+        try {
+            manager.enableTokenEncryption(setup, null)
+        } finally {
+            setup.clear()
+        }
+
+        assertThat(unlockedWhenAuthModeChanged).isTrue()
     }
 }

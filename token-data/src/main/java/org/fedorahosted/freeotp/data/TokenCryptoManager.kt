@@ -681,6 +681,7 @@ class TokenCryptoManager private constructor(
                             }.getOrNull()
                             when (sqliteCommitted) {
                                 true -> {
+                                    setSessionKey(keyBytes)
                                     promotePendingEncryptionMetadata(
                                         kdfSalt = setupMaterial.kdfSalt,
                                         kdfIterations = setupMaterial.kdfIterations,
@@ -688,7 +689,6 @@ class TokenCryptoManager private constructor(
                                         biometricEncryptedKeyBlob = biometricEncryptedKeyBlob,
                                         requireCommitSuccess = false
                                     )
-                                    setSessionKey(keyBytes)
                                 }
                                 false -> rollbackPendingEncryptionMetadata()
                                 null -> {
@@ -699,14 +699,19 @@ class TokenCryptoManager private constructor(
                             throw t
                         }
 
-                        promotePendingEncryptionMetadata(
-                            kdfSalt = setupMaterial.kdfSalt,
-                            kdfIterations = setupMaterial.kdfIterations,
-                            keyVerifier = setupMaterial.keyVerifier,
-                            biometricEncryptedKeyBlob = biometricEncryptedKeyBlob,
-                            requireCommitSuccess = true
-                        )
                         setSessionKey(keyBytes)
+                        try {
+                            promotePendingEncryptionMetadata(
+                                kdfSalt = setupMaterial.kdfSalt,
+                                kdfIterations = setupMaterial.kdfIterations,
+                                keyVerifier = setupMaterial.keyVerifier,
+                                biometricEncryptedKeyBlob = biometricEncryptedKeyBlob,
+                                requireCommitSuccess = true
+                            )
+                        } catch (t: Throwable) {
+                            lock()
+                            throw t
+                        }
                     } finally {
                         transitionInProgress = false
                     }

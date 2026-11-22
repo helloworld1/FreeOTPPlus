@@ -446,6 +446,155 @@ class AuthenticationGateTest {
             }
 
             onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.NONE
+            }
+        }
+    }
+
+    @Test
+    fun testSwitchingFromNoneToAppLaunchPromptsOnceAndHandlesBackCancelCleanly() {
+        insertTestToken()
+        // Ensure AppSessionManager starts in fresh cold-launch state (hasAuthenticatedSession = false)
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.NONE
+                activity.appSessionManager.lockSession()
+            }
+        }
+
+        AuthenticationUtil.hasScreenLockOverride = true
+        var pendingCancel: (() -> Unit)? = null
+        var pendingSuccess: (() -> Unit)? = null
+        var promptCount = 0
+
+        AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, onCancel ->
+            promptCount++
+            pendingSuccess = onSuccess
+            pendingCancel = onCancel
+        }
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            assertThat(promptCount).isEqualTo(0)
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+
+            // 1. Select App launch and press Back/Cancel on the prompt -> stays in None mode, no retry dialog
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(withText(R.string.auth_mode_app_launch)).perform(click())
+            assertThat(promptCount).isEqualTo(1)
+
+            scenario.onActivity {
+                pendingCancel?.invoke()
+            }
+
+            assertThat(promptCount).isEqualTo(1)
+            scenario.onActivity { activity ->
+                assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                assertThat(activity.getOpenDialogWindows()).isEmpty()
+            }
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+
+            // 2. Select App launch again and complete auth -> prompts ONLY ONCE (no second prompt!)
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(withText(R.string.auth_mode_app_launch)).perform(click())
+            assertThat(promptCount).isEqualTo(2)
+
+            scenario.onActivity {
+                pendingSuccess?.invoke()
+            }
+
+            assertThat(promptCount).isEqualTo(2)
+            scenario.onActivity { activity ->
+                assertThat(activity.settings.authMode).isEqualTo(AuthMode.APP_LAUNCH)
+                assertThat(activity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
+                assertThat(activity.getOpenDialogWindows()).isEmpty()
+            }
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+
+            // 3. Switch back from App launch -> None -> prompts once and returns cleanly to None
+            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
+            onView(withText(R.string.authentication_mode)).perform(click())
+            onView(withText(R.string.auth_mode_none)).perform(click())
+            assertThat(promptCount).isEqualTo(3)
+
+            scenario.onActivity {
+                pendingSuccess?.invoke()
+            }
+
+            assertThat(promptCount).isEqualTo(3)
+            scenario.onActivity { activity ->
+                assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                assertThat(activity.getOpenDialogWindows()).isEmpty()
+            }
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+        }
+    }
+
+    @Test
+    fun testAppLaunchCancelWhileStoppedShowsRetryDialogOnResumeWithoutInfinitePromptLoop() {
+        insertTestToken()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.APP_LAUNCH
+                activity.appSessionManager.lockSession()
+            }
+        }
+
+        AuthenticationUtil.hasScreenLockOverride = true
+        var pendingCancel: (() -> Unit)? = null
+        var pendingSuccess: (() -> Unit)? = null
+        var promptCount = 0
+
+        AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, onCancel ->
+            promptCount++
+            pendingSuccess = onSuccess
+            pendingCancel = onCancel
+        }
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            lateinit var mainActivity: MainActivity
+            scenario.onActivity { activity ->
+                mainActivity = activity
+            }
+            assertThat(promptCount).isEqualTo(1)
+
+            // Simulate full-screen ConfirmDeviceCredentialActivity stopping MainActivity, then
+            // delivering user Back/cancel in onActivityResult while MainActivity is still CREATED.
+            scenario.moveToState(Lifecycle.State.CREATED)
+            getInstrumentation().runOnMainSync {
+                pendingCancel?.invoke()
+            }
+
+            scenario.moveToState(Lifecycle.State.RESUMED)
+
+            // Must show the retry dialog once without re-launching the prompt in a loop or exposing tokens
+            assertThat(promptCount).isEqualTo(1)
+            onView(withText(R.string.authentication_dialog_title)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            scenario.onActivity { activity ->
+                assertThat(activity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+                assertThat(activity.findViewById<View>(R.id.nav_host_fragment).visibility)
+                    .isEqualTo(View.INVISIBLE)
+            }
+
+            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            assertThat(promptCount).isEqualTo(2)
+
+            scenario.onActivity {
+                pendingSuccess?.invoke()
+            }
+
+            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            assertThat(mainActivity.appSessionManager.authState.value)
+                .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
+
+            scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.NONE
+            }
         }
     }
 

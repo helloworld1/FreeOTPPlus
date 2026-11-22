@@ -93,6 +93,8 @@ class MainActivity : AppCompatActivity() {
     private var activeAuthDialog: AlertDialog? = null
     private var activeAuthDialogKind: AuthDialogKind = AuthDialogKind.NONE
     private var isAuthPromptInProgress = false
+    private var pendingAppLaunchRetryDialog = false
+    private var pendingAppLaunchRetryMessage: String? = null
     private var pendingDeepLinkUri: Uri? = null
     private var pendingDocumentResult: PendingDocumentResult? = null
     private var pendingExportEncrypted = false
@@ -227,6 +229,9 @@ class MainActivity : AppCompatActivity() {
                         dismissOpenChildScreensOnLock()
                         verifyAuthentication()
                     } else {
+                        pendingAppLaunchRetryDialog = false
+                        pendingAppLaunchRetryMessage = null
+                        dismissAuthDialog()
                         binding.navHostFragment.visibility = View.VISIBLE
                         invalidateMenu()
                         processPendingDeepLinkIfAny()
@@ -264,6 +269,8 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         isAuthPromptInProgress = false
+        pendingAppLaunchRetryDialog = false
+        pendingAppLaunchRetryMessage = null
         dismissTransientDialog()
         dismissAuthDialog()
     }
@@ -624,16 +631,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleAuthModeSelection(currentMode: AuthMode, targetMode: AuthMode) {
+        if (isAuthPromptInProgress) return
         val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
             AuthenticationUtil.hasScreenLock(this)
         when {
             targetMode == AuthMode.TOKEN_ENCRYPTED -> {
                 if (currentMode == AuthMode.APP_LAUNCH && hasAppLaunchCredential) {
+                    isAuthPromptInProgress = true
                     AuthenticationUtil.authenticateAppLaunch(
                         activity = this,
-                        onSuccess = { showSetEncryptionKeyDialog() },
-                        onNoDeviceCredential = { showSetEncryptionKeyDialog() },
-                        onCancelOrError = { code, msg -> showNonFatalAuthErrorIfNeeded(code, msg) }
+                        onSuccess = {
+                            isAuthPromptInProgress = false
+                            viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                            showSetEncryptionKeyDialog()
+                        },
+                        onNoDeviceCredential = {
+                            isAuthPromptInProgress = false
+                            showSetEncryptionKeyDialog()
+                        },
+                        onCancelOrError = { code, msg ->
+                            isAuthPromptInProgress = false
+                            showNonFatalAuthErrorIfNeeded(code, msg)
+                        }
                     )
                 } else {
                     showSetEncryptionKeyDialog()
@@ -651,17 +670,22 @@ class MainActivity : AppCompatActivity() {
                     showScreenLockRequiredDialog()
                     return
                 }
+                isAuthPromptInProgress = true
                 AuthenticationUtil.authenticateAppLaunch(
                     activity = this,
                     onSuccess = {
+                        isAuthPromptInProgress = false
+                        appSessionManager.prepareAuthenticatedSession()
                         settings.authMode = AuthMode.APP_LAUNCH
                         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                         invalidateMenu()
                     },
                     onNoDeviceCredential = {
+                        isAuthPromptInProgress = false
                         showScreenLockRequiredDialog()
                     },
                     onCancelOrError = { code, msg ->
+                        isAuthPromptInProgress = false
                         showNonFatalAuthErrorIfNeeded(code, msg)
                     }
                 )
@@ -671,17 +695,21 @@ class MainActivity : AppCompatActivity() {
                     disableAppLaunchWhenScreenLockMissing()
                     return
                 }
+                isAuthPromptInProgress = true
                 AuthenticationUtil.authenticateAppLaunch(
                     activity = this,
                     onSuccess = {
+                        isAuthPromptInProgress = false
                         settings.authMode = AuthMode.NONE
                         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                         invalidateMenu()
                     },
                     onNoDeviceCredential = {
+                        isAuthPromptInProgress = false
                         disableAppLaunchWhenScreenLockMissing()
                     },
                     onCancelOrError = { code, msg ->
+                        isAuthPromptInProgress = false
                         showNonFatalAuthErrorIfNeeded(code, msg)
                     }
                 )
@@ -807,6 +835,7 @@ class MainActivity : AppCompatActivity() {
         setupDialog: AlertDialog? = null
     ) {
         try {
+            appSessionManager.prepareAuthenticatedSession()
             tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
             setupDialog?.let { AuthenticationUtil.dismissKeyDialogSafely(it) }
             onAuthCompleted()
@@ -841,6 +870,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         AuthenticationUtil.dismissKeyDialogSafely(setupDialog)
+        isAuthPromptInProgress = true
         AuthenticationUtil.authenticateBiometricCrypto(
             activity = this,
             title = getString(R.string.encrypt_key_with_biometric_title),
@@ -848,6 +878,7 @@ class MainActivity : AppCompatActivity() {
             negativeButtonText = getString(R.string.use_manual_key_only),
             cipher = encryptCipher,
             onSuccess = { authenticatedCipher ->
+                isAuthPromptInProgress = false
                 lifecycleScope.launch {
                     var delegatedToManualFallback = false
                     try {
@@ -855,6 +886,7 @@ class MainActivity : AppCompatActivity() {
                             authenticatedCipher,
                             setupMaterial.keyBytes
                         )
+                        appSessionManager.prepareAuthenticatedSession()
                         tokenCryptoManager.enableTokenEncryption(setupMaterial, wrappedBlob)
                         onAuthCompleted()
                         invalidateMenu()
@@ -874,12 +906,14 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             onFallbackToManual = { _ ->
+                isAuthPromptInProgress = false
                 tokenCryptoManager.cancelPendingBiometricKeySetup()
                 lifecycleScope.launch {
                     enableManualOnlyEncryption(setupMaterial)
                 }
             },
             onCancel = {
+                isAuthPromptInProgress = false
                 tokenCryptoManager.cancelPendingBiometricKeySetup()
                 setupMaterial.clear()
             }
@@ -900,11 +934,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun authenticateAndDisableEncryption(targetMode: AuthMode) {
+        if (isAuthPromptInProgress) return
         val canBio = AuthenticationUtil.canAuthenticateStrongBiometric(this)
         val prep = if (canBio) tokenCryptoManager.prepareBiometricDecryptCipher() else null
         val decryptCipher = prep?.cipher
 
         if (canBio && prep?.status == TokenCryptoManager.BiometricKeyStatus.READY && decryptCipher != null) {
+            isAuthPromptInProgress = true
             AuthenticationUtil.authenticateBiometricCrypto(
                 activity = this,
                 title = getString(R.string.authentication_dialog_title),
@@ -912,6 +948,7 @@ class MainActivity : AppCompatActivity() {
                 negativeButtonText = getString(R.string.enter_key_manually),
                 cipher = decryptCipher,
                 onSuccess = { authenticatedCipher ->
+                    isAuthPromptInProgress = false
                     if (tokenCryptoManager.unlockWithBiometricCipher(authenticatedCipher)) {
                         performDisableEncryption(targetMode)
                     } else {
@@ -919,9 +956,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 onFallbackToManual = { _ ->
+                    isAuthPromptInProgress = false
                     showVerifyKeyToDisableDialog(targetMode)
                 },
-                onCancel = {}
+                onCancel = {
+                    isAuthPromptInProgress = false
+                }
             )
         } else {
             showVerifyKeyToDisableDialog(targetMode)
@@ -937,6 +977,7 @@ class MainActivity : AppCompatActivity() {
         ) { chars, _, dismissSafely ->
             if (tokenCryptoManager.unlockWithPassphrase(chars)) {
                 try {
+                    appSessionManager.prepareAuthenticatedSession()
                     tokenCryptoManager.disableTokenEncryption(targetMode)
                     dismissSafely()
                     viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
@@ -959,6 +1000,7 @@ class MainActivity : AppCompatActivity() {
     private fun performDisableEncryption(targetMode: AuthMode) {
         lifecycleScope.launch {
             try {
+                appSessionManager.prepareAuthenticatedSession()
                 tokenCryptoManager.disableTokenEncryption(targetMode)
                 viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                 invalidateMenu()
@@ -983,11 +1025,29 @@ class MainActivity : AppCompatActivity() {
         if (currentMode == AuthMode.APP_LAUNCH) {
             val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||
                 AuthenticationUtil.hasScreenLock(this)
-            if (!hasAppLaunchCredential && activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_RETRY) {
-                dismissAuthDialog()
-            } else if (hasAppLaunchCredential && activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_NO_SCREEN_LOCK) {
-                dismissAuthDialog()
+            if (!hasAppLaunchCredential) {
+                pendingAppLaunchRetryDialog = false
+                pendingAppLaunchRetryMessage = null
+                if (activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_RETRY) {
+                    dismissAuthDialog()
+                }
+            } else {
+                if (activeAuthDialogKind == AuthDialogKind.APP_LAUNCH_NO_SCREEN_LOCK) {
+                    dismissAuthDialog()
+                }
+                if (pendingAppLaunchRetryDialog &&
+                    lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                ) {
+                    val msg = pendingAppLaunchRetryMessage
+                    pendingAppLaunchRetryDialog = false
+                    pendingAppLaunchRetryMessage = null
+                    showAppLaunchRetryDialog(msg)
+                    return
+                }
             }
+        } else {
+            pendingAppLaunchRetryDialog = false
+            pendingAppLaunchRetryMessage = null
         }
 
         if (isAuthPromptInProgress || activeAuthDialog?.isShowing == true) {
@@ -1012,7 +1072,7 @@ class MainActivity : AppCompatActivity() {
                     },
                     onCancelOrError = { errorCode, errString ->
                         isAuthPromptInProgress = false
-                        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                        if (isSessionAuthenticated()) {
                             return@authenticateAppLaunch
                         }
                         val message = errString?.takeIf {
@@ -1021,6 +1081,11 @@ class MainActivity : AppCompatActivity() {
                                 errorCode != BiometricPrompt.ERROR_CANCELED &&
                                 it.isNotBlank()
                         }?.toString()
+                        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            pendingAppLaunchRetryDialog = true
+                            pendingAppLaunchRetryMessage = message
+                            return@authenticateAppLaunch
+                        }
                         showAppLaunchRetryDialog(message)
                     }
                 )
@@ -1217,6 +1282,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onAuthCompleted() {
+        pendingAppLaunchRetryDialog = false
+        pendingAppLaunchRetryMessage = null
         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         processPendingDeepLinkIfAny()
         processPendingDocumentResultIfAny()

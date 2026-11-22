@@ -103,6 +103,15 @@ class AppSessionManager @Inject constructor(
     }
 
     @MainThread
+    fun prepareAuthenticatedSession() {
+        hasAuthenticatedSession = true
+        cancelBackgroundLockTimer()
+        if (startedActivityCount > 0) {
+            backgroundedAtElapsedRealtime = null
+        }
+    }
+
+    @MainThread
     fun setAuthState(state: AuthState) {
         if (state == AuthState.AUTHENTICATED) {
             if (tokenCryptoManager.getAuthMode() == AuthMode.APP_LAUNCH && !isAppLaunchCredentialAvailable()) {
