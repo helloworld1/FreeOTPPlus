@@ -408,8 +408,7 @@ class TokenListFragment : Fragment() {
                         }
 
                         R.id.quit_and_lock -> {
-                            viewModel.lockSession()
-                            mainActivity.finish()
+                            mainActivity.quitAndLock()
                             true
                         }
 

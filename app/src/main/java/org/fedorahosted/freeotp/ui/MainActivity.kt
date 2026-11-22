@@ -227,7 +227,9 @@ class MainActivity : AppCompatActivity() {
                         binding.navHostFragment.visibility = View.INVISIBLE
                         dismissTransientDialog()
                         dismissOpenChildScreensOnLock()
-                        verifyAuthentication()
+                        if (!isFinishing && !isDestroyed) {
+                            verifyAuthentication()
+                        }
                     } else {
                         pendingAppLaunchRetryDialog = false
                         pendingAppLaunchRetryMessage = null
@@ -289,9 +291,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!isSessionAuthenticated()) {
+        if (!isFinishing && !isDestroyed && !isSessionAuthenticated()) {
             verifyAuthentication()
         }
+    }
+
+    fun quitAndLock() {
+        binding.navHostFragment.visibility = View.INVISIBLE
+        dismissTransientDialog()
+        dismissAuthDialog()
+        finish()
+        viewModel.lockSession()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -1021,6 +1031,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyAuthentication() {
+        if (isFinishing || isDestroyed) {
+            return
+        }
         val currentMode = tokenCryptoManager.getAuthMode()
         if (currentMode == AuthMode.APP_LAUNCH) {
             val hasAppLaunchCredential = AuthenticationUtil.appLaunchAuthCallbackOverride != null ||

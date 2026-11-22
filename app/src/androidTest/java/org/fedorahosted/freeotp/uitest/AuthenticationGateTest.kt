@@ -599,6 +599,95 @@ class AuthenticationGateTest {
     }
 
     @Test
+    fun testQuitAndLockInAppLaunchAndTokenEncryptedModesExitsWithoutPrompting() {
+        insertTestToken()
+        try {
+            // 1. App Launch mode: clicking Quit and Lock must finish without invoking authenticateAppLaunch
+            AuthenticationUtil.hasScreenLockOverride = true
+            var promptCount = 0
+            AuthenticationUtil.appLaunchAuthCallbackOverride = { _, _ ->
+                promptCount++
+            }
+
+            lateinit var appSessionRef: AppSessionManager
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    appSessionRef = activity.appSessionManager
+                    activity.appSessionManager.prepareAuthenticatedSession()
+                    activity.settings.authMode = AuthMode.APP_LAUNCH
+                    activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    activity.invalidateMenu()
+                }
+                awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
+                assertThat(promptCount).isEqualTo(0)
+
+                onView(withId(R.id.quit_and_lock)).perform(click())
+
+                val deadline = System.currentTimeMillis() + 3_000L
+                while (scenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(25L)
+                }
+                assertThat(promptCount).isEqualTo(0)
+                assertThat(appSessionRef.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+                assertThat(scenario.state).isEqualTo(Lifecycle.State.DESTROYED)
+            }
+
+            // 2. Token Encrypted mode: clicking Quit and Lock wipes session key and finishes without unlock prompt
+            AuthenticationUtil.appLaunchAuthCallbackOverride = null
+            AuthenticationUtil.hasStrongBiometricOverride = false
+
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                lateinit var mainActivity: MainActivity
+                scenario.onActivity { activity ->
+                    mainActivity = activity
+                    activity.settings.authMode = AuthMode.NONE
+                    activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    activity.tokenCryptoManager.kdfIterationsOverride = 1_500
+                    runBlocking {
+                        val setup = activity.tokenCryptoManager.deriveSetupMaterial("secret123".toCharArray())
+                        activity.appSessionManager.prepareAuthenticatedSession()
+                        activity.tokenCryptoManager.enableTokenEncryption(setup, null)
+                        setup.clear()
+                    }
+                    activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                    activity.invalidateMenu()
+                }
+                awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
+                assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isTrue()
+
+                onView(withId(R.id.quit_and_lock)).perform(click())
+
+                val deadline = System.currentTimeMillis() + 3_000L
+                while (scenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(25L)
+                }
+                assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isFalse()
+                assertThat(mainActivity.appSessionManager.authState.value)
+                    .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
+                assertThat(scenario.state).isEqualTo(Lifecycle.State.DESTROYED)
+            }
+        } finally {
+            // Reset back to AuthMode.NONE for subsequent tests
+            AuthenticationUtil.appLaunchAuthCallbackOverride = null
+            AuthenticationUtil.hasScreenLockOverride = false
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    runBlocking {
+                        if (activity.tokenCryptoManager.getAuthMode() == AuthMode.TOKEN_ENCRYPTED) {
+                            activity.tokenCryptoManager.unlockWithPassphrase("secret123".toCharArray())
+                            activity.tokenCryptoManager.disableTokenEncryption(AuthMode.NONE)
+                        } else {
+                            activity.settings.authMode = AuthMode.NONE
+                        }
+                    }
+                    activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                }
+            }
+        }
+    }
+
+    @Test
     fun testShareQrCodeCopyTokenUriButtonCopiesExactSensitiveUriToClipboard() {
         AuthenticationUtil.hasScreenLockOverride = false
         insertTestToken()
