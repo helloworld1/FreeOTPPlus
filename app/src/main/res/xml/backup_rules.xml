@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="sharedpref" path="." />
+    <include domain="file" path="." />
+
+    <exclude domain="sharedpref" path="tokens.xml" />
+    <exclude domain="sharedpref" path="tokens.bak" />
+</full-backup-content>
