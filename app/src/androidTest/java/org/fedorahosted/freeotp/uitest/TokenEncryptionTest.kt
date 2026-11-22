@@ -239,15 +239,14 @@ class TokenEncryptionTest {
             onView(withId(R.id.secret)).perform(replaceText("JBSWY3DPEHPK3PXP"), closeSoftKeyboard())
             onView(withId(R.id.add)).perform(click())
 
+            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), isDisplayed())
+            val storedAfterAdd = TestWaitUtil.awaitStoredTokens(scenario, expectedCount = 2)
+            storedAfterAdd.forEach { token ->
+                assertThat(token.encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
+                assertThat(token.secret).startsWith("v1:")
+            }
+
             scenario.onActivity { activity ->
-                runBlocking {
-                    val stored = activity.otpTokenDatabase.otpTokenDao().getAll().first()
-                    assertThat(stored).hasSize(2)
-                    stored.forEach { token ->
-                        assertThat(token.encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
-                        assertThat(token.secret).startsWith("v1:")
-                    }
-                }
                 activity.navigateTo(
                     R.id.action_tokenList_to_editToken,
                     EditTokenFragment.args(1L)
@@ -402,6 +401,7 @@ class TokenEncryptionTest {
                 .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
             onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
 
+            TestWaitUtil.awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
             scenario.onActivity { activity ->
                 val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
                 assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isTrue()
@@ -701,11 +701,8 @@ class TokenEncryptionTest {
 
             // Re-queued deep-link confirmation dialog is re-presented and succeeds after unlock
             onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
-            deepLinkScenario.onActivity { activity ->
-                val allTokens = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first() }
-                assertThat(allTokens).hasSize(2)
-                assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
-            }
+            val allTokens = TestWaitUtil.awaitStoredTokens(deepLinkScenario, expectedCount = 2)
+            assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
         }
     }
 

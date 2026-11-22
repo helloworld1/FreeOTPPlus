@@ -1,6 +1,7 @@
 package org.fedorahosted.freeotp.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
@@ -59,6 +60,11 @@ class TokenListAdapter(
         super.onBindViewHolder(holder, position, payloads)
     }
 
+    private fun showMessage(anchor: View, messageRes: Int) {
+        (activity as? MainActivity)?.showSnackbar(messageRes)
+            ?: Snackbar.make(anchor, messageRes, Snackbar.LENGTH_SHORT).show()
+    }
+
     override fun onBindViewHolder(holder: TokenViewHolder, position: Int) {
         val currentToken = currentList[position]
         holder.bind(currentToken)
@@ -84,7 +90,7 @@ class TokenListAdapter(
                         if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
                             viewModel.onSessionStart()
                         } else {
-                            Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                            showMessage(v, R.string.invalid_token)
                         }
                         return@let
                     }
@@ -94,7 +100,7 @@ class TokenListAdapter(
                         if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
                             viewModel.onSessionStart()
                         } else {
-                            Snackbar.make(v, R.string.invalid_token, Snackbar.LENGTH_SHORT).show()
+                            showMessage(v, R.string.invalid_token)
                         }
                         return@let
                     }
@@ -113,7 +119,7 @@ class TokenListAdapter(
                     if (settings.copyToClipboard) {
                         clipboardUtil.copySensitiveText(null, code)
                         if (ClipboardUtil.shouldShowAppCopyFeedback()) {
-                            Snackbar.make(v, R.string.code_copied, Snackbar.LENGTH_SHORT).show()
+                            showMessage(v, R.string.code_copied)
                         }
                     }
 

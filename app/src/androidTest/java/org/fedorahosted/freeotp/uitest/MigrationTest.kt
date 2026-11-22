@@ -45,6 +45,7 @@ class MigrationTest {
         globalPrefs.edit().putBoolean("tokenMigrated", false)
             .commit()
         activityScenario = launchActivity()
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
     }
 
     @Test
@@ -90,8 +91,7 @@ class MigrationTest {
         assertThat(legacyXml.exists()).isTrue()
 
         activityScenario = launchActivity()
-        onView(withId(R.id.token_list))
-            .check(RecyclerViewAssertion.childrenCount(2))
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
 
         // Poll briefly for async Dispatchers.IO purge to complete
         val deadline = System.currentTimeMillis() + 5_000L

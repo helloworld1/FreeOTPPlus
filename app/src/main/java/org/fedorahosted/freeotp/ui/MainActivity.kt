@@ -24,10 +24,12 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.FloatingWindow
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -91,6 +93,7 @@ class MainActivity : AppCompatActivity() {
 
     private var activeTransientDialog: AlertDialog? = null
     private var activeAuthDialog: AlertDialog? = null
+    private var activeSnackbar: Snackbar? = null
     private var activeAuthDialogKind: AuthDialogKind = AuthDialogKind.NONE
     private var isAuthPromptInProgress = false
     private var pendingAppLaunchRetryDialog = false
@@ -195,10 +198,26 @@ class MainActivity : AppCompatActivity() {
     private fun dismissTransientDialog() {
         activeTransientDialog?.dismiss()
         activeTransientDialog = null
+        dismissSnackbar()
+    }
+
+    fun dismissSnackbar() {
+        activeSnackbar?.dismiss()
+        activeSnackbar = null
     }
 
     fun showSnackbar(messageRes: Int, duration: Int = Snackbar.LENGTH_SHORT) {
-        Snackbar.make(binding.rootView, messageRes, duration).show()
+        activeSnackbar?.dismiss()
+        val snackbar = Snackbar.make(binding.rootView, messageRes, duration)
+        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                if (activeSnackbar === transientBottomBar) {
+                    activeSnackbar = null
+                }
+            }
+        })
+        activeSnackbar = snackbar
+        snackbar.show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -217,6 +236,11 @@ class MainActivity : AppCompatActivity() {
             window.decorView,
             View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
         )
+        navController().addOnDestinationChangedListener { _, destination, _ ->
+            if (destination !is FloatingWindow && destination.id != R.id.tokenListFragment) {
+                dismissSnackbar()
+            }
+        }
 
         viewModel.migrateOldData()
 

@@ -144,6 +144,7 @@ class SvgIconTest {
                     }
                 }
 
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
                 onView(withId(R.id.token_list))
                     .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
                     .check(matches(hasDescendant(withText("Telekom"))))

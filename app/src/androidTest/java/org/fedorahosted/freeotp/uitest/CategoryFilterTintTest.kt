@@ -85,7 +85,7 @@ class CategoryFilterTintTest {
                 }
             }
             // Category labels are not displayed on the main token list card
-            awaitViewDisplayed(withId(R.id.token_list))
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
                 .check(matches(not(hasDescendant(withText("Work • Cloud")))))
@@ -108,20 +108,17 @@ class CategoryFilterTintTest {
                 val expectedActive = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorPrimary)
                 assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedActive)
             }
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("microsoft.com"))))
+            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
 
             // Select "Work" -> Token 1 matches
             onView(withId(R.id.action_filter)).perform(click())
             onView(withText("Work")).perform(click())
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
 
             // Select "Cloud" -> Token 1 also matches its second category
             onView(withId(R.id.action_filter)).perform(click())
             onView(withText("Cloud")).perform(click())
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
 
             // Select "All categories" -> restored to colorControlNormal
             onView(withId(R.id.action_filter)).perform(click())
@@ -177,6 +174,7 @@ class CategoryFilterTintTest {
 
             onView(withText("Cloud")).check(matches(isChecked()))
             onView(withId(R.id.save)).perform(click())
+            awaitViewDisplayed(withId(R.id.token_list))
         }
 
         val updated = runBlocking(Dispatchers.IO) {

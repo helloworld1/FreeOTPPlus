@@ -64,6 +64,7 @@ class MainActivityTest {
         onView(withId(R.id.add))
             .check(matches(isEnabled()))
             .perform(click())
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("issuer1"))))
@@ -82,6 +83,7 @@ class MainActivityTest {
         onView(withId(R.id.add))
             .check(matches(isEnabled()))
             .perform(click())
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(hasDescendant(withText("account_no_issuer"))))
@@ -158,6 +160,7 @@ class MainActivityTest {
         onView(withId(R.id.delete))
             .perform(click())
 
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
         onView(withId(R.id.token_list))
             .check(RecyclerViewAssertion.childrenCount(1))
         onView(withId(R.id.token_list))
@@ -189,6 +192,7 @@ class MainActivityTest {
         onView(withId(R.id.delete))
             .perform(click())
 
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 0)
         onView(withId(R.id.token_list))
             .check(RecyclerViewAssertion.childrenCount(0))
     }
@@ -245,6 +249,7 @@ class MainActivityTest {
             .check(matches(isEnabled()))
             .perform(click())
 
+        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
             .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("5"), isDisplayed())))))
@@ -298,6 +303,7 @@ class MainActivityTest {
             onView(withText(R.string.add))
                 .perform(click())
 
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
             onView(withId(R.id.token_list))
                 .check(RecyclerViewAssertion.childrenCount(1))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))

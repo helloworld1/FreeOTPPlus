@@ -67,6 +67,7 @@ class TokenSortTest {
                     )
                 }
             }
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
 
             // Select Sort -> Sort by Account Ascending -> Cancel keeps manual order [Slack, Amazon, GitHub]
             openSortSubmenu()
@@ -117,6 +118,10 @@ class TokenSortTest {
 
     private fun assertTokenIssuerOrder(vararg expectedIssuers: String) {
         expectedIssuers.forEachIndexed { idx, issuer ->
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(issuer)))
+            )
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(idx, scrollTo()))
                 .check(matches(RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(issuer)))))
@@ -125,6 +130,10 @@ class TokenSortTest {
 
     private fun assertTokenAccountOrder(vararg expectedAccounts: String) {
         expectedAccounts.forEachIndexed { idx, account ->
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(account)))
+            )
             onView(withId(R.id.token_list))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(idx, scrollTo()))
                 .check(matches(RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(account)))))
