@@ -10,14 +10,14 @@ Obejmuje to świetne rozwiązania korporacyjne, takie jak <a href="https://www.f
 
 <b>Funkcje:</b>
 <ul>
-<li>Skanowanie kodów QR.</li>
-<li>Eksportowanie i importowanie tokenów (jako zwykły tekst lub zaszyfrowanych) na Dysk Google lub do innych dostawców dokumentów.</li>
-<li>Interfejs Material Design z obsługą ciemnego motywu.</li>
-<li>Pasek wyszukiwania tokenów i filtrowanie według kategorii.</li>
-<li>Podgląd szczegółów tokenu.</li>
+<li>Skanowanie kodów QR lub ręczne wprowadzanie konfiguracji tokenu.</li>
+<li>Eksportowanie i importowanie tokenów (JSON lub Key URI, jako zwykły tekst lub zaszyfrowanych) oraz własnych obrazów tokenów (ZIP) przez Dysk Google lub innych dostawców dokumentów.</li>
+<li>Interfejs Material Design 3 z motywem systemowym, jasnym i ciemnym.</li>
+<li>Wyszukiwanie tokenów, przypisywanie wielu kategorii z filtrami oraz sortowanie według konta, wystawcy lub metodą przeciągnij i upuść.</li>
+<li>Podgląd i edycja szczegółów tokenu, udostępnianie przez kod QR lub kopiowanie URI tokenu.</li>
 <li>Trzy tryby uwierzytelniania: Brak, Uruchamianie aplikacji (biometria / kod PIN) oraz Zaszyfrowany token (tajne klucze tokenów zaszyfrowane za pomocą AES-256-GCM i odblokowywane biometrią lub kluczem ręcznym).</li>
-<li>Ikony offline oparte na heurystyce dla tokenów z ponad 250 witryn internetowych.</li>
-<li>Wiele ustawień pozwalających dostosować działanie aplikacji.</li>
+<li>Wbudowane ikony offline dla ponad 450 usług z wyszukiwarką ikon oraz obsługą własnych obrazów i ikon SVG.</li>
+<li>Działanie w 100% offline bez uprawnienia do internetu, z blokadą zrzutów ekranu i automatycznym czyszczeniem wrażliwych danych ze schowka.</li>
 </ul>
 
 FreeOTP Plus to fork aplikacji FreeOTP.

@@ -10,14 +10,14 @@ Isto inclúe excelentes solucións empresariais como <a href="https://www.freeip
 
 <b>Características:</b>
 <ul>
-<li>Escaneo de códigos QR.</li>
-<li>Exportación e importación de tokens (en texto simple ou cifrados) a Google Drive ou outros provedores de documentos.</li>
-<li>Material Design con compatibilidade co tema escuro.</li>
-<li>Barra de busca para buscar tokens e filtrar por categoría.</li>
-<li>Consulta dos detalles do token.</li>
+<li>Escaneo de códigos QR ou introdución manual da configuración do token.</li>
+<li>Exportación e importación de tokens (JSON ou Key URI, en texto simple ou cifrados) e imaxes personalizadas de tokens (ZIP) mediante Google Drive ou outros provedores de documentos.</li>
+<li>Interface Material Design 3 con temas do sistema, claro e escuro.</li>
+<li>Busca de tokens, asignación de varias categorías con filtros e ordenación por conta, emisor ou arrastrar e soltar.</li>
+<li>Consulta e edición dos detalles do token, compartición mediante código QR ou copia do URI do token.</li>
 <li>Tres modos de autenticación: Ningún, Inicio da aplicación (biometría / PIN) e Token cifrado (claves secretas dos tokens cifradas con AES-256-GCM e desbloqueadas mediante biometría ou clave manual).</li>
-<li>Iconas sen conexión baseadas en heurística para tokens de máis de 250 sitios web.</li>
-<li>Múltiples axustes para personalizar a funcionalidade da aplicación.</li>
+<li>Iconas integradas sen conexión para máis de 450 servizos cun selector de iconas con busca, ademais de compatibilidade con imaxes personalizadas e iconas SVG.</li>
+<li>100 % sen conexión e sen permiso de internet, con protección contra capturas de pantalla e limpeza automática do portapapeis sensible.</li>
 </ul>
 
 FreeOTP Plus é unha bifurcación (fork) de FreeOTP.

@@ -10,14 +10,14 @@ Horren barruan <a href="https://www.freeipa.org/">FreeIPA</a> bezalako enpresa-i
 
 <b>Ezaugarriak:</b>
 <ul>
-<li>Eskaneatu QR kodea.</li>
-<li>Esportatu eta inportatu tokenak (testu arruntean edo zifratuta) Google Drive edo beste dokumentu-hornitzaile batzuetara.</li>
-<li>Material Design gai ilunaren euskarriarekin.</li>
-<li>Bilaketa-barra tokenak bilatzeko eta kategoriaren arabera iragazteko.</li>
-<li>Ikusi tokenaren xehetasunak.</li>
+<li>Eskaneatu QR kodeak edo sartu tokenaren konfigurazioa eskuz.</li>
+<li>Esportatu eta inportatu tokenak (JSON edo Key URI, testu arruntean edo zifratuta) eta tokenen irudi pertsonalizatuak (ZIP) Google Drive edo beste dokumentu-hornitzaile batzuen bidez.</li>
+<li>Material Design 3 interfazea sistemaren gaiarekin, gai argiarekin eta ilunarekin.</li>
+<li>Bilatu tokenak, esleitu hainbat kategoria iragazkiekin eta ordenatu kontuaren, jaulkitzailearen edo arrastatu eta jaregitearen arabera.</li>
+<li>Ikusi eta editatu tokenaren xehetasunak, partekatu QR kode bidez edo kopiatu tokenaren URIak.</li>
 <li>Hiru autentifikazio-modu: Bat ere ez, Aplikazioa abiaraztean (datu biometrikoak / PINa) eta Tokena zifratuta (AES-256-GCM bidez zifratutako tokenen gako sekretuak, datu biometrikoekin edo eskuzko gakoarekin desblokeatuta).</li>
-<li>Heuristikan oinarritutako lineaz kanpoko ikonoak 250+ webgunetako tokenentzat.</li>
-<li>Ezarpen ugari aplikazioaren funtzionalitatea pertsonalizatzeko.</li>
+<li>Lineaz kanpoko ikono integratuak 450+ zerbitzurentzat bilagarria den ikono-hautatzailearekin, baita irudi pertsonalizatuen eta SVG ikonoen euskarria ere.</li>
+<li>% 100 lineaz kanpo interneteko baimenik gabe, pantaila-argazkien aurkako babesarekin eta arbeleko datu sentikorren garbiketa automatikoarekin.</li>
 </ul>
 
 FreeOTP Plus FreeOTP aplikazioaren adarkatze (fork) bat da.

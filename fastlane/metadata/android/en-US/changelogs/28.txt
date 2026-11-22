@@ -1,0 +1,7 @@
+RELEASE-3.6
+* Add AES-256-GCM token secret encryption and encrypted backups
+* Modernize UI with Material 3 and Auto / Light / Dark themes
+* Support multiple categories, token sorting, and custom image ZIP backup
+* Add 190+ built-in service icons, searchable icon picker, and SVG custom icons
+* Remove INTERNET and storage permissions and harden clipboard/backup security
+* Add Dutch and Galician translations and update all locales

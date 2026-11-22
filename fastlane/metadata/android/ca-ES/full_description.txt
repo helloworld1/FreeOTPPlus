@@ -10,14 +10,14 @@ Això inclou grans solucions empresarials com <a href="https://www.freeipa.org/"
 
 <b>Característiques:</b>
 <ul>
-<li>Escaneig de codis QR.</li>
-<li>Exportació i importació d'OTP (en text pla o xifrats) a Google Drive o a altres proveïdors de documents.</li>
-<li>Material Design amb compatibilitat per al tema fosc.</li>
-<li>Barra de cerca per trobar entrades OTP i filtrar per categoria.</li>
-<li>Visualització dels detalls de l'OTP.</li>
+<li>Escaneig de codis QR o introducció manual de la configuració de l'OTP.</li>
+<li>Exportació i importació d'OTP (JSON o Key URI, en text pla o xifrats) i d'imatges personalitzades (ZIP) mitjançant Google Drive o altres proveïdors de documents.</li>
+<li>Interfície Material Design 3 amb temes del sistema, clar i fosc.</li>
+<li>Cerca d'entrades OTP, assignació de múltiples categories amb filtres i ordenació per compte, emissor o arrossegant i deixant anar.</li>
+<li>Visualització i edició dels detalls de l'OTP, compartició per codi QR o còpia de l'URI.</li>
 <li>Tres modes d'autenticació: Cap, Inici de l'aplicació (biometria / PIN) i OTP xifrat (claus secretes dels OTP xifrades amb AES-256-GCM i desblocades amb biometria o clau manual).</li>
-<li>Icones fora de línia basades en heurística per a més de 250 llocs web.</li>
-<li>Moltes opcions de configuració per personalitzar el funcionament de l'aplicació.</li>
+<li>Icones integrades fora de línia per a més de 450 serveis amb selector d'icones cercable, a més de compatibilitat amb imatges personalitzades i icones SVG.</li>
+<li>100% fora de línia sense permís d'internet, amb protecció contra captures de pantalla i neteja automàtica del porta-retalls sensible.</li>
 </ul>
 
 FreeOTP Plus és una bifurcació de FreeOTP.

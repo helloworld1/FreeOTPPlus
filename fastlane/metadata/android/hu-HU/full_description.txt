@@ -10,14 +10,14 @@ Ide tartoznak az olyan kiváló vállalati megoldások, mint a <a href="https://
 
 <b>Funkciók:</b>
 <ul>
-<li>QR-kód beolvasása.</li>
-<li>Tokenek exportálása és importálása (egyszerű szövegként vagy titkosítva) a Google Drive-ra vagy más dokumentumszolgáltatókhoz.</li>
-<li>Material Design felület sötét téma támogatással.</li>
-<li>Keresősáv a tokenek kereséséhez és kategóriák szerinti szűréséhez.</li>
-<li>Token részleteinek megtekintése.</li>
+<li>QR-kódok beolvasása vagy a tokenkonfiguráció kézi megadása.</li>
+<li>Tokenek (JSON vagy Key URI, egyszerű szövegként vagy titkosítva) és egyéni tokenképek (ZIP) exportálása és importálása a Google Drive-on vagy más dokumentumszolgáltatókon keresztül.</li>
+<li>Material Design 3 felület rendszer-, világos és sötét témával.</li>
+<li>Tokenek keresése, több kategória hozzárendelése szűrőkkel, valamint rendezés fiók, kibocsátó vagy fogd-és-vidd sorrend szerint.</li>
+<li>Token részleteinek megtekintése és szerkesztése, megosztás QR-kóddal vagy a token URI-jának másolása.</li>
 <li>Három hitelesítési mód: Nincs, Alkalmazás indításakor (biometrikus azonosítás / PIN-kód) és Titkosított token (AES-256-GCM eljárással titkosított titkos tokenkulcsok, biometrikus azonosítással vagy kézi kulccsal feloldva).</li>
-<li>Heurisztikán alapuló offline ikonok több mint 250 webhely tokenjeihez.</li>
-<li>Számos beállítás az alkalmazás működésének testreszabásához.</li>
+<li>Beépített offline ikonok több mint 450 szolgáltatáshoz kereshető ikonválasztóval, valamint egyéni képek és SVG-ikonok támogatásával.</li>
+<li>100%-ban offline működés internetengedély nélkül, képernyőkép-védelemmel és az érzékeny vágólapadatok automatikus törlésével.</li>
 </ul>
 
 A FreeOTP Plus a FreeOTP továbbfejlesztett változata (forkja).

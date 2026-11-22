@@ -10,14 +10,14 @@ Patří sem skvělá podniková řešení jako <a href="https://www.freeipa.org/
 
 <b>Funkce:</b>
 <ul>
-<li>Skenování QR kódů.</li>
-<li>Export a import tokenů (nešifrovaně nebo šifrovaně) na Disk Google nebo k jiným poskytovatelům dokumentů.</li>
-<li>Material Design s podporou tmavého motivu.</li>
-<li>Vyhledávací lišta pro hledání tokenů a filtrování podle kategorií.</li>
-<li>Zobrazení podrobností tokenu.</li>
+<li>Skenování QR kódů nebo ruční zadání konfigurace tokenu.</li>
+<li>Export a import tokenů (JSON nebo Key URI, nešifrovaně i šifrovaně) a vlastních obrázků tokenů (ZIP) přes Disk Google nebo jiné poskytovatele dokumentů.</li>
+<li>Rozhraní Material Design 3 se systémovým, světlým a tmavým motivem.</li>
+<li>Vyhledávání tokenů, přiřazení více kategorií s filtrováním a řazení podle účtu, vydavatele nebo přetažením.</li>
+<li>Zobrazení a úprava podrobností tokenu, sdílení pomocí QR kódu nebo zkopírování URI tokenu.</li>
 <li>Tři režimy ověření: Žádné, Při spuštění aplikace (biometrie / PIN) a Šifrovaný token (tajné klíče tokenů šifrované pomocí AES-256-GCM a odemykané biometrií nebo ručním klíčem).</li>
-<li>Offline ikony založené na heuristice pro tokeny více než 250 webů.</li>
-<li>Mnoho nastavení pro přizpůsobení funkcí aplikace.</li>
+<li>Vestavěné offline ikony pro více než 450 služeb s vyhledávatelným výběrem ikon a podporou vlastních obrázků i SVG ikon.</li>
+<li>100% offline provoz bez oprávnění k internetu, ochrana proti snímkům obrazovky a automatické mazání citlivých dat ze schránky.</li>
 </ul>
 
 FreeOTP Plus je fork aplikace FreeOTP.

@@ -10,14 +10,14 @@ Hieronder vallen ook bewezen zakelijke oplossingen zoals <a href="https://www.fr
 
 <b>Functies:</b>
 <ul>
-<li>QR-code scannen.</li>
-<li>Tokens exporteren en importeren (in platte tekst of versleuteld) via Google Drive of andere opslagdiensten.</li>
-<li>Material Design met ondersteuning voor het donkere thema.</li>
-<li>Zoekbalk om tokens te doorzoeken en te filteren op categorie.</li>
-<li>Tokendetails bekijken.</li>
+<li>QR-codes scannen of tokenconfiguraties handmatig invoeren.</li>
+<li>Tokens (JSON of Key URI, in platte tekst of versleuteld) en aangepaste tokenafbeeldingen (ZIP) exporteren en importeren via Google Drive of andere opslagdiensten.</li>
+<li>Material Design 3-interface met Systeem-, Licht en Donker thema.</li>
+<li>Tokens doorzoeken, meerdere categorieën toewijzen met categoriefilters en sorteren op account, uitgever of via slepen en neerzetten.</li>
+<li>Tokendetails bekijken en bewerken, delen via QR-code of token-URI's kopiëren.</li>
 <li>Drie authenticatiemodi: Geen, Bij opstarten (Biometrie / pincode) en Token versleuteld (met AES-256-GCM versleutelde geheime tokensleutels, te ontgrendelen via biometrie of een handmatige sleutel).</li>
-<li>Op heuristiek gebaseerde offline pictogrammen voor tokens van meer dan 250 websites.</li>
-<li>Uitgebreide instellingen om de werking van de app aan te passen.</li>
+<li>Ingebouwde offline pictogrammen voor meer dan 450 diensten met een doorzoekbare pictogramkiezer, plus ondersteuning voor aangepaste afbeeldingen en SVG-pictogrammen.</li>
+<li>100% offline zonder internettoestemming, met schermbeveiliging tegen screenshots en automatisch wissen van gevoelige klembordgegevens.</li>
 </ul>
 
 FreeOTP Plus is een fork van FreeOTP.

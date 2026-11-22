@@ -10,14 +10,14 @@ Buna <a href="https://www.freeipa.org/">FreeIPA</a> gibi gelişmiş kurumsal ç�
 
 <b>Özellikler:</b>
 <ul>
-<li>QR kodu tarama.</li>
-<li>Tokenları (düz metin veya şifrelenmiş olarak) Google Drive veya diğer belge sağlayıcılarına dışa ve içe aktarma.</li>
-<li>Koyu tema destekli Material Design arayüzü.</li>
-<li>Token aramak ve kategoriye göre filtrelemek için arama çubuğu.</li>
-<li>Token ayrıntılarını görüntüleme.</li>
+<li>QR kodlarını tarama veya token yapılandırmasını manuel olarak girme.</li>
+<li>Tokenları (JSON veya Key URI, düz metin ya da şifrelenmiş) ve özel token görsellerini (ZIP) Google Drive veya diğer belge sağlayıcıları aracılığıyla dışa ve içe aktarma.</li>
+<li>Sistem, Açık ve Koyu tema seçenekleriyle Material Design 3 arayüzü.</li>
+<li>Token arama, kategori filtreleriyle birden fazla kategori atama ve hesaba, sağlayıcıya veya sürükle-bırak sırasına göre sıralama.</li>
+<li>Token ayrıntılarını görüntüleme ve düzenleme, QR koduyla paylaşma veya token URI'lerini kopyalama.</li>
 <li>Üç kimlik doğrulama modu: Yok, Uygulama başlangıcı (Biyometri / PIN) ve Şifrelenmiş token (AES-256-GCM ile şifrelenmiş token gizli anahtarlarının biyometri veya manuel anahtarla açılması).</li>
-<li>250'den fazla web sitesinin tokenları için sezgisel tabanlı çevrimdışı simgeler.</li>
-<li>Uygulama işlevselliğini özelleştirmek için pek çok ayar.</li>
+<li>Aranabilir simge seçiciyle 450'den fazla hizmet için yerleşik çevrimdışı simgeler ile özel görsel ve SVG simge desteği.</li>
+<li>İnternet izni gerektirmeyen %100 çevrimdışı çalışma, ekran görüntüsü koruması ve hassas pano verilerini otomatik temizleme.</li>
 </ul>
 
 FreeOTP Plus, FreeOTP uygulamasının bir çatalıdır (fork).

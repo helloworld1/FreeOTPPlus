@@ -10,14 +10,14 @@ Isso inclui excelentes soluções corporativas como o <a href="https://www.freei
 
 <b>Recursos:</b>
 <ul>
-<li>Escaneamento de código QR.</li>
-<li>Exportação e importação de tokens (em texto simples ou criptografados) para o Google Drive ou outros provedores de documentos.</li>
-<li>Material Design com suporte ao tema escuro.</li>
-<li>Barra de pesquisa para buscar tokens e filtrar por categoria.</li>
-<li>Visualização dos detalhes do token.</li>
+<li>Escaneamento de códigos QR ou inserção manual da configuração do token.</li>
+<li>Exportação e importação de tokens (JSON ou Key URI, em texto simples ou criptografados) e imagens personalizadas de tokens (ZIP) pelo Google Drive ou outros provedores de documentos.</li>
+<li>Interface Material Design 3 com temas do sistema, claro e escuro.</li>
+<li>Pesquisa de tokens, atribuição de múltiplas categorias com filtros e ordenação por conta, emissor ou arrastar e soltar.</li>
+<li>Visualização e edição dos detalhes do token, compartilhamento via código QR ou cópia do URI do token.</li>
 <li>Três modos de autenticação: Nenhum, Abertura do aplicativo (biometria / PIN) e Token criptografado (chaves secretas dos tokens criptografadas com AES-256-GCM e desbloqueadas por biometria ou chave manual).</li>
-<li>Ícones offline baseados em heurística para tokens de mais de 250 sites.</li>
-<li>Diversas configurações para personalizar as funcionalidades do aplicativo.</li>
+<li>Ícones offline integrados para mais de 450 serviços com seletor pesquisável, além de suporte a imagens personalizadas e ícones SVG.</li>
+<li>100% offline sem permissão de internet, com proteção contra capturas de tela e limpeza automática de dados sensíveis da área de transferência.</li>
 </ul>
 
 O FreeOTP Plus é um fork do FreeOTP.

@@ -10,14 +10,14 @@ Cela inclut d'excellentes solutions d'entreprise telles que <a href="https://www
 
 <b>Fonctionnalités :</b>
 <ul>
-<li>Scan de code QR.</li>
-<li>Exportation et importation des jetons (en texte brut ou chiffrés) vers Google Drive ou d'autres fournisseurs de documents.</li>
-<li>Interface Material Design avec prise en charge du thème sombre.</li>
-<li>Barre de recherche pour trouver rapidement un jeton et filtrer par catégorie.</li>
-<li>Affichage des détails du jeton.</li>
+<li>Scan de codes QR ou saisie manuelle de la configuration des jetons.</li>
+<li>Exportation et importation des jetons (JSON ou Key URI, en texte brut ou chiffrés) et des images personnalisées (ZIP) via Google Drive ou d'autres fournisseurs de documents.</li>
+<li>Interface Material Design 3 avec thèmes Système, Clair et Sombre.</li>
+<li>Recherche de jetons, attribution de plusieurs catégories avec filtres et tri par compte, émetteur ou glisser-déposer.</li>
+<li>Affichage et modification des détails du jeton, partage par code QR ou copie de l'URI du jeton.</li>
 <li>Trois modes d'authentification : Aucun, Lancement de l'application (biométrie / code PIN) et Jeton chiffré (clés secrètes des jetons chiffrées en AES-256-GCM et déverrouillées par biométrie ou clé manuelle).</li>
-<li>Icônes hors ligne basées sur l'heuristique pour les jetons de plus de 250 sites web.</li>
-<li>Nombreux paramètres pour personnaliser le fonctionnement de l'application.</li>
+<li>Icônes hors ligne intégrées pour plus de 450 services avec sélecteur d'icônes consultable, ainsi que prise en charge d'images personnalisées et d'icônes SVG.</li>
+<li>100 % hors ligne sans autorisation Internet, avec protection contre les captures d'écran et effacement automatique du presse-papiers sensible.</li>
 </ul>
 
 FreeOTP Plus est un fork de FreeOTP.

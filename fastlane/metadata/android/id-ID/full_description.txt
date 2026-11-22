@@ -10,14 +10,14 @@ Ini mencakup solusi kelas perusahaan seperti <a href="https://www.freeipa.org/">
 
 <b>Fitur:</b>
 <ul>
-<li>Pindai kode QR.</li>
-<li>Ekspor dan impor token (teks biasa atau terenkripsi) ke Google Drive atau penyedia dokumen lainnya.</li>
-<li>Material Design dengan dukungan tema gelap.</li>
-<li>Bilah pencarian untuk mencari token dan memfilter berdasarkan kategori.</li>
-<li>Lihat detail token.</li>
+<li>Pindai kode QR atau masukkan konfigurasi token secara manual.</li>
+<li>Ekspor dan impor token (JSON atau Key URI, teks biasa atau terenkripsi) serta gambar token kustom (ZIP) melalui Google Drive atau penyedia dokumen lainnya.</li>
+<li>Antarmuka Material Design 3 dengan pilihan tema Sistem, Terang, dan Gelap.</li>
+<li>Cari token, tetapkan beberapa kategori dengan filter kategori, serta urutkan berdasarkan akun, penerbit, atau seret dan lepas.</li>
+<li>Lihat dan edit detail token, bagikan melalui kode QR, atau salin URI token.</li>
 <li>Tiga mode autentikasi: Tidak ada, Saat membuka aplikasi (Biometrik / PIN), dan Token terenkripsi (kunci rahasia token dienkripsi dengan AES-256-GCM dan dibuka melalui biometrik atau kunci manual).</li>
-<li>Ikon offline berbasis heuristik untuk token dari 250+ situs web.</li>
-<li>Banyak pengaturan untuk menyesuaikan fungsi aplikasi.</li>
+<li>Ikon offline bawaan untuk 450+ layanan dengan pemilih ikon yang dapat dicari, serta dukungan gambar kustom dan ikon SVG.</li>
+<li>100% offline tanpa izin internet, dilengkapi perlindungan tangkapan layar dan pembersihan papan klip sensitif otomatis.</li>
 </ul>
 
 FreeOTP Plus adalah fork dari FreeOTP.

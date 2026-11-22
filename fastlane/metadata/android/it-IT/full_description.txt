@@ -10,14 +10,14 @@ Ciò include ottime soluzioni enterprise come <a href="https://www.freeipa.org/"
 
 <b>Caratteristiche:</b>
 <ul>
-<li>Scansione del codice QR.</li>
-<li>Esportazione e importazione dei token (in chiaro o crittografati) su Google Drive o altri provider di documenti.</li>
-<li>Material Design con supporto per il tema scuro.</li>
-<li>Barra di ricerca per trovare i token e filtrarli per categoria.</li>
-<li>Visualizzazione dei dettagli del token.</li>
+<li>Scansione dei codici QR o inserimento manuale della configurazione dei token.</li>
+<li>Esportazione e importazione dei token (JSON o Key URI, in chiaro o crittografati) e delle immagini personalizzate (ZIP) tramite Google Drive o altri provider di documenti.</li>
+<li>Interfaccia Material Design 3 con temi di sistema, chiaro e scuro.</li>
+<li>Ricerca dei token, assegnazione di più categorie con filtri e ordinamento per account, emittente o trascinamento.</li>
+<li>Visualizzazione e modifica dei dettagli del token, condivisione tramite codice QR o copia dell'URI del token.</li>
 <li>Tre modalità di autenticazione: Nessuna, Avvio dell'app (dati biometrici / PIN) e Token crittografato (chiavi segrete dei token crittografate con AES-256-GCM e sbloccate tramite biometria o chiave manuale).</li>
-<li>Icone offline basate su euristica per i token di oltre 250 siti web.</li>
-<li>Numerose impostazioni per personalizzare le funzionalità dell'app.</li>
+<li>Icone offline integrate per oltre 450 servizi con selettore ricercabile, oltre al supporto per immagini personalizzate e icone SVG.</li>
+<li>100% offline senza autorizzazione Internet, con blocco degli screenshot e cancellazione automatica degli appunti sensibili.</li>
 </ul>
 
 FreeOTP Plus è un fork di FreeOTP.

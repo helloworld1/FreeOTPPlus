@@ -10,14 +10,14 @@ Dit sluit uitstekende ondernemingsoplossings soos <a href="https://www.freeipa.o
 
 <b>Kenmerke:</b>
 <ul>
-<li>Skandeer QR-kode.</li>
-<li>Voer kentekens (gewone teks of geënkripteer) uit na en voer dit in vanaf Google Drive of ander dokumentverskaffers.</li>
-<li>Material Design met ondersteuning vir donker tema.</li>
-<li>Soekbalk om kentekens te soek en volgens kategorie te filtreer.</li>
-<li>Bekyk kentekenbesonderhede.</li>
+<li>Skandeer QR-kodes of voer kentekenopstellings handmatig in.</li>
+<li>Voer kentekens (JSON of Key URI, gewone teks of geënkripteer) en pasgemaakte kentekenprente (ZIP) uit en in via Google Drive of ander dokumentverskaffers.</li>
+<li>Material Design 3-koppelvlak met Stelsel-, Ligte en Donker temas.</li>
+<li>Soek kentekens, wys veelvuldige kategorieë toe met kategoriefilters, en sorteer volgens rekening, uitreiker of sleep-en-los-volgorde.</li>
+<li>Bekyk en wysig kentekenbesonderhede, deel via QR-kode of kopieer kenteken-URI's.</li>
 <li>Drie verifikasiemodusse: Geen, Toepassing-opening (biometrie / PIN) en Kenteken geënkripteer (AES-256-GCM-geënkripteerde geheime kentekensleutels wat met biometrie of handmatige sleutel ontsluit word).</li>
-<li>Heuristiek-gebaseerde vanlyn ikone vir kentekens van meer as 250 webwerwe.</li>
-<li>Baie instellings om die toepassingsfunksionaliteit aan te pas.</li>
+<li>Ingeboude vanlyn ikone vir meer as 450 dienste met 'n soekbare ikoonkieser, plus ondersteuning vir pasgemaakte prente en SVG-ikone.</li>
+<li>100% vanlyn sonder internettoestemming, met skermkiekiebeskerming en outomatiese uitvee van sensitiewe knipborddata.</li>
 </ul>
 
 FreeOTP Plus is 'n afsplitsing (fork) van FreeOTP.

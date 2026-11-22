@@ -10,14 +10,14 @@ This includes great enterprise solutions like <a href="https://www.freeipa.org/"
 
 <b>Features:</b>
 <ul>
-<li>Scan QR code.</li>
-<li>Export and import tokens (plaintext or encrypted) to Google Drive or other document providers.</li>
-<li>Material design with dark theme support.</li>
-<li>Search bar to search tokens and filter by category.</li>
-<li>See token details.</li>
+<li>Scan QR codes or enter token configurations manually.</li>
+<li>Export and import tokens (JSON or Key URI, plaintext or encrypted) and custom token images (ZIP) via Google Drive or other document providers.</li>
+<li>Material Design 3 interface with System, Light, and Dark themes.</li>
+<li>Search tokens, assign multiple categories with category filters, and sort by account, issuer, or drag-and-drop order.</li>
+<li>View and edit token details, share via QR code, or copy token URIs.</li>
 <li>Three authentication modes: None, App launch (Biometric / PIN), and Token encrypted (AES-256-GCM encrypted token secrets unlocked via biometric or manual key).</li>
-<li>Heuristic based offline icon for tokens of 250+ websites.</li>
-<li>Many settings to customize the app functionality.</li>
+<li>Built-in offline icons for 450+ services with a searchable icon picker, plus custom image and SVG icon support.</li>
+<li>100% offline with no internet permission, screenshot protection, and automatic sensitive clipboard clearing.</li>
 </ul>
 
-The FreeOTP Plus is fork of the FreeOTP.
+FreeOTP Plus is a fork of FreeOTP.
