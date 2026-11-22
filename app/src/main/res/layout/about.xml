@@ -92,6 +92,19 @@
                     android:padding="16dp">
 
                     <TextView
+                        android:id="@+id/about_website"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_website"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/on_surface" />
+
+                    <View
+                        style="@style/Divider"
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="14dp" />
+
+                    <TextView
                         android:id="@+id/about_license"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

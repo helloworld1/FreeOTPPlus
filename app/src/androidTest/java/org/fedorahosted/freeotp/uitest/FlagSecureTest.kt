@@ -1,7 +1,10 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.text.Spanned
+import android.text.style.URLSpan
 import android.view.Window
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
@@ -61,6 +64,13 @@ class FlagSecureTest {
                 assertFlagSecureSet(activity.window)
             }
             onView(withId(R.id.about_version)).check(matches(isDisplayed()))
+            onView(withId(R.id.about_website)).check(matches(isDisplayed()))
+            scenario.onActivity { activity ->
+                val websiteView = activity.findViewById<TextView>(R.id.about_website)
+                val spanned = websiteView.text as Spanned
+                val urls = spanned.getSpans(0, spanned.length, URLSpan::class.java).map { it.url }
+                assertThat(urls).contains("https://github.com/helloworld1/FreeOTPPlus")
+            }
         }
     }
 

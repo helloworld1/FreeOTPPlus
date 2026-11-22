@@ -1,10 +1,14 @@
 package org.fedorahosted.freeotp.ui
 
+import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.text.Spannable
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.ViewCompat
@@ -55,13 +59,28 @@ class AboutFragment : Fragment() {
             PackageInfoCompat.getLongVersionCode(info)
         )
 
+        val movementMethod = object : LinkMovementMethod() {
+            override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
+                return try {
+                    super.onTouchEvent(widget, buffer, event)
+                } catch (_: ActivityNotFoundException) {
+                    false
+                }
+            }
+        }
+
+        val github = getString(R.string.link_github)
+        val website = getString(R.string.about_website, github)
+        binding.aboutWebsite.movementMethod = movementMethod
+        binding.aboutWebsite.text = HtmlCompat.fromHtml(website, HtmlCompat.FROM_HTML_MODE_COMPACT)
+
         val apache2 = getString(R.string.link_apache2)
         val license = getString(R.string.about_license, apache2)
 
-        binding.aboutLicense.movementMethod = LinkMovementMethod.getInstance()
+        binding.aboutLicense.movementMethod = movementMethod
         binding.aboutLicense.text = HtmlCompat.fromHtml(license, HtmlCompat.FROM_HTML_MODE_COMPACT)
 
-        binding.aboutTokenImage.movementMethod = LinkMovementMethod.getInstance()
+        binding.aboutTokenImage.movementMethod = movementMethod
         binding.aboutTokenImage.text = HtmlCompat.fromHtml(
             getString(R.string.about_token_image),
             HtmlCompat.FROM_HTML_MODE_COMPACT
