@@ -19,15 +19,15 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("hilt", "2.60.1")
-            version("appCompat", "1.7.1")
+            version("appCompat", "1.8.0")
             version("activityKtx", "1.13.0")
-            version("fragmentKtx", "1.8.6")
-            version("navigation", "2.8.9")
+            version("fragmentKtx", "1.9.1")
+            version("navigation", "2.10.2")
             version("material", "1.14.0")
-            version("coreKtx", "1.18.0")
+            version("coreKtx", "1.19.1")
             version("kotlinxCoroutines", "1.11.0")
-            version("lifecycleKtx", "2.10.0")
-            version("cameraX", "1.6.0")
+            version("lifecycleKtx", "2.11.1")
+            version("cameraX", "1.7.0")
             version("biometric", "1.1.0")
             version("ksp", "2.3.2")
 
