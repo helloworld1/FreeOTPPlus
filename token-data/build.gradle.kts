@@ -1,8 +1,8 @@
 plugins {
     id("com.android.library")
     kotlin("android")
-    kotlin("kapt")
-    id("dagger.hilt.android.plugin")
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -40,19 +40,26 @@ dependencies {
     implementation(libs.coreKtx)
     implementation(libs.appCompat)
 
-    api(libs.roomRuntime)
-    // To use Kotlin annotation processing tool (kapt)
-    kapt(libs.roomCompiler)
-    // optional - Kotlin Extensions and Coroutines support for Room
-    implementation(libs.roomKtx)
+    api(libs.room3Runtime)
+    api(libs.sqlite)
+    api(libs.sqliteFramework)
+    ksp(libs.room3Compiler)
 
     implementation(libs.hiltAndroid)
-    kapt(libs.hiltAndroidCompiler)
+    ksp(libs.hiltAndroidCompiler)
 
     implementation(libs.bundles.kotlinxCoroutines)
     implementation(libs.gson)
 
     testImplementation(libs.bundles.androidxJunit)
     testImplementation(libs.androidxTruth)
+    testImplementation(libs.sqliteBundled) {
+        attributes {
+            attribute(
+                org.gradle.api.attributes.java.TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+                objects.named(org.gradle.api.attributes.java.TargetJvmEnvironment.STANDARD_JVM)
+            )
+        }
+    }
     androidTestImplementation(libs.bundles.androidxTest)
 }

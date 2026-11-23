@@ -29,13 +29,14 @@ dependencyResolutionManagement {
             version("lifecycleKtx", "2.10.0")
             version("cameraX", "1.6.0")
             version("biometric", "1.1.0")
-            version("ksp", "2.3.7")
+            version("ksp", "2.3.2")
 
             version("zxing", "3.5.4") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.14.0")
             version("glide", "5.0.7")
             version("androidSvg", "1.4")
-            version("room", "2.8.4")
+            version("room3", "3.0.3")
+            version("sqlite", "2.7.1")
             version("androidxTestCore", "1.7.0")
             version("androidxTestOrchestrator", "1.6.1")
             version("androidxJunit", "1.3.0")
@@ -92,9 +93,11 @@ dependencyResolutionManagement {
             library("espressoContrib", "androidx.test.espresso", "espresso-contrib").versionRef("espresso")
             bundle("espresso", listOf("espressoCore", "espressoContrib"))
 
-            library("roomRuntime", "androidx.room", "room-runtime").versionRef("room")
-            library("roomCompiler", "androidx.room", "room-compiler").versionRef("room")
-            library("roomKtx", "androidx.room", "room-ktx").versionRef("room")
+            library("room3Runtime", "androidx.room3", "room3-runtime").versionRef("room3")
+            library("room3Compiler", "androidx.room3", "room3-compiler").versionRef("room3")
+            library("sqlite", "androidx.sqlite", "sqlite").versionRef("sqlite")
+            library("sqliteFramework", "androidx.sqlite", "sqlite-framework").versionRef("sqlite")
+            library("sqliteBundled", "androidx.sqlite", "sqlite-bundled").versionRef("sqlite")
 
             library("guava", "com.google.guava", "guava").versionRef("guava")
             library("desugarJdkLibs", "com.android.tools", "desugar_jdk_libs").versionRef("desugar_jdk_libs")

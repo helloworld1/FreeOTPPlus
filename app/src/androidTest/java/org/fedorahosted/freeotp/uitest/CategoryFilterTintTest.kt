@@ -6,7 +6,8 @@ import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuItemCompat
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.NoMatchingViewException
@@ -227,6 +228,7 @@ class CategoryFilterTintTest {
         }
 
         val migratedDb = Room.databaseBuilder(context, OtpTokenDatabase::class.java, dbName)
+            .setDriver(AndroidSQLiteDriver())
             .addMigrations(
                 OtpTokenDatabase.MIGRATION_1_2,
                 OtpTokenDatabase.MIGRATION_2_3,

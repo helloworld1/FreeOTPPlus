@@ -6,7 +6,8 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import androidx.annotation.VisibleForTesting
-import androidx.room.withTransaction
+import androidx.room3.immediateTransaction
+import androidx.room3.useWriterConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
@@ -139,7 +140,9 @@ class TokenCryptoManager private constructor(
     @VisibleForTesting
     @Volatile
     var transactionRunner: suspend (suspend () -> Unit) -> Unit = { block ->
-        otpTokenDatabase.withTransaction { block() }
+        otpTokenDatabase.useWriterConnection { transactor ->
+            transactor.immediateTransaction { block() }
+        }
     }
 
     @VisibleForTesting

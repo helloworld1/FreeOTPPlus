@@ -1,6 +1,8 @@
 package org.fedorahosted.freeotp.data
 
 import android.content.SharedPreferences
+import androidx.room3.Room
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
 import kotlinx.coroutines.CancellationException
@@ -8,14 +10,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
+import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.IOException
@@ -28,6 +29,14 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 class TokenCryptoManagerTest {
+
+    private val openDatabases = mutableListOf<OtpTokenDatabase>()
+
+    @After
+    fun tearDown() {
+        openDatabases.forEach { db -> runCatching { db.close() } }
+        openDatabases.clear()
+    }
 
     private class InMemorySharedPreferences(
         initialData: Map<String, Any?> = emptyMap()
@@ -137,85 +146,28 @@ class TokenCryptoManagerTest {
         }
     }
 
-    private class NoOpDatabase : OtpTokenDatabase() {
-        override fun otpTokenDao(): OtpTokenDao = throw UnsupportedOperationException()
-        override fun createInvalidationTracker() = throw UnsupportedOperationException()
-        override fun clearAllTables() {}
-        override fun createOpenHelper(config: androidx.room.DatabaseConfiguration) =
-            throw UnsupportedOperationException()
+    private suspend fun createInMemoryDb(initialTokens: List<OtpToken> = emptyList()): OtpTokenDatabase {
+        val db = Room.inMemoryDatabaseBuilder<OtpTokenDatabase>()
+            .setDriver(BundledSQLiteDriver())
+            .build()
+        openDatabases.add(db)
+        if (initialTokens.isNotEmpty()) {
+            db.otpTokenDao().insertAll(initialTokens)
+        }
+        return db
     }
 
-    private class FakeOtpTokenDao(initialTokens: List<OtpToken> = emptyList()) : OtpTokenDao {
-        private val tokensFlow = MutableStateFlow(initialTokens.sortedBy { it.ordinal })
+    private suspend fun OtpTokenDatabase.allTokens(): List<OtpToken> =
+        otpTokenDao().getAll().first()
 
-        fun snapshot(): List<OtpToken> = tokensFlow.value.toList()
-        fun restore(snapshot: List<OtpToken>) {
-            tokensFlow.value = snapshot.sortedBy { it.ordinal }
-        }
-
-        override fun getAll(): Flow<List<OtpToken>> = tokensFlow
-        override fun get(id: Long): Flow<OtpToken?> = tokensFlow.map { list -> list.find { it.id == id } }
-        override fun getLastOrdinal(): Long? = tokensFlow.value.maxOfOrNull { it.ordinal }
-        override fun getAllCategoryJsonRows(): Flow<List<String>> = MutableStateFlow(emptyList())
-        override suspend fun deleteById(id: Long) {
-            tokensFlow.value = tokensFlow.value.filterNot { it.id == id }
-        }
-        override suspend fun deleteAll() {
-            tokensFlow.value = emptyList()
-        }
-        override suspend fun insertAll(otpTokenList: List<OtpToken>) {
-            val map = tokensFlow.value.associateBy { it.id }.toMutableMap()
-            otpTokenList.forEach { map[it.id] = it }
-            tokensFlow.value = map.values.sortedBy { it.ordinal }
-        }
-        override suspend fun insert(otpTokenList: OtpToken) {
-            insertAll(listOf(otpTokenList))
-        }
-        override suspend fun update(otpTokenList: OtpToken) {
-            insert(otpTokenList)
-        }
-        override suspend fun updateAll(otpTokenList: List<OtpToken>) {
-            insertAll(otpTokenList)
-        }
-        override suspend fun updateOrdinal(id: Long, ordinal: Long) {
-            tokensFlow.value = tokensFlow.value
-                .map { if (it.id == id) it.copy(ordinal = ordinal) else it }
-                .sortedBy { it.ordinal }
-        }
-        override suspend fun incrementCounter(id: Long) {
-            tokensFlow.value = tokensFlow.value.map {
-                if (it.id == id) it.copy(counter = it.counter + 1) else it
-            }
-        }
-    }
-
-    private class FakeDatabase(val dao: FakeOtpTokenDao = FakeOtpTokenDao()) : OtpTokenDatabase() {
-        override fun otpTokenDao(): OtpTokenDao = dao
-        override fun createInvalidationTracker() = throw UnsupportedOperationException()
-        override fun clearAllTables() {
-            dao.restore(emptyList())
-        }
-        override fun createOpenHelper(config: androidx.room.DatabaseConfiguration) =
-            throw UnsupportedOperationException()
-    }
-
-    private fun createManagerWithFakeDb(
+    private fun createManager(
         prefs: InMemorySharedPreferences,
-        db: FakeDatabase,
+        db: OtpTokenDatabase,
         backend: FakeKeyStoreBackend = FakeKeyStoreBackend()
     ): TokenCryptoManager {
         return TokenCryptoManager(prefs, db).apply {
             keyStoreBackend = backend
             kdfIterationsOverride = 1_500
-            transactionRunner = { block ->
-                val before = db.dao.snapshot()
-                try {
-                    block()
-                } catch (t: Throwable) {
-                    db.dao.restore(before)
-                    throw t
-                }
-            }
         }
     }
 
@@ -235,9 +187,9 @@ class TokenCryptoManagerTest {
     )
 
     @Test
-    fun authMode_backwardCompatibleWithLegacyRequireAuthentication() {
+    fun authMode_backwardCompatibleWithLegacyRequireAuthentication() = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val manager = TokenCryptoManager(prefs, NoOpDatabase())
+        val manager = TokenCryptoManager(prefs, createInMemoryDb())
 
         // Default unset -> NONE
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.NONE)
@@ -263,9 +215,7 @@ class TokenCryptoManagerTest {
     fun biometricWrapUnwrapInvalidationAndManualRecovery() = runBlocking {
         val prefs = InMemorySharedPreferences()
         val backend = FakeKeyStoreBackend()
-        val manager = TokenCryptoManager(prefs, NoOpDatabase()).apply {
-            keyStoreBackend = backend
-        }
+        val manager = createManager(prefs, createInMemoryDb(), backend)
 
         val salt = CryptoEngine.generateSalt()
         val iterations = 1_500
@@ -292,20 +242,7 @@ class TokenCryptoManagerTest {
         assertThat(manager.isUnlocked()).isTrue()
 
         // 2. Encrypt a token and generate HOTP code
-        val plainToken = OtpToken(
-            id = 1L,
-            ordinal = 1L,
-            issuer = "github.com",
-            label = "alice",
-            imagePath = null,
-            tokenType = OtpTokenType.HOTP,
-            algorithm = "SHA256",
-            secret = "abcd5432",
-            digits = 6,
-            counter = 0L,
-            period = 30,
-            encryptionType = EncryptionType.PLAIN_TEXT
-        )
+        val plainToken = sampleHotpToken()
         val encryptedToken = manager.encryptTokenForStorage(plainToken)
         assertThat(encryptedToken.encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
         assertThat(encryptedToken.secret).startsWith("v1:")
@@ -347,9 +284,6 @@ class TokenCryptoManagerTest {
     @Test
     fun encryptedJsonBackup_detectsAndDecryptsAndRejectsWrongKey() {
         val gson = Gson()
-        val prefs = InMemorySharedPreferences()
-        val manager = TokenCryptoManager(prefs, NoOpDatabase())
-
         val salt = CryptoEngine.generateSalt()
         val iterations = 1_500
         val backupKey = CryptoEngine.deriveKey("backupSecretKey".toCharArray(), salt, iterations)
@@ -399,8 +333,8 @@ class TokenCryptoManagerTest {
     @Test
     fun enableTokenEncryption_stagingCommitFailure_leavesSqliteUntouched() = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken())))
-        val manager = createManagerWithFakeDb(prefs, db)
+        val db = createInMemoryDb(listOf(sampleHotpToken()))
+        val manager = createManager(prefs, db)
 
         val setup = manager.deriveSetupMaterial("passphrase123".toCharArray())
         prefs.onBeforeCommit = { staged, _ ->
@@ -412,23 +346,28 @@ class TokenCryptoManagerTest {
         }
 
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.NONE)
-        assertThat(db.dao.snapshot().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
-        assertThat(db.dao.snapshot().single().secret).isEqualTo("abcd5432")
+        assertThat(db.allTokens().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
+        assertThat(db.allTokens().single().secret).isEqualTo("abcd5432")
     }
 
     @Test
-    fun enableTokenEncryption_sqliteFailure_rollsBackAndCleansPendingMetadata() = runBlocking {
+    fun enableTokenEncryption_sqliteFailure_rollsBackRealTransactionAndCleansPendingMetadata() = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken())))
+        val db = createInMemoryDb(listOf(sampleHotpToken()))
         val backend = FakeKeyStoreBackend()
-        val manager = createManagerWithFakeDb(prefs, db, backend)
+        val manager = createManager(prefs, db, backend)
+        val defaultRunner = manager.transactionRunner
 
         val setup = manager.deriveSetupMaterial("passphrase123".toCharArray())
         val bioCipher = manager.createBiometricEncryptCipher()
         val bioBlob = manager.wrapKeyWithBiometricCipher(bioCipher, setup.keyBytes)
 
-        manager.transactionRunner = {
-            throw IllegalStateException("Simulated SQLite transaction failure")
+        // Execute the encrypted row writes inside the real SQLite transaction, then throw before commit
+        manager.transactionRunner = { block ->
+            defaultRunner {
+                block()
+                throw IllegalStateException("Simulated mid-transaction SQLite failure")
+            }
         }
 
         assertThrows(IllegalStateException::class.java) {
@@ -438,40 +377,44 @@ class TokenCryptoManagerTest {
         assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.NONE)
         assertThat(backend.key).isNull()
-        assertThat(db.dao.snapshot().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
-        assertThat(db.dao.snapshot().single().secret).isEqualTo("abcd5432")
+        assertThat(db.allTokens().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
+        assertThat(db.allTokens().single().secret).isEqualTo("abcd5432")
     }
 
     @Test
     fun enableTokenEncryption_crashBeforeVsAfterSqliteCommit_recoversWithoutDataLoss() = runBlocking {
         // 1. Crash Point A: process dies AFTER staging SharedPreferences, BEFORE SQLite commits
         val prefsCrashA = InMemorySharedPreferences()
-        val dbCrashA = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken(1L), sampleHotpToken(2L, "JBSWY3DPEHPK3PXP"))))
-        val managerA = createManagerWithFakeDb(prefsCrashA, dbCrashA)
+        val dbCrashA = createInMemoryDb(listOf(sampleHotpToken(1L), sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")))
+        val managerA = createManager(prefsCrashA, dbCrashA)
+        val defaultRunnerA = managerA.transactionRunner
         val setupA = managerA.deriveSetupMaterial("crashKeyA".toCharArray())
 
         lateinit var crashedPrefsSnapshotA: InMemorySharedPreferences
-        managerA.transactionRunner = {
-            // Capture exact disk state right before SQLite commits, then abort SQLite
-            crashedPrefsSnapshotA = prefsCrashA.snapshot()
-            throw RuntimeException("Simulated process kill before SQLite commit")
+        managerA.transactionRunner = { block ->
+            defaultRunnerA {
+                block()
+                // Capture exact disk state while SQLite writes are uncommitted, then abort real SQLite tx
+                crashedPrefsSnapshotA = prefsCrashA.snapshot()
+                throw RuntimeException("Simulated process kill before SQLite commit")
+            }
         }
         assertThrows(RuntimeException::class.java) {
             runBlocking { managerA.enableTokenEncryption(setupA, null) }
         }
         assertThat(crashedPrefsSnapshotA.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isTrue()
 
-        // Restart in a brand-new TokenCryptoManager process with crashedPrefsSnapshotA + untouched SQLite
-        val restartedManagerA = createManagerWithFakeDb(crashedPrefsSnapshotA, dbCrashA)
+        // Restart in a brand-new TokenCryptoManager process with crashedPrefsSnapshotA + rolled-back SQLite
+        val restartedManagerA = createManager(crashedPrefsSnapshotA, dbCrashA)
         assertThat(restartedManagerA.getAuthMode()).isEqualTo(AuthMode.NONE)
         assertThat(crashedPrefsSnapshotA.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
-        assertThat(dbCrashA.dao.snapshot().map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP")
+        assertThat(dbCrashA.allTokens().map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP")
 
         // 2. Crash Point B (F2): process dies AFTER SQLite commits encrypted rows, BEFORE active KDF_SALT_KEY commit!
         val prefsCrashB = InMemorySharedPreferences()
-        val dbCrashB = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken(1L), sampleHotpToken(2L, "JBSWY3DPEHPK3PXP"))))
+        val dbCrashB = createInMemoryDb(listOf(sampleHotpToken(1L), sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")))
         val backendB = FakeKeyStoreBackend()
-        val managerB = createManagerWithFakeDb(prefsCrashB, dbCrashB, backendB)
+        val managerB = createManager(prefsCrashB, dbCrashB, backendB)
         val setupB = managerB.deriveSetupMaterial("crashKeyB".toCharArray())
         val bioCipherB = managerB.createBiometricEncryptCipher()
         val bioBlobB = managerB.wrapKeyWithBiometricCipher(bioCipherB, setupB.keyBytes)
@@ -485,7 +428,7 @@ class TokenCryptoManagerTest {
         }
 
         // Verify exact F2 crash state on disk: SQLite rows ARE encrypted, active KDF_SALT_KEY is missing, PENDING_* is present
-        assertThat(dbCrashB.dao.snapshot().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+        assertThat(dbCrashB.allTokens().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
         assertThat(prefsCrashB.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
         assertThat(prefsCrashB.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isTrue()
 
@@ -502,7 +445,7 @@ class TokenCryptoManagerTest {
 
         // Unlock with passphrase -> recovers 100% of tokens and generates exact HOTP code
         assertThat(restartedManagerB.unlockWithPassphrase("crashKeyB".toCharArray())).isTrue()
-        val recoveredTokens = dbCrashB.dao.snapshot()
+        val recoveredTokens = dbCrashB.allTokens()
         assertThat(restartedManagerB.decryptSecret(recoveredTokens[0])).isEqualTo("abcd5432")
         assertThat(restartedManagerB.decryptSecret(recoveredTokens[1])).isEqualTo("JBSWY3DPEHPK3PXP")
         assertThat(TokenCodeUtil(restartedManagerB).generateTokenCode(recoveredTokens[0]).currentCode)
@@ -519,29 +462,33 @@ class TokenCryptoManagerTest {
     @Test
     fun rekeyAndDisableEncryption_interruptedTransitions_recoverDeterministically() = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken())))
-        val manager = createManagerWithFakeDb(prefs, db)
+        val db = createInMemoryDb(listOf(sampleHotpToken()))
+        val manager = createManager(prefs, db)
+        val defaultRunner = manager.transactionRunner
 
         val setup1 = manager.deriveSetupMaterial("initialKey1".toCharArray())
         manager.enableTokenEncryption(setup1, null)
 
-        // Re-key Crash Point A (before SQLite commits) -> preserves initialKey1
+        // Re-key Crash Point A (before SQLite commits) -> rolls back SQLite and preserves initialKey1
         val setup2 = manager.deriveSetupMaterial("rotatedKey2".toCharArray())
         lateinit var rekeyCrashAPrefs: InMemorySharedPreferences
-        manager.transactionRunner = {
-            rekeyCrashAPrefs = prefs.snapshot()
-            throw RuntimeException("Simulated crash before SQLite re-key commit")
+        manager.transactionRunner = { block ->
+            defaultRunner {
+                block()
+                rekeyCrashAPrefs = prefs.snapshot()
+                throw RuntimeException("Simulated crash before SQLite re-key commit")
+            }
         }
         assertThrows(RuntimeException::class.java) {
             runBlocking { manager.enableTokenEncryption(setup2, null) }
         }
-        val recoveredRekeyA = createManagerWithFakeDb(rekeyCrashAPrefs, db)
+        val recoveredRekeyA = createManager(rekeyCrashAPrefs, db)
         assertThat(recoveredRekeyA.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
         assertThat(recoveredRekeyA.unlockWithPassphrase("initialKey1".toCharArray())).isTrue()
-        assertThat(recoveredRekeyA.decryptSecret(db.dao.snapshot().single())).isEqualTo("abcd5432")
+        assertThat(recoveredRekeyA.decryptSecret(db.allTokens().single())).isEqualTo("abcd5432")
 
-        // Restore normal runner on manager and test Disable Crash Point B (after SQLite decrypts, before active prefs commit)
-        val disableManager = createManagerWithFakeDb(prefs, db)
+        // Test Disable Crash Point B (after SQLite decrypts, before active prefs commit)
+        val disableManager = createManager(prefs, db)
         assertThat(disableManager.unlockWithPassphrase("initialKey1".toCharArray())).isTrue()
         prefs.onBeforeCommit = { staged, _ ->
             // Allow staging PENDING_DISABLE_TARGET_MODE_KEY, fail final AUTH_MODE_KEY commit
@@ -550,27 +497,27 @@ class TokenCryptoManagerTest {
         assertThrows(IOException::class.java) {
             runBlocking { disableManager.disableTokenEncryption(AuthMode.APP_LAUNCH) }
         }
-        assertThat(db.dao.snapshot().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
+        assertThat(db.allTokens().single().encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
         assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isTrue()
 
         prefs.onBeforeCommit = null
-        val restartedAfterDisable = createManagerWithFakeDb(prefs, db)
+        val restartedAfterDisable = createManager(prefs, db)
         assertThat(restartedAfterDisable.getAuthMode()).isEqualTo(AuthMode.APP_LAUNCH)
         assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
         assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
-        assertThat(db.dao.snapshot().single().secret).isEqualTo("abcd5432")
+        assertThat(db.allTokens().single().secret).isEqualTo("abcd5432")
     }
 
     @Test
     fun tokenCodeUtil_handlesLockedVaultNullManagerAndCorruptedCiphertextWithoutCrash() = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(FakeOtpTokenDao(listOf(sampleHotpToken())))
-        val manager = createManagerWithFakeDb(prefs, db)
+        val db = createInMemoryDb(listOf(sampleHotpToken()))
+        val manager = createManager(prefs, db)
 
         val setup = manager.deriveSetupMaterial("vaultKey123".toCharArray())
         manager.enableTokenEncryption(setup, null)
 
-        val validEncryptedHotp = db.dao.snapshot().single()
+        val validEncryptedHotp = db.allTokens().single()
         val validEncryptedTotp = validEncryptedHotp.copy(id = 2L, tokenType = OtpTokenType.TOTP)
         assertThat(TokenCodeUtil(manager).generateTokenCode(validEncryptedHotp).currentCode)
             .isEqualTo("047701")
@@ -579,8 +526,7 @@ class TokenCryptoManagerTest {
         assertThat(TokenCodeUtil().generateTokenCode(validEncryptedHotp).currentCode).isEmpty()
         assertThat(TokenCodeUtil().generateTokenCode(validEncryptedTotp).currentCode).isEmpty()
 
-        // 2. Corrupted ciphertext payloads (AEAD tag mismatch, truncated, bad Base64, missing prefix)
-        //    return empty code instead of throwing GeneralSecurityException
+        // 2. Corrupted ciphertext payloads return empty code instead of throwing GeneralSecurityException
         val corruptedPayloads = listOf(
             validEncryptedHotp.secret.dropLast(4) + "AAAA",
             "v1:AAAA",
@@ -616,15 +562,13 @@ class TokenCryptoManagerTest {
     @Test
     fun enableAndDisableTokenEncryption_outerScopeCancelledMidTransaction_completesWithoutDataLoss(): Unit = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(
-            FakeOtpTokenDao(
-                listOf(
-                    sampleHotpToken(1L, "abcd5432"),
-                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
-                )
+        val db = createInMemoryDb(
+            listOf(
+                sampleHotpToken(1L, "abcd5432"),
+                sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
             )
         )
-        val manager = createManagerWithFakeDb(prefs, db)
+        val manager = createManager(prefs, db)
         val defaultRunner = manager.transactionRunner
 
         // 1. Simulate Activity.lifecycleScope cancellation + caller setup.clear() mid-SQLite transaction
@@ -647,20 +591,19 @@ class TokenCryptoManagerTest {
         }
 
         assertThat(enteredTx.await(5, TimeUnit.SECONDS)).isTrue()
-        // Cancel the Activity scope and wipe caller's SetupMaterial buffer while transaction is in flight
         activityScope.cancel()
         setup.clear()
         proceedTx.countDown()
         enableJob.join()
 
+        val encryptedTokens = db.allTokens()
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
         assertThat(manager.isUnlocked()).isTrue()
         assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
-        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
-        assertThat(manager.decryptSecret(db.dao.snapshot()[0])).isEqualTo("abcd5432")
-        assertThat(manager.decryptSecret(db.dao.snapshot()[1])).isEqualTo("JBSWY3DPEHPK3PXP")
+        assertThat(encryptedTokens.all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+        assertThat(manager.decryptSecret(encryptedTokens[0])).isEqualTo("abcd5432")
+        assertThat(manager.decryptSecret(encryptedTokens[1])).isEqualTo("JBSWY3DPEHPK3PXP")
 
-        // Lock and verify passphrase unlock still works
         manager.lock()
         assertThat(manager.unlockWithPassphrase("rotateKey123".toCharArray())).isTrue()
 
@@ -685,7 +628,7 @@ class TokenCryptoManagerTest {
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.APP_LAUNCH)
         assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
         assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
-        assertThat(db.dao.snapshot().map { it.encryptionType to it.secret }).containsExactly(
+        assertThat(db.allTokens().map { it.encryptionType to it.secret }).containsExactly(
             EncryptionType.PLAIN_TEXT to "abcd5432",
             EncryptionType.PLAIN_TEXT to "JBSWY3DPEHPK3PXP"
         )
@@ -694,24 +637,23 @@ class TokenCryptoManagerTest {
     @Test
     fun enableAndDisableTokenEncryption_cancellationThrownAfterSqliteCommit_promotesMetadataInsteadOfLockout(): Unit = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(
-            FakeOtpTokenDao(
-                listOf(
-                    sampleHotpToken(1L, "abcd5432"),
-                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
-                )
+        val db = createInMemoryDb(
+            listOf(
+                sampleHotpToken(1L, "abcd5432"),
+                sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
             )
         )
         val backend = FakeKeyStoreBackend()
-        val manager = createManagerWithFakeDb(prefs, db, backend)
+        val manager = createManager(prefs, db, backend)
+        val defaultRunner = manager.transactionRunner
 
         val setup = manager.deriveSetupMaterial("f14PostCommitKey".toCharArray())
         val bioCipher = manager.createBiometricEncryptCipher()
         val bioBlob = manager.wrapKeyWithBiometricCipher(bioCipher, setup.keyBytes)
 
-        // Exact F14 failure mode: SQLite commits encrypted rows, then transactionRunner throws CancellationException
+        // Exact F14 failure mode: real SQLite commits encrypted rows, then transactionRunner throws CancellationException
         manager.transactionRunner = { block ->
-            block()
+            defaultRunner(block)
             throw CancellationException("Simulated coroutine cancellation immediately after SQLite commit")
         }
 
@@ -725,17 +667,17 @@ class TokenCryptoManagerTest {
             }
         }
 
-        // Metadata MUST be promoted (never rolled back!), keeping all tokens unlockable
-        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+        val encryptedTokens = db.allTokens()
+        assertThat(encryptedTokens.all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
         assertThat(prefs.contains(TokenCryptoManager.PENDING_KDF_SALT_KEY)).isFalse()
         assertThat(prefs.getString(TokenCryptoManager.KDF_SALT_KEY, null)).isEqualTo(setup.kdfSalt)
         assertThat(manager.isUnlocked()).isTrue()
-        assertThat(manager.decryptSecret(db.dao.snapshot()[0])).isEqualTo("abcd5432")
+        assertThat(manager.decryptSecret(encryptedTokens[0])).isEqualTo("abcd5432")
 
         manager.lock()
         assertThat(manager.unlockWithPassphrase("f14PostCommitKey".toCharArray())).isTrue()
-        assertThat(manager.decryptSecret(db.dao.snapshot()[1])).isEqualTo("JBSWY3DPEHPK3PXP")
+        assertThat(manager.decryptSecret(encryptedTokens[1])).isEqualTo("JBSWY3DPEHPK3PXP")
 
         // Same post-commit CancellationException during disableTokenEncryption -> finalizes target mode cleanly
         assertThrows(CancellationException::class.java) {
@@ -743,35 +685,33 @@ class TokenCryptoManagerTest {
                 manager.disableTokenEncryption(AuthMode.NONE)
             }
         }
+        val plainTokens = db.allTokens()
         assertThat(manager.getAuthMode()).isEqualTo(AuthMode.NONE)
         assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
         assertThat(prefs.contains(TokenCryptoManager.PENDING_DISABLE_TARGET_MODE_KEY)).isFalse()
-        assertThat(db.dao.snapshot().all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
-        assertThat(db.dao.snapshot().map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP")
+        assertThat(plainTokens.all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
+        assertThat(plainTokens.map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP")
     }
 
     @Test
     fun enableTokenEncryption_concurrentSampleTokenDeletionBeforeTx_restagesAndRecoversOnCrash(): Unit = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(
-            FakeOtpTokenDao(
-                listOf(
-                    sampleHotpToken(1L, "abcd5432"),
-                    sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
-                )
+        val db = createInMemoryDb(
+            listOf(
+                sampleHotpToken(1L, "abcd5432"),
+                sampleHotpToken(2L, "JBSWY3DPEHPK3PXP")
             )
         )
-        val manager = createManagerWithFakeDb(prefs, db)
+        val manager = createManager(prefs, db)
         val defaultRunner = manager.transactionRunner
 
         val setup = manager.deriveSetupMaterial("restageKey99".toCharArray())
         manager.transactionRunner = { block ->
             // Simulate token #1 (initial staged sample) deleted right before SQLite transaction runs
-            db.dao.deleteById(1L)
+            db.otpTokenDao().deleteById(1L)
             defaultRunner(block)
         }
         prefs.onBeforeCommit = { staged, _ ->
-            // Fail final promotion commit after SQLite committed token #2 so startup reconciliation is exercised
             !staged.containsKey(TokenCryptoManager.KDF_SALT_KEY)
         }
 
@@ -780,21 +720,17 @@ class TokenCryptoManagerTest {
         }
 
         prefs.onBeforeCommit = null
-        val restarted = createManagerWithFakeDb(prefs, db)
+        val restarted = createManager(prefs, db)
         assertThat(restarted.getAuthMode()).isEqualTo(AuthMode.TOKEN_ENCRYPTED)
         assertThat(restarted.unlockWithPassphrase("restageKey99".toCharArray())).isTrue()
-        assertThat(restarted.decryptSecret(db.dao.snapshot().single())).isEqualTo("JBSWY3DPEHPK3PXP")
+        assertThat(restarted.decryptSecret(db.allTokens().single())).isEqualTo("JBSWY3DPEHPK3PXP")
     }
 
     @Test
     fun enableTokenEncryption_setsSessionKeyBeforePublishingAuthModeChange(): Unit = runBlocking {
         val prefs = InMemorySharedPreferences()
-        val db = FakeDatabase(
-            FakeOtpTokenDao(
-                listOf(sampleHotpToken(1L, "JBSWY3DPEHPK3PXP"))
-            )
-        )
-        val manager = createManagerWithFakeDb(prefs, db)
+        val db = createInMemoryDb(listOf(sampleHotpToken(1L, "JBSWY3DPEHPK3PXP")))
+        val manager = createManager(prefs, db)
         var unlockedWhenAuthModeChanged: Boolean? = null
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == TokenCryptoManager.AUTH_MODE_KEY && manager.getAuthMode() == AuthMode.TOKEN_ENCRYPTED) {

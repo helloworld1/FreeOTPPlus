@@ -1,32 +1,30 @@
 package org.fedorahosted.freeotp.data
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Update
-import kotlinx.coroutines.Dispatchers
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Query
+import androidx.room3.Transaction
+import androidx.room3.Update
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import java.util.Locale
 
 @Dao
 interface OtpTokenDao {
 
-    @Query("select * from otp_tokens order by ordinal")
+    @Query("SELECT * FROM otp_tokens ORDER BY ordinal")
     fun getAll(): Flow<List<OtpToken>>
 
-    @Query("select * from otp_tokens where id = :id")
+    @Query("SELECT * FROM otp_tokens WHERE id = :id")
     fun get(id: Long): Flow<OtpToken?>
 
-    @Query("select ordinal from otp_tokens order by ordinal desc limit 1")
-    fun getLastOrdinal(): Long?
+    @Query("SELECT ordinal FROM otp_tokens ORDER BY ordinal DESC LIMIT 1")
+    suspend fun getLastOrdinal(): Long?
 
-    @Query("select categories from otp_tokens where categories != '[]'")
+    @Query("SELECT categories FROM otp_tokens WHERE categories != '[]'")
     fun getAllCategoryJsonRows(): Flow<List<String>>
 
     fun getAllCategories(): Flow<List<String>> = getAllCategoryJsonRows().map { rows ->
@@ -42,10 +40,10 @@ interface OtpTokenDao {
         distinct.sortedWith(String.CASE_INSENSITIVE_ORDER)
     }
 
-    @Query("delete from otp_tokens where id = :id")
+    @Query("DELETE FROM otp_tokens WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("delete from otp_tokens")
+    @Query("DELETE FROM otp_tokens")
     suspend fun deleteAll()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -58,18 +56,18 @@ interface OtpTokenDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(otpTokenList: OtpToken)
+    suspend fun insert(otpToken: OtpToken)
 
     @Update
-    suspend fun update(otpTokenList: OtpToken)
+    suspend fun update(otpToken: OtpToken)
 
     @Update
     suspend fun updateAll(otpTokenList: List<OtpToken>)
 
-    @Query("update otp_tokens set ordinal = :ordinal where id = :id")
+    @Query("UPDATE otp_tokens SET ordinal = :ordinal WHERE id = :id")
     suspend fun updateOrdinal(id: Long, ordinal: Long)
 
-    @Query("update otp_tokens set counter = counter + 1 where id = :id and counter < 9223372036854775807")
+    @Query("UPDATE otp_tokens SET counter = counter + 1 WHERE id = :id AND counter < 9223372036854775807")
     suspend fun incrementCounter(id: Long)
 
     @Transaction
@@ -80,18 +78,15 @@ interface OtpTokenDao {
     }
 
     @Transaction
-    suspend fun movePairs(pairs : List<Pair<Long,Long>>){
-        for(pair in pairs.listIterator()) {
-            withContext(Dispatchers.IO) {
-                val token1 = get(pair.first).first()
-                val token2 = get(pair.second).first()
-
-                if (token1 == null || token2 == null) {
-                    return@withContext
-                }
-                updateOrdinal(pair.first, token2.ordinal)
-                updateOrdinal(pair.second, token1.ordinal)
+    suspend fun movePairs(pairs: List<Pair<Long, Long>>) {
+        for ((firstId, secondId) in pairs) {
+            val token1 = get(firstId).first()
+            val token2 = get(secondId).first()
+            if (token1 == null || token2 == null) {
+                continue
             }
+            updateOrdinal(firstId, token2.ordinal)
+            updateOrdinal(secondId, token1.ordinal)
         }
     }
 }
