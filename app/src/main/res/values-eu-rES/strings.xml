@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Kameraren baimena ukatu da</string>
     <string name="ok_text">Ados</string>
     <string name="cancel_text">Utzi</string>
-    <string name="import_json_format">Inportatu JSON formatua</string>
-    <string name="import_key_uri_format">Inportatu gako-URI formatua</string>
-    <string name="export_json_format">Esportatu JSON formatua</string>
-    <string name="export_key_uri_format">Esportatu gako-URI formatua</string>
-    <string name="import_token_images">Inportatu token-irudiak</string>
-    <string name="export_token_images">Esportatu token-irudiak</string>
+    <string name="import_json_format">FreeOTP+ JSON (Hobetsia)</string>
+    <string name="import_key_uri_format">Gakoaren URIa</string>
+    <string name="export_json_format">FreeOTP+ JSON (Hobetsia)</string>
+    <string name="export_key_uri_format">Gakoaren URIa</string>
+    <string name="import_token_images">Token-irudiak</string>
+    <string name="export_token_images">Token-irudiak</string>
     <string name="import_token_images_failed_text">Huts egin du token-irudiak inportatzean. ZIP fitxategia baliogabea da.</string>
     <string name="sort">Ordenatu</string>
     <string name="sort_by_account_asc">Ordenatu Kontuaren arabera gorantz</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Aukeratu barneko ikonoa</string>
     <string name="choose_image_from_device">Aukeratu irudia gailutik</string>
     <string name="search_icons">Bilatu ikonoak</string>
-    <string name="import_freeotp_backup">Inportatu FreeOTP babeskopia</string>
+    <string name="import_freeotp_backup">FreeOTP babeskopia XML</string>
     <string name="import_freeotp_backup_title">Inportatu FreeOTP babeskopia</string>
     <string name="import_freeotp_backup_message">Sartu FreeOTP-ko babeskopiaren pasahitza eta aukeratu nola inportatu tokenak.</string>
     <string name="import_freeotp_unencrypted_backup_message">Aukeratu nola inportatu FreeOTP babeskopia honetako tokenak.</string>

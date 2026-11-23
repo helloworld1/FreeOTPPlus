@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Oprávnění k fotoaparátu bylo zamítnuto</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Zrušit</string>
-    <string name="import_json_format">Importovat formát JSON</string>
-    <string name="import_key_uri_format">Importovat formát URI klíčů</string>
-    <string name="export_json_format">Exportovat formát JSON</string>
-    <string name="export_key_uri_format">Exportovat formát URI klíčů</string>
-    <string name="import_token_images">Importovat obrázky tokenů</string>
-    <string name="export_token_images">Exportovat obrázky tokenů</string>
+    <string name="import_json_format">FreeOTP+ JSON (Doporučeno)</string>
+    <string name="import_key_uri_format">URI klíče</string>
+    <string name="export_json_format">FreeOTP+ JSON (Doporučeno)</string>
+    <string name="export_key_uri_format">URI klíče</string>
+    <string name="import_token_images">Obrázky tokenů</string>
+    <string name="export_token_images">Obrázky tokenů</string>
     <string name="import_token_images_failed_text">Nepodařilo se naimportovat obrázky tokenů. Soubor ZIP je neplatný.</string>
     <string name="sort">Seřadit</string>
     <string name="sort_by_account_asc">Seřadit podle účtu vzestupně</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Vybrat vestavěnou ikonu</string>
     <string name="choose_image_from_device">Vybrat obrázek ze zařízení</string>
     <string name="search_icons">Hledat ikony</string>
-    <string name="import_freeotp_backup">Importovat zálohu FreeOTP</string>
+    <string name="import_freeotp_backup">Záloha FreeOTP XML</string>
     <string name="import_freeotp_backup_title">Importovat zálohu FreeOTP</string>
     <string name="import_freeotp_backup_message">Zadejte heslo zálohy z FreeOTP a zvolte způsob importu tokenů.</string>
     <string name="import_freeotp_unencrypted_backup_message">Zvolte způsob importu tokenů z této zálohy FreeOTP.</string>

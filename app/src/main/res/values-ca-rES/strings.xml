@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">S\'ha denegat el permís de la càmera</string>
     <string name="ok_text">D\'acord</string>
     <string name="cancel_text">Cancel·la</string>
-    <string name="import_json_format">Importa en format JSON</string>
-    <string name="import_key_uri_format">Importa en format URI de clau</string>
-    <string name="export_json_format">Exporta en format JSON</string>
-    <string name="export_key_uri_format">Exporta en format URI de clau</string>
-    <string name="import_token_images">Importa les imatges dels tokens</string>
-    <string name="export_token_images">Exporta les imatges dels tokens</string>
+    <string name="import_json_format">FreeOTP+ JSON (Preferit)</string>
+    <string name="import_key_uri_format">URI de clau</string>
+    <string name="export_json_format">FreeOTP+ JSON (Preferit)</string>
+    <string name="export_key_uri_format">URI de clau</string>
+    <string name="import_token_images">Imatges dels tokens</string>
+    <string name="export_token_images">Imatges dels tokens</string>
     <string name="import_token_images_failed_text">No s\'ha pogut importar les imatges dels tokens. El fitxer ZIP no és vàlid.</string>
     <string name="sort">Ordena</string>
     <string name="sort_by_account_asc">Ordena per Compte ascendent</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Tria una icona integrada</string>
     <string name="choose_image_from_device">Tria una imatge del dispositiu</string>
     <string name="search_icons">Cerca icones</string>
-    <string name="import_freeotp_backup">Importa una còpia de seguretat de FreeOTP</string>
+    <string name="import_freeotp_backup">Còpia de seguretat XML de FreeOTP</string>
     <string name="import_freeotp_backup_title">Importa una còpia de seguretat de FreeOTP</string>
     <string name="import_freeotp_backup_message">Introduïu la contrasenya de la còpia de seguretat de FreeOTP i trieu com voleu importar els tokens.</string>
     <string name="import_freeotp_unencrypted_backup_message">Trieu com voleu importar els tokens d\'aquesta còpia de seguretat de FreeOTP.</string>

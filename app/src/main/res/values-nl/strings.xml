@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Cameratoestemming geweigerd</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Annuleren</string>
-    <string name="import_json_format">JSON-indeling importeren</string>
-    <string name="import_key_uri_format">Sleutel-URI-indeling importeren</string>
-    <string name="export_json_format">JSON-indeling exporteren</string>
-    <string name="export_key_uri_format">Sleutel-URI-indeling exporteren</string>
-    <string name="import_token_images">Tokenafbeeldingen importeren</string>
-    <string name="export_token_images">Tokenafbeeldingen exporteren</string>
+    <string name="import_json_format">FreeOTP+ JSON (Aanbevolen)</string>
+    <string name="import_key_uri_format">Sleutel-URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (Aanbevolen)</string>
+    <string name="export_key_uri_format">Sleutel-URI</string>
+    <string name="import_token_images">Tokenafbeeldingen</string>
+    <string name="export_token_images">Tokenafbeeldingen</string>
     <string name="import_token_images_failed_text">Importeren van tokenafbeeldingen mislukt. Het ZIP-bestand is ongeldig.</string>
     <string name="sort">Sorteren</string>
     <string name="sort_by_account_asc">Sorteren op Account oplopend</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Ingebouwd pictogram kiezen</string>
     <string name="choose_image_from_device">Afbeelding van apparaat kiezen</string>
     <string name="search_icons">Pictogrammen zoeken</string>
-    <string name="import_freeotp_backup">FreeOTP-back-up importeren</string>
+    <string name="import_freeotp_backup">FreeOTP-back-up XML</string>
     <string name="import_freeotp_backup_title">FreeOTP-back-up importeren</string>
     <string name="import_freeotp_backup_message">Voer het back-upwachtwoord van FreeOTP in en kies hoe u de tokens wilt importeren.</string>
     <string name="import_freeotp_unencrypted_backup_message">Kies hoe u de tokens uit deze FreeOTP-back-up wilt importeren.</string>

@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">කැමරා අවසරය ප්‍රතික්ෂේප විය</string>
     <string name="ok_text">හරි</string>
     <string name="cancel_text">අවලංගු කරන්න</string>
-    <string name="import_json_format">JSON ආකෘතිය ආයාත කරන්න</string>
-    <string name="import_key_uri_format">යතුරු URI ආකෘතිය ආයාත කරන්න</string>
-    <string name="export_json_format">JSON ආකෘතිය නිර්යාත කරන්න</string>
-    <string name="export_key_uri_format">යතුරු URI ආකෘතිය නිර්යාත කරන්න</string>
-    <string name="import_token_images">ටෝකන රූප ආයාත කරන්න</string>
-    <string name="export_token_images">ටෝකන රූප නිර්යාත කරන්න</string>
+    <string name="import_json_format">FreeOTP+ JSON (නිර්දේශිත)</string>
+    <string name="import_key_uri_format">යතුරු URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (නිර්දේශිත)</string>
+    <string name="export_key_uri_format">යතුරු URI</string>
+    <string name="import_token_images">ටෝකන රූප</string>
+    <string name="export_token_images">ටෝකන රූප</string>
     <string name="import_token_images_failed_text">ටෝකන රූප ආයාත කිරීමට අසමත් විය. ZIP ගොනුව වලංගු නොවේ.</string>
     <string name="sort">වර්ග කරන්න</string>
     <string name="sort_by_account_asc">ගිණුම අනුව ආරෝහණව වර්ග කරන්න</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">තිළැලි අයිකනයක් තෝරන්න</string>
     <string name="choose_image_from_device">උපාංගයෙන් රූපයක් තෝරන්න</string>
     <string name="search_icons">අයිකන සොයන්න</string>
-    <string name="import_freeotp_backup">FreeOTP උපස්ථය ආයාත කරන්න</string>
+    <string name="import_freeotp_backup">FreeOTP උපස්ථ XML</string>
     <string name="import_freeotp_backup_title">FreeOTP උපස්ථය ආයාත කරන්න</string>
     <string name="import_freeotp_backup_message">FreeOTP හි උපස්ථ මුරපදය ඇතුළත් කර ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
     <string name="import_freeotp_unencrypted_backup_message">මෙම FreeOTP උපස්ථයෙන් ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>

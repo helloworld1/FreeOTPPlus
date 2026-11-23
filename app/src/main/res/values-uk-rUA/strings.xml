@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">У доступі до камери відмовлено</string>
     <string name="ok_text">Гаразд</string>
     <string name="cancel_text">Скасувати</string>
-    <string name="import_json_format">Імпортувати формат JSON</string>
-    <string name="import_key_uri_format">Імпортувати формат URI ключів</string>
-    <string name="export_json_format">Експортувати у формат JSON</string>
-    <string name="export_key_uri_format">Експортувати у формат URI ключів</string>
-    <string name="import_token_images">Імпортувати зображення ключів</string>
-    <string name="export_token_images">Експортувати зображення ключів</string>
+    <string name="import_json_format">FreeOTP+ JSON (рекомендовано)</string>
+    <string name="import_key_uri_format">URI ключа</string>
+    <string name="export_json_format">FreeOTP+ JSON (рекомендовано)</string>
+    <string name="export_key_uri_format">URI ключа</string>
+    <string name="import_token_images">Зображення ключів</string>
+    <string name="export_token_images">Зображення ключів</string>
     <string name="import_token_images_failed_text">Не вдалося імпортувати зображення ключів. Неправильний файл ZIP.</string>
     <string name="sort">Сортувати</string>
     <string name="sort_by_account_asc">Сортувати за Обліковим записом за зростанням</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Вибрати вбудовану піктограму</string>
     <string name="choose_image_from_device">Вибрати зображення з пристрою</string>
     <string name="search_icons">Пошук піктограм</string>
-    <string name="import_freeotp_backup">Імпорт резервної копії FreeOTP</string>
+    <string name="import_freeotp_backup">Резервна копія XML FreeOTP</string>
     <string name="import_freeotp_backup_title">Імпорт резервної копії FreeOTP</string>
     <string name="import_freeotp_backup_message">Введіть пароль резервної копії з FreeOTP та виберіть спосіб імпорту ключів.</string>
     <string name="import_freeotp_unencrypted_backup_message">Виберіть спосіб імпорту ключів із цієї резервної копії FreeOTP.</string>

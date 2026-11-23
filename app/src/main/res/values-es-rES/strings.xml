@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Permiso de cámara denegado</string>
     <string name="ok_text">Aceptar</string>
     <string name="cancel_text">Cancelar</string>
-    <string name="import_json_format">Importar formato JSON</string>
-    <string name="import_key_uri_format">Importar formato URI de clave</string>
-    <string name="export_json_format">Exportar formato JSON</string>
-    <string name="export_key_uri_format">Exportar formato URI de clave</string>
-    <string name="import_token_images">Importar imágenes de tokens</string>
-    <string name="export_token_images">Exportar imágenes de tokens</string>
+    <string name="import_json_format">FreeOTP+ JSON (Preferido)</string>
+    <string name="import_key_uri_format">URI de clave</string>
+    <string name="export_json_format">FreeOTP+ JSON (Preferido)</string>
+    <string name="export_key_uri_format">URI de clave</string>
+    <string name="import_token_images">Imágenes de tokens</string>
+    <string name="export_token_images">Imágenes de tokens</string>
     <string name="import_token_images_failed_text">Error al importar las imágenes de los tokens. El archivo ZIP no es válido.</string>
     <string name="sort">Ordenar</string>
     <string name="sort_by_account_asc">Ordenar por Cuenta ascendente</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Elegir icono integrado</string>
     <string name="choose_image_from_device">Elegir imagen del dispositivo</string>
     <string name="search_icons">Buscar iconos</string>
-    <string name="import_freeotp_backup">Importar copia de seguridad de FreeOTP</string>
+    <string name="import_freeotp_backup">Copia de seguridad XML de FreeOTP</string>
     <string name="import_freeotp_backup_title">Importar copia de seguridad de FreeOTP</string>
     <string name="import_freeotp_backup_message">Introduce la contraseña de la copia de seguridad de FreeOTP y elige cómo importar los tokens.</string>
     <string name="import_freeotp_unencrypted_backup_message">Elige cómo importar los tokens de esta copia de seguridad de FreeOTP.</string>

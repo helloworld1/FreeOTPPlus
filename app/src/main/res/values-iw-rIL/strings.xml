@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">הרשאת המצלמה נדחתה</string>
     <string name="ok_text">אישור</string>
     <string name="cancel_text">ביטול</string>
-    <string name="import_json_format">ייבוא בפורמט JSON</string>
-    <string name="import_key_uri_format">ייבוא בפורמט URI של מפתח</string>
-    <string name="export_json_format">ייצוא בפורמט JSON</string>
-    <string name="export_key_uri_format">ייצוא בפורמט URI של מפתח</string>
-    <string name="import_token_images">ייבוא תמונות אסימונים</string>
-    <string name="export_token_images">ייצוא תמונות אסימונים</string>
+    <string name="import_json_format">FreeOTP+ JSON (מועדף)</string>
+    <string name="import_key_uri_format">URI של מפתח</string>
+    <string name="export_json_format">FreeOTP+ JSON (מועדף)</string>
+    <string name="export_key_uri_format">URI של מפתח</string>
+    <string name="import_token_images">תמונות אסימונים</string>
+    <string name="export_token_images">תמונות אסימונים</string>
     <string name="import_token_images_failed_text">ייבוא תמונות האסימונים נכשל. קובץ ה-ZIP אינו תקין.</string>
     <string name="sort">מיון</string>
     <string name="sort_by_account_asc">מיון לפי חשבון בסדר עולה</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">בחר סמל מובנה</string>
     <string name="choose_image_from_device">בחר תמונה מהמכשיר</string>
     <string name="search_icons">חפש סמלים</string>
-    <string name="import_freeotp_backup">ייבוא גיבוי FreeOTP</string>
+    <string name="import_freeotp_backup">גיבוי XML של FreeOTP</string>
     <string name="import_freeotp_backup_title">ייבוא גיבוי FreeOTP</string>
     <string name="import_freeotp_backup_message">הזן את סיסמת הגיבוי מ-FreeOTP ובחר כיצד לייבא את האסימונים.</string>
     <string name="import_freeotp_unencrypted_backup_message">בחר כיצד לייבא את האסימונים מגיבוי FreeOTP זה.</string>

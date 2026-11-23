@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">கேமரா அனுமதி மறுக்கப்பட்டது</string>
     <string name="ok_text">சரி</string>
     <string name="cancel_text">ரத்துசெய்</string>
-    <string name="import_json_format">JSON வடிவத்தில் இறக்குமதி செய்</string>
-    <string name="import_key_uri_format">திறவுகோல் URI வடிவத்தில் இறக்குமதி செய்</string>
-    <string name="export_json_format">JSON வடிவத்தில் ஏற்றுமதி செய்</string>
-    <string name="export_key_uri_format">திறவுகோல் URI வடிவத்தில் ஏற்றுமதி செய்</string>
-    <string name="import_token_images">டோக்கன் படங்களை இறக்குமதி செய்</string>
-    <string name="export_token_images">டோக்கன் படங்களை ஏற்றுமதி செய்</string>
+    <string name="import_json_format">FreeOTP+ JSON (பரிந்துரைக்கப்படுகிறது)</string>
+    <string name="import_key_uri_format">திறவுகோல் URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (பரிந்துரைக்கப்படுகிறது)</string>
+    <string name="export_key_uri_format">திறவுகோல் URI</string>
+    <string name="import_token_images">டோக்கன் படங்கள்</string>
+    <string name="export_token_images">டோக்கன் படங்கள்</string>
     <string name="import_token_images_failed_text">டோக்கன் படங்களை இறக்குமதி செய்ய முடியவில்லை. ZIP கோப்பு தவறானது.</string>
     <string name="sort">வரிசைப்படுத்து</string>
     <string name="sort_by_account_asc">கணக்கு அடிப்படையில் ஏறுவரிசையில்</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">உள்ளமைந்த சின்னத்தைத் தேர்ந்தெடு</string>
     <string name="choose_image_from_device">சாதனத்திலிருந்து படத்தைத் தேர்ந்தெடு</string>
     <string name="search_icons">சின்னங்களைத் தேடு</string>
-    <string name="import_freeotp_backup">FreeOTP காப்புப்பிரதியை இறக்குமதி செய்</string>
+    <string name="import_freeotp_backup">FreeOTP காப்புப்பிரதி XML</string>
     <string name="import_freeotp_backup_title">FreeOTP காப்புப்பிரதியை இறக்குமதி செய்</string>
     <string name="import_freeotp_backup_message">FreeOTP காப்புப்பிரதி கடவுச்சொல்லை உள்ளிட்டு டோக்கன்களை எவ்வாறு இறக்குமதி செய்வது என்பதைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="import_freeotp_unencrypted_backup_message">இந்த FreeOTP காப்புப்பிரதியிலிருந்து டோக்கன்களை எவ்வாறு இறக்குமதி செய்வது என்பதைத் தேர்ந்தெடுக்கவும்.</string>

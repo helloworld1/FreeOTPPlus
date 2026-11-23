@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Autorisation d’accès à l’appareil photo refusée</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Annuler</string>
-    <string name="import_json_format">Importer au format JSON</string>
-    <string name="import_key_uri_format">Importer au format URI de clé</string>
-    <string name="export_json_format">Exporter au format JSON</string>
-    <string name="export_key_uri_format">Exporter au format URI de clé</string>
-    <string name="import_token_images">Importer les images des jetons</string>
-    <string name="export_token_images">Exporter les images des jetons</string>
+    <string name="import_json_format">FreeOTP+ JSON (Recommandé)</string>
+    <string name="import_key_uri_format">URI de clé</string>
+    <string name="export_json_format">FreeOTP+ JSON (Recommandé)</string>
+    <string name="export_key_uri_format">URI de clé</string>
+    <string name="import_token_images">Images des jetons</string>
+    <string name="export_token_images">Images des jetons</string>
     <string name="import_token_images_failed_text">Échec de l’importation des images des jetons. Le fichier ZIP n’est pas valide.</string>
     <string name="sort">Trier</string>
     <string name="sort_by_account_asc">Trier par Compte croissant</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Choisir une icône intégrée</string>
     <string name="choose_image_from_device">Choisir une image sur l\'appareil</string>
     <string name="search_icons">Rechercher des icônes</string>
-    <string name="import_freeotp_backup">Importer une sauvegarde FreeOTP</string>
+    <string name="import_freeotp_backup">Sauvegarde XML FreeOTP</string>
     <string name="import_freeotp_backup_title">Importer une sauvegarde FreeOTP</string>
     <string name="import_freeotp_backup_message">Saisissez le mot de passe de sauvegarde de FreeOTP et choisissez comment importer les jetons.</string>
     <string name="import_freeotp_unencrypted_backup_message">Choisissez comment importer les jetons depuis cette sauvegarde FreeOTP.</string>

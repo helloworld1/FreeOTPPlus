@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">相機權限被拒絕</string>
     <string name="ok_text">確定</string>
     <string name="cancel_text">取消</string>
-    <string name="import_json_format">匯入 JSON 格式</string>
-    <string name="import_key_uri_format">匯入金鑰 URI 格式</string>
-    <string name="export_json_format">匯出 JSON 格式</string>
-    <string name="export_key_uri_format">匯出金鑰 URI 格式</string>
-    <string name="import_token_images">匯入權杖圖片</string>
-    <string name="export_token_images">匯出權杖圖片</string>
+    <string name="import_json_format">FreeOTP+ JSON（建議）</string>
+    <string name="import_key_uri_format">金鑰 URI</string>
+    <string name="export_json_format">FreeOTP+ JSON（建議）</string>
+    <string name="export_key_uri_format">金鑰 URI</string>
+    <string name="import_token_images">權杖圖片</string>
+    <string name="export_token_images">權杖圖片</string>
     <string name="import_token_images_failed_text">匯入權杖圖片失敗。ZIP 檔案無效。</string>
     <string name="sort">排序</string>
     <string name="sort_by_account_asc">依帳號升冪排列</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">選擇內建圖示</string>
     <string name="choose_image_from_device">從裝置選擇圖片</string>
     <string name="search_icons">搜尋圖示</string>
-    <string name="import_freeotp_backup">匯入 FreeOTP 備份</string>
+    <string name="import_freeotp_backup">FreeOTP 備份 XML</string>
     <string name="import_freeotp_backup_title">匯入 FreeOTP 備份</string>
     <string name="import_freeotp_backup_message">請輸入 FreeOTP 的備份密碼，並選擇匯入權杖的方式。</string>
     <string name="import_freeotp_unencrypted_backup_message">請選擇從此 FreeOTP 備份匯入權杖的方式。</string>

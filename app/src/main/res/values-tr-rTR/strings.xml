@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Kamera izni reddedildi</string>
     <string name="ok_text">Tamam</string>
     <string name="cancel_text">İptal</string>
-    <string name="import_json_format">JSON biçiminde içe aktar</string>
-    <string name="import_key_uri_format">Anahtar URI biçiminde içe aktar</string>
-    <string name="export_json_format">JSON biçiminde dışa aktar</string>
-    <string name="export_key_uri_format">Anahtar URI biçiminde dışa aktar</string>
-    <string name="import_token_images">Token resimlerini içe aktar</string>
-    <string name="export_token_images">Token resimlerini dışa aktar</string>
+    <string name="import_json_format">FreeOTP+ JSON (Tercih edilen)</string>
+    <string name="import_key_uri_format">Anahtar URI\'si</string>
+    <string name="export_json_format">FreeOTP+ JSON (Tercih edilen)</string>
+    <string name="export_key_uri_format">Anahtar URI\'si</string>
+    <string name="import_token_images">Token resimleri</string>
+    <string name="export_token_images">Token resimleri</string>
     <string name="import_token_images_failed_text">Token resimleri içe aktarılamadı. ZIP dosyası geçersiz.</string>
     <string name="sort">Sırala</string>
     <string name="sort_by_account_asc">Hesaba göre artan sırala</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Yerleşik simge seç</string>
     <string name="choose_image_from_device">Cihazdan görsel seç</string>
     <string name="search_icons">Simge ara</string>
-    <string name="import_freeotp_backup">FreeOTP yedeğini içe aktar</string>
+    <string name="import_freeotp_backup">FreeOTP Yedek XML</string>
     <string name="import_freeotp_backup_title">FreeOTP yedeğini içe aktar</string>
     <string name="import_freeotp_backup_message">FreeOTP yedekleme parolasını girin ve token\'ların nasıl içe aktarılacağını seçin.</string>
     <string name="import_freeotp_unencrypted_backup_message">Bu FreeOTP yedeğinden token\'ların nasıl içe aktarılacağını seçin.</string>

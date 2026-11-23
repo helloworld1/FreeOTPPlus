@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Kameraberechtigung verweigert</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Abbrechen</string>
-    <string name="import_json_format">JSON importieren</string>
-    <string name="import_key_uri_format">Schlüssel-URI importieren</string>
-    <string name="export_json_format">JSON exportieren</string>
-    <string name="export_key_uri_format">Schlüssel-URI exportieren</string>
-    <string name="import_token_images">Token-Bilder importieren</string>
-    <string name="export_token_images">Token-Bilder exportieren</string>
+    <string name="import_json_format">FreeOTP+ JSON (Empfohlen)</string>
+    <string name="import_key_uri_format">Schlüssel-URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (Empfohlen)</string>
+    <string name="export_key_uri_format">Schlüssel-URI</string>
+    <string name="import_token_images">Token-Bilder</string>
+    <string name="export_token_images">Token-Bilder</string>
     <string name="import_token_images_failed_text">Importieren der Token-Bilder fehlgeschlagen. Die ZIP-Datei ist ungültig.</string>
     <string name="sort">Sortieren</string>
     <string name="sort_by_account_asc">Konto (aufsteigend)</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Integriertes Symbol wählen</string>
     <string name="choose_image_from_device">Bild vom Gerät wählen</string>
     <string name="search_icons">Symbole suchen</string>
-    <string name="import_freeotp_backup">FreeOTP-Backup importieren</string>
+    <string name="import_freeotp_backup">FreeOTP-Backup XML</string>
     <string name="import_freeotp_backup_title">FreeOTP-Backup importieren</string>
     <string name="import_freeotp_backup_message">Geben Sie das Backup-Passwort aus FreeOTP ein und wählen Sie, wie die Token importiert werden sollen.</string>
     <string name="import_freeotp_unencrypted_backup_message">Wählen Sie, wie die Token aus diesem FreeOTP-Backup importiert werden sollen.</string>

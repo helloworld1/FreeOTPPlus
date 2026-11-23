@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">カメラの権限が拒否されました</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">キャンセル</string>
-    <string name="import_json_format">JSON形式でインポート</string>
-    <string name="import_key_uri_format">Key URI形式でインポート</string>
-    <string name="export_json_format">JSON形式でエクスポート</string>
-    <string name="export_key_uri_format">Key URI形式でエクスポート</string>
-    <string name="import_token_images">トークン画像をインポート</string>
-    <string name="export_token_images">トークン画像をエクスポート</string>
+    <string name="import_json_format">FreeOTP+ JSON (推奨)</string>
+    <string name="import_key_uri_format">キー URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (推奨)</string>
+    <string name="export_key_uri_format">キー URI</string>
+    <string name="import_token_images">トークン画像</string>
+    <string name="export_token_images">トークン画像</string>
     <string name="import_token_images_failed_text">トークン画像のインポートに失敗しました。ZIPファイルが無効です。</string>
     <string name="sort">並べ替え</string>
     <string name="sort_by_account_asc">アカウントの昇順で並べ替え</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">内蔵アイコンを選択</string>
     <string name="choose_image_from_device">端末から画像を選択</string>
     <string name="search_icons">アイコンを検索</string>
-    <string name="import_freeotp_backup">FreeOTP バックアップをインポート</string>
+    <string name="import_freeotp_backup">FreeOTP バックアップ XML</string>
     <string name="import_freeotp_backup_title">FreeOTP バックアップをインポート</string>
     <string name="import_freeotp_backup_message">FreeOTP のバックアップパスワードを入力し、トークンのインポート方法を選択してください。</string>
     <string name="import_freeotp_unencrypted_backup_message">この FreeOTP バックアップからトークンをインポートする方法を選択してください。</string>

@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">A kameraengedély megtagadva</string>
     <string name="ok_text">Rendben</string>
     <string name="cancel_text">Mégse</string>
-    <string name="import_json_format">JSON-formátum importálása</string>
-    <string name="import_key_uri_format">Kulcs-URI formátum importálása</string>
-    <string name="export_json_format">JSON-formátum exportálása</string>
-    <string name="export_key_uri_format">Kulcs-URI formátum exportálása</string>
-    <string name="import_token_images">Tokenképek importálása</string>
-    <string name="export_token_images">Tokenképek exportálása</string>
+    <string name="import_json_format">FreeOTP+ JSON (Ajánlott)</string>
+    <string name="import_key_uri_format">Kulcs URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (Ajánlott)</string>
+    <string name="export_key_uri_format">Kulcs URI</string>
+    <string name="import_token_images">Tokenképek</string>
+    <string name="export_token_images">Tokenképek</string>
     <string name="import_token_images_failed_text">A tokenképek importálása sikertelen. A ZIP-fájl érvénytelen.</string>
     <string name="sort">Rendezés</string>
     <string name="sort_by_account_asc">Rendezés Fiók szerint növekvő</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Beépített ikon választása</string>
     <string name="choose_image_from_device">Kép választása az eszközről</string>
     <string name="search_icons">Ikonok keresése</string>
-    <string name="import_freeotp_backup">FreeOTP biztonsági mentés importálása</string>
+    <string name="import_freeotp_backup">FreeOTP biztonsági mentés XML</string>
     <string name="import_freeotp_backup_title">FreeOTP biztonsági mentés importálása</string>
     <string name="import_freeotp_backup_message">Adja meg a FreeOTP biztonsági mentési jelszavát, és válassza ki a tokenek importálásának módját.</string>
     <string name="import_freeotp_unencrypted_backup_message">Válassza ki a tokenek importálásának módját ebből a FreeOTP biztonsági mentésből.</string>

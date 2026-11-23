@@ -1,6 +1,7 @@
 package org.fedorahosted.freeotp.uitest
 
 import android.net.Uri
+import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
@@ -384,7 +385,33 @@ class ImportExportTest {
         )
 
         try {
-            // 1. Verify "Import FreeOTP backup" menu item is displayed under Import submenu
+            // 1. Verify exact Import and Export submenu item ordering and titles
+            activityRule.scenario.onActivity { activity ->
+                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
+                val importItem = (0 until toolbar.menu.size())
+                    .map { toolbar.menu.getItem(it) }
+                    .first { it.title.toString() == activity.getString(R.string.import_text) }
+                val importSubMenu = importItem.subMenu!!
+                val importTitles = (0 until importSubMenu.size()).map { importSubMenu.getItem(it).title.toString() }
+                assertThat(importTitles).containsExactly(
+                    "FreeOTP+ JSON (Preferred)",
+                    "Key URI",
+                    "Token images",
+                    "FreeOTP Backup XML"
+                ).inOrder()
+
+                val exportItem = (0 until toolbar.menu.size())
+                    .map { toolbar.menu.getItem(it) }
+                    .first { it.title.toString() == activity.getString(R.string.export_text) }
+                val exportSubMenu = exportItem.subMenu!!
+                val exportTitles = (0 until exportSubMenu.size()).map { exportSubMenu.getItem(it).title.toString() }
+                assertThat(exportTitles).containsExactly(
+                    "FreeOTP+ JSON (Preferred)",
+                    "Key URI",
+                    "Token images"
+                ).inOrder()
+            }
+
             openActionBarOverflowOrOptionsMenu(context)
             onView(withText(R.string.import_text)).perform(click())
             onView(withText(R.string.import_freeotp_backup)).check(matches(isDisplayed()))

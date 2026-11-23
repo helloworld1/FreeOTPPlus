@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Доступ к камере запрещён</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Отмена</string>
-    <string name="import_json_format">Импортировать формат JSON</string>
-    <string name="import_key_uri_format">Импортировать формат URI ключей</string>
-    <string name="export_json_format">Экспортировать формат JSON</string>
-    <string name="export_key_uri_format">Экспортировать формат URI ключей</string>
-    <string name="import_token_images">Импортировать изображения токенов</string>
-    <string name="export_token_images">Экспортировать изображения токенов</string>
+    <string name="import_json_format">FreeOTP+ JSON (рекомендуется)</string>
+    <string name="import_key_uri_format">URI ключа</string>
+    <string name="export_json_format">FreeOTP+ JSON (рекомендуется)</string>
+    <string name="export_key_uri_format">URI ключа</string>
+    <string name="import_token_images">Изображения токенов</string>
+    <string name="export_token_images">Изображения токенов</string>
     <string name="import_token_images_failed_text">Не удалось импортировать изображения токенов. Недопустимый ZIP-файл.</string>
     <string name="sort">Сортировка</string>
     <string name="sort_by_account_asc">Сортировать по Аккаунту (по возрастанию)</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Выбрать встроенный значок</string>
     <string name="choose_image_from_device">Выбрать изображение с устройства</string>
     <string name="search_icons">Поиск значков</string>
-    <string name="import_freeotp_backup">Импорт резервной копии FreeOTP</string>
+    <string name="import_freeotp_backup">Резервная копия XML FreeOTP</string>
     <string name="import_freeotp_backup_title">Импорт резервной копии FreeOTP</string>
     <string name="import_freeotp_backup_message">Введите пароль резервной копии из FreeOTP и выберите способ импорта токенов.</string>
     <string name="import_freeotp_unencrypted_backup_message">Выберите способ импорта токенов из этой резервной копии FreeOTP.</string>

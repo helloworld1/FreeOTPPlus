@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">تم رفض إذن الكاميرا</string>
     <string name="ok_text">موافق</string>
     <string name="cancel_text">إلغاء</string>
-    <string name="import_json_format">استيراد بتنسيق JSON</string>
-    <string name="import_key_uri_format">استيراد بتنسيق URI للمفتاح</string>
-    <string name="export_json_format">تصدير بتنسيق JSON</string>
-    <string name="export_key_uri_format">تصدير بتنسيق URI للمفتاح</string>
-    <string name="import_token_images">استيراد صور الرموز</string>
-    <string name="export_token_images">تصدير صور الرموز</string>
+    <string name="import_json_format">FreeOTP+ JSON (مفضّل)</string>
+    <string name="import_key_uri_format">URI المفتاح</string>
+    <string name="export_json_format">FreeOTP+ JSON (مفضّل)</string>
+    <string name="export_key_uri_format">URI المفتاح</string>
+    <string name="import_token_images">صور الرموز</string>
+    <string name="export_token_images">صور الرموز</string>
     <string name="import_token_images_failed_text">فشل استيراد صور الرموز. ملف ZIP غير صالح.</string>
     <string name="sort">فرز</string>
     <string name="sort_by_account_asc">الفرز حسب الحساب تصاعديًا</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">اختر أيقونة مدمجة</string>
     <string name="choose_image_from_device">اختر صورة من الجهاز</string>
     <string name="search_icons">البحث في الأيقونات</string>
-    <string name="import_freeotp_backup">استيراد نسخة احتياطية من FreeOTP</string>
+    <string name="import_freeotp_backup">نسخة FreeOTP الاحتياطية XML</string>
     <string name="import_freeotp_backup_title">استيراد نسخة احتياطية من FreeOTP</string>
     <string name="import_freeotp_backup_message">أدخل كلمة مرور النسخة الاحتياطية من FreeOTP واختر كيفية استيراد الرموز.</string>
     <string name="import_freeotp_unencrypted_backup_message">اختر كيفية استيراد الرموز من نسخة FreeOTP الاحتياطية هذه.</string>

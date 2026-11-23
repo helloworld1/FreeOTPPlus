@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">相机权限被拒绝</string>
     <string name="ok_text">确定</string>
     <string name="cancel_text">取消</string>
-    <string name="import_json_format">导入 JSON 格式</string>
-    <string name="import_key_uri_format">导入密钥 URI 格式</string>
-    <string name="export_json_format">导出 JSON 格式</string>
-    <string name="export_key_uri_format">导出密钥 URI 格式</string>
-    <string name="import_token_images">导入令牌图片</string>
-    <string name="export_token_images">导出令牌图片</string>
+    <string name="import_json_format">FreeOTP+ JSON（推荐）</string>
+    <string name="import_key_uri_format">密钥 URI</string>
+    <string name="export_json_format">FreeOTP+ JSON（推荐）</string>
+    <string name="export_key_uri_format">密钥 URI</string>
+    <string name="import_token_images">令牌图片</string>
+    <string name="export_token_images">令牌图片</string>
     <string name="import_token_images_failed_text">导入令牌图片失败。ZIP 文件无效。</string>
     <string name="sort">排序</string>
     <string name="sort_by_account_asc">按账户升序排列</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">选择内置图标</string>
     <string name="choose_image_from_device">从设备选择图片</string>
     <string name="search_icons">搜索图标</string>
-    <string name="import_freeotp_backup">导入 FreeOTP 备份</string>
+    <string name="import_freeotp_backup">FreeOTP 备份 XML</string>
     <string name="import_freeotp_backup_title">导入 FreeOTP 备份</string>
     <string name="import_freeotp_backup_message">请输入 FreeOTP 的备份密码，并选择导入令牌的方式。</string>
     <string name="import_freeotp_unencrypted_backup_message">请选择从此 FreeOTP 备份导入令牌的方式。</string>

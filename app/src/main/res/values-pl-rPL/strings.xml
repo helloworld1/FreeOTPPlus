@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Odmówiono uprawnień do aparatu</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Anuluj</string>
-    <string name="import_json_format">Importuj format JSON</string>
-    <string name="import_key_uri_format">Importuj format URI kluczy</string>
-    <string name="export_json_format">Eksportuj format JSON</string>
-    <string name="export_key_uri_format">Eksportuj format URI kluczy</string>
-    <string name="import_token_images">Importuj ikony tokenów</string>
-    <string name="export_token_images">Eksportuj ikony tokenów</string>
+    <string name="import_json_format">FreeOTP+ JSON (Zalecany)</string>
+    <string name="import_key_uri_format">URI klucza</string>
+    <string name="export_json_format">FreeOTP+ JSON (Zalecany)</string>
+    <string name="export_key_uri_format">URI klucza</string>
+    <string name="import_token_images">Ikony tokenów</string>
+    <string name="export_token_images">Ikony tokenów</string>
     <string name="import_token_images_failed_text">Nie udało się zaimportować ikon tokenów. Plik ZIP jest nieprawidłowy.</string>
     <string name="sort">Sortuj</string>
     <string name="sort_by_account_asc">Sortuj według Konta rosnąco</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Wybierz wbudowaną ikonę</string>
     <string name="choose_image_from_device">Wybierz obraz z urządzenia</string>
     <string name="search_icons">Szukaj ikon</string>
-    <string name="import_freeotp_backup">Importuj kopię zapasową FreeOTP</string>
+    <string name="import_freeotp_backup">Kopia zapasowa XML FreeOTP</string>
     <string name="import_freeotp_backup_title">Importuj kopię zapasową FreeOTP</string>
     <string name="import_freeotp_backup_message">Wprowadź hasło kopii zapasowej z FreeOTP i wybierz sposób importu tokenów.</string>
     <string name="import_freeotp_unencrypted_backup_message">Wybierz sposób importu tokenów z tej kopii zapasowej FreeOTP.</string>

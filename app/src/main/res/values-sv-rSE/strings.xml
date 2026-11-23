@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Kamerabehörighet nekad</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Avbryt</string>
-    <string name="import_json_format">Importera JSON-format</string>
-    <string name="import_key_uri_format">Importera nyckel-URI-format</string>
-    <string name="export_json_format">Exportera JSON-format</string>
-    <string name="export_key_uri_format">Exportera nyckel-URI-format</string>
-    <string name="import_token_images">Importera tokenbilder</string>
-    <string name="export_token_images">Exportera tokenbilder</string>
+    <string name="import_json_format">FreeOTP+ JSON (Föredragen)</string>
+    <string name="import_key_uri_format">Nyckel-URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (Föredragen)</string>
+    <string name="export_key_uri_format">Nyckel-URI</string>
+    <string name="import_token_images">Tokenbilder</string>
+    <string name="export_token_images">Tokenbilder</string>
     <string name="import_token_images_failed_text">Det gick inte att importera tokenbilder. ZIP-filen är ogiltig.</string>
     <string name="sort">Sortera</string>
     <string name="sort_by_account_asc">Sortera efter Konto stigande</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Välj inbyggd ikon</string>
     <string name="choose_image_from_device">Välj bild från enheten</string>
     <string name="search_icons">Sök ikoner</string>
-    <string name="import_freeotp_backup">Importera FreeOTP-säkerhetskopia</string>
+    <string name="import_freeotp_backup">FreeOTP-säkerhetskopia XML</string>
     <string name="import_freeotp_backup_title">Importera FreeOTP-säkerhetskopia</string>
     <string name="import_freeotp_backup_message">Ange lösenordet för säkerhetskopian från FreeOTP och välj hur tokens ska importeras.</string>
     <string name="import_freeotp_unencrypted_backup_message">Välj hur tokens från denna FreeOTP-säkerhetskopia ska importeras.</string>

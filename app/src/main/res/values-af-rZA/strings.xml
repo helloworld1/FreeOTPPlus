@@ -45,12 +45,12 @@
     <string name="camera_permission_denied_text">Kameratoestemming geweier</string>
     <string name="ok_text">OK</string>
     <string name="cancel_text">Kanselleer</string>
-    <string name="import_json_format">Voer JSON-formaat in</string>
-    <string name="import_key_uri_format">Voer sleutel-URI-formaat in</string>
-    <string name="export_json_format">Voer JSON-formaat uit</string>
-    <string name="export_key_uri_format">Voer sleutel-URI-formaat uit</string>
-    <string name="import_token_images">Voer kentekenprente in</string>
-    <string name="export_token_images">Voer kentekenprente uit</string>
+    <string name="import_json_format">FreeOTP+ JSON (Verkieslik)</string>
+    <string name="import_key_uri_format">Sleutel-URI</string>
+    <string name="export_json_format">FreeOTP+ JSON (Verkieslik)</string>
+    <string name="export_key_uri_format">Sleutel-URI</string>
+    <string name="import_token_images">Kentekenprente</string>
+    <string name="export_token_images">Kentekenprente</string>
     <string name="import_token_images_failed_text">Kon nie kentekenprente invoer nie. Die ZIP-lêer is ongeldig.</string>
     <string name="sort">Sorteer</string>
     <string name="sort_by_account_asc">Sorteer volgens Rekening oplopend</string>
@@ -137,7 +137,7 @@
     <string name="choose_builtin_icon">Kies ingeboude ikoon</string>
     <string name="choose_image_from_device">Kies beeld vanaf toestel</string>
     <string name="search_icons">Soek ikone</string>
-    <string name="import_freeotp_backup">Voer FreeOTP-rugsteun in</string>
+    <string name="import_freeotp_backup">FreeOTP-rugsteun XML</string>
     <string name="import_freeotp_backup_title">Voer FreeOTP-rugsteun in</string>
     <string name="import_freeotp_backup_message">Voer die rugsteunwagwoord van FreeOTP in en kies hoe om die kentekens in te voer.</string>
     <string name="import_freeotp_unencrypted_backup_message">Kies hoe om die kentekens uit hierdie FreeOTP-rugsteun in te voer.</string>
