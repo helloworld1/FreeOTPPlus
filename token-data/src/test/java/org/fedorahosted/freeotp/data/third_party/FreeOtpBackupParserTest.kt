@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp.data.legacy
+package org.fedorahosted.freeotp.data.third_party
 
 import android.content.SharedPreferences
 import androidx.room3.Room
@@ -15,6 +15,7 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.TokenImportMode
+import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
 import org.junit.Assert.assertThrows
 import org.junit.Test

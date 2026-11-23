@@ -23,8 +23,8 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
-import org.fedorahosted.freeotp.data.legacy.AegisBackupParser
-import org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser
+import org.fedorahosted.freeotp.data.third_party.AegisBackupParser
+import org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.hamcrest.Matchers.not
 import org.junit.After

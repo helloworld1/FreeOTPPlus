@@ -1,4 +1,4 @@
-package org.fedorahosted.freeotp.data.legacy
+package org.fedorahosted.freeotp.data.third_party
 
 import com.google.android.apps.authenticator.Base32String
 import com.google.gson.Gson

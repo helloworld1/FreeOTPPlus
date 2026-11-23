@@ -10,16 +10,17 @@
 -keep class org.fedorahosted.freeotp.data.EncryptedExportToken { *; }
 -keep class org.fedorahosted.freeotp.data.TokenImageManifest { *; }
 -keep class org.fedorahosted.freeotp.data.TokenImageManifestEntry { *; }
--keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamEncryptedKey { *; }
--keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamMasterKey { *; }
--keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamTokenJson { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisCryptParams { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisSlot { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisHeader { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisGroup { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisEntryInfo { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisEntry { *; }
--keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisDb { *; }
+# Keep third-party backup models serialized via Gson reflection
+-keep class org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser$UpstreamEncryptedKey { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser$UpstreamMasterKey { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser$UpstreamTokenJson { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisCryptParams { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisSlot { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisHeader { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisGroup { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisEntryInfo { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisEntry { *; }
+-keep class org.fedorahosted.freeotp.data.third_party.AegisBackupParser$AegisDb { *; }
 
 # Keep enums persisted by name in Room SQLite / SharedPreferences / JSON
 -keep enum org.fedorahosted.freeotp.data.AuthMode { *; }

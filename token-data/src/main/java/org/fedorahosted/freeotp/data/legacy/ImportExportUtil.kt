@@ -22,6 +22,8 @@ import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.TokenImportMode
+import org.fedorahosted.freeotp.data.third_party.AegisBackupParser
+import org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
