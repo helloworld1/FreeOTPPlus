@@ -146,4 +146,9 @@
     <string name="import_mode_append">既存のトークンに追加する</string>
     <string name="import_mode_replace_all">既存のトークンをすべて置き換える</string>
     <string name="import_freeotp_backup_failed_text">FreeOTP バックアップのインポートに失敗しました。ファイルが無効か破損しています。</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Aegis JSON をインポート</string>
+    <string name="import_aegis_encrypted_message">この Aegis ボールトのパスワードを入力し、トークンのインポート方法を選択してください。</string>
+    <string name="import_aegis_unencrypted_message">この Aegis バックアップからのトークンのインポート方法を選択してください。</string>
+    <string name="import_aegis_failed_text">Aegis JSON のインポートに失敗しました。ファイルが無効か破損しています。</string>
 </resources>

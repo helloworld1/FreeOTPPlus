@@ -146,4 +146,9 @@
     <string name="import_mode_append">הוספה לאסימונים הקיימים</string>
     <string name="import_mode_replace_all">החלפת כל האסימונים הקיימים</string>
     <string name="import_freeotp_backup_failed_text">ייבוא גיבוי FreeOTP נכשל. הקובץ אינו תקין או פגום.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">ייבוא JSON של Aegis</string>
+    <string name="import_aegis_encrypted_message">הזן את הסיסמה עבור כספת Aegis זו ובחר כיצד לייבא את האסימונים.</string>
+    <string name="import_aegis_unencrypted_message">בחר כיצד לייבא את האסימונים מגיבוי Aegis זה.</string>
+    <string name="import_aegis_failed_text">ייבוא קובץ ה-JSON של Aegis נכשל. הקובץ אינו תקין או פגום.</string>
 </resources>

@@ -146,4 +146,9 @@
     <string name="import_mode_append">Aggiungi ai token esistenti</string>
     <string name="import_mode_replace_all">Sostituisci tutti i token esistenti</string>
     <string name="import_freeotp_backup_failed_text">Impossibile importare il backup di FreeOTP. Il file non è valido o è danneggiato.</string>
+    <string name="import_aegis_json">JSON Aegis</string>
+    <string name="import_aegis_json_title">Importa JSON Aegis</string>
+    <string name="import_aegis_encrypted_message">Inserisci la password di questa cassaforte Aegis e scegli come importare i token.</string>
+    <string name="import_aegis_unencrypted_message">Scegli come importare i token da questo backup Aegis.</string>
+    <string name="import_aegis_failed_text">Impossibile importare il file JSON Aegis. Il file non è valido o è danneggiato.</string>
 </resources>

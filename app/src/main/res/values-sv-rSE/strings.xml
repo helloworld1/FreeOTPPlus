@@ -146,4 +146,9 @@
     <string name="import_mode_append">Lägg till efter befintliga tokens</string>
     <string name="import_mode_replace_all">Ersätt alla befintliga tokens</string>
     <string name="import_freeotp_backup_failed_text">Det gick inte att importera FreeOTP-säkerhetskopian. Filen är ogiltig eller skadad.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Importera Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">Ange lösenordet för detta Aegis-valv och välj hur du vill importera dina tokens.</string>
+    <string name="import_aegis_unencrypted_message">Välj hur du vill importera dina tokens från denna Aegis-säkerhetskopia.</string>
+    <string name="import_aegis_failed_text">Det gick inte att importera Aegis JSON. Filen är ogiltig eller skadad.</string>
 </resources>

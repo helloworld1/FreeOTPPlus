@@ -3,8 +3,10 @@ package org.fedorahosted.freeotp.uitest
 import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.NoMatchingRootException
 import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import com.google.common.truth.Truth.assertThat
@@ -35,6 +37,30 @@ object TestWaitUtil {
         }
         if (lastError != null) throw lastError
         onView(viewMatcher).check(matches(assertionMatcher))
+    }
+
+    fun awaitDialogViewMatching(
+        viewMatcher: Matcher<View>,
+        assertionMatcher: Matcher<View> = isDisplayed(),
+        timeoutMs: Long = 5_000L
+    ) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastError: Throwable? = null
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
+                return
+            } catch (e: NoMatchingRootException) {
+                lastError = e
+            } catch (e: NoMatchingViewException) {
+                lastError = e
+            } catch (e: AssertionError) {
+                lastError = e
+            }
+            Thread.sleep(50L)
+        }
+        if (lastError != null) throw lastError
+        onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
     }
 
     fun awaitRecyclerItemCount(

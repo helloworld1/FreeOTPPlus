@@ -13,6 +13,13 @@
 -keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamEncryptedKey { *; }
 -keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamMasterKey { *; }
 -keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamTokenJson { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisCryptParams { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisSlot { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisHeader { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisGroup { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisEntryInfo { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisEntry { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.AegisBackupParser$AegisDb { *; }
 
 # Keep enums persisted by name in Room SQLite / SharedPreferences / JSON
 -keep enum org.fedorahosted.freeotp.data.AuthMode { *; }

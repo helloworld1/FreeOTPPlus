@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         IMPORT_JSON,
         IMPORT_KEY_URI,
         IMPORT_FREEOTP_BACKUP,
+        IMPORT_AEGIS_JSON,
         IMPORT_IMAGES,
         EXPORT_JSON,
         EXPORT_KEY_URI,
@@ -134,6 +135,12 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         onDocumentPicked(DocumentAction.IMPORT_FREEOTP_BACKUP, uri)
+    }
+
+    private val openAegisJsonLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        onDocumentPicked(DocumentAction.IMPORT_AEGIS_JSON, uri)
     }
 
     private val createJsonLauncher = registerForActivityResult(
@@ -445,6 +452,11 @@ class MainActivity : AppCompatActivity() {
         launchSystemPicker { openFreeOtpBackupLauncher.launch(arrayOf("*/*")) }
     }
 
+    internal fun startImportAegisJson() {
+        if (!isSessionAuthenticated()) return
+        launchSystemPicker { openAegisJsonLauncher.launch(arrayOf("application/json", "*/*")) }
+    }
+
     internal fun startImportTokenImages() {
         if (!isSessionAuthenticated()) return
         launchSystemPicker {
@@ -650,10 +662,66 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            DocumentAction.IMPORT_AEGIS_JSON -> {
+                lifecycleScope.launch {
+                    try {
+                        val inspection = importFromUtil.inspectAegisBackup(uri)
+                        showImportAegisBackupDialog(uri, inspection.requiresPassword)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Inspect Aegis backup failed", e)
+                        showSnackbar(R.string.import_aegis_failed_text)
+                    }
+                }
+            }
         }
     }
 
     private fun showImportFreeOtpBackupDialog(uri: Uri, requiresPassword: Boolean) {
+        showExternalBackupImportDialog(
+            requiresPassword = requiresPassword,
+            titleRes = R.string.import_freeotp_backup_title,
+            encryptedMessageRes = R.string.import_freeotp_backup_message,
+            unencryptedMessageRes = R.string.import_freeotp_unencrypted_backup_message,
+            failedSnackbarRes = R.string.import_freeotp_backup_failed_text,
+            logLabel = "FreeOTP backup"
+        ) { passphrase, selectedMode ->
+            importFromUtil.importFreeOtpBackup(
+                fileUri = uri,
+                backupPassphrase = passphrase,
+                mode = selectedMode
+            )
+        }
+    }
+
+    private fun showImportAegisBackupDialog(uri: Uri, requiresPassword: Boolean) {
+        showExternalBackupImportDialog(
+            requiresPassword = requiresPassword,
+            titleRes = R.string.import_aegis_json_title,
+            encryptedMessageRes = R.string.import_aegis_encrypted_message,
+            unencryptedMessageRes = R.string.import_aegis_unencrypted_message,
+            failedSnackbarRes = R.string.import_aegis_failed_text,
+            logLabel = "Aegis JSON"
+        ) { passphrase, selectedMode ->
+            importFromUtil.importAegisBackup(
+                fileUri = uri,
+                backupPassphrase = passphrase,
+                mode = selectedMode
+            )
+        }
+    }
+
+    private fun showExternalBackupImportDialog(
+        requiresPassword: Boolean,
+        titleRes: Int,
+        encryptedMessageRes: Int,
+        unencryptedMessageRes: Int,
+        failedSnackbarRes: Int,
+        logLabel: String,
+        onImport: suspend (CharArray?, TokenImportMode) -> Unit
+    ) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_import_freeotp_backup, null)
         val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
         val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
@@ -661,13 +729,7 @@ class MainActivity : AppCompatActivity() {
         val importModeGroup = dialogView.findViewById<RadioGroup>(R.id.import_mode_radio_group)
         val replaceWarningText = dialogView.findViewById<TextView>(R.id.replace_warning_text)
 
-        messageView.setText(
-            if (requiresPassword) {
-                R.string.import_freeotp_backup_message
-            } else {
-                R.string.import_freeotp_unencrypted_backup_message
-            }
-        )
+        messageView.setText(if (requiresPassword) encryptedMessageRes else unencryptedMessageRes)
         keyInputLayout.visibility = if (requiresPassword) View.VISIBLE else View.GONE
         keyEditText.doAfterTextChanged { keyInputLayout.error = null }
 
@@ -677,7 +739,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.import_freeotp_backup_title)
+            .setTitle(titleRes)
             .setView(dialogView)
             .setPositiveButton(R.string.import_text, null)
             .setNegativeButton(R.string.cancel_text, null)
@@ -708,11 +770,7 @@ class MainActivity : AppCompatActivity() {
                     handedOffToCoroutine = true
                     lifecycleScope.launch {
                         try {
-                            importFromUtil.importFreeOtpBackup(
-                                fileUri = uri,
-                                backupPassphrase = if (requiresPassword) chars else null,
-                                mode = selectedMode
-                            )
+                            onImport(if (requiresPassword) chars else null, selectedMode)
                             Glide.get(this@MainActivity).clearMemory()
                             viewModel.notifyTokenImagesChanged()
                             AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
@@ -723,9 +781,9 @@ class MainActivity : AppCompatActivity() {
                             positiveButton.isEnabled = true
                             keyInputLayout.error = getString(R.string.incorrect_freeotp_backup_password)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Import FreeOTP backup failed", e)
+                            Log.e(TAG, "Import $logLabel failed", e)
                             AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
-                            showSnackbar(R.string.import_freeotp_backup_failed_text)
+                            showSnackbar(failedSnackbarRes)
                         } finally {
                             chars.fill('\u0000')
                         }

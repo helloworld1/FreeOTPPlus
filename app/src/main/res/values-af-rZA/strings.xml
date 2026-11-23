@@ -146,4 +146,9 @@
     <string name="import_mode_append">Voeg by bestaande kentekens aan</string>
     <string name="import_mode_replace_all">Vervang alle bestaande kentekens</string>
     <string name="import_freeotp_backup_failed_text">Kon nie FreeOTP-rugsteun invoer nie. Die lêer is ongeldig of beskadig.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Voer Aegis JSON in</string>
+    <string name="import_aegis_encrypted_message">Voer die wagwoord vir hierdie Aegis-kluis in en kies hoe om die tokens in te voer.</string>
+    <string name="import_aegis_unencrypted_message">Kies hoe om die tokens uit hierdie Aegis-rugsteun in te voer.</string>
+    <string name="import_aegis_failed_text">Kon nie Aegis JSON invoer nie. Die lêer is ongeldig of beskadig.</string>
 </resources>

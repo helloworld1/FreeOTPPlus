@@ -146,4 +146,9 @@
     <string name="import_mode_append">Tambahkan ke token yang ada</string>
     <string name="import_mode_replace_all">Ganti semua token yang ada</string>
     <string name="import_freeotp_backup_failed_text">Gagal mengimpor cadangan FreeOTP. File tidak valid atau rusak.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Impor JSON Aegis</string>
+    <string name="import_aegis_encrypted_message">Masukkan kata sandi untuk brankas Aegis ini dan pilih cara mengimpor token.</string>
+    <string name="import_aegis_unencrypted_message">Pilih cara mengimpor token dari cadangan Aegis ini.</string>
+    <string name="import_aegis_failed_text">Gagal mengimpor JSON Aegis. File tidak valid atau rusak.</string>
 </resources>

@@ -146,4 +146,9 @@
     <string name="import_mode_append">إلحاق بالرموز الحالية</string>
     <string name="import_mode_replace_all">استبدال جميع الرموز الحالية</string>
     <string name="import_freeotp_backup_failed_text">فشل استيراد النسخة الاحتياطية من FreeOTP. الملف غير صالح أو تالف.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">استيراد Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">أدخل كلمة المرور لخزنة Aegis هذه واختر كيفية استيراد الرموز.</string>
+    <string name="import_aegis_unencrypted_message">اختر كيفية استيراد الرموز من نسخة Aegis الاحتياطية هذه.</string>
+    <string name="import_aegis_failed_text">فشل استيراد Aegis JSON. الملف غير صالح أو تالف.</string>
 </resources>

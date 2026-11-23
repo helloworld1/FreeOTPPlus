@@ -146,4 +146,9 @@
     <string name="import_mode_append">Gehitu lehendik dauden tokenei</string>
     <string name="import_mode_replace_all">Ordeztu lehendik dauden token guztiak</string>
     <string name="import_freeotp_backup_failed_text">Huts egin du FreeOTP babeskopia inportatzeak. Fitxategia baliogabea da edo hondatuta dago.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Inportatu Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">Sartu Aegis kutxa gotor honen pasahitza eta aukeratu tokenak nola inportatu.</string>
+    <string name="import_aegis_unencrypted_message">Aukeratu Aegis babeskopia honetako tokenak nola inportatu.</string>
+    <string name="import_aegis_failed_text">Ezin izan da Aegis JSON inportatu. Fitxategia baliogabea da edo hondatuta dago.</string>
 </resources>

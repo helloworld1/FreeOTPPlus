@@ -146,4 +146,9 @@
     <string name="import_mode_append">Afegeix als tokens existents</string>
     <string name="import_mode_replace_all">Substitueix tots els tokens existents</string>
     <string name="import_freeotp_backup_failed_text">No s\'ha pogut importar la còpia de seguretat de FreeOTP. El fitxer no és vàlid o està malmès.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Importa JSON d\'Aegis</string>
+    <string name="import_aegis_encrypted_message">Introduïu la contrasenya d\'aquesta caixa forta d\'Aegis i trieu com importar els testimonis.</string>
+    <string name="import_aegis_unencrypted_message">Trieu com importar els testimonis d\'aquesta còpia de seguretat d\'Aegis.</string>
+    <string name="import_aegis_failed_text">No s\'ha pogut importar el JSON d\'Aegis. El fitxer no és vàlid o està malmès.</string>
 </resources>

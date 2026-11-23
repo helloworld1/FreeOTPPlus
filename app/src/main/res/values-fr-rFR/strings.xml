@@ -146,4 +146,9 @@
     <string name="import_mode_append">Ajouter aux jetons existants</string>
     <string name="import_mode_replace_all">Remplacer tous les jetons existants</string>
     <string name="import_freeotp_backup_failed_text">Échec de l\'importation de la sauvegarde FreeOTP. Le fichier est invalide ou corrompu.</string>
+    <string name="import_aegis_json">JSON Aegis</string>
+    <string name="import_aegis_json_title">Importer un JSON Aegis</string>
+    <string name="import_aegis_encrypted_message">Saisissez le mot de passe de ce coffre Aegis et choisissez comment importer les jetons.</string>
+    <string name="import_aegis_unencrypted_message">Choisissez comment importer les jetons depuis cette sauvegarde Aegis.</string>
+    <string name="import_aegis_failed_text">Échec de l\'importation du JSON Aegis. Le fichier est invalide ou corrompu.</string>
 </resources>

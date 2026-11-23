@@ -146,4 +146,9 @@
     <string name="import_mode_append">Mevcut token\'lara ekle</string>
     <string name="import_mode_replace_all">Mevcut tüm token\'ları değiştir</string>
     <string name="import_freeotp_backup_failed_text">FreeOTP yedeği içe aktarılamadı. Dosya geçersiz veya bozuk.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Aegis JSON İçe Aktar</string>
+    <string name="import_aegis_encrypted_message">Bu Aegis kasasının parolasını girin ve belirteçlerin nasıl içe aktarılacağını seçin.</string>
+    <string name="import_aegis_unencrypted_message">Bu Aegis yedeğinden belirteçlerin nasıl içe aktarılacağını seçin.</string>
+    <string name="import_aegis_failed_text">Aegis JSON içe aktarılamadı. Dosya geçersiz veya bozuk.</string>
 </resources>

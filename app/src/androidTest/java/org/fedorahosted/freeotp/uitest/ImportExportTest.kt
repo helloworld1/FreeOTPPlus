@@ -23,6 +23,7 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
+import org.fedorahosted.freeotp.data.legacy.AegisBackupParser
 import org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.hamcrest.Matchers.not
@@ -397,7 +398,8 @@ class ImportExportTest {
                     "FreeOTP+ JSON (Preferred)",
                     "Key URI",
                     "Token images",
-                    "FreeOTP Backup XML"
+                    "FreeOTP Backup XML",
+                    "Aegis JSON"
                 ).inOrder()
 
                 val exportItem = (0 until toolbar.menu.size())
@@ -415,6 +417,7 @@ class ImportExportTest {
             openActionBarOverflowOrOptionsMenu(context)
             onView(withText(R.string.import_text)).perform(click())
             onView(withText(R.string.import_freeotp_backup)).check(matches(isDisplayed()))
+            onView(withText(R.string.import_aegis_json)).check(matches(isDisplayed()))
             // Close menu by pressing back
             androidx.test.espresso.Espresso.pressBack()
 
@@ -439,7 +442,7 @@ class ImportExportTest {
                     backupFile.toUri()
                 )
             }
-            TestWaitUtil.awaitViewMatching(withId(R.id.key_edit_text))
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
             onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
             onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(not(isDisplayed())))
 
@@ -448,7 +451,7 @@ class ImportExportTest {
                 .inRoot(isDialog())
                 .perform(replaceText("WrongPassword"), closeSoftKeyboard())
             onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
-            TestWaitUtil.awaitViewMatching(withText(R.string.incorrect_freeotp_backup_password))
+            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_freeotp_backup_password))
             assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)).hasSize(1)
 
             // 4. Correct password with Append mode places the 2 FreeOTP tokens at the top before ExistingCorp
@@ -480,7 +483,7 @@ class ImportExportTest {
                     backupFile.toUri()
                 )
             }
-            TestWaitUtil.awaitViewMatching(withId(R.id.radio_import_replace_all))
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_replace_all))
             onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
             onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
             onView(withId(R.id.key_edit_text))
@@ -511,6 +514,181 @@ class ImportExportTest {
             TestWaitUtil.awaitViewMatching(withText(R.string.import_freeotp_backup_failed_text))
         } finally {
             badFile.delete()
+        }
+    }
+
+    @Test
+    fun testImportAegisJsonPlainAndEncryptedAppendTopAndReplaceAllUiFlow() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val plainAegisFile = File(context.cacheDir, "aegis_plain.json")
+        val encryptedAegisFile = File(context.cacheDir, "aegis_encrypted.json")
+        val badAegisFile = File(context.cacheDir, "aegis_invalid.json")
+        val aegisPassword = "AegisVaultPassword!"
+
+        plainAegisFile.writeText(
+            """
+            {
+                "version": 1,
+                "header": { "slots": null, "params": null },
+                "db": {
+                    "version": 3,
+                    "groups": [{ "uuid": "g-work", "name": "Work" }],
+                    "entries": [
+                        {
+                            "type": "totp",
+                            "uuid": "e-github",
+                            "name": "octocat@github.com",
+                            "issuer": "GitHub",
+                            "groups": ["g-work"],
+                            "info": {
+                                "secret": "JBSWY3DPEHPK3PXP",
+                                "algo": "SHA256",
+                                "digits": 6,
+                                "period": 30
+                            }
+                        },
+                        {
+                            "type": "steam",
+                            "uuid": "e-steam",
+                            "name": "gamer@steam.example",
+                            "issuer": "Steam",
+                            "groups": [],
+                            "info": {
+                                "secret": "JRZCL47CMXVOQMNPZR2F7J4RGI",
+                                "algo": "SHA1",
+                                "digits": 5,
+                                "period": 30
+                            }
+                        }
+                    ]
+                }
+            }
+            """.trimIndent(),
+            Charsets.UTF_8
+        )
+
+        val encryptedDbJson = """
+            {
+                "version": 3,
+                "groups": [{ "uuid": "g-infra", "name": "Infra" }],
+                "entries": [
+                    {
+                        "type": "hotp",
+                        "uuid": "e-cloudflare",
+                        "name": "ops@cloudflare.example",
+                        "issuer": "Cloudflare",
+                        "groups": ["g-infra"],
+                        "info": {
+                            "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                            "algo": "SHA1",
+                            "digits": 6,
+                            "counter": 12
+                        }
+                    }
+                ]
+            }
+        """.trimIndent()
+        encryptedAegisFile.writeBytes(
+            AegisBackupParser.createEncryptedAegisVaultBytesForTesting(
+                password = aegisPassword,
+                dbJsonObject = encryptedDbJson,
+                scryptN = 1024,
+                scryptR = 8,
+                scryptP = 1
+            )
+        )
+        badAegisFile.writeText("""{"not_aegis": true}""", Charsets.UTF_8)
+
+        try {
+            // Seed 1 existing token in FreeOTP+
+            val existingToken = OtpTokenFactory.create(
+                type = OtpTokenType.TOTP,
+                issuer = "ExistingCorp",
+                label = "existing@corp.example",
+                secret = "JBSWY3DPEHPK3PXP"
+            ).copy(id = 1L, ordinal = 1L)
+            activityRule.scenario.onActivity { activity ->
+                runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().replaceAll(listOf(existingToken))
+                }
+            }
+            TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
+
+            // 1. Plaintext Aegis JSON hides password field and appends to TOP of token list
+            activityRule.scenario.onActivity { activity ->
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
+                    plainAegisFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_append))
+            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(not(isDisplayed())))
+            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val afterPlainAppend = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
+            assertThat(afterPlainAppend.map { it.issuer }).containsExactly("GitHub", "Steam", "ExistingCorp").inOrder()
+            assertThat(afterPlainAppend[0].categories).containsExactly("Work")
+            assertThat(afterPlainAppend[1].digits).isEqualTo(5)
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(
+                    0,
+                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub"))
+                )
+            )
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(
+                    2,
+                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp"))
+                )
+            )
+
+            // 2. Encrypted Aegis JSON shows password field, rejects wrong password, and Replace All replaces list
+            activityRule.scenario.onActivity { activity ->
+                activity.dismissSnackbar()
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
+                    encryptedAegisFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
+            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText("WrongPassword"), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_freeotp_backup_password))
+            assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)).hasSize(3)
+
+            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
+            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText(aegisPassword), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val afterEncryptedReplace = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
+            assertThat(afterEncryptedReplace.single().issuer).isEqualTo("Cloudflare")
+            assertThat(afterEncryptedReplace.single().tokenType).isEqualTo(OtpTokenType.HOTP)
+            assertThat(afterEncryptedReplace.single().counter).isEqualTo(12L)
+            assertThat(afterEncryptedReplace.single().categories).containsExactly("Infra")
+
+            // 3. Malformed Aegis JSON shows failure Snackbar
+            activityRule.scenario.onActivity { activity ->
+                activity.dismissSnackbar()
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
+                    badAegisFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitViewMatching(withText(R.string.import_aegis_failed_text))
+        } finally {
+            plainAegisFile.delete()
+            encryptedAegisFile.delete()
+            badAegisFile.delete()
         }
     }
 }

@@ -330,6 +330,11 @@ class TokenListFragment : Fragment() {
                             true
                         }
 
+                        R.id.action_import_aegis_json -> {
+                            mainActivity.startImportAegisJson()
+                            true
+                        }
+
                         R.id.action_import_images -> {
                             mainActivity.startImportTokenImages()
                             true

@@ -146,4 +146,9 @@
     <string name="import_mode_append">Додати до наявних ключів</string>
     <string name="import_mode_replace_all">Замінити всі наявні ключі</string>
     <string name="import_freeotp_backup_failed_text">Не вдалося імпортувати резервну копію FreeOTP. Файл недійсний або пошкоджений.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Імпортувати Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">Введіть пароль від цього сховища Aegis і виберіть спосіб імпорту токенів.</string>
+    <string name="import_aegis_unencrypted_message">Виберіть спосіб імпорту токенів із цієї резервної копії Aegis.</string>
+    <string name="import_aegis_failed_text">Не вдалося імпортувати Aegis JSON. Файл недійсний або пошкоджений.</string>
 </resources>

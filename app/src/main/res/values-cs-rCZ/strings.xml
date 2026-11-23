@@ -146,4 +146,9 @@
     <string name="import_mode_append">Připojit ke stávajícím tokenům</string>
     <string name="import_mode_replace_all">Nahradit všechny stávající tokeny</string>
     <string name="import_freeotp_backup_failed_text">Import zálohy FreeOTP se nezdařil. Soubor je neplatný nebo poškozený.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Importovat Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">Zadejte heslo pro tento trezor Aegis a zvolte způsob importu tokenů.</string>
+    <string name="import_aegis_unencrypted_message">Zvolte způsob importu tokenů z této zálohy Aegis.</string>
+    <string name="import_aegis_failed_text">Import Aegis JSON se nezdařil. Soubor je neplatný nebo poškozený.</string>
 </resources>

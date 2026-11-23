@@ -146,4 +146,9 @@
     <string name="import_mode_append">Hozzáfűzés a meglévő tokenekhez</string>
     <string name="import_mode_replace_all">Az összes meglévő token lecserélése</string>
     <string name="import_freeotp_backup_failed_text">Nem sikerült importálni a FreeOTP biztonsági mentést. A fájl érvénytelen vagy sérült.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Aegis JSON importálása</string>
+    <string name="import_aegis_encrypted_message">Adja meg az Aegis széf jelszavát, és válassza ki a tokenek importálásának módját.</string>
+    <string name="import_aegis_unencrypted_message">Válassza ki a tokenek importálásának módját ebből az Aegis biztonsági mentésből.</string>
+    <string name="import_aegis_failed_text">Nem sikerült importálni az Aegis JSON fájlt. A fájl érvénytelen vagy sérült.</string>
 </resources>

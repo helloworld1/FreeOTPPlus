@@ -146,4 +146,9 @@
     <string name="import_mode_append">Toevoegen aan bestaande tokens</string>
     <string name="import_mode_replace_all">Alle bestaande tokens vervangen</string>
     <string name="import_freeotp_backup_failed_text">Importeren van FreeOTP-back-up mislukt. Het bestand is ongeldig of beschadigd.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Aegis JSON importeren</string>
+    <string name="import_aegis_encrypted_message">Voer het wachtwoord voor deze Aegis-kluis in en kies hoe de tokens moeten worden geïmporteerd.</string>
+    <string name="import_aegis_unencrypted_message">Kies hoe de tokens uit deze Aegis-back-up moeten worden geïmporteerd.</string>
+    <string name="import_aegis_failed_text">Importeren van Aegis JSON mislukt. Het bestand is ongeldig of beschadigd.</string>
 </resources>

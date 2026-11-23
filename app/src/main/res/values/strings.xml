@@ -54,6 +54,7 @@
     <string name="import_json_format">FreeOTP+ JSON (Preferred)</string>
     <string name="import_key_uri_format">Key URI</string>
     <string name="import_freeotp_backup">FreeOTP Backup XML</string>
+    <string name="import_aegis_json">Aegis JSON</string>
     <string name="export_json_format">FreeOTP+ JSON (Preferred)</string>
     <string name="export_key_uri_format">Key URI</string>
     <string name="import_token_images">Token images</string>
@@ -67,6 +68,10 @@
     <string name="import_mode_append">Append to existing tokens</string>
     <string name="import_mode_replace_all">Replace all existing tokens</string>
     <string name="import_freeotp_backup_failed_text">Failed to import FreeOTP backup. The file is invalid or corrupted.</string>
+    <string name="import_aegis_json_title">Import Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">Enter the password for this Aegis vault and choose how to import the tokens.</string>
+    <string name="import_aegis_unencrypted_message">Choose how to import the tokens from this Aegis backup.</string>
+    <string name="import_aegis_failed_text">Failed to import Aegis JSON. The file is invalid or corrupted.</string>
     <string name="sort">Sort</string>
     <string name="sort_by_account_asc">Sort by Account Ascending</string>
     <string name="sort_by_account_desc">Sort by Account Descending</string>

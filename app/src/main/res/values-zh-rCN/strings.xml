@@ -146,4 +146,9 @@
     <string name="import_mode_append">追加到现有令牌</string>
     <string name="import_mode_replace_all">替换所有现有令牌</string>
     <string name="import_freeotp_backup_failed_text">导入 FreeOTP 备份失败。文件无效或已损坏。</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">导入 Aegis JSON</string>
+    <string name="import_aegis_encrypted_message">请输入此 Aegis 保险库的密码并选择如何导入令牌。</string>
+    <string name="import_aegis_unencrypted_message">请选择如何从此 Aegis 备份导入令牌。</string>
+    <string name="import_aegis_failed_text">导入 Aegis JSON 失败。文件无效或已损坏。</string>
 </resources>

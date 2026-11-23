@@ -61,6 +61,9 @@
             <item
                 android:id="@+id/action_import_freeotp_backup"
                 android:title="@string/import_freeotp_backup" />
+            <item
+                android:id="@+id/action_import_aegis_json"
+                android:title="@string/import_aegis_json" />
         </menu>
     </item>
     <item

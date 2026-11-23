@@ -146,4 +146,9 @@
     <string name="import_mode_append">පවතින ටෝකනවලට එක් කරන්න</string>
     <string name="import_mode_replace_all">පවතින සියලුම ටෝකන ප්‍රතිස්ථාපනය කරන්න</string>
     <string name="import_freeotp_backup_failed_text">FreeOTP උපස්ථය ආයාත කිරීමට අසමත් විය. ගොනුව වලංගු නොවේ හෝ හානි වී ඇත.</string>
+    <string name="import_aegis_json">Aegis JSON</string>
+    <string name="import_aegis_json_title">Aegis JSON ආයාත කරන්න</string>
+    <string name="import_aegis_encrypted_message">මෙම Aegis සුරක්ෂිතාගාරයේ මුරපදය ඇතුළත් කර ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
+    <string name="import_aegis_unencrypted_message">මෙම Aegis උපස්ථයෙන් ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
+    <string name="import_aegis_failed_text">Aegis JSON ආයාත කිරීමට අසමත් විය. ගොනුව වලංගු නොවේ හෝ හානි වී ඇත.</string>
 </resources>

@@ -315,6 +315,40 @@ class ImportExportUtil @Inject constructor(
         }
     }
 
+    suspend fun inspectAegisBackup(fileUri: Uri): AegisBackupParser.BackupInspection =
+        withContext(Dispatchers.IO) {
+            val bytes = openRequiredInputStream(fileUri).use { input ->
+                FreeOtpBackupParser.readBoundedBytes(input, AegisBackupParser.MAX_AEGIS_JSON_BYTES)
+            }
+            AegisBackupParser.inspectBackup(bytes, gson)
+        }
+
+    suspend fun importAegisBackup(
+        fileUri: Uri,
+        backupPassphrase: CharArray? = null,
+        mode: TokenImportMode = TokenImportMode.APPEND
+    ) {
+        withContext(Dispatchers.IO) {
+            val bytes = openRequiredInputStream(fileUri).use { input ->
+                FreeOtpBackupParser.readBoundedBytes(input, AegisBackupParser.MAX_AEGIS_JSON_BYTES)
+            }
+            val plaintextTokens = AegisBackupParser.parseBackup(
+                bytes = bytes,
+                passphrase = backupPassphrase,
+                filesDir = context.filesDir,
+                gson = gson
+            )
+            storeImportedFreeOtpTokens(
+                plaintextTokens = plaintextTokens,
+                mode = mode,
+                filesDir = context.filesDir,
+                otpTokenDatabase = otpTokenDatabase,
+                tokenCryptoManager = tokenCryptoManager,
+                gson = gson
+            )
+        }
+    }
+
     @Throws(IOException::class)
     private fun openTruncatedOutputStream(uri: Uri): OutputStream {
         val pfd = runCatching { context.contentResolver.openFileDescriptor(uri, "wt") }.getOrNull()
