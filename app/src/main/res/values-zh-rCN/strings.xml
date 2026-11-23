@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">请输入此 Aegis 保险库的密码并选择如何导入令牌。</string>
     <string name="import_aegis_unencrypted_message">请选择如何从此 Aegis 备份导入令牌。</string>
     <string name="import_aegis_failed_text">导入 Aegis JSON 失败。文件无效或已损坏。</string>
+    <string name="import_json_encrypted_message">请输入导出此备份时使用的加密密钥并选择如何导入令牌。</string>
+    <string name="import_json_unencrypted_message">请选择如何从此 FreeOTP+ JSON 备份导入令牌。</string>
 </resources>

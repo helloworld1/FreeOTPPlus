@@ -2,7 +2,6 @@ package org.fedorahosted.freeotp.ui
 
 import android.app.admin.DevicePolicyManager
 import android.content.ActivityNotFoundException
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
@@ -566,30 +565,17 @@ class MainActivity : AppCompatActivity() {
             }
 
             DocumentAction.IMPORT_JSON -> {
-                val dialog = MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.import_json_file)
-                    .setMessage(R.string.import_json_file_warning)
-                    .setIcon(R.drawable.alert)
-                    .setPositiveButton(R.string.ok_text) { _: DialogInterface, _: Int ->
-                        lifecycleScope.launch {
-                            try {
-                                if (importFromUtil.isJsonFileEncrypted(uri)) {
-                                    showImportEncryptedBackupDialog(uri, isJson = true)
-                                } else {
-                                    importFromUtil.importJsonFile(uri)
-                                    Glide.get(this@MainActivity).clearMemory()
-                                    viewModel.notifyTokenImagesChanged()
-                                    showSnackbar(R.string.import_succeeded_text)
-                                }
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Import JSON failed", e)
-                                showSnackbar(R.string.import_json_failed_text)
-                            }
-                        }
+                lifecycleScope.launch {
+                    try {
+                        val inspection = importFromUtil.inspectJsonFile(uri)
+                        showImportJsonDialog(uri, inspection.requiresPassword)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Inspect JSON failed", e)
+                        showSnackbar(R.string.import_json_failed_text)
                     }
-                    .setNegativeButton(R.string.cancel_text, null)
-                    .create()
-                showTrackedDialog(dialog)
+                }
             }
 
             DocumentAction.EXPORT_KEY_URI -> {
@@ -609,7 +595,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     try {
                         if (importFromUtil.isKeyUriFileEncrypted(uri)) {
-                            showImportEncryptedBackupDialog(uri, isJson = false)
+                            showImportEncryptedKeyUriDialog(uri)
                         } else {
                             importFromUtil.importKeyUriFile(uri)
                             Glide.get(this@MainActivity).clearMemory()
@@ -679,8 +665,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showImportJsonDialog(uri: Uri, requiresPassword: Boolean) {
+        showBackupImportDialog(
+            requiresPassword = requiresPassword,
+            titleRes = R.string.import_json_file,
+            encryptedMessageRes = R.string.import_json_encrypted_message,
+            unencryptedMessageRes = R.string.import_json_unencrypted_message,
+            passwordHintRes = R.string.encryption_key_hint,
+            incorrectPasswordRes = R.string.incorrect_encryption_key,
+            failedSnackbarRes = R.string.import_json_failed_text,
+            logLabel = "FreeOTP+ JSON"
+        ) { passphrase, selectedMode ->
+            importFromUtil.importJsonFile(
+                uri = uri,
+                backupPassphrase = passphrase,
+                mode = selectedMode
+            )
+        }
+    }
+
     private fun showImportFreeOtpBackupDialog(uri: Uri, requiresPassword: Boolean) {
-        showExternalBackupImportDialog(
+        showBackupImportDialog(
             requiresPassword = requiresPassword,
             titleRes = R.string.import_freeotp_backup_title,
             encryptedMessageRes = R.string.import_freeotp_backup_message,
@@ -697,7 +702,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showImportAegisBackupDialog(uri: Uri, requiresPassword: Boolean) {
-        showExternalBackupImportDialog(
+        showBackupImportDialog(
             requiresPassword = requiresPassword,
             titleRes = R.string.import_aegis_json_title,
             encryptedMessageRes = R.string.import_aegis_encrypted_message,
@@ -713,11 +718,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showExternalBackupImportDialog(
+    private fun showBackupImportDialog(
         requiresPassword: Boolean,
         titleRes: Int,
         encryptedMessageRes: Int,
         unencryptedMessageRes: Int,
+        passwordHintRes: Int = R.string.freeotp_backup_password_hint,
+        incorrectPasswordRes: Int = R.string.incorrect_freeotp_backup_password,
         failedSnackbarRes: Int,
         logLabel: String,
         onImport: suspend (CharArray?, TokenImportMode) -> Unit
@@ -730,6 +737,7 @@ class MainActivity : AppCompatActivity() {
         val replaceWarningText = dialogView.findViewById<TextView>(R.id.replace_warning_text)
 
         messageView.setText(if (requiresPassword) encryptedMessageRes else unencryptedMessageRes)
+        keyInputLayout.hint = getString(passwordHintRes)
         keyInputLayout.visibility = if (requiresPassword) View.VISIBLE else View.GONE
         keyEditText.doAfterTextChanged { keyInputLayout.error = null }
 
@@ -763,7 +771,7 @@ class MainActivity : AppCompatActivity() {
                 var handedOffToCoroutine = false
                 try {
                     if (requiresPassword && chars.isEmpty()) {
-                        keyInputLayout.error = getString(R.string.incorrect_freeotp_backup_password)
+                        keyInputLayout.error = getString(incorrectPasswordRes)
                         return@setOnClickListener
                     }
                     positiveButton.isEnabled = false
@@ -779,7 +787,7 @@ class MainActivity : AppCompatActivity() {
                             throw e
                         } catch (_: InvalidEncryptionKeyException) {
                             positiveButton.isEnabled = true
-                            keyInputLayout.error = getString(R.string.incorrect_freeotp_backup_password)
+                            keyInputLayout.error = getString(incorrectPasswordRes)
                         } catch (e: Exception) {
                             Log.e(TAG, "Import $logLabel failed", e)
                             AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
@@ -803,7 +811,7 @@ class MainActivity : AppCompatActivity() {
         showTrackedDialog(dialog)
     }
 
-    private fun showImportEncryptedBackupDialog(uri: Uri, isJson: Boolean) {
+    private fun showImportEncryptedKeyUriDialog(uri: Uri) {
         val dialog = AuthenticationUtil.createManualKeyPromptDialog(
             activity = this,
             titleRes = R.string.import_encrypted_backup_title,
@@ -811,11 +819,7 @@ class MainActivity : AppCompatActivity() {
             positiveButtonRes = R.string.import_text
         ) { passphrase, _, dismissSafely ->
             try {
-                if (isJson) {
-                    importFromUtil.importJsonFile(uri, passphrase)
-                } else {
-                    importFromUtil.importKeyUriFile(uri, passphrase)
-                }
+                importFromUtil.importKeyUriFile(uri, passphrase)
                 Glide.get(this@MainActivity).clearMemory()
                 viewModel.notifyTokenImagesChanged()
                 dismissSafely()
@@ -824,9 +828,9 @@ class MainActivity : AppCompatActivity() {
             } catch (_: InvalidEncryptionKeyException) {
                 getString(R.string.incorrect_encryption_key)
             } catch (e: Exception) {
-                Log.e(TAG, "Encrypted import failed", e)
+                Log.e(TAG, "Encrypted Key URI import failed", e)
                 dismissSafely()
-                showSnackbar(if (isJson) R.string.import_json_failed_text else R.string.import_key_uri_failed_text)
+                showSnackbar(R.string.import_key_uri_failed_text)
                 null
             }
         }

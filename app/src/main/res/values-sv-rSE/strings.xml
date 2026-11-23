@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Ange lösenordet för detta Aegis-valv och välj hur du vill importera dina tokens.</string>
     <string name="import_aegis_unencrypted_message">Välj hur du vill importera dina tokens från denna Aegis-säkerhetskopia.</string>
     <string name="import_aegis_failed_text">Det gick inte att importera Aegis JSON. Filen är ogiltig eller skadad.</string>
+    <string name="import_json_encrypted_message">Ange krypteringsnyckeln som användes vid exporten av denna säkerhetskopia och välj hur du vill importera dina tokens.</string>
+    <string name="import_json_unencrypted_message">Välj hur du vill importera dina tokens från denna FreeOTP+ JSON-säkerhetskopia.</string>
 </resources>

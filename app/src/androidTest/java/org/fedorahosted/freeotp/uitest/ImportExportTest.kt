@@ -21,6 +21,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.third_party.AegisBackupParser
@@ -689,6 +690,155 @@ class ImportExportTest {
             plainAegisFile.delete()
             encryptedAegisFile.delete()
             badAegisFile.delete()
+        }
+    }
+
+    @Test
+    fun testImportFreeOtpPlusJsonPlainAndEncryptedAppendTopAndReplaceAllUiFlow() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val plainJsonFile = File(context.cacheDir, "freeotp_plus_plain.json")
+        val encryptedJsonFile = File(context.cacheDir, "freeotp_plus_encrypted.json")
+        val badJsonFile = File(context.cacheDir, "freeotp_plus_invalid.json")
+        val encryptionKey = "BackupVaultKey123!"
+
+        try {
+            // Prepare 1) a plaintext FreeOTP+ JSON backup (GitHub + GitLab) and
+            //         2) an encrypted FreeOTP+ JSON backup (Cloudflare)
+            activityRule.scenario.onActivity { activity ->
+                runBlocking {
+                    val dao = activity.otpTokenDatabase.otpTokenDao()
+                    dao.replaceAll(
+                        listOf(
+                            OtpTokenFactory.create(
+                                type = OtpTokenType.TOTP,
+                                issuer = "GitHub",
+                                label = "octocat@github.com",
+                                secret = "JBSWY3DPEHPK3PXP",
+                                algorithm = "SHA256",
+                                categories = listOf("Work")
+                            ).copy(id = 1L, ordinal = 1L),
+                            OtpTokenFactory.create(
+                                type = OtpTokenType.HOTP,
+                                issuer = "GitLab",
+                                label = "ops@gitlab.com",
+                                secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                                initialCounter = 5L
+                            ).copy(id = 2L, ordinal = 2L)
+                        )
+                    )
+                    activity.importFromUtil.exportJsonFile(plainJsonFile.toUri(), encrypt = false)
+
+                    dao.replaceAll(
+                        listOf(
+                            OtpTokenFactory.create(
+                                type = OtpTokenType.HOTP,
+                                issuer = "Cloudflare",
+                                label = "sec@cloudflare.com",
+                                secret = "JBSWY3DPEHPK3PXP",
+                                initialCounter = 11L,
+                                categories = listOf("Infra")
+                            ).copy(id = 1L, ordinal = 1L)
+                        )
+                    )
+                    val setupMaterial = activity.tokenCryptoManager.deriveSetupMaterial(encryptionKey.toCharArray())
+                    activity.tokenCryptoManager.enableTokenEncryption(setupMaterial, null)
+                    setupMaterial.clear()
+                    activity.importFromUtil.exportJsonFile(encryptedJsonFile.toUri(), encrypt = true)
+                    activity.tokenCryptoManager.disableTokenEncryption(AuthMode.NONE)
+
+                    // Seed 1 existing token in FreeOTP+
+                    dao.replaceAll(
+                        listOf(
+                            OtpTokenFactory.create(
+                                type = OtpTokenType.TOTP,
+                                issuer = "ExistingCorp",
+                                label = "existing@corp.example",
+                                secret = "JBSWY3DPEHPK3PXP"
+                            ).copy(id = 1L, ordinal = 1L)
+                        )
+                    )
+                }
+            }
+            badJsonFile.writeText("""{"unexpected": true}""", Charsets.UTF_8)
+            TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
+
+            // 1. Plaintext FreeOTP+ JSON hides encryption key input and appends to TOP of token list by default
+            activityRule.scenario.onActivity { activity ->
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_JSON,
+                    plainJsonFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_append))
+            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(not(isDisplayed())))
+            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
+            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(not(isDisplayed())))
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val afterPlainAppend = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
+            assertThat(afterPlainAppend.map { it.issuer }).containsExactly("GitHub", "GitLab", "ExistingCorp").inOrder()
+            assertThat(afterPlainAppend[0].categories).containsExactly("Work")
+            assertThat(afterPlainAppend[1].tokenType).isEqualTo(OtpTokenType.HOTP)
+            assertThat(afterPlainAppend[1].counter).isEqualTo(5L)
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(
+                    0,
+                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub"))
+                )
+            )
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(
+                    2,
+                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp"))
+                )
+            )
+
+            // 2. Encrypted FreeOTP+ JSON shows key input, rejects wrong key inline, and Replace All replaces list
+            activityRule.scenario.onActivity { activity ->
+                activity.dismissSnackbar()
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_JSON,
+                    encryptedJsonFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
+            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText("WrongKey!"), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_encryption_key))
+            assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)).hasSize(3)
+
+            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
+            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText(encryptionKey), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val afterEncryptedReplace = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
+            assertThat(afterEncryptedReplace.single().issuer).isEqualTo("Cloudflare")
+            assertThat(afterEncryptedReplace.single().tokenType).isEqualTo(OtpTokenType.HOTP)
+            assertThat(afterEncryptedReplace.single().counter).isEqualTo(11L)
+            assertThat(afterEncryptedReplace.single().categories).containsExactly("Infra")
+
+            // 3. Malformed FreeOTP+ JSON shows failure Snackbar immediately
+            activityRule.scenario.onActivity { activity ->
+                activity.dismissSnackbar()
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_JSON,
+                    badJsonFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitViewMatching(withText(R.string.import_json_failed_text))
+        } finally {
+            plainJsonFile.delete()
+            encryptedJsonFile.delete()
+            badJsonFile.delete()
         }
     }
 }

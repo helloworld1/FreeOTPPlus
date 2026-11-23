@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">請輸入此 Aegis 保險庫的密碼並選擇如何匯入權杖。</string>
     <string name="import_aegis_unencrypted_message">請選擇如何從此 Aegis 備份匯入權杖。</string>
     <string name="import_aegis_failed_text">匯入 Aegis JSON 失敗。檔案無效或已損毀。</string>
+    <string name="import_json_encrypted_message">請輸入匯出此備份時使用的加密金鑰並選擇如何匯入權杖。</string>
+    <string name="import_json_unencrypted_message">請選擇如何從此 FreeOTP+ JSON 備份匯入權杖。</string>
 </resources>

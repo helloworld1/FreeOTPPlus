@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Saisissez le mot de passe de ce coffre Aegis et choisissez comment importer les jetons.</string>
     <string name="import_aegis_unencrypted_message">Choisissez comment importer les jetons depuis cette sauvegarde Aegis.</string>
     <string name="import_aegis_failed_text">Échec de l\'importation du JSON Aegis. Le fichier est invalide ou corrompu.</string>
+    <string name="import_json_encrypted_message">Saisissez la clé de chiffrement utilisée lors de l\'exportation de cette sauvegarde et choisissez comment importer les jetons.</string>
+    <string name="import_json_unencrypted_message">Choisissez comment importer les jetons depuis cette sauvegarde JSON FreeOTP+.</string>
 </resources>

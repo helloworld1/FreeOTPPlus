@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Inserisci la password di questa cassaforte Aegis e scegli come importare i token.</string>
     <string name="import_aegis_unencrypted_message">Scegli come importare i token da questo backup Aegis.</string>
     <string name="import_aegis_failed_text">Impossibile importare il file JSON Aegis. Il file non è valido o è danneggiato.</string>
+    <string name="import_json_encrypted_message">Inserisci la chiave di crittografia utilizzata durante l\'esportazione di questo backup e scegli come importare i token.</string>
+    <string name="import_json_unencrypted_message">Scegli come importare i token da questo backup JSON di FreeOTP+.</string>
 </resources>

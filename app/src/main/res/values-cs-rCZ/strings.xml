@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Zadejte heslo pro tento trezor Aegis a zvolte způsob importu tokenů.</string>
     <string name="import_aegis_unencrypted_message">Zvolte způsob importu tokenů z této zálohy Aegis.</string>
     <string name="import_aegis_failed_text">Import Aegis JSON se nezdařil. Soubor je neplatný nebo poškozený.</string>
+    <string name="import_json_encrypted_message">Zadejte šifrovací klíč použitý při exportu této zálohy a zvolte způsob importu tokenů.</string>
+    <string name="import_json_unencrypted_message">Zvolte způsob importu tokenů z této zálohy FreeOTP+ JSON.</string>
 </resources>

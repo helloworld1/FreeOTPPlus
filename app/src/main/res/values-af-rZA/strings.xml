@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Voer die wagwoord vir hierdie Aegis-kluis in en kies hoe om die tokens in te voer.</string>
     <string name="import_aegis_unencrypted_message">Kies hoe om die tokens uit hierdie Aegis-rugsteun in te voer.</string>
     <string name="import_aegis_failed_text">Kon nie Aegis JSON invoer nie. Die lêer is ongeldig of beskadig.</string>
+    <string name="import_json_encrypted_message">Voer die enkripsiesleutel in wat gebruik is met die uitvoer van hierdie rugsteun en kies hoe om die tokens in te voer.</string>
+    <string name="import_json_unencrypted_message">Kies hoe om die tokens uit hierdie FreeOTP+ JSON-rugsteun in te voer.</string>
 </resources>

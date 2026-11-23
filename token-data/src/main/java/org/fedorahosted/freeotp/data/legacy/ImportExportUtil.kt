@@ -49,6 +49,18 @@ class ImportExportUtil @Inject constructor(
     private val otpTokenDatabase: OtpTokenDatabase,
     private val tokenCryptoManager: TokenCryptoManager
 ) {
+    data class JsonBackupInspection(
+        val requiresPassword: Boolean
+    )
+
+    suspend fun inspectJsonFile(uri: Uri): JsonBackupInspection = withContext(Dispatchers.IO) {
+        val jsonText = openRequiredInputStream(uri).use { inputStream ->
+            FreeOtpBackupParser.readBoundedBytes(inputStream, MAX_JSON_BACKUP_BYTES)
+                .toString(StandardCharsets.UTF_8)
+        }
+        inspectJsonBackupString(gson, jsonText)
+    }
+
     suspend fun isJsonFileEncrypted(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         val text = context.contentResolver.openInputStream(uri)?.use { inputStream ->
             BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).readText()
@@ -66,10 +78,15 @@ class ImportExportUtil @Inject constructor(
         isKeyUriLinesEncrypted(lines)
     }
 
-    suspend fun importJsonFile(uri: Uri, backupPassphrase: CharArray? = null) {
+    suspend fun importJsonFile(
+        uri: Uri,
+        backupPassphrase: CharArray? = null,
+        mode: TokenImportMode = TokenImportMode.REPLACE_ALL
+    ) {
         withContext(Dispatchers.IO) {
             val jsonText = openRequiredInputStream(uri).use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).readText()
+                FreeOtpBackupParser.readBoundedBytes(inputStream, MAX_JSON_BACKUP_BYTES)
+                    .toString(StandardCharsets.UTF_8)
             }
             if (jsonText.isBlank()) {
                 throw IllegalArgumentException("Empty JSON backup")
@@ -84,19 +101,14 @@ class ImportExportUtil @Inject constructor(
                 migrationUtil.convertLegacySavedTokensToOtpTokens(savedTokens)
             }
 
-            val linkedTokens = runCatching {
-                TokenImageBackupUtil.resolveRestoredTokenImageLinks(
-                    tokens = plaintextTokens,
-                    filesDir = context.filesDir,
-                    manifest = TokenImageBackupUtil.loadCachedManifest(context.filesDir, gson)
-                )
-            }.getOrDefault(plaintextTokens).map { token ->
-                token.copy(
-                    imagePath = TokenImageBackupUtil.sanitizeImportedImagePath(token.imagePath, context.filesDir)
-                )
-            }
-            val tokensToStore = tokenCryptoManager.encryptTokensForStorage(linkedTokens)
-            otpTokenDatabase.otpTokenDao().replaceAll(tokensToStore)
+            storeImportedTokens(
+                plaintextTokens = plaintextTokens,
+                mode = mode,
+                filesDir = context.filesDir,
+                otpTokenDatabase = otpTokenDatabase,
+                tokenCryptoManager = tokenCryptoManager,
+                gson = gson
+            )
         }
     }
 
@@ -306,7 +318,7 @@ class ImportExportUtil @Inject constructor(
                 FreeOtpBackupParser.readBoundedBytes(input)
             }
             val plaintextTokens = FreeOtpBackupParser.parseBackup(bytes, backupPassphrase, gson)
-            storeImportedFreeOtpTokens(
+            storeImportedTokens(
                 plaintextTokens = plaintextTokens,
                 mode = mode,
                 filesDir = context.filesDir,
@@ -340,7 +352,7 @@ class ImportExportUtil @Inject constructor(
                 filesDir = context.filesDir,
                 gson = gson
             )
-            storeImportedFreeOtpTokens(
+            storeImportedTokens(
                 plaintextTokens = plaintextTokens,
                 mode = mode,
                 filesDir = context.filesDir,
@@ -372,7 +384,41 @@ class ImportExportUtil @Inject constructor(
     }
 
     companion object {
-        internal suspend fun storeImportedFreeOtpTokens(
+        private const val MAX_JSON_BACKUP_BYTES = 32 * 1024 * 1024 // 32 MB safety cap
+
+        internal fun inspectJsonBackupString(gson: Gson, jsonText: String): JsonBackupInspection {
+            if (jsonText.isBlank()) {
+                throw IllegalArgumentException("Empty JSON backup")
+            }
+            val element = try {
+                JsonParser.parseString(jsonText)
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Malformed JSON backup", e)
+            }
+            if (!element.isJsonObject) {
+                throw IllegalArgumentException("JSON backup root must be a JSON object")
+            }
+            val obj = element.asJsonObject
+            val isEncrypted = obj.get("encrypted")?.takeIf { it.isJsonPrimitive }?.asBoolean == true
+            if (isEncrypted) {
+                val bundle = try {
+                    gson.fromJson(obj, EncryptedExportBundle::class.java)
+                } catch (e: Exception) {
+                    throw IllegalArgumentException("Malformed encrypted JSON backup", e)
+                } ?: throw IllegalArgumentException("Malformed encrypted JSON backup")
+                if (bundle.kdfSalt.isBlank() || bundle.kdfIterations <= 0 || bundle.keyVerifier.isBlank()) {
+                    throw IllegalArgumentException("Missing encryption KDF metadata in JSON backup")
+                }
+                return JsonBackupInspection(requiresPassword = true)
+            }
+
+            if (obj.get("tokens")?.isJsonArray != true || obj.get("tokenOrder")?.isJsonArray != true) {
+                throw IllegalArgumentException("Malformed FreeOTP+ JSON backup: missing tokens or tokenOrder")
+            }
+            return JsonBackupInspection(requiresPassword = false)
+        }
+
+        internal suspend fun storeImportedTokens(
             plaintextTokens: List<OtpToken>,
             mode: TokenImportMode,
             filesDir: File?,

@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">இந்த Aegis பெட்டகத்திற்கான கடவுச்சொல்லை உள்ளிட்டு டோக்கன்களை இறக்குமதி செய்யும் முறையைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="import_aegis_unencrypted_message">இந்த Aegis காப்புப்பிரதியிலிருந்து டோக்கன்களை இறக்குமதி செய்யும் முறையைத் தேர்ந்தெடுக்கவும்.</string>
     <string name="import_aegis_failed_text">Aegis JSON இறக்குமதி செய்ய முடியவில்லை. கோப்பு தவறானது அல்லது சிதைந்துள்ளது.</string>
+    <string name="import_json_encrypted_message">இந்தக் காப்புப்பிரதியை ஏற்றுமதி செய்யும்போது பயன்படுத்திய குறியாக்க விசையை உள்ளிட்டு டோக்கன்களை இறக்குமதி செய்யும் முறையைத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="import_json_unencrypted_message">இந்த FreeOTP+ JSON காப்புப்பிரதியிலிருந்து டோக்கன்களை இறக்குமதி செய்யும் முறையைத் தேர்ந்தெடுக்கவும்.</string>
 </resources>

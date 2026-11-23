@@ -372,7 +372,7 @@ class AegisBackupParserTest {
             assertThat(tokens[0].imagePath).isNotNull()
             assertThat(tokens[0].imagePath).isEqualTo(tokens[1].imagePath)
             val savedPngFile = File(URI(tokens[0].imagePath!!))
-            assertThat(savedPngFile.parentFile.canonicalFile).isEqualTo(tempDir.canonicalFile)
+            assertThat(savedPngFile.parentFile!!.canonicalFile).isEqualTo(tempDir.canonicalFile)
             assertThat(savedPngFile.extension).isEqualTo("png")
             assertThat(savedPngFile.readBytes()).isEqualTo(validPngBytes)
 
@@ -601,7 +601,7 @@ class AegisBackupParserTest {
             val parsedPlain = AegisBackupParser.parseBackup(aegisBytes, "AegisExportPassword!".toCharArray(), null, gson)
 
             // APPEND places Aegis tokens at the TOP (ordinals 3, 4) before ExistingVault (ordinal 5)
-            ImportExportUtil.storeImportedFreeOtpTokens(
+            ImportExportUtil.storeImportedTokens(
                 plaintextTokens = parsedPlain,
                 mode = TokenImportMode.APPEND,
                 filesDir = null,
@@ -617,7 +617,7 @@ class AegisBackupParserTest {
             assertThat(cryptoManager.decryptSecret(afterAppend[0])).isEqualTo("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ")
 
             // REPLACE_ALL replaces all tokens with the 2 Aegis tokens
-            ImportExportUtil.storeImportedFreeOtpTokens(
+            ImportExportUtil.storeImportedTokens(
                 plaintextTokens = parsedPlain,
                 mode = TokenImportMode.REPLACE_ALL,
                 filesDir = null,

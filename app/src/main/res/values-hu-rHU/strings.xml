@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Adja meg az Aegis széf jelszavát, és válassza ki a tokenek importálásának módját.</string>
     <string name="import_aegis_unencrypted_message">Válassza ki a tokenek importálásának módját ebből az Aegis biztonsági mentésből.</string>
     <string name="import_aegis_failed_text">Nem sikerült importálni az Aegis JSON fájlt. A fájl érvénytelen vagy sérült.</string>
+    <string name="import_json_encrypted_message">Adja meg a biztonsági mentés exportálásakor használt titkosítási kulcsot, és válassza ki a tokenek importálásának módját.</string>
+    <string name="import_json_unencrypted_message">Válassza ki a tokenek importálásának módját ebből a FreeOTP+ JSON biztonsági mentésből.</string>
 </resources>

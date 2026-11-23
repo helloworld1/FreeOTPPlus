@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Voer het wachtwoord voor deze Aegis-kluis in en kies hoe de tokens moeten worden geïmporteerd.</string>
     <string name="import_aegis_unencrypted_message">Kies hoe de tokens uit deze Aegis-back-up moeten worden geïmporteerd.</string>
     <string name="import_aegis_failed_text">Importeren van Aegis JSON mislukt. Het bestand is ongeldig of beschadigd.</string>
+    <string name="import_json_encrypted_message">Voer de versleutelingssleutel in die bij het exporteren van deze back-up is gebruikt en kies hoe de tokens moeten worden geïmporteerd.</string>
+    <string name="import_json_unencrypted_message">Kies hoe de tokens uit deze FreeOTP+ JSON-back-up moeten worden geïmporteerd.</string>
 </resources>

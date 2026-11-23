@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Introduïu la contrasenya d\'aquesta caixa forta d\'Aegis i trieu com importar els testimonis.</string>
     <string name="import_aegis_unencrypted_message">Trieu com importar els testimonis d\'aquesta còpia de seguretat d\'Aegis.</string>
     <string name="import_aegis_failed_text">No s\'ha pogut importar el JSON d\'Aegis. El fitxer no és vàlid o està malmès.</string>
+    <string name="import_json_encrypted_message">Introduïu la clau de xifratge utilitzada en exportar aquesta còpia de seguretat i trieu com importar els testimonis.</string>
+    <string name="import_json_unencrypted_message">Trieu com importar els testimonis d\'aquesta còpia de seguretat JSON de FreeOTP+.</string>
 </resources>

@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Введіть пароль від цього сховища Aegis і виберіть спосіб імпорту токенів.</string>
     <string name="import_aegis_unencrypted_message">Виберіть спосіб імпорту токенів із цієї резервної копії Aegis.</string>
     <string name="import_aegis_failed_text">Не вдалося імпортувати Aegis JSON. Файл недійсний або пошкоджений.</string>
+    <string name="import_json_encrypted_message">Введіть ключ шифрування, використаний під час експорту цієї резервної копії, і виберіть спосіб імпорту токенів.</string>
+    <string name="import_json_unencrypted_message">Виберіть спосіб імпорту токенів із цієї резервної копії JSON FreeOTP+.</string>
 </resources>

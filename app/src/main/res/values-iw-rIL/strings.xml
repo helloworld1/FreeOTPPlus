@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">הזן את הסיסמה עבור כספת Aegis זו ובחר כיצד לייבא את האסימונים.</string>
     <string name="import_aegis_unencrypted_message">בחר כיצד לייבא את האסימונים מגיבוי Aegis זה.</string>
     <string name="import_aegis_failed_text">ייבוא קובץ ה-JSON של Aegis נכשל. הקובץ אינו תקין או פגום.</string>
+    <string name="import_json_encrypted_message">הזן את מפתח ההצפנה ששימש בעת ייצוא גיבוי זה ובחר כיצד לייבא את האסימונים.</string>
+    <string name="import_json_unencrypted_message">בחר כיצד לייבא את האסימונים מגיבוי ה-JSON הזה של FreeOTP+.</string>
 </resources>

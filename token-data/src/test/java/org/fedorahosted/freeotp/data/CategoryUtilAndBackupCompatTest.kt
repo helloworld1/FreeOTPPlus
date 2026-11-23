@@ -8,6 +8,7 @@ import org.fedorahosted.freeotp.data.legacy.SavedTokens
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.data.util.TokenCodeUtil
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class CategoryUtilAndBackupCompatTest {
@@ -319,5 +320,39 @@ class CategoryUtilAndBackupCompatTest {
 
         assertThat(OtpTokenFactory.splitIssuerAndLabel("alice@example.com", null))
             .isEqualTo(Triple(null, "alice@example.com", ""))
+    }
+
+    @Test
+    fun inspectJsonBackupString_distinguishesPlainEncryptedAndRejectsInvalidJson() {
+        val gson = Gson()
+
+        val validPlain = """{"tokens":[],"tokenOrder":[]}"""
+        assertThat(ImportExportUtil.inspectJsonBackupString(gson, validPlain).requiresPassword).isFalse()
+
+        val validEncrypted = """
+            {
+              "version": 1,
+              "encrypted": true,
+              "kdfSalt": "YWJjZA==",
+              "kdfIterations": 1500,
+              "keyVerifier": "dmVyaWZpZXI=",
+              "tokens": []
+            }
+        """.trimIndent()
+        assertThat(ImportExportUtil.inspectJsonBackupString(gson, validEncrypted).requiresPassword).isTrue()
+
+        // Rejects empty, non-JSON, missing tokens/tokenOrder (e.g. Aegis JSON), and incomplete encrypted metadata
+        assertThrows(IllegalArgumentException::class.java) {
+            ImportExportUtil.inspectJsonBackupString(gson, "   ")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ImportExportUtil.inspectJsonBackupString(gson, "not json")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ImportExportUtil.inspectJsonBackupString(gson, """{"version":1,"header":{"slots":null,"params":null},"db":{}}""")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ImportExportUtil.inspectJsonBackupString(gson, """{"encrypted":true,"kdfSalt":"","kdfIterations":0,"keyVerifier":""}""")
+        }
     }
 }

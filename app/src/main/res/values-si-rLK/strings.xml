@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">මෙම Aegis සුරක්ෂිතාගාරයේ මුරපදය ඇතුළත් කර ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
     <string name="import_aegis_unencrypted_message">මෙම Aegis උපස්ථයෙන් ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
     <string name="import_aegis_failed_text">Aegis JSON ආයාත කිරීමට අසමත් විය. ගොනුව වලංගු නොවේ හෝ හානි වී ඇත.</string>
+    <string name="import_json_encrypted_message">මෙම උපස්ථය නිර්යාත කිරීමේදී භාවිතා කළ සංකේතන යතුර ඇතුළත් කර ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
+    <string name="import_json_unencrypted_message">මෙම FreeOTP+ JSON උපස්ථයෙන් ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
 </resources>

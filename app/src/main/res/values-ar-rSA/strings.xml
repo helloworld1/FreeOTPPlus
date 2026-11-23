@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">أدخل كلمة المرور لخزنة Aegis هذه واختر كيفية استيراد الرموز.</string>
     <string name="import_aegis_unencrypted_message">اختر كيفية استيراد الرموز من نسخة Aegis الاحتياطية هذه.</string>
     <string name="import_aegis_failed_text">فشل استيراد Aegis JSON. الملف غير صالح أو تالف.</string>
+    <string name="import_json_encrypted_message">أدخل مفتاح التشفير المستخدم عند تصدير هذه النسخة الاحتياطية واختر كيفية استيراد الرموز.</string>
+    <string name="import_json_unencrypted_message">اختر كيفية استيراد الرموز من نسخة FreeOTP+ JSON الاحتياطية هذه.</string>
 </resources>

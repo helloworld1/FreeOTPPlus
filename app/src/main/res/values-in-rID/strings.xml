@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Masukkan kata sandi untuk brankas Aegis ini dan pilih cara mengimpor token.</string>
     <string name="import_aegis_unencrypted_message">Pilih cara mengimpor token dari cadangan Aegis ini.</string>
     <string name="import_aegis_failed_text">Gagal mengimpor JSON Aegis. File tidak valid atau rusak.</string>
+    <string name="import_json_encrypted_message">Masukkan kunci enkripsi yang digunakan saat mengekspor cadangan ini dan pilih cara mengimpor token.</string>
+    <string name="import_json_unencrypted_message">Pilih cara mengimpor token dari cadangan JSON FreeOTP+ ini.</string>
 </resources>

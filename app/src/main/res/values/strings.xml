@@ -48,6 +48,8 @@
     <string name="add_token_confirmation_message">Do you want to add this token?\n\n%1$s</string>
     <string name="import_json_file">Import JSON file</string>
     <string name="import_json_file_warning">All the current tokens will be cleared and overwritten after importing.</string>
+    <string name="import_json_encrypted_message">Enter the encryption key used when exporting this backup and choose how to import the tokens.</string>
+    <string name="import_json_unencrypted_message">Choose how to import the tokens from this FreeOTP+ JSON backup.</string>
     <string name="camera_permission_denied_text">Camera permission denied</string>
     <string name="ok_text">Ok</string>
     <string name="cancel_text">Cancel</string>

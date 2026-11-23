@@ -360,7 +360,7 @@ class FreeOtpBackupParserTest {
             val parsedPlain = FreeOtpBackupParser.parseBackup(backupBytes, "OldFreeOtpPwd".toCharArray(), gson)
 
             // 1. APPEND: places encrypted GitHub (8) & Red Hat (9) at the TOP of the list before ExistingVault (10)
-            ImportExportUtil.storeImportedFreeOtpTokens(
+            ImportExportUtil.storeImportedTokens(
                 plaintextTokens = parsedPlain,
                 mode = TokenImportMode.APPEND,
                 filesDir = null,
@@ -382,7 +382,7 @@ class FreeOtpBackupParserTest {
             assertThat(cryptoManager.decryptSecret(afterAppend[2])).isEqualTo("JBSWY3DPEHPK3PXP")
 
             // 2. REPLACE_ALL: clears all 3 and stores only GitHub & Red Hat re-encrypted under vault key
-            ImportExportUtil.storeImportedFreeOtpTokens(
+            ImportExportUtil.storeImportedTokens(
                 plaintextTokens = parsedPlain,
                 mode = TokenImportMode.REPLACE_ALL,
                 filesDir = null,

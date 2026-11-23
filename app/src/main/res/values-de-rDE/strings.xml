@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Geben Sie das Passwort für diesen Aegis-Tresor ein und wählen Sie aus, wie die Token importiert werden sollen.</string>
     <string name="import_aegis_unencrypted_message">Wählen Sie aus, wie die Token aus diesem Aegis-Backup importiert werden sollen.</string>
     <string name="import_aegis_failed_text">Aegis JSON konnte nicht importiert werden. Die Datei ist ungültig oder beschädigt.</string>
+    <string name="import_json_encrypted_message">Geben Sie den beim Exportieren dieses Backups verwendeten Verschlüsselungsschlüssel ein und wählen Sie aus, wie die Token importiert werden sollen.</string>
+    <string name="import_json_unencrypted_message">Wählen Sie aus, wie die Token aus diesem FreeOTP+ JSON-Backup importiert werden sollen.</string>
 </resources>

@@ -151,4 +151,6 @@
     <string name="import_aegis_encrypted_message">Sartu Aegis kutxa gotor honen pasahitza eta aukeratu tokenak nola inportatu.</string>
     <string name="import_aegis_unencrypted_message">Aukeratu Aegis babeskopia honetako tokenak nola inportatu.</string>
     <string name="import_aegis_failed_text">Ezin izan da Aegis JSON inportatu. Fitxategia baliogabea da edo hondatuta dago.</string>
+    <string name="import_json_encrypted_message">Sartu babeskopia hau esportatzean erabilitako zifratze-gakoa eta aukeratu tokenak nola inportatu.</string>
+    <string name="import_json_unencrypted_message">Aukeratu FreeOTP+ JSON babeskopia honetako tokenak nola inportatu.</string>
 </resources>
