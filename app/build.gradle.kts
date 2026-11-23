@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.coreKtx)
     implementation(libs.activityKtx)
     implementation(libs.fragmentKtx)
+    implementation(libs.bundles.lifecycleKtx)
     implementation(libs.bundles.navigation)
     implementation(libs.bundles.kotlinxCoroutines)
 

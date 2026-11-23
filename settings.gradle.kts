@@ -18,22 +18,22 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("hilt", "2.59.2")
+            version("hilt", "2.60.1")
             version("appCompat", "1.7.1")
             version("activityKtx", "1.13.0")
             version("fragmentKtx", "1.8.6")
             version("navigation", "2.8.9")
             version("material", "1.14.0")
             version("coreKtx", "1.18.0")
-            version("kotlinxCoroutines", "1.10.2")
+            version("kotlinxCoroutines", "1.11.0")
             version("lifecycleKtx", "2.10.0")
             version("cameraX", "1.6.0")
             version("biometric", "1.1.0")
             version("ksp", "2.3.2")
 
             version("zxing", "3.5.4") // Version 3.4.0 contains a crashing bug before api level 24
-            version("gson", "2.14.0")
-            version("glide", "5.0.7")
+            version("gson", "2.15.0")
+            version("glide", "5.0.10")
             version("androidSvg", "1.4")
             version("room3", "3.0.3")
             version("sqlite", "2.7.1")
@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             version("androidxJunit", "1.3.0")
             version("androidxTruth", "1.7.0")
             version("espresso", "3.7.0")
-            version("guava", "33.4.0-android")
+            version("guava", "33.8.0-android")
             version("desugar_jdk_libs", "2.1.5")
 
             library("appCompat", "androidx.appcompat","appcompat").versionRef("appCompat")
@@ -61,6 +61,10 @@ dependencyResolutionManagement {
             library("kotlinxCoroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("kotlinxCoroutines")
             library("kotlinxCoroutinesAndroid", "org.jetbrains.kotlinx", "kotlinx-coroutines-android").versionRef("kotlinxCoroutines")
             bundle("kotlinxCoroutines", listOf("kotlinxCoroutinesCore", "kotlinxCoroutinesAndroid"))
+
+            library("lifecycleRuntimeKtx", "androidx.lifecycle", "lifecycle-runtime-ktx").versionRef("lifecycleKtx")
+            library("lifecycleViewModelKtx", "androidx.lifecycle", "lifecycle-viewmodel-ktx").versionRef("lifecycleKtx")
+            bundle("lifecycleKtx", listOf("lifecycleRuntimeKtx", "lifecycleViewModelKtx"))
 
 
             library("cameraCore", "androidx.camera", "camera-core").versionRef("cameraX")
