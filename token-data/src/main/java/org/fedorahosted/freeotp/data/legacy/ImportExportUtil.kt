@@ -39,7 +39,7 @@ import javax.inject.Singleton
 
 @Singleton
 class ImportExportUtil @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val migrationUtil: MigrationUtil,
     private val gson: Gson,
     private val otpTokenDatabase: OtpTokenDatabase,

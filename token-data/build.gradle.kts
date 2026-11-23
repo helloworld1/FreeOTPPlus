@@ -1,6 +1,5 @@
 plugins {
     id("com.android.library")
-    kotlin("android")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
 }
@@ -24,15 +23,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     namespace = "org.liberty.android.freeotp.token_data"
     lint {
         targetSdk = rootProject.extra["targetSdkVersion"] as Int
     }
     testOptions {
         targetSdk = rootProject.extra["targetSdkVersion"] as Int
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 

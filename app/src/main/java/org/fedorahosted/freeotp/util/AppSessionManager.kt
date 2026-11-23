@@ -22,7 +22,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppSessionManager @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val tokenCryptoManager: TokenCryptoManager,
     private val clipboardUtil: ClipboardUtil
 ) : Application.ActivityLifecycleCallbacks {

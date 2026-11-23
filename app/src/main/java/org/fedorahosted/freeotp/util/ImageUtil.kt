@@ -19,7 +19,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Singleton
-class ImageUtil @Inject constructor(@ApplicationContext val context: Context) {
+class ImageUtil @Inject constructor(@param:ApplicationContext val context: Context) {
 
     suspend fun saveImageUriToFile(uri: Uri): Uri = withContext(Dispatchers.IO) {
         val bitmap = decodeUriToBitmap(uri)

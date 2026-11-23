@@ -18,6 +18,8 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
+            version("agp", "9.5.2")
+            version("kotlin", "2.4.21")
             version("hilt", "2.60.1")
             version("appCompat", "1.8.0")
             version("activityKtx", "1.13.0")
@@ -29,7 +31,7 @@ dependencyResolutionManagement {
             version("lifecycleKtx", "2.11.1")
             version("cameraX", "1.7.0")
             version("biometric", "1.1.0")
-            version("ksp", "2.3.2")
+            version("ksp", "2.3.14")
 
             version("zxing", "3.5.4") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.15.0")
@@ -105,7 +107,10 @@ dependencyResolutionManagement {
 
             library("guava", "com.google.guava", "guava").versionRef("guava")
             library("desugarJdkLibs", "com.android.tools", "desugar_jdk_libs").versionRef("desugar_jdk_libs")
+            library("kotlinGradlePlugin", "org.jetbrains.kotlin", "kotlin-gradle-plugin").versionRef("kotlin")
 
+            plugin("androidApplication", "com.android.application").versionRef("agp")
+            plugin("androidLibrary", "com.android.library").versionRef("agp")
             plugin("ksp", "com.google.devtools.ksp").versionRef("ksp")
             plugin("hilt", "com.google.dagger.hilt.android").versionRef("hilt")
         }

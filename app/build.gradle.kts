@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    kotlin("android")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
 }
@@ -42,13 +41,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        resValues = true
     }
 
     testOptions {
@@ -57,6 +53,12 @@ android {
     }
     namespace = "org.fedorahosted.freeotp"
     testNamespace = "org.fedorahosted.freeotp.uitest"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 dependencies {

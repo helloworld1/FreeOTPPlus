@@ -193,7 +193,7 @@ class EditTokenFragment : Fragment() {
 
             val restoredHasCustomImageState = savedInstanceState?.containsKey(STATE_IMAGE_DISPLAY) == true
             val initialImagePath = if (restoredHasCustomImageState) {
-                savedInstanceState?.getString(STATE_IMAGE_DISPLAY)
+                savedInstanceState.getString(STATE_IMAGE_DISPLAY)
             } else {
                 initial.imagePath
             }

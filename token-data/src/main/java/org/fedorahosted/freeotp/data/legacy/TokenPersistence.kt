@@ -21,7 +21,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TokenPersistence @Inject constructor(@ApplicationContext private val ctx: Context) {
+class TokenPersistence @Inject constructor(@param:ApplicationContext private val ctx: Context) {
     private val prefs: SharedPreferences
         get() = ctx.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     private val globalPrefs =
