@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Ingebouwd pictogram kiezen</string>
     <string name="choose_image_from_device">Afbeelding van apparaat kiezen</string>
     <string name="search_icons">Pictogrammen zoeken</string>
+    <string name="import_freeotp_backup">FreeOTP-back-up importeren</string>
+    <string name="import_freeotp_backup_title">FreeOTP-back-up importeren</string>
+    <string name="import_freeotp_backup_message">Voer het back-upwachtwoord van FreeOTP in en kies hoe u de tokens wilt importeren.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Kies hoe u de tokens uit deze FreeOTP-back-up wilt importeren.</string>
+    <string name="freeotp_backup_password_hint">Back-upwachtwoord</string>
+    <string name="incorrect_freeotp_backup_password">Onjuist back-upwachtwoord</string>
+    <string name="import_mode_append">Toevoegen aan bestaande tokens</string>
+    <string name="import_mode_replace_all">Alle bestaande tokens vervangen</string>
+    <string name="import_freeotp_backup_failed_text">Importeren van FreeOTP-back-up mislukt. Het bestand is ongeldig of beschadigd.</string>
 </resources>

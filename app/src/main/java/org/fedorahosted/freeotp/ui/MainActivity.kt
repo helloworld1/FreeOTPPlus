@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.Window
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -42,6 +43,7 @@ import org.fedorahosted.freeotp.data.InvalidEncryptionKeyException
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.TokenImportMode
 import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.ImportExportUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
@@ -63,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     internal enum class DocumentAction {
         IMPORT_JSON,
         IMPORT_KEY_URI,
+        IMPORT_FREEOTP_BACKUP,
         IMPORT_IMAGES,
         EXPORT_JSON,
         EXPORT_KEY_URI,
@@ -125,6 +128,12 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         onDocumentPicked(DocumentAction.IMPORT_KEY_URI, uri)
+    }
+
+    private val openFreeOtpBackupLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        onDocumentPicked(DocumentAction.IMPORT_FREEOTP_BACKUP, uri)
     }
 
     private val createJsonLauncher = registerForActivityResult(
@@ -431,6 +440,11 @@ class MainActivity : AppCompatActivity() {
         launchSystemPicker { openKeyUriLauncher.launch(arrayOf("*/*")) }
     }
 
+    internal fun startImportFreeOtpBackup() {
+        if (!isSessionAuthenticated()) return
+        launchSystemPicker { openFreeOtpBackupLauncher.launch(arrayOf("*/*")) }
+    }
+
     internal fun startImportTokenImages() {
         if (!isSessionAuthenticated()) return
         launchSystemPicker {
@@ -622,7 +636,113 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            DocumentAction.IMPORT_FREEOTP_BACKUP -> {
+                lifecycleScope.launch {
+                    try {
+                        val inspection = importFromUtil.inspectFreeOtpBackup(uri)
+                        showImportFreeOtpBackupDialog(uri, inspection.requiresPassword)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Inspect FreeOTP backup failed", e)
+                        showSnackbar(R.string.import_freeotp_backup_failed_text)
+                    }
+                }
+            }
         }
+    }
+
+    private fun showImportFreeOtpBackupDialog(uri: Uri, requiresPassword: Boolean) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_import_freeotp_backup, null)
+        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
+        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
+        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
+        val importModeGroup = dialogView.findViewById<RadioGroup>(R.id.import_mode_radio_group)
+        val replaceWarningText = dialogView.findViewById<TextView>(R.id.replace_warning_text)
+
+        messageView.setText(
+            if (requiresPassword) {
+                R.string.import_freeotp_backup_message
+            } else {
+                R.string.import_freeotp_unencrypted_backup_message
+            }
+        )
+        keyInputLayout.visibility = if (requiresPassword) View.VISIBLE else View.GONE
+        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
+
+        importModeGroup.setOnCheckedChangeListener { _, checkedId ->
+            replaceWarningText.visibility =
+                if (checkedId == R.id.radio_import_replace_all) View.VISIBLE else View.GONE
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.import_freeotp_backup_title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.import_text, null)
+            .setNegativeButton(R.string.cancel_text, null)
+            .create()
+
+        dialog.setOnShowListener {
+            AuthenticationUtil.applySecureFlag(this, dialog)
+            AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val selectedMode = if (importModeGroup.checkedRadioButtonId == R.id.radio_import_replace_all) {
+                    TokenImportMode.REPLACE_ALL
+                } else {
+                    TokenImportMode.APPEND
+                }
+                val chars = if (requiresPassword) {
+                    AuthenticationUtil.extractCharArray(keyEditText)
+                } else {
+                    CharArray(0)
+                }
+                var handedOffToCoroutine = false
+                try {
+                    if (requiresPassword && chars.isEmpty()) {
+                        keyInputLayout.error = getString(R.string.incorrect_freeotp_backup_password)
+                        return@setOnClickListener
+                    }
+                    positiveButton.isEnabled = false
+                    handedOffToCoroutine = true
+                    lifecycleScope.launch {
+                        try {
+                            importFromUtil.importFreeOtpBackup(
+                                fileUri = uri,
+                                backupPassphrase = if (requiresPassword) chars else null,
+                                mode = selectedMode
+                            )
+                            Glide.get(this@MainActivity).clearMemory()
+                            viewModel.notifyTokenImagesChanged()
+                            AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
+                            showSnackbar(R.string.import_succeeded_text)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: InvalidEncryptionKeyException) {
+                            positiveButton.isEnabled = true
+                            keyInputLayout.error = getString(R.string.incorrect_freeotp_backup_password)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Import FreeOTP backup failed", e)
+                            AuthenticationUtil.dismissKeyDialogSafely(dialog, keyEditText)
+                            showSnackbar(R.string.import_freeotp_backup_failed_text)
+                        } finally {
+                            chars.fill('\u0000')
+                        }
+                    }
+                } finally {
+                    if (!handedOffToCoroutine) {
+                        chars.fill('\u0000')
+                    }
+                }
+            }
+        }
+        dialog.setOnDismissListener {
+            AuthenticationUtil.clearAndCancelAutofill(dialog.context, keyEditText)
+        }
+        AuthenticationUtil.applySecureFlag(this, dialog)
+        AuthenticationUtil.disableAutofillForDialog(dialog, dialogView)
+        showTrackedDialog(dialog)
     }
 
     private fun showImportEncryptedBackupDialog(uri: Uri, isJson: Boolean) {

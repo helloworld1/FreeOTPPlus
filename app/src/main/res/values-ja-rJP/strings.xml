@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">内蔵アイコンを選択</string>
     <string name="choose_image_from_device">端末から画像を選択</string>
     <string name="search_icons">アイコンを検索</string>
+    <string name="import_freeotp_backup">FreeOTP バックアップをインポート</string>
+    <string name="import_freeotp_backup_title">FreeOTP バックアップをインポート</string>
+    <string name="import_freeotp_backup_message">FreeOTP のバックアップパスワードを入力し、トークンのインポート方法を選択してください。</string>
+    <string name="import_freeotp_unencrypted_backup_message">この FreeOTP バックアップからトークンをインポートする方法を選択してください。</string>
+    <string name="freeotp_backup_password_hint">バックアップパスワード</string>
+    <string name="incorrect_freeotp_backup_password">バックアップパスワードが正しくありません</string>
+    <string name="import_mode_append">既存のトークンに追加する</string>
+    <string name="import_mode_replace_all">既存のトークンをすべて置き換える</string>
+    <string name="import_freeotp_backup_failed_text">FreeOTP バックアップのインポートに失敗しました。ファイルが無効か破損しています。</string>
 </resources>

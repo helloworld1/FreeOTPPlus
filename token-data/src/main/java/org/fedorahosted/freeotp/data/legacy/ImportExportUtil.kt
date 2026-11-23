@@ -21,12 +21,14 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
+import org.fedorahosted.freeotp.data.TokenImportMode
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -284,6 +286,35 @@ class ImportExportUtil @Inject constructor(
         }
     }
 
+    suspend fun inspectFreeOtpBackup(fileUri: Uri): FreeOtpBackupParser.BackupInspection =
+        withContext(Dispatchers.IO) {
+            val bytes = openRequiredInputStream(fileUri).use { input ->
+                FreeOtpBackupParser.readBoundedBytes(input)
+            }
+            FreeOtpBackupParser.inspectBackup(bytes)
+        }
+
+    suspend fun importFreeOtpBackup(
+        fileUri: Uri,
+        backupPassphrase: CharArray? = null,
+        mode: TokenImportMode = TokenImportMode.APPEND
+    ) {
+        withContext(Dispatchers.IO) {
+            val bytes = openRequiredInputStream(fileUri).use { input ->
+                FreeOtpBackupParser.readBoundedBytes(input)
+            }
+            val plaintextTokens = FreeOtpBackupParser.parseBackup(bytes, backupPassphrase, gson)
+            storeImportedFreeOtpTokens(
+                plaintextTokens = plaintextTokens,
+                mode = mode,
+                filesDir = context.filesDir,
+                otpTokenDatabase = otpTokenDatabase,
+                tokenCryptoManager = tokenCryptoManager,
+                gson = gson
+            )
+        }
+    }
+
     @Throws(IOException::class)
     private fun openTruncatedOutputStream(uri: Uri): OutputStream {
         val pfd = runCatching { context.contentResolver.openFileDescriptor(uri, "wt") }.getOrNull()
@@ -305,6 +336,63 @@ class ImportExportUtil @Inject constructor(
     }
 
     companion object {
+        internal suspend fun storeImportedFreeOtpTokens(
+            plaintextTokens: List<OtpToken>,
+            mode: TokenImportMode,
+            filesDir: File?,
+            otpTokenDatabase: OtpTokenDatabase,
+            tokenCryptoManager: TokenCryptoManager,
+            gson: Gson
+        ) {
+            val linkedTokens = if (filesDir != null) {
+                runCatching {
+                    TokenImageBackupUtil.resolveRestoredTokenImageLinks(
+                        tokens = plaintextTokens,
+                        filesDir = filesDir,
+                        manifest = TokenImageBackupUtil.loadCachedManifest(filesDir, gson)
+                    )
+                }.getOrDefault(plaintextTokens).map { token ->
+                    token.copy(
+                        imagePath = TokenImageBackupUtil.sanitizeImportedImagePath(token.imagePath, filesDir)
+                    )
+                }
+            } else {
+                plaintextTokens
+            }
+
+            val dao = otpTokenDatabase.otpTokenDao()
+            when (mode) {
+                TokenImportMode.REPLACE_ALL -> {
+                    val prepared = linkedTokens.mapIndexed { index, token ->
+                        token.copy(
+                            id = index.toLong() + 1L,
+                            ordinal = index.toLong() + 1L
+                        )
+                    }
+                    val tokensToStore = tokenCryptoManager.encryptTokensForStorage(prepared)
+                    dao.replaceAll(tokensToStore)
+                }
+
+                TokenImportMode.APPEND -> {
+                    if (linkedTokens.isEmpty()) return
+                    val currentFirstOrdinal = dao.getFirstOrdinal()
+                    val startOrdinal = if (currentFirstOrdinal != null) {
+                        currentFirstOrdinal - linkedTokens.size
+                    } else {
+                        1L
+                    }
+                    val prepared = linkedTokens.mapIndexed { index, token ->
+                        token.copy(
+                            id = 0L,
+                            ordinal = startOrdinal + index
+                        )
+                    }
+                    val tokensToStore = tokenCryptoManager.encryptTokensForStorage(prepared)
+                    dao.insertAll(tokensToStore)
+                }
+            }
+        }
+
         internal fun isJsonStringEncrypted(jsonString: String): Boolean {
             return try {
                 val element = JsonParser.parseString(jsonString)

@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Vybrat vestavěnou ikonu</string>
     <string name="choose_image_from_device">Vybrat obrázek ze zařízení</string>
     <string name="search_icons">Hledat ikony</string>
+    <string name="import_freeotp_backup">Importovat zálohu FreeOTP</string>
+    <string name="import_freeotp_backup_title">Importovat zálohu FreeOTP</string>
+    <string name="import_freeotp_backup_message">Zadejte heslo zálohy z FreeOTP a zvolte způsob importu tokenů.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Zvolte způsob importu tokenů z této zálohy FreeOTP.</string>
+    <string name="freeotp_backup_password_hint">Heslo zálohy</string>
+    <string name="incorrect_freeotp_backup_password">Nesprávné heslo zálohy</string>
+    <string name="import_mode_append">Připojit ke stávajícím tokenům</string>
+    <string name="import_mode_replace_all">Nahradit všechny stávající tokeny</string>
+    <string name="import_freeotp_backup_failed_text">Import zálohy FreeOTP se nezdařil. Soubor je neplatný nebo poškozený.</string>
 </resources>

@@ -10,9 +10,13 @@
 -keep class org.fedorahosted.freeotp.data.EncryptedExportToken { *; }
 -keep class org.fedorahosted.freeotp.data.TokenImageManifest { *; }
 -keep class org.fedorahosted.freeotp.data.TokenImageManifestEntry { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamEncryptedKey { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamMasterKey { *; }
+-keep class org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser$UpstreamTokenJson { *; }
 
 # Keep enums persisted by name in Room SQLite / SharedPreferences / JSON
 -keep enum org.fedorahosted.freeotp.data.AuthMode { *; }
 -keep enum org.fedorahosted.freeotp.data.EncryptionType { *; }
 -keep enum org.fedorahosted.freeotp.data.OtpTokenType { *; }
+-keep enum org.fedorahosted.freeotp.data.TokenImportMode { *; }
 -keep enum org.fedorahosted.freeotp.data.TokenSortOrder { *; }

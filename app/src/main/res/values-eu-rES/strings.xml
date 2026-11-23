@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Aukeratu barneko ikonoa</string>
     <string name="choose_image_from_device">Aukeratu irudia gailutik</string>
     <string name="search_icons">Bilatu ikonoak</string>
+    <string name="import_freeotp_backup">Inportatu FreeOTP babeskopia</string>
+    <string name="import_freeotp_backup_title">Inportatu FreeOTP babeskopia</string>
+    <string name="import_freeotp_backup_message">Sartu FreeOTP-ko babeskopiaren pasahitza eta aukeratu nola inportatu tokenak.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Aukeratu nola inportatu FreeOTP babeskopia honetako tokenak.</string>
+    <string name="freeotp_backup_password_hint">Babeskopiaren pasahitza</string>
+    <string name="incorrect_freeotp_backup_password">Babeskopiaren pasahitz okerra</string>
+    <string name="import_mode_append">Gehitu lehendik dauden tokenei</string>
+    <string name="import_mode_replace_all">Ordeztu lehendik dauden token guztiak</string>
+    <string name="import_freeotp_backup_failed_text">Huts egin du FreeOTP babeskopia inportatzeak. Fitxategia baliogabea da edo hondatuta dago.</string>
 </resources>

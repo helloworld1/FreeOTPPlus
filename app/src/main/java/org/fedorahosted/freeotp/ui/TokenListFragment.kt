@@ -325,6 +325,11 @@ class TokenListFragment : Fragment() {
                             true
                         }
 
+                        R.id.action_import_freeotp_backup -> {
+                            mainActivity.startImportFreeOtpBackup()
+                            true
+                        }
+
                         R.id.action_import_images -> {
                             mainActivity.startImportTokenImages()
                             true

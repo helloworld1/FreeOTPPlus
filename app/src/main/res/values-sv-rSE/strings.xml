@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Välj inbyggd ikon</string>
     <string name="choose_image_from_device">Välj bild från enheten</string>
     <string name="search_icons">Sök ikoner</string>
+    <string name="import_freeotp_backup">Importera FreeOTP-säkerhetskopia</string>
+    <string name="import_freeotp_backup_title">Importera FreeOTP-säkerhetskopia</string>
+    <string name="import_freeotp_backup_message">Ange lösenordet för säkerhetskopian från FreeOTP och välj hur tokens ska importeras.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Välj hur tokens från denna FreeOTP-säkerhetskopia ska importeras.</string>
+    <string name="freeotp_backup_password_hint">Lösenord för säkerhetskopia</string>
+    <string name="incorrect_freeotp_backup_password">Felaktigt lösenord för säkerhetskopia</string>
+    <string name="import_mode_append">Lägg till efter befintliga tokens</string>
+    <string name="import_mode_replace_all">Ersätt alla befintliga tokens</string>
+    <string name="import_freeotp_backup_failed_text">Det gick inte att importera FreeOTP-säkerhetskopian. Filen är ogiltig eller skadad.</string>
 </resources>

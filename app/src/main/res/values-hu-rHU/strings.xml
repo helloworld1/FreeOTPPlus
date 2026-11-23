@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Beépített ikon választása</string>
     <string name="choose_image_from_device">Kép választása az eszközről</string>
     <string name="search_icons">Ikonok keresése</string>
+    <string name="import_freeotp_backup">FreeOTP biztonsági mentés importálása</string>
+    <string name="import_freeotp_backup_title">FreeOTP biztonsági mentés importálása</string>
+    <string name="import_freeotp_backup_message">Adja meg a FreeOTP biztonsági mentési jelszavát, és válassza ki a tokenek importálásának módját.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Válassza ki a tokenek importálásának módját ebből a FreeOTP biztonsági mentésből.</string>
+    <string name="freeotp_backup_password_hint">Biztonsági mentés jelszava</string>
+    <string name="incorrect_freeotp_backup_password">Helytelen biztonsági mentési jelszó</string>
+    <string name="import_mode_append">Hozzáfűzés a meglévő tokenekhez</string>
+    <string name="import_mode_replace_all">Az összes meglévő token lecserélése</string>
+    <string name="import_freeotp_backup_failed_text">Nem sikerült importálni a FreeOTP biztonsági mentést. A fájl érvénytelen vagy sérült.</string>
 </resources>

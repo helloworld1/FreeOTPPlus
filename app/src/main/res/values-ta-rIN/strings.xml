@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">உள்ளமைந்த சின்னத்தைத் தேர்ந்தெடு</string>
     <string name="choose_image_from_device">சாதனத்திலிருந்து படத்தைத் தேர்ந்தெடு</string>
     <string name="search_icons">சின்னங்களைத் தேடு</string>
+    <string name="import_freeotp_backup">FreeOTP காப்புப்பிரதியை இறக்குமதி செய்</string>
+    <string name="import_freeotp_backup_title">FreeOTP காப்புப்பிரதியை இறக்குமதி செய்</string>
+    <string name="import_freeotp_backup_message">FreeOTP காப்புப்பிரதி கடவுச்சொல்லை உள்ளிட்டு டோக்கன்களை எவ்வாறு இறக்குமதி செய்வது என்பதைத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="import_freeotp_unencrypted_backup_message">இந்த FreeOTP காப்புப்பிரதியிலிருந்து டோக்கன்களை எவ்வாறு இறக்குமதி செய்வது என்பதைத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="freeotp_backup_password_hint">காப்புப்பிரதி கடவுச்சொல்</string>
+    <string name="incorrect_freeotp_backup_password">தவறான காப்புப்பிரதி கடவுச்சொல்</string>
+    <string name="import_mode_append">தற்போதுள்ள டோக்கன்களுடன் சேர்</string>
+    <string name="import_mode_replace_all">தற்போதுள்ள அனைத்து டோக்கன்களையும் மாற்று</string>
+    <string name="import_freeotp_backup_failed_text">FreeOTP காப்புப்பிரதியை இறக்குமதி செய்ய முடியவில்லை. கோப்பு தவறானது அல்லது சிதைந்துள்ளது.</string>
 </resources>

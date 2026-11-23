@@ -21,6 +21,9 @@ interface OtpTokenDao {
     @Query("SELECT * FROM otp_tokens WHERE id = :id")
     fun get(id: Long): Flow<OtpToken?>
 
+    @Query("SELECT ordinal FROM otp_tokens ORDER BY ordinal ASC LIMIT 1")
+    suspend fun getFirstOrdinal(): Long?
+
     @Query("SELECT ordinal FROM otp_tokens ORDER BY ordinal DESC LIMIT 1")
     suspend fun getLastOrdinal(): Long?
 

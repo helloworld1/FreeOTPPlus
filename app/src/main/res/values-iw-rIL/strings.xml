@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">בחר סמל מובנה</string>
     <string name="choose_image_from_device">בחר תמונה מהמכשיר</string>
     <string name="search_icons">חפש סמלים</string>
+    <string name="import_freeotp_backup">ייבוא גיבוי FreeOTP</string>
+    <string name="import_freeotp_backup_title">ייבוא גיבוי FreeOTP</string>
+    <string name="import_freeotp_backup_message">הזן את סיסמת הגיבוי מ-FreeOTP ובחר כיצד לייבא את האסימונים.</string>
+    <string name="import_freeotp_unencrypted_backup_message">בחר כיצד לייבא את האסימונים מגיבוי FreeOTP זה.</string>
+    <string name="freeotp_backup_password_hint">סיסמת גיבוי</string>
+    <string name="incorrect_freeotp_backup_password">סיסמת גיבוי שגויה</string>
+    <string name="import_mode_append">הוספה לאסימונים הקיימים</string>
+    <string name="import_mode_replace_all">החלפת כל האסימונים הקיימים</string>
+    <string name="import_freeotp_backup_failed_text">ייבוא גיבוי FreeOTP נכשל. הקובץ אינו תקין או פגום.</string>
 </resources>

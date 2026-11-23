@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">තිළැලි අයිකනයක් තෝරන්න</string>
     <string name="choose_image_from_device">උපාංගයෙන් රූපයක් තෝරන්න</string>
     <string name="search_icons">අයිකන සොයන්න</string>
+    <string name="import_freeotp_backup">FreeOTP උපස්ථය ආයාත කරන්න</string>
+    <string name="import_freeotp_backup_title">FreeOTP උපස්ථය ආයාත කරන්න</string>
+    <string name="import_freeotp_backup_message">FreeOTP හි උපස්ථ මුරපදය ඇතුළත් කර ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
+    <string name="import_freeotp_unencrypted_backup_message">මෙම FreeOTP උපස්ථයෙන් ටෝකන ආයාත කරන ආකාරය තෝරන්න.</string>
+    <string name="freeotp_backup_password_hint">උපස්ථ මුරපදය</string>
+    <string name="incorrect_freeotp_backup_password">උපස්ථ මුරපදය වැරදියි</string>
+    <string name="import_mode_append">පවතින ටෝකනවලට එක් කරන්න</string>
+    <string name="import_mode_replace_all">පවතින සියලුම ටෝකන ප්‍රතිස්ථාපනය කරන්න</string>
+    <string name="import_freeotp_backup_failed_text">FreeOTP උපස්ථය ආයාත කිරීමට අසමත් විය. ගොනුව වලංගු නොවේ හෝ හානි වී ඇත.</string>
 </resources>

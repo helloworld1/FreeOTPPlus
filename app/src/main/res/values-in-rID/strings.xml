@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Pilih ikon bawaan</string>
     <string name="choose_image_from_device">Pilih gambar dari perangkat</string>
     <string name="search_icons">Cari ikon</string>
+    <string name="import_freeotp_backup">Impor cadangan FreeOTP</string>
+    <string name="import_freeotp_backup_title">Impor cadangan FreeOTP</string>
+    <string name="import_freeotp_backup_message">Masukkan kata sandi cadangan dari FreeOTP dan pilih cara mengimpor token.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Pilih cara mengimpor token dari cadangan FreeOTP ini.</string>
+    <string name="freeotp_backup_password_hint">Kata sandi cadangan</string>
+    <string name="incorrect_freeotp_backup_password">Kata sandi cadangan salah</string>
+    <string name="import_mode_append">Tambahkan ke token yang ada</string>
+    <string name="import_mode_replace_all">Ganti semua token yang ada</string>
+    <string name="import_freeotp_backup_failed_text">Gagal mengimpor cadangan FreeOTP. File tidak valid atau rusak.</string>
 </resources>

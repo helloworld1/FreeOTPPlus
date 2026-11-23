@@ -2,15 +2,29 @@ package org.fedorahosted.freeotp.uitest
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.isChecked
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
+import org.fedorahosted.freeotp.data.legacy.FreeOtpBackupParser
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.hamcrest.Matchers.not
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -334,5 +348,142 @@ class ImportExportTest {
         jsonFile.delete()
         uriFile.delete()
         zipFile.delete()
+    }
+
+    @Test
+    fun testImportFreeOtpBackupAppendAndReplaceAllUiFlow() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val backupFile = File(context.cacheDir, "externalBackup.xml")
+        val backupPassword = "FreeOtpMasterPassword!"
+
+        val githubToken = OtpTokenFactory.create(
+            type = OtpTokenType.TOTP,
+            issuer = "GitHub",
+            label = "octocat@github.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            algorithm = "SHA256",
+            digits = 6,
+            period = 30
+        )
+        val redHatHotp = OtpTokenFactory.create(
+            type = OtpTokenType.HOTP,
+            issuer = "Red Hat",
+            label = "sso@redhat.com",
+            secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+            algorithm = "SHA1",
+            digits = 6,
+            period = 30,
+            initialCounter = 7L
+        )
+        backupFile.writeBytes(
+            FreeOtpBackupParser.createV2ExternalBackupBytesForTesting(
+                password = backupPassword,
+                tokens = listOf(redHatHotp, githubToken),
+                iterations = 1_000
+            )
+        )
+
+        try {
+            // 1. Verify "Import FreeOTP backup" menu item is displayed under Import submenu
+            openActionBarOverflowOrOptionsMenu(context)
+            onView(withText(R.string.import_text)).perform(click())
+            onView(withText(R.string.import_freeotp_backup)).check(matches(isDisplayed()))
+            // Close menu by pressing back
+            androidx.test.espresso.Espresso.pressBack()
+
+            // Seed 1 existing token in FreeOTP+
+            val existingToken = OtpTokenFactory.create(
+                type = OtpTokenType.TOTP,
+                issuer = "ExistingCorp",
+                label = "existing@corp.example",
+                secret = "JBSWY3DPEHPK3PXP"
+            ).copy(id = 1L, ordinal = 1L)
+            activityRule.scenario.onActivity { activity ->
+                runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().replaceAll(listOf(existingToken))
+                }
+            }
+            TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
+
+            // 2. Trigger FreeOTP backup import dialog -> verify Append is default and warning hidden
+            activityRule.scenario.onActivity { activity ->
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
+                    backupFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitViewMatching(withId(R.id.key_edit_text))
+            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
+            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(not(isDisplayed())))
+
+            // 3. Wrong password keeps dialog open and preserves existing token
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText("WrongPassword"), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            TestWaitUtil.awaitViewMatching(withText(R.string.incorrect_freeotp_backup_password))
+            assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)).hasSize(1)
+
+            // 4. Correct password with Append mode places the 2 FreeOTP tokens at the top before ExistingCorp
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText(backupPassword), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val appended = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
+            assertThat(appended.map { it.issuer }).containsExactly("GitHub", "Red Hat", "ExistingCorp").inOrder()
+            assertThat(appended[0].algorithm).isEqualTo("SHA256")
+            assertThat(appended[1].tokenType).isEqualTo(OtpTokenType.HOTP)
+            assertThat(appended[1].counter).isEqualTo(7L)
+            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(0, androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub")))
+            )
+            TestWaitUtil.awaitViewMatching(
+                withId(R.id.token_list),
+                RecyclerViewAssertion.atPosition(2, androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp")))
+            )
+
+            // 5. Re-import with "Replace all existing tokens" -> shows warning and replaces all 3 with 2
+            activityRule.scenario.onActivity { activity ->
+                activity.dismissSnackbar()
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
+                    backupFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitViewMatching(withId(R.id.radio_import_replace_all))
+            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
+            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.key_edit_text))
+                .inRoot(isDialog())
+                .perform(replaceText(backupPassword), closeSoftKeyboard())
+            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+
+            val replaced = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 2)
+            assertThat(replaced.map { it.issuer }).containsExactly("GitHub", "Red Hat").inOrder()
+        } finally {
+            backupFile.delete()
+        }
+    }
+
+    @Test
+    fun testImportMalformedFreeOtpBackupShowsFailureSnackbar() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val badFile = File(context.cacheDir, "invalid_freeotp_backup.xml").apply {
+            writeText("not a valid freeotp backup", Charsets.UTF_8)
+        }
+        try {
+            activityRule.scenario.onActivity { activity ->
+                activity.onDocumentPicked(
+                    MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
+                    badFile.toUri()
+                )
+            }
+            TestWaitUtil.awaitViewMatching(withText(R.string.import_freeotp_backup_failed_text))
+        } finally {
+            badFile.delete()
+        }
     }
 }

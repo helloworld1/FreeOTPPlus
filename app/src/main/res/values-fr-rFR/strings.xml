@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Choisir une icône intégrée</string>
     <string name="choose_image_from_device">Choisir une image sur l\'appareil</string>
     <string name="search_icons">Rechercher des icônes</string>
+    <string name="import_freeotp_backup">Importer une sauvegarde FreeOTP</string>
+    <string name="import_freeotp_backup_title">Importer une sauvegarde FreeOTP</string>
+    <string name="import_freeotp_backup_message">Saisissez le mot de passe de sauvegarde de FreeOTP et choisissez comment importer les jetons.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Choisissez comment importer les jetons depuis cette sauvegarde FreeOTP.</string>
+    <string name="freeotp_backup_password_hint">Mot de passe de sauvegarde</string>
+    <string name="incorrect_freeotp_backup_password">Mot de passe de sauvegarde incorrect</string>
+    <string name="import_mode_append">Ajouter aux jetons existants</string>
+    <string name="import_mode_replace_all">Remplacer tous les jetons existants</string>
+    <string name="import_freeotp_backup_failed_text">Échec de l\'importation de la sauvegarde FreeOTP. Le fichier est invalide ou corrompu.</string>
 </resources>

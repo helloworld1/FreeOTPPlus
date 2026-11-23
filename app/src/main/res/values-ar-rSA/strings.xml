@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">اختر أيقونة مدمجة</string>
     <string name="choose_image_from_device">اختر صورة من الجهاز</string>
     <string name="search_icons">البحث في الأيقونات</string>
+    <string name="import_freeotp_backup">استيراد نسخة احتياطية من FreeOTP</string>
+    <string name="import_freeotp_backup_title">استيراد نسخة احتياطية من FreeOTP</string>
+    <string name="import_freeotp_backup_message">أدخل كلمة مرور النسخة الاحتياطية من FreeOTP واختر كيفية استيراد الرموز.</string>
+    <string name="import_freeotp_unencrypted_backup_message">اختر كيفية استيراد الرموز من نسخة FreeOTP الاحتياطية هذه.</string>
+    <string name="freeotp_backup_password_hint">كلمة مرور النسخة الاحتياطية</string>
+    <string name="incorrect_freeotp_backup_password">كلمة مرور النسخة الاحتياطية غير صحيحة</string>
+    <string name="import_mode_append">إلحاق بالرموز الحالية</string>
+    <string name="import_mode_replace_all">استبدال جميع الرموز الحالية</string>
+    <string name="import_freeotp_backup_failed_text">فشل استيراد النسخة الاحتياطية من FreeOTP. الملف غير صالح أو تالف.</string>
 </resources>

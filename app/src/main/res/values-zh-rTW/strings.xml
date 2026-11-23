@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">選擇內建圖示</string>
     <string name="choose_image_from_device">從裝置選擇圖片</string>
     <string name="search_icons">搜尋圖示</string>
+    <string name="import_freeotp_backup">匯入 FreeOTP 備份</string>
+    <string name="import_freeotp_backup_title">匯入 FreeOTP 備份</string>
+    <string name="import_freeotp_backup_message">請輸入 FreeOTP 的備份密碼，並選擇匯入權杖的方式。</string>
+    <string name="import_freeotp_unencrypted_backup_message">請選擇從此 FreeOTP 備份匯入權杖的方式。</string>
+    <string name="freeotp_backup_password_hint">備份密碼</string>
+    <string name="incorrect_freeotp_backup_password">備份密碼錯誤</string>
+    <string name="import_mode_append">附加至現有權杖</string>
+    <string name="import_mode_replace_all">取代所有現有權杖</string>
+    <string name="import_freeotp_backup_failed_text">匯入 FreeOTP 備份失敗。檔案無效或已損毀。</string>
 </resources>

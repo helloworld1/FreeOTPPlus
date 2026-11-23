@@ -56,6 +56,9 @@
                 android:id="@+id/action_import_key_uri"
                 android:title="@string/import_key_uri_format" />
             <item
+                android:id="@+id/action_import_freeotp_backup"
+                android:title="@string/import_freeotp_backup" />
+            <item
                 android:id="@+id/action_import_images"
                 android:title="@string/import_token_images" />
         </menu>

@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Escolher ícone integrado</string>
     <string name="choose_image_from_device">Escolher imagem do dispositivo</string>
     <string name="search_icons">Pesquisar ícones</string>
+    <string name="import_freeotp_backup">Importar backup do FreeOTP</string>
+    <string name="import_freeotp_backup_title">Importar backup do FreeOTP</string>
+    <string name="import_freeotp_backup_message">Digite a senha do backup do FreeOTP e escolha como importar os tokens.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Escolha como importar os tokens deste backup do FreeOTP.</string>
+    <string name="freeotp_backup_password_hint">Senha do backup</string>
+    <string name="incorrect_freeotp_backup_password">Senha do backup incorreta</string>
+    <string name="import_mode_append">Adicionar aos tokens existentes</string>
+    <string name="import_mode_replace_all">Substituir todos os tokens existentes</string>
+    <string name="import_freeotp_backup_failed_text">Falha ao importar o backup do FreeOTP. O arquivo é inválido ou está corrompido.</string>
 </resources>

@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Выбрать встроенный значок</string>
     <string name="choose_image_from_device">Выбрать изображение с устройства</string>
     <string name="search_icons">Поиск значков</string>
+    <string name="import_freeotp_backup">Импорт резервной копии FreeOTP</string>
+    <string name="import_freeotp_backup_title">Импорт резервной копии FreeOTP</string>
+    <string name="import_freeotp_backup_message">Введите пароль резервной копии из FreeOTP и выберите способ импорта токенов.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Выберите способ импорта токенов из этой резервной копии FreeOTP.</string>
+    <string name="freeotp_backup_password_hint">Пароль резервной копии</string>
+    <string name="incorrect_freeotp_backup_password">Неверный пароль резервной копии</string>
+    <string name="import_mode_append">Добавить к существующим токенам</string>
+    <string name="import_mode_replace_all">Заменить все существующие токены</string>
+    <string name="import_freeotp_backup_failed_text">Не удалось импортировать резервную копию FreeOTP. Файл недействителен или повреждён.</string>
 </resources>

@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Tria una icona integrada</string>
     <string name="choose_image_from_device">Tria una imatge del dispositiu</string>
     <string name="search_icons">Cerca icones</string>
+    <string name="import_freeotp_backup">Importa una còpia de seguretat de FreeOTP</string>
+    <string name="import_freeotp_backup_title">Importa una còpia de seguretat de FreeOTP</string>
+    <string name="import_freeotp_backup_message">Introduïu la contrasenya de la còpia de seguretat de FreeOTP i trieu com voleu importar els tokens.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Trieu com voleu importar els tokens d\'aquesta còpia de seguretat de FreeOTP.</string>
+    <string name="freeotp_backup_password_hint">Contrasenya de la còpia de seguretat</string>
+    <string name="incorrect_freeotp_backup_password">Contrasenya de la còpia de seguretat incorrecta</string>
+    <string name="import_mode_append">Afegeix als tokens existents</string>
+    <string name="import_mode_replace_all">Substitueix tots els tokens existents</string>
+    <string name="import_freeotp_backup_failed_text">No s\'ha pogut importar la còpia de seguretat de FreeOTP. El fitxer no és vàlid o està malmès.</string>
 </resources>

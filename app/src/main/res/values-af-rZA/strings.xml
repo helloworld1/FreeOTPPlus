@@ -137,4 +137,13 @@
     <string name="choose_builtin_icon">Kies ingeboude ikoon</string>
     <string name="choose_image_from_device">Kies beeld vanaf toestel</string>
     <string name="search_icons">Soek ikone</string>
+    <string name="import_freeotp_backup">Voer FreeOTP-rugsteun in</string>
+    <string name="import_freeotp_backup_title">Voer FreeOTP-rugsteun in</string>
+    <string name="import_freeotp_backup_message">Voer die rugsteunwagwoord van FreeOTP in en kies hoe om die kentekens in te voer.</string>
+    <string name="import_freeotp_unencrypted_backup_message">Kies hoe om die kentekens uit hierdie FreeOTP-rugsteun in te voer.</string>
+    <string name="freeotp_backup_password_hint">Rugsteunwagwoord</string>
+    <string name="incorrect_freeotp_backup_password">Verkeerde rugsteunwagwoord</string>
+    <string name="import_mode_append">Voeg by bestaande kentekens aan</string>
+    <string name="import_mode_replace_all">Vervang alle bestaande kentekens</string>
+    <string name="import_freeotp_backup_failed_text">Kon nie FreeOTP-rugsteun invoer nie. Die lêer is ongeldig of beskadig.</string>
 </resources>
