@@ -2,6 +2,11 @@ package org.fedorahosted.freeotp.ui.tokenlist
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +50,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import org.fedorahosted.freeotp.R
@@ -134,18 +141,22 @@ fun TokenListScreen(
         onCommitMovePairs = onCommitTokenReorder,
     )
 
-    // Scroll to index 0 when new tokens are prepended at the top without changing search/category filter
+    // Scroll to index 0 when new tokens are prepended (added/imported) without changing search/category filter
     var previousFilterKey by remember { mutableStateOf<Pair<String, String?>?>(null) }
     var previousTopTokenId by remember { mutableStateOf<Long?>(null) }
+    var previousTokenCount by remember { mutableIntStateOf(0) }
     LaunchedEffect(listState.tokens, searchQuery, selectedCategory) {
         val currentFilterKey = searchQuery to selectedCategory
         val topId = listState.tokens.firstOrNull()?.id
+        val currentCount = listState.tokens.size
         val shouldScrollToTop = previousFilterKey == currentFilterKey &&
             previousTopTokenId != null &&
             topId != null &&
-            topId != previousTopTokenId
+            topId != previousTopTokenId &&
+            currentCount > previousTokenCount
         previousFilterKey = currentFilterKey
         previousTopTokenId = topId
+        previousTokenCount = currentCount
         if (shouldScrollToTop) {
             gridState.scrollToItem(0)
         }
@@ -489,6 +500,23 @@ fun TokenListScreen(
                     key = { it.id },
                 ) { token ->
                     val isDragging = reorderState.draggedTokenId == token.id
+                    val isManipulated = reorderState.isItemManipulated(token.id)
+                    val dragScale by animateFloatAsState(
+                        targetValue = if (isDragging) 1.03f else 1f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        ),
+                        label = "tokenDragScale",
+                    )
+                    val dragElevation by animateDpAsState(
+                        targetValue = if (isDragging) 10.dp else 0.dp,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        ),
+                        label = "tokenDragElevation",
+                    )
                     TokenCard(
                         token = token,
                         activeEntry = activeTokenCodes[token.id],
@@ -501,14 +529,31 @@ fun TokenListScreen(
                         onShareToOtherApps = onShareToOtherApps,
                         onShareQrCode = onShareQrCode,
                         modifier = Modifier
-                            .zIndex(if (isDragging) 1f else 0f)
-                            .graphicsLayer {
-                                if (isDragging) {
-                                    translationX = reorderState.dragOffset.x
-                                    translationY = reorderState.dragOffset.y
-                                    scaleX = 1.02f
-                                    scaleY = 1.02f
+                            .then(
+                                if (!isManipulated) {
+                                    Modifier.animateItem(
+                                        fadeInSpec = null,
+                                        fadeOutSpec = null,
+                                        placementSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMediumLow,
+                                            visibilityThreshold = IntOffset.VisibilityThreshold,
+                                        ),
+                                    )
+                                } else {
+                                    Modifier
                                 }
+                            )
+                            .zIndex(if (isManipulated) 1f else 0f)
+                            .graphicsLayer {
+                                val translation = reorderState.translationFor(token.id)
+                                translationX = translation.x
+                                translationY = translation.y
+                                scaleX = dragScale
+                                scaleY = dragScale
+                                shadowElevation = dragElevation.toPx()
+                                shape = TokenCardShape
+                                clip = false
                             },
                     )
                 }

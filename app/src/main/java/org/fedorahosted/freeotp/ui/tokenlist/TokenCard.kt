@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +62,7 @@ import org.fedorahosted.freeotp.ui.theme.OtpCodeTextStyle
 import org.fedorahosted.freeotp.util.ThemeMode
 
 private const val HOTP_COOLDOWN_MS = 5_000L
+internal val TokenCardShape = RoundedCornerShape(16.dp)
 
 @Composable
 fun TokenCard(
@@ -130,7 +130,6 @@ fun TokenCard(
         label = "tokenAvatarAlpha",
     )
 
-    val cardShape = RoundedCornerShape(16.dp)
     val containerColor = if (isDragging) {
         MaterialTheme.colorScheme.surfaceContainer
     } else {
@@ -140,11 +139,10 @@ fun TokenCard(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (isDragging) Modifier.shadow(8.dp, cardShape) else Modifier)
-            .clip(cardShape)
-            .clickable(enabled = isTapEnabled) { onCardClick(token) }
+            .clip(TokenCardShape)
+            .clickable(enabled = isTapEnabled && !isDragging) { onCardClick(token) }
             .testTag(UiTestTags.tokenCardTag(token.id)),
-        shape = cardShape,
+        shape = TokenCardShape,
         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
         border = BorderStroke(
             width = if (isDragging) 1.5.dp else 1.dp,

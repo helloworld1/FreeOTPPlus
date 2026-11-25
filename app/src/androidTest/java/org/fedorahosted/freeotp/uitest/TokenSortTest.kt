@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.uitest
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
@@ -8,6 +9,7 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -128,6 +130,116 @@ class TokenSortTest {
                 assertThat(persistedIssuers).containsExactly("Slack", "GitHub", "Amazon").inOrder()
             }
         }
+    }
+
+    @Test
+    fun testLongPressDragTokenToTopAndBottomWithoutViewportJumping() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                runBlocking {
+                    val dao = activity.otpTokenDatabase.otpTokenDao()
+                    dao.deleteAll()
+                    dao.insertAll(
+                        listOf(
+                            TestData.OTP_HOTP_TOKEN_1.copy(
+                                id = 1L,
+                                ordinal = 10L,
+                                issuer = "Alpha",
+                                label = "alpha@example.com",
+                            ),
+                            TestData.OTP_TOTP_TOKEN_2.copy(
+                                id = 2L,
+                                ordinal = 20L,
+                                issuer = "Bravo",
+                                label = "bravo@example.com",
+                            ),
+                            TestData.OTP_TOTP_TOKEN_2.copy(
+                                id = 3L,
+                                ordinal = 30L,
+                                issuer = "Charlie",
+                                label = "charlie@example.com",
+                            ),
+                        )
+                    )
+                }
+            }
+            composeRule.awaitTokenCardCount(3)
+            assertTokenOrder("Alpha", "Bravo", "Charlie")
+
+            // 1. Long-press Charlie (index 2) and drag smoothly to Alpha's slot at the top (index 0)
+            dragCardInList(sourceTokenId = 3L, targetTokenId = 1L)
+
+            assertTokenOrder("Charlie", "Alpha", "Bravo")
+            val topBoundsAfterDragUp = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(3L))
+                .fetchSemanticsNode()
+                .boundsInRoot
+            val listBounds = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+                .fetchSemanticsNode()
+                .boundsInRoot
+            // Verify index 0 stayed anchored at the top of the list (no viewport scroll jump)
+            assertThat(topBoundsAfterDragUp.top).isAtLeast(listBounds.top)
+            assertThat(topBoundsAfterDragUp.top - listBounds.top).isLessThan(60f)
+
+            scenario.onActivity { activity ->
+                val persistedAfterUp = runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().getAll().first().map { it.issuer }
+                }
+                assertThat(persistedAfterUp).containsExactly("Charlie", "Alpha", "Bravo").inOrder()
+            }
+
+            // 2. Long-press Charlie (now at index 0) and drag down to Bravo's slot (index 2)
+            dragCardInList(sourceTokenId = 3L, targetTokenId = 2L)
+
+            assertTokenOrder("Alpha", "Bravo", "Charlie")
+            scenario.onActivity { activity ->
+                val persistedAfterDown = runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().getAll().first().map { it.issuer }
+                }
+                assertThat(persistedAfterDown).containsExactly("Alpha", "Bravo", "Charlie").inOrder()
+            }
+        }
+    }
+
+    private fun dragCardInList(sourceTokenId: Long, targetTokenId: Long) {
+        val listBounds = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+            .fetchSemanticsNode()
+            .boundsInRoot
+        val sourceCenterInList = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(sourceTokenId))
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .center - listBounds.topLeft
+        val targetCenterInList = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(targetTokenId))
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .center - listBounds.topLeft
+
+        val totalDelta = targetCenterInList - sourceCenterInList
+        val steps = 16
+        val stepDelta = totalDelta / steps.toFloat()
+
+        // Start long-press on source card
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performTouchInput {
+            down(sourceCenterInList)
+            advanceEventTime(viewConfiguration.longPressTimeoutMillis + 150L)
+            moveBy(Offset(0f, if (totalDelta.y < 0f) -4f else 4f), delayMillis = 16L)
+        }
+        composeRule.waitForIdle()
+
+        // Move across real Compose layout frames so intermediate swaps and top-slot anchoring execute
+        repeat(steps) {
+            composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performTouchInput {
+                moveBy(stepDelta, delayMillis = 16L)
+            }
+            composeRule.waitForIdle()
+        }
+
+        // Small hover movement at destination to verify zero oscillation before finger lift
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performTouchInput {
+            moveBy(Offset(0f, -6f), delayMillis = 16L)
+            moveBy(Offset(0f, 6f), delayMillis = 16L)
+            up()
+        }
+        composeRule.waitForIdle()
     }
 
     private fun openSortSubmenu() {
