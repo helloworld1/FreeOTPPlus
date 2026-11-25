@@ -1,94 +1,125 @@
 package org.fedorahosted.freeotp.uitest
 
-import android.view.View
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.NoMatchingRootException
-import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.hamcrest.Matcher
+import org.fedorahosted.freeotp.ui.components.UiTestTags
 
 object TestWaitUtil {
-    fun awaitViewMatching(
-        viewMatcher: Matcher<View>,
-        assertionMatcher: Matcher<View> = isDisplayed(),
-        timeoutMs: Long = 5_000L
-    ) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(viewMatcher).check(matches(assertionMatcher))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(viewMatcher).check(matches(assertionMatcher))
+
+    val isTokenCardMatcher: SemanticsMatcher = SemanticsMatcher("isTokenCard") { node ->
+        node.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("token_card_") == true
     }
 
-    fun awaitDialogViewMatching(
-        viewMatcher: Matcher<View>,
-        assertionMatcher: Matcher<View> = isDisplayed(),
-        timeoutMs: Long = 5_000L
-    ) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
-                return
-            } catch (e: NoMatchingRootException) {
-                lastError = e
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
+    fun ComposeTestRule.openOverflowMenu() {
+        awaitNodeDisplayed(hasTestTag(UiTestTags.OVERFLOW_MENU_BUTTON))
+        onNodeWithTag(UiTestTags.OVERFLOW_MENU_BUTTON).performClick()
     }
 
-    fun awaitRecyclerItemCount(
-        recyclerViewId: Int,
+    fun ComposeTestRule.awaitNodeDisplayed(
+        matcher: SemanticsMatcher,
+        timeoutMs: Long = 5_000L,
+        useUnmergedTree: Boolean = false,
+    ) {
+        waitUntil(timeoutMillis = timeoutMs) {
+            onAllNodes(matcher, useUnmergedTree = useUnmergedTree)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        val interaction = onNode(matcher, useUnmergedTree = useUnmergedTree)
+        if (!interaction.isDisplayed()) {
+            runCatching { interaction.performScrollTo() }
+        }
+        interaction.assertIsDisplayed()
+    }
+
+    fun ComposeTestRule.awaitTagDisplayed(
+        tag: String,
+        timeoutMs: Long = 5_000L,
+        useUnmergedTree: Boolean = false,
+    ) {
+        awaitNodeDisplayed(
+            matcher = hasTestTag(tag),
+            timeoutMs = timeoutMs,
+            useUnmergedTree = useUnmergedTree,
+        )
+    }
+
+    fun ComposeTestRule.awaitTextDisplayed(
+        text: String,
+        substring: Boolean = false,
+        timeoutMs: Long = 5_000L,
+        useUnmergedTree: Boolean = false,
+    ) {
+        awaitNodeDisplayed(
+            matcher = hasText(text, substring = substring),
+            timeoutMs = timeoutMs,
+            useUnmergedTree = useUnmergedTree,
+        )
+    }
+
+    fun ComposeTestRule.awaitTokenCardCount(
         expectedCount: Int,
-        timeoutMs: Long = 5_000L
+        timeoutMs: Long = 5_000L,
     ) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(withId(recyclerViewId)).check(RecyclerViewAssertion.childrenCount(expectedCount))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
+        if (expectedCount == 0) {
+            waitUntil(timeoutMillis = timeoutMs) {
+                onAllNodes(isTokenCardMatcher).fetchSemanticsNodes().isEmpty()
             }
-            Thread.sleep(50L)
+            assertThat(onAllNodes(isTokenCardMatcher).fetchSemanticsNodes()).isEmpty()
+            return
         }
-        if (lastError != null) throw lastError
-        onView(withId(recyclerViewId)).check(RecyclerViewAssertion.childrenCount(expectedCount))
+        waitUntil(timeoutMillis = timeoutMs) {
+            onAllNodesWithTag(UiTestTags.TOKEN_LIST).fetchSemanticsNodes().isNotEmpty() &&
+                onNodeWithTag(UiTestTags.TOKEN_LIST).onChildren().fetchSemanticsNodes().size == expectedCount
+        }
+    }
+
+    fun ComposeTestRule.assertCardAtPositionHasText(
+        index: Int,
+        expectedText: String,
+        substring: Boolean = false,
+    ) {
+        awaitNodeDisplayed(hasTestTag(UiTestTags.TOKEN_LIST))
+        onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(index)
+        waitUntil(timeoutMillis = 5_000L) {
+            val children = onNodeWithTag(UiTestTags.TOKEN_LIST).onChildren()
+            val nodes = children.fetchSemanticsNodes()
+            index < nodes.size && hasText(expectedText, substring = substring).matches(nodes[index])
+        }
+        onNodeWithTag(UiTestTags.TOKEN_LIST)
+            .onChildren()[index]
+            .assert(hasText(expectedText, substring = substring))
+    }
+
+    fun ComposeTestRule.clickCardAtPosition(index: Int) {
+        awaitNodeDisplayed(hasTestTag(UiTestTags.TOKEN_LIST))
+        onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(index)
+        onNodeWithTag(UiTestTags.TOKEN_LIST).onChildren()[index].performClick()
     }
 
     fun awaitStoredTokens(
         scenario: ActivityScenario<MainActivity>,
         expectedCount: Int,
-        timeoutMs: Long = 5_000L
+        timeoutMs: Long = 5_000L,
     ): List<OtpToken> {
         val deadline = System.currentTimeMillis() + timeoutMs
         var latest: List<OtpToken> = emptyList()

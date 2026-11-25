@@ -4,16 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import android.view.View
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.core.net.toUri
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
@@ -22,53 +18,46 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.components.TokenAvatarModel
+import org.fedorahosted.freeotp.ui.components.resolveTokenAvatarModel
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.setTokenImage
-import org.liberty.android.freeotp.token_images.TokenImage
-import org.hamcrest.Matcher
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.liberty.android.freeotp.token_images.TokenImage
 import java.io.File
 import java.nio.charset.StandardCharsets
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class TokenImageImportExportTest {
 
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
+
     companion object {
         private const val TELEKOM_SVG =
             """<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="60" fill="#e20074"/></svg>"""
     }
 
-    private fun awaitViewDisplayed(matcher: Matcher<View>, timeoutMs: Long = 5_000L) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(matcher).check(matches(isDisplayed()))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(matcher).check(matches(isDisplayed()))
-    }
-
     @Test
     fun testImportAndExportTokenImagesMenuItemsDisplayed() {
         ActivityScenario.launch(MainActivity::class.java).use {
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.import_text)).perform(click())
-            onView(withText(R.string.import_token_images)).check(matches(isDisplayed()))
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.import_text)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.import_token_images))
+            composeRule.onNodeWithText(string(R.string.import_token_images)).assertIsDisplayed()
         }
 
         ActivityScenario.launch(MainActivity::class.java).use {
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.export_text)).perform(click())
-            onView(withText(R.string.export_token_images)).check(matches(isDisplayed()))
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.export_token_images))
+            composeRule.onNodeWithText(string(R.string.export_token_images)).assertIsDisplayed()
         }
     }
 
@@ -77,7 +66,6 @@ class TokenImageImportExportTest {
         val context = getInstrumentation().targetContext
         val imageUtil = ImageUtil(context)
 
-        // Prepare 1 custom raster PNG and 1 custom SVG icon
         val srcPng = File(context.cacheDir, "src_blue.png")
         val blueBmp = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.rgb(0x12, 0x67, 0xCC))
@@ -108,37 +96,34 @@ class TokenImageImportExportTest {
                             TestData.OTP_HOTP_TOKEN_1.copy(
                                 id = 1L,
                                 ordinal = 1L,
-                                imagePath = savedBlueUri.toString()
+                                imagePath = savedBlueUri.toString(),
                             ),
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 2L,
                                 ordinal = 2L,
-                                imagePath = savedMagentaUri.toString()
-                            )
+                                imagePath = savedMagentaUri.toString(),
+                            ),
                         )
                     )
 
-                    // Export JSON, Key URI, and Token Images ZIP
                     activity.importFromUtil.exportJsonFile(jsonBackupFile.toUri())
                     activity.importFromUtil.exportKeyUriFile(keyUriBackupFile.toUri())
                     activity.importFromUtil.exportTokenImagesZip(imagesZipFile.toUri())
                 }
                 assertThat(imagesZipFile.length()).isGreaterThan(0L)
 
-                // Simulate wiping tokens + custom image files on a fresh device
                 runBlocking { dao.deleteAll() }
                 context.filesDir.listFiles()?.forEach { it.deleteRecursively() }
                 assertThat(File(Uri.parse(savedBlueUri.toString()).path!!).exists()).isFalse()
                 assertThat(File(Uri.parse(savedMagentaUri.toString()).path!!).exists()).isFalse()
 
-                // 1) Restore JSON backup first, then trigger Import Token Images via MainActivity
                 runBlocking {
                     activity.importFromUtil.importJsonFile(jsonBackupFile.toUri())
                 }
                 scenario.onActivity { act ->
                     act.onDocumentPicked(MainActivity.DocumentAction.IMPORT_IMAGES, imagesZipFile.toUri())
                 }
-                awaitViewDisplayed(withText(R.string.import_succeeded_text))
+                composeRule.awaitTextDisplayed(string(R.string.import_succeeded_text))
 
                 val restoredFromJson = runBlocking { dao.getAll().first() }
                 assertThat(restoredFromJson).hasSize(2)
@@ -152,7 +137,6 @@ class TokenImageImportExportTest {
                 assertThat(Color.blue(bmp1.getPixel(10, 10))).isEqualTo(0xCC)
                 assertThat(Color.red(bmp2.getPixel(10, 10))).isEqualTo(0xE2)
 
-                // 2) Wipe DB only (images already imported!) and restore Key URI backup -> still linked!
                 runBlocking {
                     dao.deleteAll()
                     activity.importFromUtil.importKeyUriFile(keyUriBackupFile.toUri())
@@ -195,15 +179,15 @@ class TokenImageImportExportTest {
                                 ordinal = 1L,
                                 issuer = "My Custom Server",
                                 label = "ops@internal.local",
-                                imagePath = discordRef
+                                imagePath = discordRef,
                             ),
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 2L,
                                 ordinal = 2L,
                                 issuer = "Google",
                                 label = "override@example.com",
-                                imagePath = githubRef
-                            )
+                                imagePath = githubRef,
+                            ),
                         )
                     )
 
@@ -211,11 +195,9 @@ class TokenImageImportExportTest {
                     activity.importFromUtil.exportKeyUriFile(keyUriBackupFile.toUri())
                 }
 
-                // Wipe tokens AND local filesDir completely (no Token Images ZIP imported)
                 runBlocking { dao.deleteAll() }
                 context.filesDir.listFiles()?.forEach { it.deleteRecursively() }
 
-                // 1) Restore from JSON backup alone -> customized built-in icons are preserved & rendered
                 runBlocking {
                     activity.importFromUtil.importJsonFile(jsonBackupFile.toUri())
                 }
@@ -224,16 +206,14 @@ class TokenImageImportExportTest {
                 assertThat(restoredFromJson[0].imagePath).isEqualTo(discordRef)
                 assertThat(restoredFromJson[1].imagePath).isEqualTo(githubRef)
 
-                getInstrumentation().runOnMainSync {
-                    val imageView = android.widget.ImageView(context)
-                    imageView.setTokenImage(restoredFromJson[0])
-                    assertThat(imageView.drawable).isNotNull()
-                    assertThat(imageView.drawable).isNotInstanceOf(
-                        com.amulyakhare.textdrawable.TextDrawable::class.java
-                    )
-                }
+                val resolvedModel = resolveTokenAvatarModel(
+                    restoredFromJson[0].imagePath,
+                    restoredFromJson[0].issuer,
+                    restoredFromJson[0].label,
+                    context.filesDir,
+                )
+                assertThat(resolvedModel).isEqualTo(TokenAvatarModel.BuiltInVector(TokenImage.Discord.resource))
 
-                // 2) Wipe DB again and restore from Key URI backup alone -> customized built-in icons preserved
                 runBlocking {
                     dao.deleteAll()
                     activity.importFromUtil.importKeyUriFile(keyUriBackupFile.toUri())
@@ -260,7 +240,7 @@ class TokenImageImportExportTest {
                 scenario.onActivity { activity ->
                     activity.onDocumentPicked(MainActivity.DocumentAction.IMPORT_IMAGES, badZip.toUri())
                 }
-                awaitViewDisplayed(withText(R.string.import_token_images_failed_text))
+                composeRule.awaitTextDisplayed(string(R.string.import_token_images_failed_text))
             }
         } finally {
             badZip.delete()

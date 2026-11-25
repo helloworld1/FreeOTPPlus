@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
 }
@@ -16,7 +17,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
 
     buildTypes {
         getByName("debug") {
@@ -42,7 +42,7 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
+        compose = true
         buildConfig = true
         resValues = true
     }
@@ -64,7 +64,6 @@ kotlin {
 dependencies {
     coreLibraryDesugaring(libs.desugarJdkLibs)
     implementation(project(":token-images"))
-    implementation(project(":text-drawable"))
     implementation(project(":token-data"))
     implementation(libs.appCompat)
     implementation(libs.material)
@@ -75,10 +74,21 @@ dependencies {
     implementation(libs.androidSvg)
     implementation(libs.coreKtx)
     implementation(libs.activityKtx)
-    implementation(libs.fragmentKtx)
+    implementation(libs.activityCompose)
     implementation(libs.bundles.lifecycleKtx)
-    implementation(libs.bundles.navigation)
+    implementation(libs.lifecycleRuntimeCompose)
+    implementation(libs.lifecycleViewModelCompose)
+    implementation(libs.navigationCompose)
+    implementation(libs.hiltNavigationCompose)
     implementation(libs.bundles.kotlinxCoroutines)
+
+    implementation(platform(libs.composeBom))
+    implementation(libs.composeUi)
+    implementation(libs.composeUiGraphics)
+    implementation(libs.composeUiToolingPreview)
+    implementation(libs.composeMaterial3)
+    debugImplementation(libs.composeUiTooling)
+    debugImplementation(libs.composeUiTestManifest)
 
     implementation(libs.bundles.cameraX)
     implementation(libs.biometric)
@@ -90,11 +100,12 @@ dependencies {
     testImplementation(libs.bundles.androidxJunit)
     testImplementation(libs.androidxTruth)
 
+    androidTestImplementation(platform(libs.composeBom))
+    androidTestImplementation(libs.composeUiTestJunit4)
     androidTestImplementation(libs.bundles.androidxTest)
     androidTestUtil(libs.androidxTestOrchestrator)
 
     androidTestImplementation(libs.bundles.androidxJunit)
     androidTestImplementation(libs.androidxTruth)
-    androidTestImplementation(libs.bundles.espresso)
-    androidTestImplementation(libs.bundles.navigation)
+    androidTestImplementation(libs.espressoCore)
 }

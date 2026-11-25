@@ -103,13 +103,6 @@
     <string name="set_up_screen_lock_button">Set up screen lock</string>
     <string name="turn_off_button">Turn off</string>
     <string name="app_launch_auth_disabled">App launch authentication turned off</string>
-
-    <string name="five" translatable="false">5</string>
-    <string name="six" translatable="false">6</string>
-    <string name="seven" translatable="false">7</string>
-    <string name="eight" translatable="false">8</string>
-    <string name="issuer_hint" translatable="false">example@example.com</string>
-    <string name="label_hint" translatable="false">eb40924b-1d13-4807-9a76-30eb7ffa7eba</string>
     <string name="remove_user_token_image">Remove user token image</string>
     <string name="fail_to_add_image">Fail to add image</string>
     <string name="launch_file_browser_failure">Unable to launch system\'s file browser. It is likely an OS issue.</string>

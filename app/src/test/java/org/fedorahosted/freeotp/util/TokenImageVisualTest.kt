@@ -1,8 +1,8 @@
 package org.fedorahosted.freeotp.util
 
-import com.amulyakhare.textdrawable.util.ColorGenerator
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import org.fedorahosted.freeotp.ui.components.TokenBadgePalette
 import org.junit.Test
 import kotlin.math.max
 import kotlin.math.min
@@ -46,13 +46,13 @@ class TokenImageVisualTest {
 
         val sampledColors = mutableSetOf<Int>()
         for (i in 0 until 200) {
-            sampledColors.add(ColorGenerator.MATERIAL.getColor("issuer_$i"))
+            sampledColors.add(TokenBadgePalette.getColor("issuer_$i"))
         }
         // Also ensure Integer.MIN_VALUE hashCode does not crash
         val minIntKey = object {
             override fun hashCode(): Int = Int.MIN_VALUE
         }
-        sampledColors.add(ColorGenerator.MATERIAL.getColor(minIntKey))
+        sampledColors.add(TokenBadgePalette.getColor(minIntKey))
 
         assertThat(sampledColors.size).isEqualTo(17)
         for (color in sampledColors) {

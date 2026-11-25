@@ -21,7 +21,4 @@
     <color name="surface_container_high">#282A2D</color>
     <color name="outline">#8B9298</color>
     <color name="outline_variant">#41484D</color>
-
-    <color name="qr_surface">#FFFFFF</color>
-    <color name="scrim_translucent">#99000000</color>
 </resources>

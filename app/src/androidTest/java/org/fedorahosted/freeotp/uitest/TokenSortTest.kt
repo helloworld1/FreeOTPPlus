@@ -1,19 +1,14 @@
 package org.fedorahosted.freeotp.uitest
 
-import androidx.appcompat.widget.Toolbar
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
@@ -21,25 +16,29 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class TokenSortTest {
 
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
+
     @Test
     fun testSortMenuPositionedBetweenExportAndTheme_andCancelPreservesManualOrder() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val titles = (0 until toolbar.menu.size()).map { toolbar.menu.getItem(it).title.toString() }
-                val exportIdx = titles.indexOf(activity.getString(R.string.export_text))
-                val sortIdx = titles.indexOf(activity.getString(R.string.sort))
-                val themeIdx = titles.indexOf(activity.getString(R.string.theme))
-                assertThat(exportIdx).isAtLeast(0)
-                assertThat(sortIdx).isEqualTo(exportIdx + 1)
-                assertThat(themeIdx).isEqualTo(sortIdx + 1)
-
                 runBlocking {
                     val dao = activity.otpTokenDatabase.otpTokenDao()
                     dao.deleteAll()
@@ -49,58 +48,78 @@ class TokenSortTest {
                                 id = 1L,
                                 ordinal = 10L,
                                 issuer = "Slack",
-                                label = "zoe@slack.com"
+                                label = "zoe@slack.com",
                             ),
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 2L,
                                 ordinal = 20L,
                                 issuer = "Amazon",
-                                label = "amy@amazon.com"
+                                label = "amy@amazon.com",
                             ),
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 3L,
                                 ordinal = 30L,
                                 issuer = "GitHub",
-                                label = "mike@github.com"
-                            )
+                                label = "mike@github.com",
+                            ),
                         )
                     )
                 }
             }
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
+            composeRule.awaitTokenCardCount(3)
+
+            // Verify menu ordering: Export -> Sort -> Theme
+            composeRule.openOverflowMenu()
+            composeRule.awaitTagDisplayed(UiTestTags.OVERFLOW_MENU)
+            val menuItemTitles = composeRule.onNodeWithTag(UiTestTags.OVERFLOW_MENU)
+                .onChildren()
+                .fetchSemanticsNodes()
+                .mapNotNull { node ->
+                    node.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { it.text }
+                }
+            val exportIdx = menuItemTitles.indexOf(string(R.string.export_text))
+            val sortIdx = menuItemTitles.indexOf(string(R.string.sort))
+            val themeIdx = menuItemTitles.indexOf(string(R.string.theme))
+            assertThat(exportIdx).isAtLeast(0)
+            assertThat(sortIdx).isEqualTo(exportIdx + 1)
+            assertThat(themeIdx).isEqualTo(sortIdx + 1)
 
             // Select Sort -> Sort by Account Ascending -> Cancel keeps manual order [Slack, Amazon, GitHub]
-            openSortSubmenu()
-            onView(withText(R.string.sort_by_account_asc)).perform(click())
-            onView(withText(R.string.sort_tokens_warning_title)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withText(R.string.sort_tokens_warning_message)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withText(R.string.cancel_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithText(string(R.string.sort)).performClick()
+            composeRule.onNodeWithText(string(R.string.sort_by_account_asc)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.sort_tokens_warning_title))
+            composeRule.onNodeWithText(string(R.string.sort_tokens_warning_message)).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
 
-            assertTokenIssuerOrder("Slack", "Amazon", "GitHub")
+            assertTokenOrder("Slack", "Amazon", "GitHub")
 
             // 1. Sort by Account Ascending -> [amy@amazon.com, mike@github.com, zoe@slack.com]
             openSortSubmenu()
-            onView(withText(R.string.sort_by_account_asc)).perform(click())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            assertTokenAccountOrder("amy@amazon.com", "mike@github.com", "zoe@slack.com")
+            composeRule.onNodeWithText(string(R.string.sort_by_account_asc)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.DIALOG_POSITIVE_BUTTON)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            assertTokenOrder("amy@amazon.com", "mike@github.com", "zoe@slack.com")
 
             // 2. Sort by Account Descending -> [zoe@slack.com, mike@github.com, amy@amazon.com]
             openSortSubmenu()
-            onView(withText(R.string.sort_by_account_desc)).perform(click())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            assertTokenAccountOrder("zoe@slack.com", "mike@github.com", "amy@amazon.com")
+            composeRule.onNodeWithText(string(R.string.sort_by_account_desc)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.DIALOG_POSITIVE_BUTTON)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            assertTokenOrder("zoe@slack.com", "mike@github.com", "amy@amazon.com")
 
             // 3. Sort by Issuer Ascending -> [Amazon, GitHub, Slack]
             openSortSubmenu()
-            onView(withText(R.string.sort_by_issuer_asc)).perform(click())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            assertTokenIssuerOrder("Amazon", "GitHub", "Slack")
+            composeRule.onNodeWithText(string(R.string.sort_by_issuer_asc)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.DIALOG_POSITIVE_BUTTON)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            assertTokenOrder("Amazon", "GitHub", "Slack")
 
             // 4. Sort by Issuer Descending -> [Slack, GitHub, Amazon]
             openSortSubmenu()
-            onView(withText(R.string.sort_by_issuer_desc)).perform(click())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            assertTokenIssuerOrder("Slack", "GitHub", "Amazon")
+            composeRule.onNodeWithText(string(R.string.sort_by_issuer_desc)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.DIALOG_POSITIVE_BUTTON)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            assertTokenOrder("Slack", "GitHub", "Amazon")
 
             scenario.onActivity { activity ->
                 val persistedIssuers = runBlocking {
@@ -112,31 +131,13 @@ class TokenSortTest {
     }
 
     private fun openSortSubmenu() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-        onView(withText(R.string.sort)).perform(click())
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.sort)).performClick()
     }
 
-    private fun assertTokenIssuerOrder(vararg expectedIssuers: String) {
-        expectedIssuers.forEachIndexed { idx, issuer ->
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(issuer)))
-            )
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(idx, scrollTo()))
-                .check(matches(RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(issuer)))))
-        }
-    }
-
-    private fun assertTokenAccountOrder(vararg expectedAccounts: String) {
-        expectedAccounts.forEachIndexed { idx, account ->
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(account)))
-            )
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(idx, scrollTo()))
-                .check(matches(RecyclerViewAssertion.atPosition(idx, hasDescendant(withText(account)))))
+    private fun assertTokenOrder(vararg expectedTexts: String) {
+        expectedTexts.forEachIndexed { idx, expected ->
+            composeRule.assertCardAtPositionHasText(idx, expected)
         }
     }
 }

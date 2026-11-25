@@ -3,35 +3,29 @@ package org.fedorahosted.freeotp.uitest
 import android.content.Intent
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
-import android.widget.RadioButton
-import androidx.appcompat.view.menu.ListMenuItemView
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.IdlingResource
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.IdlingResource
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.RootMatchers.isPlatformPopup
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.isChecked
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -40,13 +34,21 @@ import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.EncryptionType
 import org.fedorahosted.freeotp.data.TokenCryptoManager
-import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.MainViewModel
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
-import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -59,6 +61,9 @@ import javax.crypto.spec.GCMParameterSpec
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class TokenEncryptionTest {
+
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
 
     private class FakeKeyStoreBackend : TokenCryptoManager.KeyStoreBackend {
         var secretKey: SecretKey? = null
@@ -91,54 +96,38 @@ class TokenEncryptionTest {
         }
     }
 
-    private var registeredIdlingResource: IdlingResource? = null
+    @Volatile
     private var boundCryptoManager: TokenCryptoManager? = null
 
+    private val cryptoComposeIdlingResource = object : IdlingResource {
+        override val isIdleNow: Boolean
+            get() = (boundCryptoManager?.activeAsyncOperations?.get() ?: 0) == 0
+    }
+
     private fun attachCryptoIdlingResource(manager: TokenCryptoManager) {
-        if (boundCryptoManager === manager) return
-        registeredIdlingResource?.let { IdlingRegistry.getInstance().unregister(it) }
         boundCryptoManager = manager
         manager.kdfIterationsOverride = 2_000
-        val resource = object : IdlingResource {
-            @Volatile
-            private var callback: IdlingResource.ResourceCallback? = null
-
-            override fun getName(): String = "TokenCryptoManagerIdlingResource"
-
-            override fun isIdleNow(): Boolean {
-                val idle = manager.activeAsyncOperations.get() == 0
-                if (idle) {
-                    callback?.onTransitionToIdle()
-                }
-                return idle
-            }
-
-            override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) {
-                this.callback = callback
-                manager.onAsyncOperationIdle = {
-                    callback?.onTransitionToIdle()
-                }
-            }
-        }
-        registeredIdlingResource = resource
-        IdlingRegistry.getInstance().register(resource)
     }
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
 
     @Before
     fun setUp() {
         val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
         PreferenceManager.getDefaultSharedPreferences(context).edit().clear().commit()
         AuthenticationUtil.hasScreenLockOverride = false
         AuthenticationUtil.hasStrongBiometricOverride = false
         AuthenticationUtil.authCallbackOverride = null
         AuthenticationUtil.appLaunchAuthCallbackOverride = null
         AuthenticationUtil.biometricCryptoCallbackOverride = null
+        composeRule.registerIdlingResource(cryptoComposeIdlingResource)
     }
 
     @After
     fun tearDown() {
-        registeredIdlingResource?.let { IdlingRegistry.getInstance().unregister(it) }
-        registeredIdlingResource = null
+        composeRule.unregisterIdlingResource(cryptoComposeIdlingResource)
         boundCryptoManager?.onAsyncOperationIdle = null
         boundCryptoManager?.kdfIterationsOverride = null
         boundCryptoManager?.keyStoreBackend = TokenCryptoManager.AndroidKeyStoreBackend()
@@ -154,6 +143,7 @@ class TokenEncryptionTest {
     @Test
     fun testBackwardCompatibleSettingsUpgradeFromLegacyBoolean() {
         val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val settings = Settings(prefs)
 
@@ -182,35 +172,30 @@ class TokenEncryptionTest {
                 }
             }
 
-            // Open Authentication mode popup selector and choose "Token encrypted"
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
+            // Open Authentication mode submenu and choose "Token encrypted"
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
 
             // Test key < 6 chars rejected
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("12345"), closeSoftKeyboard())
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("12345"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("12345")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("12345")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).assertIsDisplayed()
 
             // Test mismatched confirm key rejected
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("secret123"), closeSoftKeyboard())
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("secret999"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("secret123")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("secret999")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).assertIsDisplayed()
 
             // Enter valid matching 6+ char key
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("secret123"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("secret123")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.waitForIdle()
 
             // Verify DB secret is encrypted at rest
             scenario.onActivity { activity ->
@@ -225,21 +210,19 @@ class TokenEncryptionTest {
             }
 
             // Tap HOTP token card and verify exact RFC 4226 counter=0 OTP code generation ("047 701")
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("047 701"))))
+            composeRule.clickCardAtPosition(0)
+            composeRule.assertCardAtPositionHasText(0, "047 701")
 
             // Add a new token while in Token encrypted mode and verify it is stored encrypted too
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.add_token)).perform(click())
-            onView(withId(R.id.issuer)).perform(replaceText("gitlab.com"), closeSoftKeyboard())
-            onView(withId(R.id.label)).perform(replaceText("bob"), closeSoftKeyboard())
-            onView(withId(R.id.secret)).perform(replaceText("JBSWY3DPEHPK3PXP"), closeSoftKeyboard())
-            onView(withId(R.id.add)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("gitlab.com")
+            composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("bob")
+            composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("JBSWY3DPEHPK3PXP")
+            composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).performClick()
 
-            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), isDisplayed())
+            composeRule.awaitTokenCardCount(2)
             val storedAfterAdd = TestWaitUtil.awaitStoredTokens(scenario, expectedCount = 2)
             storedAfterAdd.forEach { token ->
                 assertThat(token.encryptionType).isEqualTo(EncryptionType.ENCRYPTED)
@@ -247,24 +230,27 @@ class TokenEncryptionTest {
             }
 
             scenario.onActivity { activity ->
-                activity.navigateTo(
-                    R.id.action_tokenList_to_editToken,
-                    EditTokenFragment.args(1L)
-                )
+                activity.navigateToEditToken(1L)
             }
 
-            // Verify EditTokenFragment secret reveal requires key verification when no screen lock is set and reveals plaintext
-            onView(withId(R.id.secret))
-                .perform(scrollTo())
-                .check(matches(withText(R.string.click_to_display)))
-                .perform(click())
+            // Verify EditTokenScreen secret reveal requires key verification when no screen lock is set and reveals plaintext
+            composeRule.awaitTagDisplayed(UiTestTags.DETAIL_SECRET)
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .performScrollTo()
+                .assertTextEquals(string(R.string.click_to_display))
+                .performClick()
 
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("secret123"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("secret123")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            onView(withId(R.id.secret))
-                .check(matches(withText(TestData.OTP_HOTP_TOKEN_1.secret)))
+            composeRule.waitUntil(5_000L) {
+                runCatching {
+                    composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                        .assertTextEquals(TestData.OTP_HOTP_TOKEN_1.secret)
+                    true
+                }.getOrDefault(false)
+            }
         }
     }
 
@@ -284,15 +270,15 @@ class TokenEncryptionTest {
                 }
             }
 
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("myMasterKey"), closeSoftKeyboard())
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("myMasterKey"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
+            composeRule.waitForIdle()
             scenario.onActivity { activity ->
                 assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isFalse()
                 activity.tokenCryptoManager.lock()
@@ -308,24 +294,23 @@ class TokenEncryptionTest {
         }
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            onView(withId(R.id.enable_biometric_checkbox)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
-                .check(matches(isChecked()))
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+            }
+            composeRule.awaitTagDisplayed(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX)
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOn()
 
             // Wrong key stays in dialog
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("wrongKey"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("wrongKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).assertIsDisplayed()
 
             // Right key unlocks and wraps key with biometric
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("myMasterKey"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
+            composeRule.waitForIdle()
             assertThat(bioPromptCount).isEqualTo(1)
             scenario.onActivity { activity ->
                 assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isTrue()
@@ -333,13 +318,12 @@ class TokenEncryptionTest {
             }
         }
 
-        // 3. Relaunch with valid biometric -> unlocks directly via biometric without manual key dialog!
+        // 3. Relaunch with valid biometric -> unlocks directly via biometric without manual key dialog
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertThat(bioPromptCount).isEqualTo(2)
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
 
-            // Simulate biometric becoming invalidated (e.g. new fingerprint enrolled) and lock session
             fakeBackend.invalidated = true
             scenario.onActivity { activity ->
                 activity.tokenCryptoManager.lock()
@@ -348,26 +332,26 @@ class TokenEncryptionTest {
 
         // 4. Relaunch after biometric invalidation -> prompts manual key + "Re-enable biometric unlock"
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            onView(withText(R.string.biometric_invalidated_enter_key_message)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
-            onView(withId(R.id.enable_biometric_checkbox)).inRoot(isDialog())
-                .perform(scrollTo())
-                .check(matches(isDisplayed()))
-                .check(matches(withText(R.string.reenable_biometric_unlock)))
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+            }
+            composeRule.awaitTextDisplayed(string(R.string.biometric_invalidated_enter_key_message))
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX)
+                .assertIsDisplayed()
+                .assert(hasText(string(R.string.reenable_biometric_unlock)))
 
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("myMasterKey"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            // Re-encryption biometric prompt invoked
+            composeRule.waitForIdle()
             assertThat(bioPromptCount).isEqualTo(3)
             scenario.onActivity { activity ->
                 assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isTrue()
                 assertThat(activity.tokenCryptoManager.wasBiometricInvalidated()).isFalse()
             }
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
         }
     }
 
@@ -386,56 +370,39 @@ class TokenEncryptionTest {
                 }
             }
 
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
-                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isFalse()
-            }
+            composeRule.awaitTokenCardCount(2)
+            composeRule.onNodeWithTag(UiTestTags.QUIT_AND_LOCK_BUTTON).assertDoesNotExist()
 
             // Enable Token encrypted mode
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
-            onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("rotateKey1")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("rotateKey1")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            TestWaitUtil.awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
-                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isTrue()
-            }
+            composeRule.awaitTagDisplayed(UiTestTags.QUIT_AND_LOCK_BUTTON)
 
-            // Switch back to "None" -> verify "Token encrypted" radio is currently checked -> select "None" -> verify warning dialog -> verify key -> secrets restored to PLAIN_TEXT
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(
-                allOf(
-                    isAssignableFrom(ListMenuItemView::class.java),
-                    hasDescendant(withText(R.string.auth_mode_token_encrypted))
-                )
-            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isChecked()))))
-            onView(
-                allOf(
-                    isAssignableFrom(ListMenuItemView::class.java),
-                    hasDescendant(withText(R.string.auth_mode_none))
-                )
-            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isNotChecked()))))
-            onView(withText(R.string.auth_mode_none)).perform(click())
+            // Switch back to "None" -> verify "Token encrypted" radio is selected -> select "None" -> confirm warning -> verify key
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.awaitNodeDisplayed(authRadioMatcher(R.string.auth_mode_token_encrypted))
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).assertIsSelected()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_none)).assertIsNotSelected()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_none)).performClick()
 
-            onView(withText(R.string.disable_token_encryption_warning)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTextDisplayed(string(R.string.disable_token_encryption_warning))
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("rotateKey1"), closeSoftKeyboard())
-            onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("rotateKey1")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
+            composeRule.waitForIdle()
+            composeRule.onNodeWithTag(UiTestTags.QUIT_AND_LOCK_BUTTON).assertDoesNotExist()
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
-                val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
-                assertThat(toolbar.menu.findItem(R.id.quit_and_lock).isVisible).isFalse()
                 runBlocking {
                     val tokens = activity.otpTokenDatabase.otpTokenDao().getAll().first()
                     assertThat(tokens).hasSize(2)
@@ -463,12 +430,10 @@ class TokenEncryptionTest {
             val dao = activity.otpTokenDatabase.otpTokenDao()
             dao.insertAll(listOf(TestData.OTP_HOTP_TOKEN_1, TestData.OTP_TOTP_TOKEN_2))
 
-            // Enable Token encrypted mode with key "backupKey1"
             val setup1 = activity.tokenCryptoManager.deriveSetupMaterial("backupKey1".toCharArray())
             activity.tokenCryptoManager.enableTokenEncryption(setup1, null)
             setup1.clear()
 
-            // Export encrypted & decrypted JSON, and encrypted Key URI
             activity.importFromUtil.exportJsonFile(encJsonFile.toUri(), encrypt = true)
             activity.importFromUtil.exportJsonFile(decJsonFile.toUri(), encrypt = false)
             activity.importFromUtil.exportKeyUriFile(encUriFile.toUri(), encrypt = true)
@@ -477,19 +442,16 @@ class TokenEncryptionTest {
             assertThat(activity.importFromUtil.isJsonFileEncrypted(decJsonFile.toUri())).isFalse()
             assertThat(activity.importFromUtil.isKeyUriFileEncrypted(encUriFile.toUri())).isTrue()
 
-            // Switch to NONE and keep existing tokens + insert high-ID tokens (id = 10, 11, 12)
-            // to verify JSON import clears all existing tokens without creating duplicates!
             activity.tokenCryptoManager.disableTokenEncryption(AuthMode.NONE)
             dao.insertAll(
                 listOf(
                     TestData.OTP_HOTP_TOKEN_1.copy(id = 10, ordinal = 10),
                     TestData.OTP_TOTP_TOKEN_2.copy(id = 11, ordinal = 11),
-                    TestData.OTP_TOTP_TOKEN_2.copy(id = 12, ordinal = 12, label = "extra_to_be_cleared")
+                    TestData.OTP_TOTP_TOKEN_2.copy(id = 12, ordinal = 12, label = "extra_to_be_cleared"),
                 )
             )
             assertThat(dao.getAll().first()).hasSize(5)
 
-            // Import encrypted JSON in NONE mode over existing 5 tokens -> clears all 5 and leaves only the 2 imported tokens
             activity.importFromUtil.importJsonFile(encJsonFile.toUri(), "backupKey1".toCharArray())
             val plainImported = dao.getAll().first()
             assertThat(plainImported).hasSize(2)
@@ -498,13 +460,11 @@ class TokenEncryptionTest {
             assertThat(plainImported[1].encryptionType).isEqualTo(EncryptionType.PLAIN_TEXT)
             assertThat(plainImported[1].secret).isEqualTo(TestData.OTP_TOTP_TOKEN_2.secret)
 
-            // Re-importing decrypted JSON over high-ID tokens also clears and produces no duplicates
             dao.insert(TestData.OTP_HOTP_TOKEN_1.copy(id = 25, ordinal = 25))
             assertThat(dao.getAll().first()).hasSize(3)
             activity.importFromUtil.importJsonFile(decJsonFile.toUri())
             assertThat(dao.getAll().first()).hasSize(2)
 
-            // Now enable Token encrypted mode with a DIFFERENT key ("activeKey2"), clear DB, and import encUriFile (encrypted with "backupKey1")
             dao.deleteById(1)
             dao.deleteById(2)
             val setup2 = activity.tokenCryptoManager.deriveSetupMaterial("activeKey2".toCharArray())
@@ -532,11 +492,10 @@ class TokenEncryptionTest {
     @Test
     fun testInterruptedEnableEncryptionAfterSqliteCommitRecoversOnNextLaunch() {
         val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         AuthenticationUtil.hasStrongBiometricOverride = false
 
-        // 1. Seed token in Room and simulate a process crash right AFTER SQLite encrypted the token
-        //    with a random-salt key, BEFORE active KDF_SALT_KEY / AUTH_MODE_KEY were committed (Issue F2).
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 activity.tokenCryptoManager.kdfIterationsOverride = 2_000
@@ -550,9 +509,9 @@ class TokenEncryptionTest {
                     val encryptedToken = storedPlain.copy(
                         secret = org.fedorahosted.freeotp.data.util.CryptoEngine.encryptSecret(
                             storedPlain.secret,
-                            setup.keyBytes
+                            setup.keyBytes,
                         ),
-                        encryptionType = EncryptionType.ENCRYPTED
+                        encryptionType = EncryptionType.ENCRYPTED,
                     )
                     dao.update(encryptedToken)
 
@@ -570,8 +529,6 @@ class TokenEncryptionTest {
             }
         }
 
-        // 2. Relaunch MainActivity -> reconciles pending metadata into active TOKEN_ENCRYPTED mode,
-        //    prompts for manual key, unlocks token, and generates exact OTP code "047 701"!
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 attachCryptoIdlingResource(activity.tokenCryptoManager)
@@ -580,15 +537,13 @@ class TokenEncryptionTest {
                 assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isTrue()
             }
 
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("recoverKey99"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("recoverKey99")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("047 701"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.clickCardAtPosition(0)
+            composeRule.assertCardAtPositionHasText(0, "047 701")
         }
     }
 
@@ -596,7 +551,6 @@ class TokenEncryptionTest {
     fun testCorruptedEncryptedTokenAndConcurrentVaultLockNeverCrashAcrossUiPaths() {
         val context = getInstrumentation().targetContext
         AuthenticationUtil.hasStrongBiometricOverride = false
-        // Bypass screen-lock prompt during sensitive actions (Share / Share QR / Secret reveal)
         AuthenticationUtil.authCallbackOverride = { onAuthenticated -> onAuthenticated() }
 
         val corruptedTokenId = 1L
@@ -619,90 +573,91 @@ class TokenEncryptionTest {
                             ordinal = 1L,
                             counter = 0L,
                             secret = "v1:AAAA_CORRUPTED_CIPHERTEXT",
-                            encryptionType = EncryptionType.ENCRYPTED
+                            encryptionType = EncryptionType.ENCRYPTED,
                         )
                     )
                 }
-                activity.appSessionManager.setAuthState(org.fedorahosted.freeotp.ui.MainViewModel.AuthState.AUTHENTICATED)
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
             }
 
+            composeRule.awaitTokenCardCount(1)
+
             // 1. Tap corrupted encrypted HOTP card -> shows invalid_token Snackbar without crashing or advancing counter
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+            composeRule.clickCardAtPosition(0)
+            composeRule.awaitTextDisplayed(string(R.string.invalid_token))
             scenario.onActivity { activity ->
                 val stored = runBlocking { activity.otpTokenDatabase.otpTokenDao().get(corruptedTokenId).first()!! }
                 assertThat(stored.counter).isEqualTo(0L)
+                activity.dismissSnackbar()
             }
 
-            // 2. Overflow -> Share QR Code -> shows invalid_token Snackbar and dismisses dialog without crashing
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-            onView(withText(R.string.share_qr_code)).inRoot(isPlatformPopup()).perform(click())
-            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+            // 2. Card menu -> Share QR Code -> shows invalid_token Snackbar and dismisses dialog without crashing
+            composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(corruptedTokenId)).performClick()
+            composeRule.onNodeWithText(string(R.string.share_qr_code)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.invalid_token))
+            scenario.onActivity { it.dismissSnackbar() }
 
-            // 3. Overflow -> Share to other apps -> shows invalid_token Snackbar without crashing
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-            onView(withText(R.string.share_to_other_apps)).inRoot(isPlatformPopup()).perform(click())
-            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
+            // 3. Card menu -> Share to other apps -> shows invalid_token Snackbar without crashing
+            composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(corruptedTokenId)).performClick()
+            composeRule.onNodeWithText(string(R.string.share_to_other_apps)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.invalid_token))
+            scenario.onActivity { it.dismissSnackbar() }
 
-            // 4. EditTokenFragment -> Click to display secret -> shows invalid_token and keeps "Click to display"
+            // 4. EditTokenScreen -> Click to display secret -> shows invalid_token and keeps "Click to display"
             scenario.onActivity { activity ->
-                activity.navigateTo(
-                    R.id.action_tokenList_to_editToken,
-                    EditTokenFragment.args(corruptedTokenId)
-                )
+                activity.navigateToEditToken(corruptedTokenId)
             }
-            onView(withId(R.id.secret))
-                .perform(scrollTo())
-                .check(matches(withText(R.string.click_to_display)))
-                .perform(click())
-            onView(withText(R.string.invalid_token)).check(matches(isDisplayed()))
-            onView(withId(R.id.secret)).check(matches(withText(R.string.click_to_display)))
+            composeRule.awaitTagDisplayed(UiTestTags.DETAIL_SECRET)
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .performScrollTo()
+                .assertTextEquals(string(R.string.click_to_display))
+                .performClick()
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .assertTextEquals(string(R.string.click_to_display))
 
             scenario.onActivity { activity ->
                 activity.navigateBack()
             }
+            composeRule.awaitTokenCardCount(1)
 
             // 5. Concurrent vault lock right before tapping a token card -> transitions to Unlock dialog cleanly
             scenario.onActivity { activity ->
                 activity.tokenCryptoManager.lock()
             }
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withText(R.string.unlock_tokens_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+            composeRule.clickCardAtPosition(0)
+            composeRule.awaitTextDisplayed(string(R.string.unlock_tokens_title))
 
-            // Unlock again so vault is unlocked for deep-link confirmation test
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("f12TestKey"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("f12TestKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.awaitTokenCardCount(1)
         }
 
         // 6. Deep-link otpauth:// add confirmation when vault locks concurrently before tapping Add ->
         //    re-queues deep link, prompts Unlock, and adds token once unlocked without crashing
         val deepLinkIntent = Intent(
             Intent.ACTION_VIEW,
-            "otpauth://totp/DeepLink:alice?secret=JBSWY3DPEHPK3PXP".toUri()
+            "otpauth://totp/DeepLink:alice?secret=JBSWY3DPEHPK3PXP".toUri(),
         ).setClass(context, MainActivity::class.java)
 
         ActivityScenario.launch<MainActivity>(deepLinkIntent).use { deepLinkScenario ->
+            composeRule.awaitTagDisplayed(UiTestTags.DIALOG_POSITIVE_BUTTON)
             deepLinkScenario.onActivity { activity ->
                 attachCryptoIdlingResource(activity.tokenCryptoManager)
-                // Simulate concurrent vault lock while confirmation dialog is open
                 activity.tokenCryptoManager.lock()
             }
-            onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             // Unlock dialog appears instead of crashing
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("f12TestKey"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("f12TestKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             // Re-queued deep-link confirmation dialog is re-presented and succeeds after unlock
-            onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTextDisplayed("DeepLink", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
             val allTokens = TestWaitUtil.awaitStoredTokens(deepLinkScenario, expectedCount = 2)
-            assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+            assertThat(allTokens.any { it.issuer == "DeepLink" && it.encryptionType == EncryptionType.ENCRYPTED })
+                .isTrue()
         }
     }
 
@@ -738,18 +693,15 @@ class TokenEncryptionTest {
             }
 
             try {
-                openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-                onView(withText(R.string.authentication_mode)).perform(click())
-                onView(withText(R.string.auth_mode_token_encrypted)).perform(click())
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+                composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
 
-                onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                    .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
-                onView(withId(R.id.confirm_key_edit_text)).inRoot(isDialog())
-                    .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
-                onView(withText(R.string.ok_text)).inRoot(isDialog()).perform(click())
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("rotateSecret99")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("rotateSecret99")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-                // Wait until enableTokenEncryption enters Room's transactionRunner, then recreate MainActivity
-                // (cancelling the original Activity.lifecycleScope while SQLite commits)
                 assertThat(enteredEnableTx.await(5, TimeUnit.SECONDS)).isTrue()
                 scenario.recreate()
 
@@ -773,23 +725,27 @@ class TokenEncryptionTest {
             }
 
             // Verify the recreated Activity can immediately generate the encrypted HOTP code
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("047 701"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.clickCardAtPosition(0)
+            composeRule.assertCardAtPositionHasText(0, "047 701")
 
             // Lock and verify unlocking with the passphrase succeeds (KDF salt was never rolled back)
             scenario.onActivity { recreatedActivity ->
                 recreatedActivity.appSessionManager.lockSession()
             }
-            onView(withId(R.id.key_edit_text)).inRoot(isDialog())
-                .perform(scrollTo(), replaceText("rotateSecret99"), closeSoftKeyboard())
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("rotateSecret99")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
+            composeRule.waitForIdle()
             scenario.onActivity { recreatedActivity ->
                 assertThat(recreatedActivity.tokenCryptoManager.isUnlocked()).isTrue()
             }
         }
+    }
+
+    private fun authRadioMatcher(titleRes: Int): SemanticsMatcher {
+        return SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
+            hasText(string(titleRes))
     }
 }

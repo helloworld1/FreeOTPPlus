@@ -1,35 +1,41 @@
 package org.fedorahosted.freeotp.uitest
 
 import android.preference.PreferenceManager
-import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.view.menu.ListMenuItemView
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.isChecked
-import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.DARK_MODE_KEY
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.THEME_MODE_KEY
 import org.fedorahosted.freeotp.util.ThemeMode
-import org.hamcrest.Matchers.allOf
 import org.junit.After
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class ThemeModeTest {
+
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
 
     @After
     fun tearDown() {
@@ -56,7 +62,7 @@ class ThemeModeTest {
             assertThemeRadioStates(systemChecked = true, lightChecked = false, darkChecked = false)
 
             // Select Light
-            onView(withText(R.string.theme_light)).perform(click())
+            composeRule.onNode(radioRowMatcher(R.string.theme_light)).performClick()
             assertThat(settings.themeMode).isEqualTo(ThemeMode.LIGHT)
             assertThat(AppCompatDelegate.getDefaultNightMode()).isEqualTo(AppCompatDelegate.MODE_NIGHT_NO)
 
@@ -64,7 +70,7 @@ class ThemeModeTest {
             assertThemeRadioStates(systemChecked = false, lightChecked = true, darkChecked = false)
 
             // Select Dark
-            onView(withText(R.string.theme_dark)).perform(click())
+            composeRule.onNode(radioRowMatcher(R.string.theme_dark)).performClick()
             assertThat(settings.themeMode).isEqualTo(ThemeMode.DARK)
             assertThat(AppCompatDelegate.getDefaultNightMode()).isEqualTo(AppCompatDelegate.MODE_NIGHT_YES)
 
@@ -72,7 +78,7 @@ class ThemeModeTest {
             assertThemeRadioStates(systemChecked = false, lightChecked = false, darkChecked = true)
 
             // Select System
-            onView(withText(R.string.theme_system)).perform(click())
+            composeRule.onNode(radioRowMatcher(R.string.theme_system)).performClick()
             assertThat(settings.themeMode).isEqualTo(ThemeMode.SYSTEM)
             assertThat(AppCompatDelegate.getDefaultNightMode()).isEqualTo(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
@@ -128,36 +134,32 @@ class ThemeModeTest {
     }
 
     private fun openThemeSubmenu() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-        onView(withText(R.string.theme)).perform(click())
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.theme)).performClick()
+        composeRule.awaitNodeDisplayed(radioRowMatcher(R.string.theme_system))
+    }
+
+    private fun radioRowMatcher(titleRes: Int): SemanticsMatcher {
+        return SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
+            hasText(string(titleRes))
     }
 
     private fun assertThemeRadioStates(
         systemChecked: Boolean,
         lightChecked: Boolean,
-        darkChecked: Boolean
+        darkChecked: Boolean,
     ) {
-        assertRadioRowChecked(R.string.theme_system, systemChecked)
-        assertRadioRowChecked(R.string.theme_light, lightChecked)
-        assertRadioRowChecked(R.string.theme_dark, darkChecked)
+        assertRadioChecked(R.string.theme_system, systemChecked)
+        assertRadioChecked(R.string.theme_light, lightChecked)
+        assertRadioChecked(R.string.theme_dark, darkChecked)
     }
 
-    private fun assertRadioRowChecked(titleRes: Int, expectedChecked: Boolean) {
-        val checkStateMatcher = if (expectedChecked) isChecked() else isNotChecked()
-        onView(
-            allOf(
-                isAssignableFrom(ListMenuItemView::class.java),
-                hasDescendant(withText(titleRes))
-            )
-        ).check(
-            matches(
-                hasDescendant(
-                    allOf(
-                        isAssignableFrom(RadioButton::class.java),
-                        checkStateMatcher
-                    )
-                )
-            )
-        )
+    private fun assertRadioChecked(titleRes: Int, expectedChecked: Boolean) {
+        val node = composeRule.onNode(radioRowMatcher(titleRes))
+        if (expectedChecked) {
+            node.assertIsSelected()
+        } else {
+            node.assertIsNotSelected()
+        }
     }
 }

@@ -7,7 +7,6 @@ pluginManagement {
 }
 include(":token-images")
 include(":app")
-include(":text-drawable")
 include(":token-data")
 
 dependencyResolutionManagement {
@@ -23,12 +22,13 @@ dependencyResolutionManagement {
             version("hilt", "2.60.1")
             version("appCompat", "1.8.0")
             version("activityKtx", "1.13.0")
-            version("fragmentKtx", "1.9.1")
             version("navigation", "2.10.2")
             version("material", "1.14.0")
             version("coreKtx", "1.19.1")
             version("kotlinxCoroutines", "1.11.0")
             version("lifecycleKtx", "2.11.1")
+            version("composeBom", "2026.05.00")
+            version("hiltNavigationCompose", "1.3.0")
             version("cameraX", "1.7.0")
             version("biometric", "1.1.0")
             version("ksp", "2.3.14")
@@ -56,17 +56,27 @@ dependencyResolutionManagement {
             library("androidSvg", "com.caverock", "androidsvg-aar").versionRef("androidSvg")
             library("coreKtx", "androidx.core", "core-ktx").versionRef("coreKtx")
             library("activityKtx", "androidx.activity", "activity-ktx").versionRef("activityKtx")
-            library("fragmentKtx", "androidx.fragment", "fragment-ktx").versionRef("fragmentKtx")
-            library("navigationFragmentKtx", "androidx.navigation", "navigation-fragment-ktx").versionRef("navigation")
-            library("navigationUiKtx", "androidx.navigation", "navigation-ui-ktx").versionRef("navigation")
-            bundle("navigation", listOf("navigationFragmentKtx", "navigationUiKtx"))
+            library("activityCompose", "androidx.activity", "activity-compose").versionRef("activityKtx")
+            library("navigationCompose", "androidx.navigation", "navigation-compose").versionRef("navigation")
+            library("hiltNavigationCompose", "androidx.hilt", "hilt-navigation-compose").versionRef("hiltNavigationCompose")
             library("kotlinxCoroutinesCore", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("kotlinxCoroutines")
             library("kotlinxCoroutinesAndroid", "org.jetbrains.kotlinx", "kotlinx-coroutines-android").versionRef("kotlinxCoroutines")
             bundle("kotlinxCoroutines", listOf("kotlinxCoroutinesCore", "kotlinxCoroutinesAndroid"))
 
             library("lifecycleRuntimeKtx", "androidx.lifecycle", "lifecycle-runtime-ktx").versionRef("lifecycleKtx")
             library("lifecycleViewModelKtx", "androidx.lifecycle", "lifecycle-viewmodel-ktx").versionRef("lifecycleKtx")
+            library("lifecycleRuntimeCompose", "androidx.lifecycle", "lifecycle-runtime-compose").versionRef("lifecycleKtx")
+            library("lifecycleViewModelCompose", "androidx.lifecycle", "lifecycle-viewmodel-compose").versionRef("lifecycleKtx")
             bundle("lifecycleKtx", listOf("lifecycleRuntimeKtx", "lifecycleViewModelKtx"))
+
+            library("composeBom", "androidx.compose", "compose-bom").versionRef("composeBom")
+            library("composeUi", "androidx.compose.ui", "ui").withoutVersion()
+            library("composeUiGraphics", "androidx.compose.ui", "ui-graphics").withoutVersion()
+            library("composeUiToolingPreview", "androidx.compose.ui", "ui-tooling-preview").withoutVersion()
+            library("composeUiTooling", "androidx.compose.ui", "ui-tooling").withoutVersion()
+            library("composeMaterial3", "androidx.compose.material3", "material3").withoutVersion()
+            library("composeUiTestJunit4", "androidx.compose.ui", "ui-test-junit4").withoutVersion()
+            library("composeUiTestManifest", "androidx.compose.ui", "ui-test-manifest").withoutVersion()
 
 
             library("cameraCore", "androidx.camera", "camera-core").versionRef("cameraX")
@@ -96,8 +106,6 @@ dependencyResolutionManagement {
 
             library("androidxTruth", "androidx.test.ext", "truth").versionRef("androidxTruth")
             library("espressoCore", "androidx.test.espresso", "espresso-core").versionRef("espresso")
-            library("espressoContrib", "androidx.test.espresso", "espresso-contrib").versionRef("espresso")
-            bundle("espresso", listOf("espressoCore", "espressoContrib"))
 
             library("room3Runtime", "androidx.room3", "room3-runtime").versionRef("room3")
             library("room3Compiler", "androidx.room3", "room3-compiler").versionRef("room3")
@@ -111,6 +119,7 @@ dependencyResolutionManagement {
 
             plugin("androidApplication", "com.android.application").versionRef("agp")
             plugin("androidLibrary", "com.android.library").versionRef("agp")
+            plugin("kotlinCompose", "org.jetbrains.kotlin.plugin.compose").versionRef("kotlin")
             plugin("ksp", "com.google.devtools.ksp").versionRef("ksp")
             plugin("hilt", "com.google.dagger.hilt.android").versionRef("hilt")
         }

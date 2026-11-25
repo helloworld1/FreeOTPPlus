@@ -3,61 +3,75 @@ package org.fedorahosted.freeotp.uitest
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.launchActivity
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class MigrationTest {
+
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
     private var activityScenario: ActivityScenario<MainActivity>? = null
+
+    private fun string(resId: Int): String =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(resId)
 
     @Before
     fun setup() {
-        val context = InstrumentationRegistry.getInstrumentation()
-            .targetContext
-        val prefs: SharedPreferences = context.getSharedPreferences(
-            "tokens", Context.MODE_PRIVATE)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs: SharedPreferences = context.getSharedPreferences("tokens", Context.MODE_PRIVATE)
+        @Suppress("DEPRECATION")
         val globalPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit()
-            .putString("microsoft.com:token1totp", "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"microsoft.com\",\"label\":\"account1totp\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}")
-            .putString("github.com:token2hotp", "{\"algo\":\"SHA256\",\"counter\":15,\"digits\":6,\"issuerExt\":\"github.com\",\"label\":\"account2hotp\",\"period\":30,\"secret\":[8,66,29,111,-99],\"type\":\"HOTP\"}")
+            .putString(
+                "microsoft.com:token1totp",
+                "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"microsoft.com\",\"label\":\"account1totp\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}",
+            )
+            .putString(
+                "github.com:token2hotp",
+                "{\"algo\":\"SHA256\",\"counter\":15,\"digits\":6,\"issuerExt\":\"github.com\",\"label\":\"account2hotp\",\"period\":30,\"secret\":[8,66,29,111,-99],\"type\":\"HOTP\"}",
+            )
             .putString("tokenOrder", "[\"microsoft.com:token1totp\",\"github.com:token2hotp\"]")
             .commit()
 
-        globalPrefs.edit().putBoolean("tokenMigrated", false)
-            .commit()
+        globalPrefs.edit().putBoolean("tokenMigrated", false).commit()
         activityScenario = launchActivity()
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
+        composeRule.awaitTokenCardCount(2)
     }
 
     @Test
     fun testTokenContentAndOrder() {
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("account1totp"))))
-            .check(matches(hasDescendant(withText("microsoft.com"))))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
-            .check(matches(hasDescendant(withText("account2hotp"))))
-            .check(matches(hasDescendant(withText("github.com"))))
+        composeRule.assertCardAtPositionHasText(0, "account1totp")
+        composeRule.assertCardAtPositionHasText(0, "microsoft.com")
+        composeRule.assertCardAtPositionHasText(1, "account2hotp")
+        composeRule.assertCardAtPositionHasText(1, "github.com")
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val legacyPrefs = context.getSharedPreferences("tokens", Context.MODE_PRIVATE)
@@ -68,20 +82,17 @@ class MigrationTest {
 
     @Test
     fun testLeftoverLegacyTokensPurgedWhenAlreadyMigrated() {
-        // Wait for initial setup migration to finish
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("account1totp"))))
+        composeRule.assertCardAtPositionHasText(0, "account1totp")
         activityScenario?.close()
 
-        // Simulate an already-migrated install (tokenMigrated = true) that still has leftover plaintext tokens.xml
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val legacyPrefs = context.getSharedPreferences("tokens", Context.MODE_PRIVATE)
+        @Suppress("DEPRECATION")
         val globalPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         legacyPrefs.edit()
             .putString(
                 "leftover:secret",
-                "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"leftover\",\"label\":\"secret\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}"
+                "{\"algo\":\"SHA1\",\"counter\":0,\"digits\":6,\"issuerExt\":\"leftover\",\"label\":\"secret\",\"period\":30,\"secret\":[0,0,13,111,-99],\"type\":\"TOTP\"}",
             )
             .putString("tokenOrder", "[\"leftover:secret\"]")
             .commit()
@@ -91,9 +102,8 @@ class MigrationTest {
         assertThat(legacyXml.exists()).isTrue()
 
         activityScenario = launchActivity()
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
+        composeRule.awaitTokenCardCount(2)
 
-        // Poll briefly for async Dispatchers.IO purge to complete
         val deadline = System.currentTimeMillis() + 5_000L
         while (legacyXml.exists() && System.currentTimeMillis() < deadline) {
             Thread.sleep(50)
@@ -105,59 +115,60 @@ class MigrationTest {
 
     @Test
     fun testTotpToken() {
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .check(matches(withText("microsoft.com")))
-        onView(withId(R.id.label))
-            .check(matches(withText("account1totp")))
-        onView(withId(R.id.algorithm))
-            .check(matches(withText("SHA1")))
-        onView(withId(R.id.digits))
-            .check(matches(withText("6")))
-        onView(withId(R.id.secret))
-            .perform(scrollTo())
-            .check(matches(withText(R.string.click_to_display)))
-            .perform(click())
-            .check(matches(withText("AAAA2345")))
+        val firstTokenId = getMigratedTokenIdAt(0)
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(firstTokenId)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).assert(hasText("microsoft.com"))
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).assert(hasText("account1totp"))
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_ALGORITHM).performScrollTo().assertTextEquals("SHA1")
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_DIGITS).performScrollTo().assertTextEquals("6")
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+            .performScrollTo()
+            .assertTextEquals(string(R.string.click_to_display))
+            .performClick()
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET).assertTextEquals("AAAA2345")
     }
 
     @Test
     fun testHotpToken() {
-        // Verify migrated HOTP token preserves exact existing count ("15") on main card and Edit screen
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
-            .check(matches(hasDescendant(withText("15"))))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .check(matches(withText("github.com")))
-        onView(withId(R.id.label))
-            .check(matches(withText("account2hotp")))
-        onView(withId(R.id.algorithm))
-            .perform(scrollTo())
-            .check(matches(withText("SHA256")))
-        onView(withId(R.id.digits))
-            .perform(scrollTo())
-            .check(matches(withText("6")))
-        onView(withId(R.id.interval))
-            .perform(scrollTo())
-            .check(matches(withText("15")))
-        onView(withId(R.id.secret))
-            .perform(scrollTo())
-            .check(matches(withText(R.string.click_to_display)))
-            .perform(click())
-            .check(matches(withText("BBBB2345")))
+        val secondTokenId = getMigratedTokenIdAt(1)
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).onChildren()[1].assert(hasText("15"))
+
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(secondTokenId)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).assert(hasText("github.com"))
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).assert(hasText("account2hotp"))
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_ALGORITHM).performScrollTo().assertTextEquals("SHA256")
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_DIGITS).performScrollTo().assertTextEquals("6")
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_INTERVAL_OR_COUNTER).performScrollTo().assertTextEquals("15")
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+            .performScrollTo()
+            .assertTextEquals(string(R.string.click_to_display))
+            .performClick()
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET).assertTextEquals("BBBB2345")
+    }
+
+    private fun getMigratedTokenIdAt(index: Int): Long {
+        var tokenId = 0L
+        activityScenario?.onActivity { activity ->
+            tokenId = runBlocking {
+                activity.otpTokenDatabase.otpTokenDao().getAll().first()[index].id
+            }
+        }
+        return tokenId
     }
 
     @After
     fun cleanUp() {
+        activityScenario?.onActivity { activity ->
+            runBlocking {
+                activity.otpTokenDatabase.otpTokenDao().deleteAll()
+            }
+        }
         activityScenario?.close()
     }
 }

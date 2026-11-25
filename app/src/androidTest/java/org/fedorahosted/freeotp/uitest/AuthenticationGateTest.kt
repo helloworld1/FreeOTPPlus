@@ -5,33 +5,26 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.os.SystemClock
-import android.view.View
 import android.widget.EditText
-import android.widget.RadioButton
-import android.widget.TextView
-import androidx.appcompat.view.menu.ListMenuItemView
-import androidx.appcompat.widget.Toolbar
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.isChecked
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isEnabled
-import androidx.test.espresso.matcher.ViewMatchers.isNotChecked
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
@@ -39,16 +32,21 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
-import org.fedorahosted.freeotp.ui.ShareQrCodeDialogFragment
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.ui.navigation.FreeOtpDestination
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ClipboardUtil
-import org.hamcrest.Matcher
-import org.hamcrest.Matchers.allOf
 import org.junit.After
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -56,8 +54,14 @@ import java.io.File
 @RunWith(AndroidJUnit4ClassRunner::class)
 class AuthenticationGateTest {
 
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
     private var configuredSessionManager: AppSessionManager? = null
     private var configuredClipboardUtil: ClipboardUtil? = null
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
 
     @After
     fun tearDown() {
@@ -68,10 +72,16 @@ class AuthenticationGateTest {
         configuredSessionManager?.let { manager ->
             manager.timeoutDelayMs = AppSessionManager.DEFAULT_TIMEOUT_DELAY_MS
             manager.elapsedRealtimeProvider = { SystemClock.elapsedRealtime() }
+            manager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         }
         configuredSessionManager = null
         configuredClipboardUtil?.expirationDurationMs = ClipboardUtil.DEFAULT_CLIP_EXPIRATION_MS
         configuredClipboardUtil = null
+        @Suppress("DEPRECATION")
+        android.preference.PreferenceManager.getDefaultSharedPreferences(getInstrumentation().targetContext)
+            .edit()
+            .clear()
+            .commit()
     }
 
     @Test
@@ -87,19 +97,15 @@ class AuthenticationGateTest {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                activity.navigateTo(
-                    R.id.action_tokenList_to_editToken,
-                    EditTokenFragment.args(tokenId)
-                )
+                activity.navigateToEditToken(tokenId)
             }
-            onView(withId(R.id.secret))
-                .perform(scrollTo())
-                .check(matches(withText(R.string.click_to_display)))
-                .perform(click())
-                .check(matches(withText(TestData.OTP_TOTP_TOKEN_2.secret)))
-            scenario.onActivity { activity ->
-                assertThat(activity.findViewById<TextView>(R.id.secret).freezesText).isFalse()
-            }
+            composeRule.awaitTagDisplayed(UiTestTags.DETAIL_SECRET)
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .performScrollTo()
+                .assertTextEquals(string(R.string.click_to_display))
+                .performClick()
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .assertTextEquals(TestData.OTP_TOTP_TOKEN_2.secret)
         }
         assertThat(authPromptCalled).isFalse()
     }
@@ -116,16 +122,15 @@ class AuthenticationGateTest {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                activity.navigateTo(
-                    R.id.action_tokenList_to_editToken,
-                    EditTokenFragment.args(tokenId)
-                )
+                activity.navigateToEditToken(tokenId)
             }
-            onView(withId(R.id.secret))
-                .perform(scrollTo())
-                .check(matches(withText(R.string.click_to_display)))
-                .perform(click())
-                .check(matches(withText(R.string.click_to_display)))
+            composeRule.awaitTagDisplayed(UiTestTags.DETAIL_SECRET)
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .performScrollTo()
+                .assertTextEquals(string(R.string.click_to_display))
+                .performClick()
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .assertTextEquals(string(R.string.click_to_display))
 
             assertThat(pendingAuth).isNotNull()
 
@@ -133,8 +138,8 @@ class AuthenticationGateTest {
                 pendingAuth?.invoke()
             }
 
-            onView(withId(R.id.secret))
-                .check(matches(withText(TestData.OTP_TOTP_TOKEN_2.secret)))
+            composeRule.onNodeWithTag(UiTestTags.DETAIL_SECRET)
+                .assertTextEquals(TestData.OTP_TOTP_TOKEN_2.secret)
         }
     }
 
@@ -146,25 +151,20 @@ class AuthenticationGateTest {
             pendingAuth = onAuthenticated
         }
 
-        insertTestToken()
+        val tokenId = insertTestToken()
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            onView(withId(R.id.token_list))
-                .perform(
-                    actionOnItemAtPosition<RecyclerView.ViewHolder>(
-                        0,
-                        RecyclerViewAction.clickChildViewWithId(R.id.menu)
-                    )
-                )
-            onView(withText(R.string.share_qr_code)).perform(click())
+            composeRule.awaitTokenCardCount(1)
+            composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(tokenId)).performClick()
+            composeRule.onNodeWithText(string(R.string.share_qr_code)).performClick()
 
             assertThat(pendingAuth).isNotNull()
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.onNodeWithTag(UiTestTags.SHARE_QR_IMAGE).assertDoesNotExist()
 
             scenario.onActivity {
                 pendingAuth?.invoke()
             }
 
-            onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
+            composeRule.awaitTagDisplayed(UiTestTags.SHARE_QR_IMAGE)
         }
     }
 
@@ -177,19 +177,19 @@ class AuthenticationGateTest {
         }
 
         ActivityScenario.launch(MainActivity::class.java).use {
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.export_text)).perform(click())
-            onView(withText(R.string.export_json_format)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
             assertThat(authPromptCount).isEqualTo(1)
 
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.export_text)).perform(click())
-            onView(withText(R.string.export_key_uri_format)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.onNodeWithText(string(R.string.export_key_uri_format)).performClick()
             assertThat(authPromptCount).isEqualTo(2)
 
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.export_text)).perform(click())
-            onView(withText(R.string.export_token_images)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.onNodeWithText(string(R.string.export_token_images)).performClick()
             assertThat(authPromptCount).isEqualTo(3)
         }
     }
@@ -232,7 +232,6 @@ class AuthenticationGateTest {
         val tokenId = insertTestToken()
         var authPromptCount = 0
         AuthenticationUtil.appLaunchAuthCallbackOverride = { _, _ ->
-            // Hold prompt open without auto-completing on resume
             authPromptCount++
         }
 
@@ -244,13 +243,10 @@ class AuthenticationGateTest {
                 activity.appSessionManager.timeoutDelayMs = 150L
                 activity.settings.authMode = AuthMode.APP_LAUNCH
                 activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                activity.navigateTo(
-                    R.id.action_tokenList_to_shareQrCode,
-                    ShareQrCodeDialogFragment.args(tokenId)
-                )
+                activity.openShareQrDialog(tokenId)
             }
 
-            onView(withId(R.id.qrcode)).inRoot(isDialog()).check(matches(isDisplayed()))
+            composeRule.awaitTagDisplayed(UiTestTags.SHARE_QR_IMAGE)
 
             scenario.moveToState(Lifecycle.State.CREATED)
 
@@ -263,11 +259,12 @@ class AuthenticationGateTest {
             assertThat(mainActivity.appSessionManager.authState.value)
                 .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
 
-            // Resume app (simulating Recents return) -> ShareQrCodeDialogFragment is dismissed and lock gate prompts
+            // Resume app -> ShareQrCodeDialog is dismissed and lock gate prompts
             scenario.moveToState(Lifecycle.State.RESUMED)
+            composeRule.waitForIdle()
             scenario.onActivity { activity ->
                 assertThat(activity.getOpenDialogWindows()).isEmpty()
-                assertThat(activity.currentDestinationId()).isEqualTo(R.id.tokenListFragment)
+                assertThat(activity.currentRoute()).isEqualTo(FreeOtpDestination.TOKEN_LIST)
                 assertThat(authPromptCount).isGreaterThan(0)
             }
         }
@@ -301,7 +298,7 @@ class AuthenticationGateTest {
             getInstrumentation().runOnMainSync {
                 mainActivity.onDocumentPicked(
                     MainActivity.DocumentAction.EXPORT_JSON,
-                    exportFile.toUri()
+                    exportFile.toUri(),
                 )
             }
 
@@ -318,44 +315,35 @@ class AuthenticationGateTest {
         AuthenticationUtil.hasScreenLockOverride = false
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val titles = (0 until toolbar.menu.size()).map { toolbar.menu.getItem(it).title.toString() }
-                val themeIdx = titles.indexOf(activity.getString(R.string.theme))
-                val authIdx = titles.indexOf(activity.getString(R.string.authentication_mode))
-                assertThat(themeIdx).isAtLeast(0)
-                assertThat(authIdx).isEqualTo(themeIdx + 1)
-            }
+            composeRule.openOverflowMenu()
+            composeRule.awaitTagDisplayed(UiTestTags.OVERFLOW_MENU)
 
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_app_launch)).perform(click())
+            val titles = composeRule.onNodeWithTag(UiTestTags.OVERFLOW_MENU)
+                .onChildren()
+                .fetchSemanticsNodes()
+                .mapNotNull { it.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { s -> s.text } }
+            val themeIdx = titles.indexOf(string(R.string.theme))
+            val authIdx = titles.indexOf(string(R.string.authentication_mode))
+            assertThat(themeIdx).isAtLeast(0)
+            assertThat(authIdx).isEqualTo(themeIdx + 1)
 
-            onView(withText(R.string.screen_lock_required_title)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
-            onView(withText(R.string.open_settings_button)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
-            onView(withText(R.string.cancel_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).performClick()
+
+            composeRule.awaitTextDisplayed(string(R.string.screen_lock_required_title))
+            composeRule.onNodeWithText(string(R.string.open_settings_button)).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
 
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
             }
 
-            // Reopen Authentication mode popup selector -> "None" remains checked and "App launch" is unchecked
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(
-                allOf(
-                    isAssignableFrom(ListMenuItemView::class.java),
-                    hasDescendant(withText(R.string.auth_mode_none))
-                )
-            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isChecked()))))
-            onView(
-                allOf(
-                    isAssignableFrom(ListMenuItemView::class.java),
-                    hasDescendant(withText(R.string.auth_mode_app_launch))
-                )
-            ).check(matches(hasDescendant(allOf(isAssignableFrom(RadioButton::class.java), isNotChecked()))))
+            // Reopen Authentication mode submenu -> "None" remains selected and "App launch" unselected
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.awaitNodeDisplayed(authRadioMatcher(R.string.auth_mode_none))
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_none)).assertIsSelected()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).assertIsNotSelected()
         }
     }
 
@@ -365,7 +353,6 @@ class AuthenticationGateTest {
         val exportFile = File(getInstrumentation().targetContext.cacheDir, "blocked_unauth_export.json")
         exportFile.delete()
 
-        // Configure APP_LAUNCH first, then simulate user removing device screen lock in Android Settings
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 activity.settings.authMode = AuthMode.APP_LAUNCH
@@ -376,12 +363,9 @@ class AuthenticationGateTest {
         AuthenticationUtil.hasScreenLockOverride = false
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            onView(withText(R.string.screen_lock_disabled_title)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
-            onView(withText(R.string.set_up_screen_lock_button)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
+            composeRule.awaitTextDisplayed(string(R.string.screen_lock_disabled_title))
+            composeRule.onNodeWithText(string(R.string.set_up_screen_lock_button)).assertIsDisplayed()
 
-            // Verify session is strictly UNAUTHENTICATED and unauthenticated export is blocked
             scenario.onActivity { activity ->
                 assertThat(activity.appSessionManager.authState.value)
                     .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
@@ -389,15 +373,15 @@ class AuthenticationGateTest {
             }
             assertThat(exportFile.exists()).isFalse()
 
-            // Tapping "Turn off" cleanly disables APP_LAUNCH and unlocks tokens without trapping the user
-            onView(withText(R.string.turn_off_button)).inRoot(isDialog()).perform(click())
+            // Tapping "Turn off" cleanly disables APP_LAUNCH and unlocks tokens
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEUTRAL_BUTTON).performClick()
 
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
                 assertThat(activity.appSessionManager.authState.value)
                     .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
             }
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
         }
     }
 
@@ -425,27 +409,24 @@ class AuthenticationGateTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertThat(promptCount).isEqualTo(1)
 
-            // User cancels BiometricPrompt -> retry dialog shown while tokens stay locked
             scenario.onActivity {
                 pendingCancel?.invoke()
             }
 
-            onView(withText(R.string.authentication_dialog_title)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
+            composeRule.awaitTextDisplayed(string(R.string.authentication_dialog_title))
             scenario.onActivity { activity ->
                 assertThat(activity.appSessionManager.authState.value)
                     .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
             }
 
-            // Clicking Unlock re-invokes BiometricPrompt and unlocks on success
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
             assertThat(promptCount).isEqualTo(2)
 
             scenario.onActivity {
                 pendingSuccess?.invoke()
             }
 
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
             scenario.onActivity { activity ->
                 activity.settings.authMode = AuthMode.NONE
             }
@@ -455,7 +436,6 @@ class AuthenticationGateTest {
     @Test
     fun testSwitchingFromNoneToAppLaunchPromptsOnceAndHandlesBackCancelCleanly() {
         insertTestToken()
-        // Ensure AppSessionManager starts in fresh cold-launch state (hasAuthenticatedSession = false)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 activity.settings.authMode = AuthMode.NONE
@@ -476,12 +456,12 @@ class AuthenticationGateTest {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertThat(promptCount).isEqualTo(0)
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
 
             // 1. Select App launch and press Back/Cancel on the prompt -> stays in None mode, no retry dialog
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_app_launch)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).performClick()
             assertThat(promptCount).isEqualTo(1)
 
             scenario.onActivity {
@@ -489,16 +469,17 @@ class AuthenticationGateTest {
             }
 
             assertThat(promptCount).isEqualTo(1)
+            composeRule.waitForIdle()
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
                 assertThat(activity.getOpenDialogWindows()).isEmpty()
             }
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
 
-            // 2. Select App launch again and complete auth -> prompts ONLY ONCE (no second prompt!)
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_app_launch)).perform(click())
+            // 2. Select App launch again and complete auth -> prompts ONLY ONCE
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).performClick()
             assertThat(promptCount).isEqualTo(2)
 
             scenario.onActivity {
@@ -506,18 +487,19 @@ class AuthenticationGateTest {
             }
 
             assertThat(promptCount).isEqualTo(2)
+            composeRule.waitForIdle()
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.APP_LAUNCH)
                 assertThat(activity.appSessionManager.authState.value)
                     .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
                 assertThat(activity.getOpenDialogWindows()).isEmpty()
             }
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
 
             // 3. Switch back from App launch -> None -> prompts once and returns cleanly to None
-            openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-            onView(withText(R.string.authentication_mode)).perform(click())
-            onView(withText(R.string.auth_mode_none)).perform(click())
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_none)).performClick()
             assertThat(promptCount).isEqualTo(3)
 
             scenario.onActivity {
@@ -525,11 +507,12 @@ class AuthenticationGateTest {
             }
 
             assertThat(promptCount).isEqualTo(3)
+            composeRule.waitForIdle()
             scenario.onActivity { activity ->
                 assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
                 assertThat(activity.getOpenDialogWindows()).isEmpty()
             }
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
         }
     }
 
@@ -561,8 +544,6 @@ class AuthenticationGateTest {
             }
             assertThat(promptCount).isEqualTo(1)
 
-            // Simulate full-screen ConfirmDeviceCredentialActivity stopping MainActivity, then
-            // delivering user Back/cancel in onActivityResult while MainActivity is still CREATED.
             scenario.moveToState(Lifecycle.State.CREATED)
             getInstrumentation().runOnMainSync {
                 pendingCancel?.invoke()
@@ -570,25 +551,23 @@ class AuthenticationGateTest {
 
             scenario.moveToState(Lifecycle.State.RESUMED)
 
-            // Must show the retry dialog once without re-launching the prompt in a loop or exposing tokens
             assertThat(promptCount).isEqualTo(1)
-            onView(withText(R.string.authentication_dialog_title)).inRoot(isDialog())
-                .check(matches(isDisplayed()))
+            composeRule.awaitTextDisplayed(string(R.string.authentication_dialog_title))
+            // Fail-closed: token list is completely omitted from composition while locked
+            composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).assertDoesNotExist()
             scenario.onActivity { activity ->
                 assertThat(activity.appSessionManager.authState.value)
                     .isEqualTo(MainViewModel.AuthState.UNAUTHENTICATED)
-                assertThat(activity.findViewById<View>(R.id.nav_host_fragment).visibility)
-                    .isEqualTo(View.INVISIBLE)
             }
 
-            onView(withText(R.string.unlock_text)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
             assertThat(promptCount).isEqualTo(2)
 
             scenario.onActivity {
                 pendingSuccess?.invoke()
             }
 
-            onView(withId(R.id.token_list)).check(matches(isDisplayed()))
+            composeRule.awaitTokenCardCount(1)
             assertThat(mainActivity.appSessionManager.authState.value)
                 .isEqualTo(MainViewModel.AuthState.AUTHENTICATED)
 
@@ -602,7 +581,6 @@ class AuthenticationGateTest {
     fun testQuitAndLockInAppLaunchAndTokenEncryptedModesExitsWithoutPrompting() {
         insertTestToken()
         try {
-            // 1. App Launch mode: clicking Quit and Lock must finish without invoking authenticateAppLaunch
             AuthenticationUtil.hasScreenLockOverride = true
             var promptCount = 0
             AuthenticationUtil.appLaunchAuthCallbackOverride = { _, _ ->
@@ -616,12 +594,11 @@ class AuthenticationGateTest {
                     activity.appSessionManager.prepareAuthenticatedSession()
                     activity.settings.authMode = AuthMode.APP_LAUNCH
                     activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    activity.invalidateMenu()
                 }
-                awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
+                composeRule.awaitTagDisplayed(UiTestTags.QUIT_AND_LOCK_BUTTON)
                 assertThat(promptCount).isEqualTo(0)
 
-                onView(withId(R.id.quit_and_lock)).perform(click())
+                composeRule.onNodeWithTag(UiTestTags.QUIT_AND_LOCK_BUTTON).performClick()
 
                 val deadline = System.currentTimeMillis() + 3_000L
                 while (scenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
@@ -633,7 +610,6 @@ class AuthenticationGateTest {
                 assertThat(scenario.state).isEqualTo(Lifecycle.State.DESTROYED)
             }
 
-            // 2. Token Encrypted mode: clicking Quit and Lock wipes session key and finishes without unlock prompt
             AuthenticationUtil.appLaunchAuthCallbackOverride = null
             AuthenticationUtil.hasStrongBiometricOverride = false
 
@@ -650,13 +626,13 @@ class AuthenticationGateTest {
                         activity.tokenCryptoManager.enableTokenEncryption(setup, null)
                         setup.clear()
                     }
+                    activity.settings.refreshFlows()
                     activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    activity.invalidateMenu()
                 }
-                awaitViewMatching(withId(R.id.quit_and_lock), isDisplayed())
+                composeRule.awaitTagDisplayed(UiTestTags.QUIT_AND_LOCK_BUTTON)
                 assertThat(mainActivity.tokenCryptoManager.isUnlocked()).isTrue()
 
-                onView(withId(R.id.quit_and_lock)).perform(click())
+                composeRule.onNodeWithTag(UiTestTags.QUIT_AND_LOCK_BUTTON).performClick()
 
                 val deadline = System.currentTimeMillis() + 3_000L
                 while (scenario.state != Lifecycle.State.DESTROYED && System.currentTimeMillis() < deadline) {
@@ -668,7 +644,6 @@ class AuthenticationGateTest {
                 assertThat(scenario.state).isEqualTo(Lifecycle.State.DESTROYED)
             }
         } finally {
-            // Reset back to AuthMode.NONE for subsequent tests
             AuthenticationUtil.appLaunchAuthCallbackOverride = null
             AuthenticationUtil.hasScreenLockOverride = false
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
@@ -681,6 +656,7 @@ class AuthenticationGateTest {
                             activity.settings.authMode = AuthMode.NONE
                         }
                     }
+                    activity.settings.refreshFlows()
                     activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
                 }
             }
@@ -690,27 +666,28 @@ class AuthenticationGateTest {
     @Test
     fun testShareQrCodeCopyTokenUriButtonCopiesExactSensitiveUriToClipboard() {
         AuthenticationUtil.hasScreenLockOverride = false
-        insertTestToken()
+        val tokenId = insertTestToken()
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            awaitViewMatching(withId(R.id.token_list), isDisplayed())
-            onView(withId(R.id.token_list))
-                .perform(
-                    actionOnItemAtPosition<RecyclerView.ViewHolder>(
-                        0,
-                        RecyclerViewAction.clickChildViewWithId(R.id.menu)
-                    )
-                )
-            onView(withText(R.string.share_qr_code)).perform(click())
+            composeRule.awaitTokenCardCount(1)
+            composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(tokenId)).performClick()
+            composeRule.onNodeWithText(string(R.string.share_qr_code)).performClick()
 
-            awaitDialogViewMatching(withId(R.id.copy_uri_button), allOf(isDisplayed(), isEnabled()))
-            onView(withId(R.id.copy_uri_button)).inRoot(isDialog())
-                .perform(scrollTo(), click())
+            composeRule.awaitTagDisplayed(UiTestTags.COPY_URI_BUTTON)
+            composeRule.waitUntil(5_000L) {
+                runCatching {
+                    composeRule.onNodeWithTag(UiTestTags.COPY_URI_BUTTON).assertIsEnabled()
+                    true
+                }.getOrDefault(false)
+            }
+            composeRule.onNodeWithTag(UiTestTags.COPY_URI_BUTTON)
+                .performScrollTo()
+                .performClick()
 
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                awaitViewMatching(withText(R.string.token_uri_copied), isDisplayed())
+                composeRule.awaitTextDisplayed(string(R.string.token_uri_copied))
             } else {
-                onView(withText(R.string.token_uri_copied)).check(doesNotExist())
+                composeRule.onNodeWithText(string(R.string.token_uri_copied)).assertDoesNotExist()
             }
 
             scenario.onActivity { activity ->
@@ -738,7 +715,6 @@ class AuthenticationGateTest {
                 configuredClipboardUtil = activity.clipboardUtil
                 activity.clipboardUtil.expirationDurationMs = 1_200L
 
-                // Verify direct CharArray extraction & Editable scrubbing without String intermediaries
                 val editText = EditText(activity).apply { setText("secretPass!42") }
                 assertThat(AuthenticationUtil.extractCharArray(editText))
                     .isEqualTo("secretPass!42".toCharArray())
@@ -746,16 +722,13 @@ class AuthenticationGateTest {
                 assertThat(editText.text.toString()).isEmpty()
             }
 
-            awaitViewMatching(withId(R.id.token_list), isDisplayed())
-
-            // 1. Tap token card -> copies OTP with EXTRA_IS_SENSITIVE = true (API 24+), shows Snackbar only on API <= 32, then auto-clears after 1.2s
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.clickCardAtPosition(0)
 
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                awaitViewMatching(withText(R.string.code_copied), isDisplayed())
+                composeRule.awaitTextDisplayed(string(R.string.code_copied))
             } else {
-                onView(withText(R.string.code_copied)).check(doesNotExist())
+                composeRule.onNodeWithText(string(R.string.code_copied)).assertDoesNotExist()
             }
 
             scenario.onActivity { activity ->
@@ -781,7 +754,6 @@ class AuthenticationGateTest {
                 assertThat(remaining).isEmpty()
             }
 
-            // 2. If another clip replaces ours before expiration, expiration never overwrites the external clip
             scenario.onActivity { activity ->
                 activity.clipboardUtil.copySensitiveText("otp", "123456", ttlMs = 400L)
                 val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -794,7 +766,6 @@ class AuthenticationGateTest {
                 assertThat(text).isEqualTo("https://external.example")
             }
 
-            // 3. Locking session immediately clears an active owned sensitive clip
             scenario.onActivity { activity ->
                 activity.clipboardUtil.copySensitiveText("otp", "654321", ttlMs = 60_000L)
                 activity.appSessionManager.lockSession()
@@ -810,48 +781,9 @@ class AuthenticationGateTest {
         }
     }
 
-    private fun awaitViewMatching(
-        viewMatcher: Matcher<View>,
-        assertionMatcher: Matcher<View>,
-        timeoutMs: Long = 5_000L
-    ) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(viewMatcher).check(matches(assertionMatcher))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(viewMatcher).check(matches(assertionMatcher))
-    }
-
-    private fun awaitDialogViewMatching(
-        viewMatcher: Matcher<View>,
-        assertionMatcher: Matcher<View>,
-        timeoutMs: Long = 5_000L
-    ) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(viewMatcher).inRoot(isDialog()).check(matches(assertionMatcher))
+    private fun authRadioMatcher(titleRes: Int): SemanticsMatcher {
+        return SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
+            hasText(string(titleRes))
     }
 
     private fun insertTestToken(): Long {

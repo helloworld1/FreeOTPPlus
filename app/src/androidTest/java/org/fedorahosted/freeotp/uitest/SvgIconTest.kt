@@ -8,30 +8,32 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.bumptech.glide.Glide
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.components.TokenAvatarModel
+import org.fedorahosted.freeotp.ui.components.TokenBadgePalette
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.ui.components.resolveTokenAvatarModel
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.fedorahosted.freeotp.util.ImageUtil
-import org.fedorahosted.freeotp.util.setTokenImagePreview
+import org.fedorahosted.freeotp.util.TokenCustomImageTransformation
 import org.junit.Assert.assertThrows
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.liberty.android.freeotp.token_images.TokenImage
@@ -42,6 +44,9 @@ import java.util.zip.GZIPOutputStream
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class SvgIconTest {
+
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
 
     companion object {
         // Exact SVG reported in https://github.com/helloworld1/FreeOTPPlus/issues/293
@@ -68,13 +73,11 @@ class SvgIconTest {
             assertThat(bitmap.width).isEqualTo(512)
             assertThat(bitmap.height).isEqualTo(512)
 
-            // Corner pixel is Telekom magenta (#E20074)
             val cornerPixel = bitmap.getPixel(8, 8)
             assertThat(Color.red(cornerPixel)).isEqualTo(0xE2)
             assertThat(Color.green(cornerPixel)).isEqualTo(0x00)
             assertThat(Color.blue(cornerPixel)).isEqualTo(0x74)
 
-            // Center vertical stem of the 'T' glyph (x=30/60 -> ~256, y=30/60 -> ~256) is white (#FFFFFF)
             val centerPixel = bitmap.getPixel(256, 256)
             assertThat(Color.red(centerPixel)).isGreaterThan(240)
             assertThat(Color.green(centerPixel)).isGreaterThan(240)
@@ -128,6 +131,7 @@ class SvgIconTest {
             assertThat(decoded.height).isEqualTo(256)
             assertThat(Color.red(decoded.getPixel(4, 4))).isEqualTo(0xE2)
 
+            var insertedId = 0L
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 scenario.onActivity { activity ->
                     runBlocking {
@@ -138,18 +142,17 @@ class SvgIconTest {
                                 ordinal = 0L,
                                 issuer = "Telekom",
                                 label = "user@telekom.de",
-                                imagePath = svgFile.toUri().toString()
+                                imagePath = svgFile.toUri().toString(),
                             )
                         )
+                        insertedId = activity.otpTokenDatabase.otpTokenDao().getAll().first().single().id
                     }
                 }
 
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                onView(withId(R.id.token_list))
-                    .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                    .check(matches(hasDescendant(withText("Telekom"))))
-                    .check(matches(hasDescendant(withId(R.id.image))))
-                    .check(matches(isDisplayed()))
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "Telekom")
+                composeRule.onNodeWithTag(UiTestTags.tokenAvatarTag(insertedId), useUnmergedTree = true)
+                    .assertIsDisplayed()
             }
         } finally {
             svgFile.delete()
@@ -162,7 +165,7 @@ class SvgIconTest {
         @Suppress("DEPRECATION")
         val pkgInfo = context.packageManager.getPackageInfo(
             context.packageName,
-            PackageManager.GET_PERMISSIONS
+            PackageManager.GET_PERMISSIONS,
         )
         val requested = pkgInfo.requestedPermissions.orEmpty().toSet()
         assertThat(requested).contains(Manifest.permission.CAMERA)
@@ -171,7 +174,6 @@ class SvgIconTest {
         assertThat(requested).doesNotContain(Manifest.permission.READ_EXTERNAL_STORAGE)
         assertThat(requested).doesNotContain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-        // External QR / deep-link URI parsing ignores untrusted image= parameters by default
         val fromExternalQr = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&image=https%3A%2F%2Fevil.example%2Ftrack.png")
         )
@@ -182,10 +184,9 @@ class SvgIconTest {
         )
         assertThat(fromExternalLocal.imagePath).isNull()
 
-        // Internal backup restore parsing allows image= only for filename relinking inside filesDir
         val fromBackup = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/GitHub:alice?secret=JBSWY3DPEHPK3PXP&image=file%3A%2F%2F%2Fdata%2Fuser%2F0%2Fpkg%2Ffiles%2Fimage_1.png"),
-            allowImageParam = true
+            allowImageParam = true,
         )
         assertThat(
             TokenImageBackupUtil.sanitizeImportedImagePath(fromBackup.imagePath, context.filesDir)
@@ -198,7 +199,7 @@ class SvgIconTest {
         val xxeFile = File(context.cacheDir, "malicious.svg")
         xxeFile.writeText(
             """<!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/hosts">]><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><text>&xxe;</text></svg>""",
-            StandardCharsets.UTF_8
+            StandardCharsets.UTF_8,
         )
         val imageUtil = ImageUtil(context)
         try {
@@ -218,9 +219,9 @@ class SvgIconTest {
         val bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         try {
-            val allResIds = TokenImage.values().map { it.resource } + listOf(
-                org.fedorahosted.freeotp.R.drawable.logo,
-                org.fedorahosted.freeotp.R.drawable.edit_16px
+            val allResIds = TokenImage.entries.map { it.resource } + listOf(
+                R.drawable.logo,
+                R.drawable.edit_16px,
             )
             for (resId in allResIds) {
                 val drawable = AppCompatResources.getDrawable(context, resId)
@@ -228,7 +229,6 @@ class SvgIconTest {
                 bitmap.eraseColor(Color.TRANSPARENT)
                 drawable!!.setBounds(0, 0, 128, 128)
                 drawable.draw(canvas)
-                // Ensure the center area drew non-transparent pixels
                 var nonTransparent = 0
                 for (y in 24 until 104 step 8) {
                     for (x in 24 until 104 step 8) {
@@ -245,26 +245,15 @@ class SvgIconTest {
     }
 
     @Test
-    fun testProportionalTextDrawableAndDarkMonochromeCustomImageDetection() {
-        val drawable = com.amulyakhare.textdrawable.TextDrawable.builder()
-            .beginConfig()
-            .bold()
-            .endConfig()
-            .buildRoundRectProportional("A", Color.rgb(0x19, 0x76, 0xD2), 0.17f)
-        val bmp = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
+    fun testBadgePaletteDeterminismAndDarkMonochromeCustomImageDetection() {
         val darkMono = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
         val colorful = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888)
         try {
-            // 1. Proportional TextDrawable rounds corners (corner pixel transparent) and honors setAlpha on background
-            drawable.setBounds(0, 0, 128, 128)
-            drawable.draw(Canvas(bmp))
-            assertThat(Color.alpha(bmp.getPixel(0, 0))).isEqualTo(0)
-            assertThat(Color.alpha(bmp.getPixel(64, 64))).isEqualTo(255)
-
-            bmp.eraseColor(Color.TRANSPARENT)
-            drawable.alpha = 80
-            drawable.draw(Canvas(bmp))
-            assertThat(Color.alpha(bmp.getPixel(32, 32))).isLessThan(120)
+            // 1. TokenBadgePalette maps keys deterministically across all 17 Material colors
+            val c1 = TokenBadgePalette.getColor("acme cloud")
+            val c2 = TokenBadgePalette.getColor("acme cloud")
+            assertThat(c1).isEqualTo(c2)
+            assertThat(Color.alpha(c1)).isEqualTo(255)
 
             // 2. Dark monochrome transparent bitmap is detected for Dark Mode backing, colorful is not
             darkMono.eraseColor(Color.TRANSPARENT)
@@ -272,8 +261,7 @@ class SvgIconTest {
             val blackPaint = android.graphics.Paint().apply { color = Color.BLACK }
             darkCanvas.drawCircle(64f, 64f, 36f, blackPaint)
             assertThat(
-                org.fedorahosted.freeotp.util.TokenCustomImageTransformation
-                    .isDarkMonochromeOnTransparent(darkMono)
+                TokenCustomImageTransformation.isDarkMonochromeOnTransparent(darkMono)
             ).isTrue()
 
             colorful.eraseColor(Color.TRANSPARENT)
@@ -281,52 +269,48 @@ class SvgIconTest {
             val bluePaint = android.graphics.Paint().apply { color = Color.rgb(0x1E, 0x88, 0xE5) }
             colorCanvas.drawCircle(64f, 64f, 36f, bluePaint)
             assertThat(
-                org.fedorahosted.freeotp.util.TokenCustomImageTransformation
-                    .isDarkMonochromeOnTransparent(colorful)
+                TokenCustomImageTransformation.isDarkMonochromeOnTransparent(colorful)
             ).isFalse()
         } finally {
-            bmp.recycle()
             darkMono.recycle()
             colorful.recycle()
         }
     }
 
     @Test
-    fun testBuiltInIconRefAndSetTokenImagePreview() {
+    fun testBuiltInIconRefAndResolveTokenAvatarModel() {
         val context = getInstrumentation().targetContext
-        getInstrumentation().runOnMainSync {
-            val imageView = android.widget.ImageView(context)
 
-            // Explicit builtin:<Name> reference overrides unmatched issuer and renders vector drawable
-            imageView.setTokenImagePreview(
-                TokenImageBackupUtil.toBuiltInImagePath(TokenImage.GitHub.name),
-                "Unmatched Custom Service",
-                "user@example.com"
-            )
-            assertThat(imageView.drawable).isNotNull()
-            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+        // Explicit builtin:<Name> reference overrides unmatched issuer and resolves BuiltInVector
+        val builtInModel = resolveTokenAvatarModel(
+            TokenImageBackupUtil.toBuiltInImagePath(TokenImage.GitHub.name),
+            "Unmatched Custom Service",
+            "user@example.com",
+            context.filesDir,
+        )
+        assertThat(builtInModel).isEqualTo(TokenAvatarModel.BuiltInVector(TokenImage.GitHub.resource))
 
-            // Unknown future builtin:<Name> falls back cleanly without crashing
-            imageView.setTokenImagePreview(
-                "builtin:FutureUnknownServiceIcon",
-                "Unmatched Custom Service",
-                "user@example.com"
-            )
-            assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+        // Unknown future builtin:<Name> falls back cleanly to InitialGlyph without crashing
+        val unknownBuiltIn = resolveTokenAvatarModel(
+            "builtin:FutureUnknownServiceIcon",
+            "Unmatched Custom Service",
+            "user@example.com",
+            context.filesDir,
+        )
+        assertThat(unknownBuiltIn).isInstanceOf(TokenAvatarModel.InitialGlyph::class.java)
+        assertThat((unknownBuiltIn as TokenAvatarModel.InitialGlyph).glyph).isEqualTo("U")
 
-            // Matched issuer renders built-in drawable (not TextDrawable)
-            imageView.setTokenImagePreview(null, "GitHub", "user@example.com")
-            assertThat(imageView.drawable).isNotNull()
-            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+        // Matched issuer resolves MatchedServiceVector
+        val matched = resolveTokenAvatarModel(null, "GitHub", "user@example.com", context.filesDir)
+        assertThat(matched).isEqualTo(TokenAvatarModel.MatchedServiceVector(TokenImage.GitHub.resource))
 
-            // Unmatched issuer with emoji renders proportional TextDrawable without throwing
-            imageView.setTokenImagePreview(null, "🔑 CustomVault", "user@example.com")
-            assertThat(imageView.drawable).isInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
+        // Unmatched issuer with emoji resolves InitialGlyph with full surrogate pair
+        val emojiModel = resolveTokenAvatarModel(null, "🔑 CustomVault", "user@example.com", context.filesDir)
+        assertThat(emojiModel).isInstanceOf(TokenAvatarModel.InitialGlyph::class.java)
+        assertThat((emojiModel as TokenAvatarModel.InitialGlyph).glyph).isEqualTo("🔑")
 
-            // Blank issuer & label renders default logo
-            imageView.setTokenImagePreview(null, "", "")
-            assertThat(imageView.drawable).isNotNull()
-            assertThat(imageView.drawable).isNotInstanceOf(com.amulyakhare.textdrawable.TextDrawable::class.java)
-        }
+        // Blank issuer & label resolves DefaultLogo
+        val blankModel = resolveTokenAvatarModel(null, "", "", context.filesDir)
+        assertThat(blankModel).isEqualTo(TokenAvatarModel.DefaultLogo)
     }
 }

@@ -1,32 +1,17 @@
 package org.fedorahosted.freeotp.util
 
-import android.app.Dialog
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
 import android.text.Editable
-import android.view.LayoutInflater
-import android.view.View
 import android.view.autofill.AutofillManager
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.lifecycleScope
-import com.google.android.material.checkbox.MaterialCheckBox
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.launch
-import org.fedorahosted.freeotp.FreeOtpPlusApplication
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.TokenCryptoManager
@@ -49,7 +34,7 @@ object AuthenticationUtil {
     @Volatile
     var authCallbackOverride: ((onAuthenticated: () -> Unit) -> Unit)? = null
 
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     @Volatile
     var appLaunchAuthCallbackOverride: ((onSuccess: () -> Unit, onCancel: () -> Unit) -> Unit)? = null
 
@@ -76,7 +61,7 @@ object AuthenticationUtil {
             sdkInt = Build.VERSION.SDK_INT,
             biometricManagerStatus = status,
             hasScreenLock = { hasScreenLock(context) },
-            fingerprintServiceProvider = { context.getSystemService("fingerprint") }
+            fingerprintServiceProvider = { context.getSystemService("fingerprint") },
         )
     }
 
@@ -84,7 +69,7 @@ object AuthenticationUtil {
         sdkInt: Int,
         biometricManagerStatus: Int,
         hasScreenLock: () -> Boolean,
-        fingerprintServiceProvider: () -> Any?
+        fingerprintServiceProvider: () -> Any?,
     ): Boolean {
         if (biometricManagerStatus == BiometricManager.BIOMETRIC_SUCCESS) {
             return true
@@ -101,7 +86,7 @@ object AuthenticationUtil {
 
     internal fun hasEnrolledPlatformFingerprint(
         hasScreenLock: () -> Boolean,
-        fingerprintServiceProvider: () -> Any?
+        fingerprintServiceProvider: () -> Any?,
     ): Boolean {
         if (!hasScreenLock()) {
             return false
@@ -119,7 +104,7 @@ object AuthenticationUtil {
 
     fun authenticateIfScreenLockEnabled(
         activity: AppCompatActivity,
-        onAuthenticated: () -> Unit
+        onAuthenticated: () -> Unit,
     ) {
         if (!hasScreenLock(activity)) {
             onAuthenticated()
@@ -150,7 +135,7 @@ object AuthenticationUtil {
                         Toast.makeText(
                             applicationContext,
                             "${activity.getString(R.string.authentication_error)} $errString",
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_SHORT,
                         ).show()
                     }
                 }
@@ -167,10 +152,10 @@ object AuthenticationUtil {
                     Toast.makeText(
                         applicationContext,
                         R.string.unable_to_authenticate,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 }
-            }
+            },
         )
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
@@ -186,7 +171,7 @@ object AuthenticationUtil {
         activity: AppCompatActivity,
         settings: Settings,
         tokenCryptoManager: TokenCryptoManager,
-        onAuthenticated: () -> Unit
+        onAuthenticated: () -> Unit,
     ) {
         if (settings.authMode != AuthMode.NONE && activity is MainActivity && !activity.isSessionAuthenticated()) {
             return
@@ -200,139 +185,9 @@ object AuthenticationUtil {
         }
 
         // In TOKEN_ENCRYPTED mode without a device screen lock, verify the user's encryption key
-        val dialog = createManualKeyPromptDialog(
-            activity = activity,
-            titleRes = R.string.verify_encryption_key_title,
-            messageRes = R.string.verify_encryption_key_message,
-            positiveButtonRes = R.string.ok_text
-        ) { chars, _, dismissSafely ->
-            if (tokenCryptoManager.unlockWithPassphrase(chars)) {
-                dismissSafely()
-                if (!activity.isFinishing && !activity.isDestroyed) {
-                    onAuthenticated()
-                }
-                null
-            } else {
-                activity.getString(R.string.incorrect_encryption_key)
-            }
-        }
         if (activity is MainActivity) {
-            activity.showTrackedDialog(dialog)
-        } else {
-            dialog.show()
+            activity.requestManualKeyVerification(onAuthenticated)
         }
-    }
-
-    fun applySecureFlag(context: Context, dialog: Dialog) {
-        (context.applicationContext as? FreeOtpPlusApplication)?.applySecureFlagIfNeeded(dialog.window)
-    }
-
-    fun createManualKeyPromptDialog(
-        activity: AppCompatActivity,
-        @StringRes titleRes: Int,
-        @StringRes messageRes: Int,
-        @StringRes positiveButtonRes: Int,
-        cancelable: Boolean = true,
-        @StringRes biometricCheckboxLabelRes: Int? = null,
-        onCancel: (() -> Unit)? = null,
-        onDismiss: (() -> Unit)? = null,
-        onSubmit: suspend (
-            passphrase: CharArray,
-            biometricChecked: Boolean,
-            dismissSafely: () -> Unit
-        ) -> String?
-    ): AlertDialog {
-        val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_manual_key_prompt, null)
-        val messageView = dialogView.findViewById<TextView>(R.id.dialog_message)
-        val keyInputLayout = dialogView.findViewById<TextInputLayout>(R.id.key_input_layout)
-        val keyEditText = dialogView.findViewById<TextInputEditText>(R.id.key_edit_text)
-        val enableBiometricCheckbox = dialogView.findViewById<MaterialCheckBox>(R.id.enable_biometric_checkbox)
-
-        messageView.setText(messageRes)
-        keyEditText.doAfterTextChanged { keyInputLayout.error = null }
-
-        if (biometricCheckboxLabelRes != null) {
-            enableBiometricCheckbox.visibility = View.VISIBLE
-            enableBiometricCheckbox.isChecked = true
-            enableBiometricCheckbox.setText(biometricCheckboxLabelRes)
-        } else {
-            enableBiometricCheckbox.visibility = View.GONE
-        }
-
-        val dialog = MaterialAlertDialogBuilder(activity)
-            .setTitle(titleRes)
-            .setView(dialogView)
-            .setCancelable(cancelable)
-            .setPositiveButton(positiveButtonRes, null)
-            .setNegativeButton(R.string.cancel_text) { _, _ ->
-                onCancel?.invoke()
-            }
-            .setOnCancelListener {
-                onCancel?.invoke()
-            }
-            .create()
-
-        dialog.setOnShowListener {
-            applySecureFlag(activity, dialog)
-            disableAutofillForDialog(dialog, dialogView)
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                val chars = extractCharArray(keyEditText)
-                var handedOffToCoroutine = false
-                try {
-                    if (chars.isEmpty()) {
-                        keyInputLayout.error = activity.getString(R.string.incorrect_encryption_key)
-                        return@setOnClickListener
-                    }
-                    positiveButton.isEnabled = false
-                    val biometricChecked = biometricCheckboxLabelRes != null && enableBiometricCheckbox.isChecked
-                    handedOffToCoroutine = true
-                    activity.lifecycleScope.launch {
-                        val errorMessage = try {
-                            onSubmit(chars, biometricChecked) {
-                                dismissKeyDialogSafely(dialog, keyEditText)
-                            }
-                        } finally {
-                            chars.fill('\u0000')
-                        }
-                        if (errorMessage != null) {
-                            positiveButton.isEnabled = true
-                            keyInputLayout.error = errorMessage
-                        }
-                    }
-                } finally {
-                    if (!handedOffToCoroutine) {
-                        chars.fill('\u0000')
-                    }
-                }
-            }
-        }
-        dialog.setOnDismissListener {
-            clearAndCancelAutofill(dialog.context, keyEditText)
-            onDismiss?.invoke()
-        }
-        applySecureFlag(activity, dialog)
-        disableAutofillForDialog(dialog, dialogView)
-        return dialog
-    }
-
-    fun disableAutofillForDialog(dialog: AlertDialog, dialogView: View) {
-        ViewCompat.setImportantForAutofill(
-            dialogView,
-            View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-        )
-        dialog.window?.decorView?.let { decorView ->
-            ViewCompat.setImportantForAutofill(
-                decorView,
-                View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-            )
-        }
-        cancelAutofillSession(dialog.context)
-    }
-
-    fun dismissKeyDialogSafely(dialog: AlertDialog, vararg inputs: EditText) {
-        clearAndCancelAutofill(dialog.context, *inputs)
-        dialog.dismiss()
     }
 
     fun extractCharArray(editText: EditText): CharArray {
@@ -367,7 +222,7 @@ object AuthenticationUtil {
         activity: AppCompatActivity,
         onSuccess: () -> Unit,
         onNoDeviceCredential: () -> Unit = {},
-        onCancelOrError: (errorCode: Int, errString: CharSequence?) -> Unit = { _, _ -> }
+        onCancelOrError: (errorCode: Int, errString: CharSequence?) -> Unit = { _, _ -> },
     ) {
         appLaunchAuthCallbackOverride?.let { override ->
             override(
@@ -380,7 +235,7 @@ object AuthenticationUtil {
                     if (!activity.isFinishing && !activity.isDestroyed) {
                         onCancelOrError(BiometricPrompt.ERROR_USER_CANCELED, null)
                     }
-                }
+                },
             )
             return
         }
@@ -422,10 +277,10 @@ object AuthenticationUtil {
                     Toast.makeText(
                         applicationContext,
                         R.string.unable_to_authenticate,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 }
-            }
+            },
         )
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
@@ -445,7 +300,7 @@ object AuthenticationUtil {
         cipher: Cipher,
         onSuccess: (Cipher) -> Unit,
         onFallbackToManual: (userInitiated: Boolean) -> Unit,
-        onCancel: () -> Unit
+        onCancel: () -> Unit,
     ) {
         biometricCryptoCallbackOverride?.let { override ->
             override(
@@ -464,7 +319,7 @@ object AuthenticationUtil {
                     if (!activity.isFinishing && !activity.isDestroyed) {
                         onCancel()
                     }
-                }
+                },
             )
             return
         }
@@ -488,11 +343,12 @@ object AuthenticationUtil {
                         BiometricPrompt.ERROR_HW_UNAVAILABLE,
                         BiometricPrompt.ERROR_UNABLE_TO_PROCESS,
                         BiometricPrompt.ERROR_NO_BIOMETRICS,
-                        BiometricPrompt.ERROR_HW_NOT_PRESENT -> {
+                        BiometricPrompt.ERROR_HW_NOT_PRESENT,
+                        -> {
                             Toast.makeText(
                                 applicationContext,
                                 "${activity.getString(R.string.authentication_error)} $errString",
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_SHORT,
                             ).show()
                             if (!activity.isFinishing && !activity.isDestroyed) {
                                 onFallbackToManual(false)
@@ -505,7 +361,7 @@ object AuthenticationUtil {
                                 Toast.makeText(
                                     applicationContext,
                                     "${activity.getString(R.string.authentication_error)} $errString",
-                                    Toast.LENGTH_SHORT
+                                    Toast.LENGTH_SHORT,
                                 ).show()
                             }
                             if (!activity.isFinishing && !activity.isDestroyed) {
@@ -527,10 +383,10 @@ object AuthenticationUtil {
                     Toast.makeText(
                         applicationContext,
                         R.string.unable_to_authenticate,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 }
-            }
+            },
         )
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()

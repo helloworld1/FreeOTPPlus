@@ -1,19 +1,18 @@
 package org.fedorahosted.freeotp.uitest
 
 import android.net.Uri
-import androidx.appcompat.widget.Toolbar
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.ViewMatchers.isChecked
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
@@ -27,18 +26,30 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.third_party.AegisBackupParser
 import org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.hamcrest.Matchers.not
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class ImportExportTest {
+    private val composeRule = createEmptyComposeRule()
+    private val activityRule = activityScenarioRule<MainActivity>()
+
     @get:Rule
-    var activityRule = activityScenarioRule<MainActivity>()
+    val ruleChain: RuleChain = RuleChain.outerRule(composeRule).around(activityRule)
+
+    private fun string(resId: Int): String =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(resId)
 
     @Before
     fun setUp(): Unit = clearTokens()
@@ -66,28 +77,24 @@ class ImportExportTest {
         assertThat(roundTrip1.issuer).isNull()
         assertThat(roundTrip1.label).isEqualTo("alice@example.com")
 
-        // Single-character label without issuer
         val tokenSingleChar = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/a?secret=JBSWY3DPEHPK3PXP")
         )
         assertThat(tokenSingleChar.issuer).isNull()
         assertThat(tokenSingleChar.label).isEqualTo("a")
 
-        // Label containing colon without issuer round-trip
         val tokenColonInLabel = token1.copy(issuer = null, label = "service:alice")
         val exportedColonUri = OtpTokenFactory.toUri(tokenColonInLabel)
         val roundTripColon = OtpTokenFactory.createFromUri(exportedColonUri)
         assertThat(roundTripColon.issuer).isNull()
         assertThat(roundTripColon.label).isEqualTo("service:alice")
 
-        // Empty issuer prefix or empty issuer query parameter
         val tokenColonPrefix = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/:bob@example.com?secret=JBSWY3DPEHPK3PXP&issuer=")
         )
         assertThat(tokenColonPrefix.issuer).isNull()
         assertThat(tokenColonPrefix.label).isEqualTo("bob@example.com")
 
-        // Issuer only in query parameter (no prefix in path)
         val tokenQueryIssuer = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/carol@example.com?secret=JBSWY3DPEHPK3PXP&issuer=GitHub")
         )
@@ -249,22 +256,18 @@ class ImportExportTest {
         assertThat(OtpTokenFactory.toUri(initialToken).getQueryParameter("counter")).isEqualTo("0")
 
         dao.insert(initialToken)
-        // Simulate using token once -> counter advances from 0 to 1
         dao.incrementCounter(1L)
         val afterFirstUse = dao.get(1L).first()!!
         assertThat(afterFirstUse.counter).isEqualTo(1L)
         assertThat(OtpTokenFactory.toUri(afterFirstUse).getQueryParameter("counter")).isEqualTo("1")
 
-        // Export both JSON and Key URI formats
         activity.importFromUtil.exportJsonFile(jsonFile.toUri())
         activity.importFromUtil.exportKeyUriFile(uriFile.toUri())
 
-        // Re-import JSON -> preserves exact counter 1
         dao.deleteAll()
         activity.importFromUtil.importJsonFile(jsonFile.toUri())
         assertThat(dao.getAll().first().single().counter).isEqualTo(1L)
 
-        // Re-import Key URI -> preserves exact counter 1
         dao.deleteAll()
         activity.importFromUtil.importKeyUriFile(uriFile.toUri())
         assertThat(dao.getAll().first().single().counter).isEqualTo(1L)
@@ -280,7 +283,6 @@ class ImportExportTest {
         val uriFile = File(context.cacheDir, "test_f4_overwrite.txt")
         val zipFile = File(context.cacheDir, "test_f4_overwrite.zip")
 
-        // Pre-populate all 3 target files with 32 KB of non-zero trailing garbage to verify truncation
         val largeJunk = "X".repeat(32 * 1024)
         jsonFile.writeText(largeJunk)
         uriFile.writeText(largeJunk)
@@ -296,7 +298,7 @@ class ImportExportTest {
             issuer = "GitHub",
             label = "",
             secret = "JBSWY3DPEHPK3PXP",
-            categories = listOf("Work")
+            categories = listOf("Work"),
         ).copy(id = 1, ordinal = 1)
 
         val colonInIssuerToken = OtpTokenFactory.create(
@@ -304,15 +306,13 @@ class ImportExportTest {
             issuer = "Company:Prod",
             label = "env:admin",
             secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-            categories = listOf("Work", "Infra")
+            categories = listOf("Work", "Infra"),
         ).copy(id = 2, ordinal = 2)
 
-        // Default QR share URI stays compact without category= query params
         assertThat(OtpTokenFactory.toUri(colonInIssuerToken).getQueryParameters("category")).isEmpty()
 
         dao.insertAll(listOf(issuerOnlyToken, colonInIssuerToken))
 
-        // Overwrite all 3 pre-existing 32 KB files
         activity.importFromUtil.exportJsonFile(jsonFile.toUri())
         activity.importFromUtil.exportKeyUriFile(uriFile.toUri())
         activity.importFromUtil.exportTokenImagesZip(zipFile.toUri())
@@ -321,7 +321,6 @@ class ImportExportTest {
         assertThat(uriFile.length()).isLessThan(largeJunk.length.toLong())
         assertThat(zipFile.length()).isLessThan(largeJunk.length.toLong())
 
-        // 1. Verify unencrypted JSON import preserves issuer-only token, colon-in-issuer, and categories
         dao.deleteAll()
         activity.importFromUtil.importJsonFile(jsonFile.toUri())
         val fromJson = dao.getAll().first()
@@ -333,7 +332,6 @@ class ImportExportTest {
         assertThat(fromJson[1].label).isEqualTo("env:admin")
         assertThat(fromJson[1].categories).containsExactly("Work", "Infra").inOrder()
 
-        // 2. Verify unencrypted Key-URI import preserves issuer-only token, colon-in-issuer, and categories
         dao.deleteAll()
         activity.importFromUtil.importKeyUriFile(uriFile.toUri())
         val fromKeyUri = dao.getAll().first()
@@ -345,7 +343,6 @@ class ImportExportTest {
         assertThat(fromKeyUri[1].label).isEqualTo("env:admin")
         assertThat(fromKeyUri[1].categories).containsExactly("Work", "Infra").inOrder()
 
-        // 3. Verify overwritten ZIP also parses cleanly with no trailing EOCD corruption
         activity.importFromUtil.importTokenImagesZip(zipFile.toUri())
 
         jsonFile.delete()
@@ -366,7 +363,7 @@ class ImportExportTest {
             secret = "JBSWY3DPEHPK3PXP",
             algorithm = "SHA256",
             digits = 6,
-            period = 30
+            period = 30,
         )
         val redHatHotp = OtpTokenFactory.create(
             type = OtpTokenType.HOTP,
@@ -376,58 +373,57 @@ class ImportExportTest {
             algorithm = "SHA1",
             digits = 6,
             period = 30,
-            initialCounter = 7L
+            initialCounter = 7L,
         )
         backupFile.writeBytes(
             FreeOtpBackupParser.createV2ExternalBackupBytesForTesting(
                 password = backupPassword,
                 tokens = listOf(redHatHotp, githubToken),
-                iterations = 1_000
+                iterations = 1_000,
             )
         )
 
         try {
             // 1. Verify exact Import and Export submenu item ordering and titles
-            activityRule.scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val importItem = (0 until toolbar.menu.size())
-                    .map { toolbar.menu.getItem(it) }
-                    .first { it.title.toString() == activity.getString(R.string.import_text) }
-                val importSubMenu = importItem.subMenu!!
-                val importTitles = (0 until importSubMenu.size()).map { importSubMenu.getItem(it).title.toString() }
-                assertThat(importTitles).containsExactly(
-                    "FreeOTP+ JSON (Preferred)",
-                    "Key URI",
-                    "Token images",
-                    "FreeOTP Backup XML",
-                    "Aegis JSON"
-                ).inOrder()
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.import_text)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.import_aegis_json))
 
-                val exportItem = (0 until toolbar.menu.size())
-                    .map { toolbar.menu.getItem(it) }
-                    .first { it.title.toString() == activity.getString(R.string.export_text) }
-                val exportSubMenu = exportItem.subMenu!!
-                val exportTitles = (0 until exportSubMenu.size()).map { exportSubMenu.getItem(it).title.toString() }
-                assertThat(exportTitles).containsExactly(
-                    "FreeOTP+ JSON (Preferred)",
-                    "Key URI",
-                    "Token images"
-                ).inOrder()
-            }
+            val importMenuTitles = composeRule.onNodeWithTag(UiTestTags.OVERFLOW_MENU)
+                .onChildren()
+                .fetchSemanticsNodes()
+                .mapNotNull { it.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { s -> s.text } }
+                .drop(1) // Drop back header row
+            assertThat(importMenuTitles).containsExactly(
+                "FreeOTP+ JSON (Preferred)",
+                "Key URI",
+                "Token images",
+                "FreeOTP Backup XML",
+                "Aegis JSON",
+            ).inOrder()
 
-            openActionBarOverflowOrOptionsMenu(context)
-            onView(withText(R.string.import_text)).perform(click())
-            onView(withText(R.string.import_freeotp_backup)).check(matches(isDisplayed()))
-            onView(withText(R.string.import_aegis_json)).check(matches(isDisplayed()))
-            // Close menu by pressing back
-            androidx.test.espresso.Espresso.pressBack()
+            // Navigate back to root menu and check Export submenu ordering
+            composeRule.onNodeWithText(string(R.string.import_text)).performClick()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.export_token_images))
+            val exportMenuTitles = composeRule.onNodeWithTag(UiTestTags.OVERFLOW_MENU)
+                .onChildren()
+                .fetchSemanticsNodes()
+                .mapNotNull { it.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { s -> s.text } }
+                .drop(1)
+            assertThat(exportMenuTitles).containsExactly(
+                "FreeOTP+ JSON (Preferred)",
+                "Key URI",
+                "Token images",
+            ).inOrder()
+            Espresso.pressBack()
 
             // Seed 1 existing token in FreeOTP+
             val existingToken = OtpTokenFactory.create(
                 type = OtpTokenType.TOTP,
                 issuer = "ExistingCorp",
                 label = "existing@corp.example",
-                secret = "JBSWY3DPEHPK3PXP"
+                secret = "JBSWY3DPEHPK3PXP",
             ).copy(id = 1L, ordinal = 1L)
             activityRule.scenario.onActivity { activity ->
                 runBlocking {
@@ -440,57 +436,45 @@ class ImportExportTest {
             activityRule.scenario.onActivity { activity ->
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
-                    backupFile.toUri()
+                    backupFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
-            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
-            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(not(isDisplayed())))
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_APPEND_RADIO).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.REPLACE_WARNING_TEXT).assertDoesNotExist()
 
             // 3. Wrong password keeps dialog open and preserves existing token
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText("WrongPassword"), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
-            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_freeotp_backup_password))
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("WrongPassword")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.incorrect_freeotp_backup_password))
             assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)).hasSize(1)
 
             // 4. Correct password with Append mode places the 2 FreeOTP tokens at the top before ExistingCorp
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText(backupPassword), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement(backupPassword)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val appended = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
             assertThat(appended.map { it.issuer }).containsExactly("GitHub", "Red Hat", "ExistingCorp").inOrder()
             assertThat(appended[0].algorithm).isEqualTo("SHA256")
             assertThat(appended[1].tokenType).isEqualTo(OtpTokenType.HOTP)
             assertThat(appended[1].counter).isEqualTo(7L)
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(0, androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub")))
-            )
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(2, androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp")))
-            )
+            composeRule.awaitTokenCardCount(3)
+            composeRule.assertCardAtPositionHasText(0, "GitHub")
+            composeRule.assertCardAtPositionHasText(2, "ExistingCorp")
 
             // 5. Re-import with "Replace all existing tokens" -> shows warning and replaces all 3 with 2
             activityRule.scenario.onActivity { activity ->
                 activity.dismissSnackbar()
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
-                    backupFile.toUri()
+                    backupFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_replace_all))
-            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText(backupPassword), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO)
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO).performClick()
+            composeRule.onNodeWithTag(UiTestTags.REPLACE_WARNING_TEXT).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement(backupPassword)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val replaced = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 2)
             assertThat(replaced.map { it.issuer }).containsExactly("GitHub", "Red Hat").inOrder()
@@ -509,10 +493,10 @@ class ImportExportTest {
             activityRule.scenario.onActivity { activity ->
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_FREEOTP_BACKUP,
-                    badFile.toUri()
+                    badFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitViewMatching(withText(R.string.import_freeotp_backup_failed_text))
+            composeRule.awaitTextDisplayed(string(R.string.import_freeotp_backup_failed_text))
         } finally {
             badFile.delete()
         }
@@ -565,7 +549,7 @@ class ImportExportTest {
                 }
             }
             """.trimIndent(),
-            Charsets.UTF_8
+            Charsets.UTF_8,
         )
 
         val encryptedDbJson = """
@@ -595,18 +579,17 @@ class ImportExportTest {
                 dbJsonObject = encryptedDbJson,
                 scryptN = 1024,
                 scryptR = 8,
-                scryptP = 1
+                scryptP = 1,
             )
         )
         badAegisFile.writeText("""{"not_aegis": true}""", Charsets.UTF_8)
 
         try {
-            // Seed 1 existing token in FreeOTP+
             val existingToken = OtpTokenFactory.create(
                 type = OtpTokenType.TOTP,
                 issuer = "ExistingCorp",
                 label = "existing@corp.example",
-                secret = "JBSWY3DPEHPK3PXP"
+                secret = "JBSWY3DPEHPK3PXP",
             ).copy(id = 1L, ordinal = 1L)
             activityRule.scenario.onActivity { activity ->
                 runBlocking {
@@ -619,57 +602,40 @@ class ImportExportTest {
             activityRule.scenario.onActivity { activity ->
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
-                    plainAegisFile.toUri()
+                    plainAegisFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_append))
-            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(not(isDisplayed())))
-            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.IMPORT_MODE_APPEND_RADIO)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).assertDoesNotExist()
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_APPEND_RADIO).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val afterPlainAppend = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
             assertThat(afterPlainAppend.map { it.issuer }).containsExactly("GitHub", "Steam", "ExistingCorp").inOrder()
             assertThat(afterPlainAppend[0].categories).containsExactly("Work")
             assertThat(afterPlainAppend[1].digits).isEqualTo(5)
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(
-                    0,
-                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub"))
-                )
-            )
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(
-                    2,
-                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp"))
-                )
-            )
+            composeRule.awaitTokenCardCount(3)
+            composeRule.assertCardAtPositionHasText(0, "GitHub")
+            composeRule.assertCardAtPositionHasText(2, "ExistingCorp")
 
             // 2. Encrypted Aegis JSON shows password field, rejects wrong password, and Replace All replaces list
             activityRule.scenario.onActivity { activity ->
                 activity.dismissSnackbar()
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
-                    encryptedAegisFile.toUri()
+                    encryptedAegisFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
-            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText("WrongPassword"), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
-            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_freeotp_backup_password))
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("WrongPassword")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.incorrect_freeotp_backup_password))
             assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)).hasSize(3)
 
-            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText(aegisPassword), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO).performClick()
+            composeRule.onNodeWithTag(UiTestTags.REPLACE_WARNING_TEXT).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement(aegisPassword)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val afterEncryptedReplace = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
             assertThat(afterEncryptedReplace.single().issuer).isEqualTo("Cloudflare")
@@ -682,10 +648,10 @@ class ImportExportTest {
                 activity.dismissSnackbar()
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_AEGIS_JSON,
-                    badAegisFile.toUri()
+                    badAegisFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitViewMatching(withText(R.string.import_aegis_failed_text))
+            composeRule.awaitTextDisplayed(string(R.string.import_aegis_failed_text))
         } finally {
             plainAegisFile.delete()
             encryptedAegisFile.delete()
@@ -702,8 +668,6 @@ class ImportExportTest {
         val encryptionKey = "BackupVaultKey123!"
 
         try {
-            // Prepare 1) a plaintext FreeOTP+ JSON backup (GitHub + GitLab) and
-            //         2) an encrypted FreeOTP+ JSON backup (Cloudflare)
             activityRule.scenario.onActivity { activity ->
                 runBlocking {
                     val dao = activity.otpTokenDatabase.otpTokenDao()
@@ -715,15 +679,15 @@ class ImportExportTest {
                                 label = "octocat@github.com",
                                 secret = "JBSWY3DPEHPK3PXP",
                                 algorithm = "SHA256",
-                                categories = listOf("Work")
+                                categories = listOf("Work"),
                             ).copy(id = 1L, ordinal = 1L),
                             OtpTokenFactory.create(
                                 type = OtpTokenType.HOTP,
                                 issuer = "GitLab",
                                 label = "ops@gitlab.com",
                                 secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-                                initialCounter = 5L
-                            ).copy(id = 2L, ordinal = 2L)
+                                initialCounter = 5L,
+                            ).copy(id = 2L, ordinal = 2L),
                         )
                     )
                     activity.importFromUtil.exportJsonFile(plainJsonFile.toUri(), encrypt = false)
@@ -736,7 +700,7 @@ class ImportExportTest {
                                 label = "sec@cloudflare.com",
                                 secret = "JBSWY3DPEHPK3PXP",
                                 initialCounter = 11L,
-                                categories = listOf("Infra")
+                                categories = listOf("Infra"),
                             ).copy(id = 1L, ordinal = 1L)
                         )
                     )
@@ -746,14 +710,13 @@ class ImportExportTest {
                     activity.importFromUtil.exportJsonFile(encryptedJsonFile.toUri(), encrypt = true)
                     activity.tokenCryptoManager.disableTokenEncryption(AuthMode.NONE)
 
-                    // Seed 1 existing token in FreeOTP+
                     dao.replaceAll(
                         listOf(
                             OtpTokenFactory.create(
                                 type = OtpTokenType.TOTP,
                                 issuer = "ExistingCorp",
                                 label = "existing@corp.example",
-                                secret = "JBSWY3DPEHPK3PXP"
+                                secret = "JBSWY3DPEHPK3PXP",
                             ).copy(id = 1L, ordinal = 1L)
                         )
                     )
@@ -766,59 +729,42 @@ class ImportExportTest {
             activityRule.scenario.onActivity { activity ->
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_JSON,
-                    plainJsonFile.toUri()
+                    plainJsonFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.radio_import_append))
-            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(not(isDisplayed())))
-            onView(withId(R.id.radio_import_append)).inRoot(isDialog()).check(matches(isChecked()))
-            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(not(isDisplayed())))
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.awaitTagDisplayed(UiTestTags.IMPORT_MODE_APPEND_RADIO)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).assertDoesNotExist()
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_APPEND_RADIO).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.REPLACE_WARNING_TEXT).assertDoesNotExist()
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val afterPlainAppend = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)
             assertThat(afterPlainAppend.map { it.issuer }).containsExactly("GitHub", "GitLab", "ExistingCorp").inOrder()
             assertThat(afterPlainAppend[0].categories).containsExactly("Work")
             assertThat(afterPlainAppend[1].tokenType).isEqualTo(OtpTokenType.HOTP)
             assertThat(afterPlainAppend[1].counter).isEqualTo(5L)
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 3)
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(
-                    0,
-                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("GitHub"))
-                )
-            )
-            TestWaitUtil.awaitViewMatching(
-                withId(R.id.token_list),
-                RecyclerViewAssertion.atPosition(
-                    2,
-                    androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("ExistingCorp"))
-                )
-            )
+            composeRule.awaitTokenCardCount(3)
+            composeRule.assertCardAtPositionHasText(0, "GitHub")
+            composeRule.assertCardAtPositionHasText(2, "ExistingCorp")
 
             // 2. Encrypted FreeOTP+ JSON shows key input, rejects wrong key inline, and Replace All replaces list
             activityRule.scenario.onActivity { activity ->
                 activity.dismissSnackbar()
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_JSON,
-                    encryptedJsonFile.toUri()
+                    encryptedJsonFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitDialogViewMatching(withId(R.id.key_edit_text))
-            onView(withId(R.id.key_input_layout)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText("WrongKey!"), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
-            TestWaitUtil.awaitDialogViewMatching(withText(R.string.incorrect_encryption_key))
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("WrongKey!")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.incorrect_encryption_key))
             assertThat(TestWaitUtil.awaitStoredTokens(activityRule.scenario, 3)).hasSize(3)
 
-            onView(withId(R.id.radio_import_replace_all)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.replace_warning_text)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.key_edit_text))
-                .inRoot(isDialog())
-                .perform(replaceText(encryptionKey), closeSoftKeyboard())
-            onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO).performClick()
+            composeRule.onNodeWithTag(UiTestTags.REPLACE_WARNING_TEXT).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement(encryptionKey)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
             val afterEncryptedReplace = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1)
             assertThat(afterEncryptedReplace.single().issuer).isEqualTo("Cloudflare")
@@ -831,10 +777,10 @@ class ImportExportTest {
                 activity.dismissSnackbar()
                 activity.onDocumentPicked(
                     MainActivity.DocumentAction.IMPORT_JSON,
-                    badJsonFile.toUri()
+                    badJsonFile.toUri(),
                 )
             }
-            TestWaitUtil.awaitViewMatching(withText(R.string.import_json_failed_text))
+            composeRule.awaitTextDisplayed(string(R.string.import_json_failed_text))
         } finally {
             plainJsonFile.delete()
             encryptedJsonFile.delete()

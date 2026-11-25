@@ -2,30 +2,22 @@ package org.fedorahosted.freeotp.uitest
 
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
-import android.view.View
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.MenuItemCompat
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isChecked
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import com.google.android.material.color.MaterialColors
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -33,104 +25,99 @@ import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.ui.EditTokenFragment
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.fedorahosted.freeotp.ui.ScanTokenFragment
-import org.hamcrest.Matcher
-import org.hamcrest.Matchers.not
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.ui.scan.CameraChoice
+import org.fedorahosted.freeotp.ui.scan.chooseCameraChoice
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
 import org.junit.Assert.assertThrows
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class CategoryFilterTintTest {
 
-    private fun awaitViewDisplayed(matcher: Matcher<View>, timeoutMs: Long = 5_000L) {
-        val deadline = System.currentTimeMillis() + timeoutMs
-        var lastError: Throwable? = null
-        while (System.currentTimeMillis() < deadline) {
-            try {
-                onView(matcher).check(matches(isDisplayed()))
-                return
-            } catch (e: NoMatchingViewException) {
-                lastError = e
-            } catch (e: AssertionError) {
-                lastError = e
-            }
-            Thread.sleep(50L)
-        }
-        if (lastError != null) throw lastError
-        onView(matcher).check(matches(isDisplayed()))
-    }
+    @get:Rule
+    val composeRule = createEmptyComposeRule()
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
 
     @Test
     fun testFilterIconTintedAndMultiCategoryFiltering() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
+                activity.settings.selectedCategory = null
                 runBlocking(Dispatchers.IO) {
                     activity.otpTokenDatabase.clearAllTables()
                     activity.otpTokenDatabase.otpTokenDao().insert(
                         TestData.OTP_HOTP_TOKEN_1.copy(
                             id = 0L,
                             ordinal = 0L,
-                            categories = listOf("Work", "Cloud")
+                            categories = listOf("Work", "Cloud"),
                         )
                     )
                     activity.otpTokenDatabase.otpTokenDao().insert(
                         TestData.OTP_TOTP_TOKEN_2.copy(
                             id = 0L,
                             ordinal = 1L,
-                            categories = emptyList()
+                            categories = emptyList(),
                         )
                     )
                 }
             }
+
             // Category labels are not displayed on the main token list card
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(not(hasDescendant(withText("Work • Cloud")))))
+            composeRule.awaitTokenCardCount(2)
+            composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+                .onChildren()[0]
+                .assert(!hasText("Work • Cloud"))
 
-            // Initially "All categories" is selected -> default control normal tint
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val filterItem = toolbar.menu.findItem(R.id.action_filter)
-                val expectedNormal = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorControlNormal)
-                assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedNormal)
-            }
+            // Initially "All categories" is active -> filter icon button is unselected (default tint)
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_BUTTON)
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsNotSelected()
 
-            // Select "Uncategorized" -> highlighted with colorPrimary and shows Token 2
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText(R.string.uncategorized)).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_ALL)
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_ALL).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).assertIsNotSelected()
 
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val filterItem = toolbar.menu.findItem(R.id.action_filter)
-                val expectedActive = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorPrimary)
-                assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedActive)
-            }
-            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+            // Select "Uncategorized" -> filter icon button highlighted as selected and shows Token 2
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).performClick()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "microsoft.com")
 
             // Select "Work" -> Token 1 matches
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText("Work")).perform(click())
-            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.categoryFilterItemTag("Work"))
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Work")).performClick()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
 
             // Select "Cloud" -> Token 1 also matches its second category
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText("Cloud")).perform(click())
-            TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.categoryFilterItemTag("Cloud"))
+            composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Work")).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Cloud")).performClick()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
 
-            // Select "All categories" -> restored to colorControlNormal
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText(R.string.all_categories)).perform(click())
-
-            scenario.onActivity { activity ->
-                val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                val filterItem = toolbar.menu.findItem(R.id.action_filter)
-                val expectedNormal = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorControlNormal)
-                assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedNormal)
-            }
+            // Select "All categories" -> restored to unselected (default tint) and shows both tokens
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_ALL)
+            composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Cloud")).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_ALL).performClick()
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsNotSelected()
+            composeRule.awaitTokenCardCount(2)
         }
     }
 
@@ -146,36 +133,39 @@ class CategoryFilterTintTest {
                         TestData.OTP_HOTP_TOKEN_1.copy(
                             id = 1L,
                             ordinal = 0L,
-                            categories = listOf("Work")
+                            categories = listOf("Work"),
                         )
                     )
                     db.otpTokenDao().insert(
                         TestData.OTP_TOTP_TOKEN_2.copy(
                             id = 2L,
                             ordinal = 1L,
-                            categories = listOf("Personal")
+                            categories = listOf("Personal"),
                         )
                     )
                 }
-                activity.navigateTo(
-                    R.id.action_tokenList_to_editToken,
-                    EditTokenFragment.args(1L)
-                )
+                activity.navigateToEditToken(1L)
             }
 
-            // Existing "Work" chip is checked; toggle "Personal" on as well
-            TestWaitUtil.awaitViewMatching(withText("Work"), isChecked())
-            onView(withText("Personal")).perform(scrollTo(), click())
+            // Existing "Work" chip is selected; toggle "Personal" on as well
+            composeRule.awaitTagDisplayed(UiTestTags.editCategoryChipTag("Work"))
+            composeRule.onNodeWithTag(UiTestTags.editCategoryChipTag("Work")).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.editCategoryChipTag("Personal"))
+                .performScrollTo()
+                .performClick()
 
             // Add a brand new category "Cloud" via [+ New category] chip
-            onView(withId(R.id.add_category_chip)).perform(scrollTo(), click())
-            onView(withId(R.id.category_edit_text)).inRoot(isDialog())
-                .perform(replaceText("Cloud"), closeSoftKeyboard())
-            onView(withText(R.string.add)).inRoot(isDialog()).perform(click())
+            composeRule.onNodeWithTag(UiTestTags.ADD_CATEGORY_CHIP)
+                .performScrollTo()
+                .performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_NAME_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_NAME_INPUT).performTextReplacement("Cloud")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            onView(withText("Cloud")).check(matches(isChecked()))
-            onView(withId(R.id.save)).perform(click())
-            awaitViewDisplayed(withId(R.id.token_list))
+            composeRule.awaitTagDisplayed(UiTestTags.editCategoryChipTag("Cloud"))
+            composeRule.onNodeWithTag(UiTestTags.editCategoryChipTag("Cloud")).assertIsSelected()
+            composeRule.onNodeWithTag(UiTestTags.SAVE_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.TOKEN_LIST)
         }
 
         val updated = runBlocking(Dispatchers.IO) {
@@ -232,7 +222,7 @@ class CategoryFilterTintTest {
             .addMigrations(
                 OtpTokenDatabase.MIGRATION_1_2,
                 OtpTokenDatabase.MIGRATION_2_3,
-                OtpTokenDatabase.MIGRATION_3_4
+                OtpTokenDatabase.MIGRATION_3_4,
             )
             .build()
 
@@ -244,7 +234,6 @@ class CategoryFilterTintTest {
             assertThat(tokens[0].categories).containsExactly("Work")
             assertThat(tokens[1].categories).containsExactly("Cloud, \"Infra\"")
             assertThat(tokens[2].categories).isEmpty()
-            // Active HOTP token preserves exact synced counter (42); unused legacy -1 normalizes to 0
             assertThat(tokens[3].counter).isEqualTo(42L)
             assertThat(tokens[4].counter).isEqualTo(0L)
             assertThat(allCategories).containsExactly("Cloud, \"Infra\"", "Work").inOrder()
@@ -267,13 +256,11 @@ class CategoryFilterTintTest {
             )
         }
 
-        // Valid secret with embedded newline (%0A) is accepted cleanly
         val parsedWithNewline = OtpTokenFactory.createFromUri(
             Uri.parse("otpauth://totp/Example:alice?secret=JBSW%0AY3DP%09EHPK3PXP&issuer=Example")
         )
         assertThat(parsedWithNewline.label).isEqualTo("alice")
 
-        // Pre-existing corrupted token in DB shows invalid_token snackbar instead of crashing when tapped
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 runBlocking(Dispatchers.IO) {
@@ -282,67 +269,66 @@ class CategoryFilterTintTest {
                         TestData.OTP_HOTP_TOKEN_1.copy(
                             id = 0L,
                             ordinal = 0L,
-                            secret = "0189_CORRUPTED!"
+                            secret = "0189_CORRUPTED!",
                         )
                     )
                 }
             }
 
-            awaitViewDisplayed(withId(R.id.token_list))
-            onView(withId(R.id.token_list))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            awaitViewDisplayed(withText(R.string.invalid_token))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.clickCardAtPosition(0)
+            composeRule.awaitTextDisplayed(string(R.string.invalid_token))
         }
     }
 
     @Test
     fun testCameraSelectorFallbackOrderWhenBackCameraMissing() {
         assertThat(
-            ScanTokenFragment.chooseCameraChoice(
+            chooseCameraChoice(
                 hasBackCamera = true,
                 hasFrontCamera = true,
-                hasAnyCamera = true
+                hasAnyCamera = true,
             )
-        ).isEqualTo(ScanTokenFragment.CameraChoice.BACK)
+        ).isEqualTo(CameraChoice.BACK)
 
         assertThat(
-            ScanTokenFragment.chooseCameraChoice(
+            chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = true,
-                hasAnyCamera = true
+                hasAnyCamera = true,
             )
-        ).isEqualTo(ScanTokenFragment.CameraChoice.FRONT)
+        ).isEqualTo(CameraChoice.FRONT)
 
         assertThat(
-            ScanTokenFragment.chooseCameraChoice(
+            chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = false,
-                hasAnyCamera = true
+                hasAnyCamera = true,
             )
-        ).isEqualTo(ScanTokenFragment.CameraChoice.ANY)
+        ).isEqualTo(CameraChoice.ANY)
 
         assertThat(
-            ScanTokenFragment.chooseCameraChoice(
+            chooseCameraChoice(
                 hasBackCamera = false,
                 hasFrontCamera = false,
-                hasAnyCamera = false
+                hasAnyCamera = false,
             )
-        ).isEqualTo(ScanTokenFragment.CameraChoice.NONE)
+        ).isEqualTo(CameraChoice.NONE)
     }
 
     @Test
     fun testEmptyViewDistinguishesNoKeysFromZeroFilterAndSearchMatches() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
+                activity.settings.selectedCategory = null
                 runBlocking(Dispatchers.IO) {
                     activity.otpTokenDatabase.otpTokenDao().deleteAll()
                 }
             }
 
             // 1. Truly empty database with no active search/filter -> shows "No OTP keys installed."
-            awaitViewDisplayed(withId(R.id.empty_view))
-            onView(withId(R.id.empty_view))
-                .check(matches(withText(R.string.no_keys)))
+            composeRule.awaitTagDisplayed(UiTestTags.EMPTY_VIEW)
+            composeRule.onNodeWithTag(UiTestTags.EMPTY_VIEW).assertTextEquals(string(R.string.no_keys))
 
             // 2. Insert a categorized token -> list appears
             scenario.onActivity { activity ->
@@ -351,46 +337,47 @@ class CategoryFilterTintTest {
                         TestData.OTP_HOTP_TOKEN_1.copy(
                             id = 0L,
                             ordinal = 0L,
-                            categories = listOf("Work")
+                            categories = listOf("Work"),
                         )
                     )
                 }
             }
-            awaitViewDisplayed(withId(R.id.token_list))
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
 
             // 3. Filter by "Uncategorized" (0 matches while tokens exist) -> shows "No matching tokens found."
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText(R.string.uncategorized)).perform(click())
-            awaitViewDisplayed(withId(R.id.empty_view))
-            onView(withId(R.id.empty_view))
-                .check(matches(withText(R.string.no_matching_tokens)))
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED)
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.EMPTY_VIEW)
+            composeRule.onNodeWithTag(UiTestTags.EMPTY_VIEW)
+                .assertTextEquals(string(R.string.no_matching_tokens))
 
-            // 4. Reset filter to "All categories", then search for a non-matching query -> shows "No matching tokens found."
-            onView(withId(R.id.action_filter)).perform(click())
-            onView(withText(R.string.all_categories)).perform(click())
-            awaitViewDisplayed(withId(R.id.token_list))
-            onView(withId(R.id.search_view)).perform(click())
-            onView(withId(R.id.search_view)).perform(SearchViewAction.typeSearchViewText("zzz_no_match"))
-            awaitViewDisplayed(withId(R.id.empty_view))
-            onView(withId(R.id.empty_view))
-                .check(matches(withText(R.string.no_matching_tokens)))
+            // 4. Reset filter to "All categories", then search for non-matching query -> "No matching tokens found."
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_ALL)
+            composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_ALL).performClick()
+            composeRule.awaitTokenCardCount(1)
+            composeRule.onNodeWithTag(UiTestTags.SEARCH_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.SEARCH_FIELD)
+            composeRule.onNodeWithTag(UiTestTags.SEARCH_FIELD).performTextReplacement("zzz_no_match")
+            composeRule.awaitTagDisplayed(UiTestTags.EMPTY_VIEW)
+            composeRule.onNodeWithTag(UiTestTags.EMPTY_VIEW)
+                .assertTextEquals(string(R.string.no_matching_tokens))
 
             // 5. Clear search query -> token list reappears; wipe DB -> reverts to "No OTP keys installed."
-            onView(withId(R.id.search_view)).perform(SearchViewAction.typeSearchViewText(""), closeSoftKeyboard())
-            awaitViewDisplayed(withId(R.id.token_list))
-            onView(withId(R.id.token_list))
-                .check(matches(hasDescendant(withText("github.com"))))
+            composeRule.onNodeWithTag(UiTestTags.SEARCH_CLEAR_BUTTON).performClick()
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "github.com")
+            composeRule.onNodeWithTag(UiTestTags.SEARCH_COLLAPSE_BUTTON).performClick()
 
             scenario.onActivity { activity ->
                 runBlocking(Dispatchers.IO) {
                     activity.otpTokenDatabase.otpTokenDao().deleteAll()
                 }
             }
-            awaitViewDisplayed(withId(R.id.empty_view))
-            onView(withId(R.id.empty_view))
-                .check(matches(withText(R.string.no_keys)))
+            composeRule.awaitTagDisplayed(UiTestTags.EMPTY_VIEW)
+            composeRule.onNodeWithTag(UiTestTags.EMPTY_VIEW).assertTextEquals(string(R.string.no_keys))
         }
     }
 
@@ -407,55 +394,59 @@ class CategoryFilterTintTest {
                             TestData.OTP_HOTP_TOKEN_1.copy(
                                 id = 0L,
                                 ordinal = 0L,
-                                categories = listOf("Work", "Cloud")
+                                categories = listOf("Work", "Cloud"),
                             )
                         )
                         activity.otpTokenDatabase.otpTokenDao().insert(
                             TestData.OTP_TOTP_TOKEN_2.copy(
                                 id = 0L,
                                 ordinal = 1L,
-                                categories = emptyList()
+                                categories = emptyList(),
                             )
                         )
                     }
                 }
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
+                composeRule.awaitTokenCardCount(2)
 
-                onView(withId(R.id.action_filter)).perform(click())
-                onView(withText("Work")).perform(click())
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.categoryFilterItemTag("Work"))
+                composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Work")).performClick()
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "github.com")
             }
 
-            // Launch #2: verify "Work" category filter, icon tint, and checked menu item are restored on launch
+            // Launch #2: verify "Work" category filter and active toolbar icon + menu radio state are restored on launch
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "github.com")
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
 
                 scenario.onActivity { activity ->
                     assertThat(activity.settings.selectedCategory).isEqualTo("Work")
-                    val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
-                    val filterItem = toolbar.menu.findItem(R.id.action_filter)
-                    val expectedActive = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorPrimary)
-                    assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedActive)
                 }
 
                 // Switch to "Uncategorized" and exit
-                onView(withId(R.id.action_filter)).perform(click())
-                onView(withText(R.string.uncategorized)).perform(click())
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED)
+                composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Work")).assertIsSelected()
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).performClick()
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "microsoft.com")
             }
 
-            // Launch #3: verify "Uncategorized" is restored on launch, then test fallback when a saved category disappears
+            // Launch #3: verify "Uncategorized" is restored on launch, then test fallback when saved category disappears
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "microsoft.com")
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsSelected()
 
                 // Select "Work" again, then delete all tokens with "Work" -> filter resets to All categories
-                onView(withId(R.id.action_filter)).perform(click())
-                onView(withText("Work")).perform(click())
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.categoryFilterItemTag("Work"))
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_UNCATEGORIZED).assertIsSelected()
+                composeRule.onNodeWithTag(UiTestTags.categoryFilterItemTag("Work")).performClick()
+                composeRule.awaitTokenCardCount(1)
 
                 scenario.onActivity { activity ->
                     runBlocking(Dispatchers.IO) {
@@ -465,8 +456,9 @@ class CategoryFilterTintTest {
                     }
                 }
 
-                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+                composeRule.awaitTokenCardCount(1)
+                composeRule.assertCardAtPositionHasText(0, "microsoft.com")
+                composeRule.onNodeWithTag(UiTestTags.CATEGORY_FILTER_BUTTON).assertIsNotSelected()
                 scenario.onActivity { activity ->
                     assertThat(activity.settings.selectedCategory).isNull()
                 }

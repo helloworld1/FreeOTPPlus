@@ -2,21 +2,17 @@ package org.fedorahosted.freeotp.uitest
 
 import android.content.Intent
 import android.net.Uri
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isEnabled
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -25,148 +21,141 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
-import org.hamcrest.Matchers.allOf
-import org.hamcrest.Matchers.containsString
-import org.hamcrest.Matchers.not
+import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class MainActivityTest {
+    private val composeRule = createEmptyComposeRule()
+    private val activityRule = activityScenarioRule<MainActivity>()
+
     @get:Rule
-    var activityRule = activityScenarioRule<MainActivity>()
+    val ruleChain: RuleChain = RuleChain.outerRule(composeRule).around(activityRule)
+
+    @Before
+    fun setUp() {
+        activityRule.scenario.onActivity { activity ->
+            runBlocking {
+                activity.otpTokenDatabase.otpTokenDao().deleteAll()
+            }
+        }
+    }
+
+    private fun string(resId: Int): String =
+        getInstrumentation().targetContext.getString(resId)
 
     @Test
     fun testListing() {
         populateTestData()
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("github.com"))))
-            .check(matches(hasDescendant(withText("github account 1"))))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
-            .check(matches(hasDescendant(withText("microsoft.com"))))
-            .check(matches(hasDescendant(withText("microsoft account 1"))))
+        composeRule.awaitTokenCardCount(2)
+        composeRule.assertCardAtPositionHasText(0, "github.com")
+        composeRule.assertCardAtPositionHasText(0, "github account 1")
+        composeRule.assertCardAtPositionHasText(1, "microsoft.com")
+        composeRule.assertCardAtPositionHasText(1, "microsoft account 1")
     }
 
     @Test
     fun testInsertToken() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext);
-        onView(withText(R.string.add_token))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .perform(replaceText("issuer1"), closeSoftKeyboard())
-        onView(withId(R.id.label))
-            .perform(replaceText("account1"), closeSoftKeyboard())
-        onView(withId(R.id.secret))
-            .perform(replaceText("abcd5432"), closeSoftKeyboard())
-        onView(withId(R.id.add))
-            .check(matches(isEnabled()))
-            .perform(click())
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("issuer1"))))
-            .check(matches(hasDescendant(withText("account1"))))
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("issuer1")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("account1")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("abcd5432")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON)
+            .assertIsEnabled()
+            .performClick()
+
+        composeRule.awaitTokenCardCount(1)
+        composeRule.assertCardAtPositionHasText(0, "issuer1")
+        composeRule.assertCardAtPositionHasText(0, "account1")
     }
 
     @Test
     fun testInsertTokenWithoutIssuer() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-        onView(withText(R.string.add_token))
-            .perform(click())
-        onView(withId(R.id.label))
-            .perform(replaceText("account_no_issuer"), closeSoftKeyboard())
-        onView(withId(R.id.secret))
-            .perform(replaceText("abcd5432"), closeSoftKeyboard())
-        onView(withId(R.id.add))
-            .check(matches(isEnabled()))
-            .perform(click())
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("account_no_issuer"))))
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.LABEL_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("account_no_issuer")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("abcd5432")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON)
+            .assertIsEnabled()
+            .performClick()
+
+        composeRule.awaitTokenCardCount(1)
+        composeRule.assertCardAtPositionHasText(0, "account_no_issuer")
     }
 
     @Test
     fun testEditTokenRemoveIssuer() {
         populateTestData()
+        composeRule.awaitTokenCardCount(2)
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
 
-        onView(withId(R.id.issuer))
-            .perform(replaceText(""), closeSoftKeyboard())
-        onView(withId(R.id.save))
-            .check(matches(isEnabled()))
-            .perform(click())
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("")
+        composeRule.onNodeWithTag(UiTestTags.SAVE_BUTTON)
+            .assertIsEnabled()
+            .performClick()
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("github account 1"))))
+        composeRule.awaitTokenCardCount(2)
+        composeRule.assertCardAtPositionHasText(0, "github account 1")
 
-        // Reopen EditActivity and verify Save/Restore start disabled for null issuer
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .check(matches(withText("")))
-        onView(withId(R.id.save))
-            .check(matches(not(isEnabled())))
-        onView(withId(R.id.restore))
-            .check(matches(not(isEnabled())))
+        // Reopen Edit screen and verify Save/Restore start disabled for null issuer
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.SAVE_BUTTON).assertIsNotEnabled()
+        composeRule.onNodeWithTag(UiTestTags.RESTORE_DEFAULTS_BUTTON).assertIsNotEnabled()
     }
 
     @Test
     fun testEditToken() {
         populateTestData()
+        composeRule.awaitTokenCardCount(2)
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
 
-        onView(withId(R.id.issuer))
-            .perform(replaceText("new issuer"))
-        onView(withId(R.id.label))
-            .perform(replaceText("new account"))
-        onView(withId(R.id.save))
-            .perform(click())
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("new issuer"))))
-            .check(matches(hasDescendant(withText("new account"))))
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("new issuer")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("new account")
+        composeRule.onNodeWithTag(UiTestTags.SAVE_BUTTON).performClick()
+
+        composeRule.awaitTokenCardCount(2)
+        composeRule.assertCardAtPositionHasText(0, "new issuer")
+        composeRule.assertCardAtPositionHasText(0, "new account")
     }
 
     @Test
     fun testDeleteToken() {
         populateTestData()
+        composeRule.awaitTokenCardCount(2)
 
-        onView(withId(R.id.token_list))
-            .check(RecyclerViewAssertion.childrenCount(2))
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.delete)).performClick()
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.delete))
-            .perform(click())
-        onView(withId(R.id.delete))
-            .perform(click())
+        composeRule.awaitTagDisplayed(UiTestTags.DELETE_CONFIRM_BUTTON)
+        composeRule.onNodeWithTag(UiTestTags.DELETE_CONFIRM_BUTTON).performClick()
 
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-        onView(withId(R.id.token_list))
-            .check(RecyclerViewAssertion.childrenCount(1))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("microsoft.com"))))
-            .check(matches(hasDescendant(withText("microsoft account 1"))))
+        composeRule.awaitTokenCardCount(1)
+        composeRule.assertCardAtPositionHasText(0, "microsoft.com")
+        composeRule.assertCardAtPositionHasText(0, "microsoft account 1")
     }
 
     @Test
@@ -179,104 +168,102 @@ class MainActivityTest {
             }
         }
 
-        onView(withId(R.id.token_list))
-            .check(RecyclerViewAssertion.childrenCount(1))
+        composeRule.awaitTokenCardCount(1)
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.delete)).performClick()
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.delete))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .check(matches(withText("microsoft account 1")))
-        onView(withId(R.id.delete))
-            .perform(click())
+        composeRule.awaitTagDisplayed(UiTestTags.DELETE_ISSUER)
+        composeRule.onNodeWithTag(UiTestTags.DELETE_ISSUER).assertTextEquals("microsoft account 1")
+        composeRule.onNodeWithTag(UiTestTags.DELETE_CONFIRM_BUTTON).performClick()
 
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 0)
-        onView(withId(R.id.token_list))
-            .check(RecyclerViewAssertion.childrenCount(0))
+        composeRule.awaitTokenCardCount(0)
     }
 
     @Test
     fun testTokenClickRevealHotp() {
         populateTestData()
+        composeRule.awaitTokenCardCount(2)
 
-        // HOTP token (pos 0) shows counter "0"; TOTP token (pos 1) hides counter badge
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_container), isDisplayed())))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("0"), isDisplayed())))))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(1, hasDescendant(allOf(withId(R.id.counter_container), not(isDisplayed()))))))
+        // HOTP token (id=1) shows counter "0"; TOTP token (id=2) omits counter badge
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterContainerTag(1L), useUnmergedTree = true)
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+            .assertTextEquals("0")
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterContainerTag(2L), useUnmergedTree = true)
+            .assertDoesNotExist()
 
         // Tap HOTP token -> reveals RFC 4226 counter=0 code ("047 701") AND increments counter badge live to "1"
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github.com")))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("github account 1")))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("047 701")))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("1"), isDisplayed())))))
+        composeRule.clickCardAtPosition(0)
+        composeRule.assertCardAtPositionHasText(0, "047 701")
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+            .assertTextEquals("1")
 
         // Open Edit screen and verify Counter matches "1"
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0,
-                RecyclerViewAction.clickChildViewWithId(R.id.menu)))
-        onView(withText(R.string.edit))
-            .perform(click())
-        onView(withId(R.id.interval))
-            .check(matches(withText("1")))
+        composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(1L)).performClick()
+        composeRule.onNodeWithText(string(R.string.edit)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.DETAIL_INTERVAL_OR_COUNTER)
+        composeRule.onNodeWithTag(UiTestTags.DETAIL_INTERVAL_OR_COUNTER)
+            .performScrollTo()
+            .assertTextEquals("1")
     }
 
     @Test
     fun testAddHotpTokenWithCustomCounterAndIncrementOnUse() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().targetContext)
-        onView(withText(R.string.add_token))
-            .perform(click())
-        onView(withId(R.id.issuer))
-            .perform(replaceText("RFC4226"), closeSoftKeyboard())
-        onView(withId(R.id.label))
-            .perform(replaceText("alice@example.com"), closeSoftKeyboard())
-        onView(withId(R.id.secret))
-            .perform(replaceText("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"), closeSoftKeyboard())
-        onView(withId(R.id.hotp))
-            .perform(scrollTo(), click())
-        onView(withId(R.id.counter))
-            .perform(scrollTo(), replaceText("5"), closeSoftKeyboard())
-        onView(withId(R.id.add))
-            .check(matches(isEnabled()))
-            .perform(click())
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
 
-        TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("5"), isDisplayed())))))
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("RFC4226")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("alice@example.com")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT)
+            .performTextReplacement("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ")
+        composeRule.onNodeWithTag(UiTestTags.TYPE_HOTP_BUTTON)
+            .performScrollTo()
+            .performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.COUNTER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.COUNTER_INPUT)
+            .performScrollTo()
+            .performTextReplacement("5")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON)
+            .assertIsEnabled()
+            .performClick()
 
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+        composeRule.awaitTokenCardCount(1)
+        val insertedId = runBlocking {
+            var id = 1L
+            activityRule.scenario.onActivity { activity ->
+                id = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first().single().id }
+            }
+            id
+        }
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(insertedId), useUnmergedTree = true)
+            .assertTextEquals("5")
+
+        composeRule.clickCardAtPosition(0)
 
         // RFC 4226 Appendix D Count=5 code is "254 676", and counter advances to "6"
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(allOf(withId(R.id.counter_value), withText("6"), isDisplayed())))))
-            .check(matches(RecyclerViewAssertion.atPosition(0, hasDescendant(withText("254 676")))))
+        composeRule.assertCardAtPositionHasText(0, "254 676")
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(insertedId), useUnmergedTree = true)
+            .assertTextEquals("6")
     }
 
     @Test
     fun testSearchToken() {
         populateTestData()
-        onView(withId(R.id.search_view))
-            .perform(click())
-        onView(withId(R.id.search_view))
-            .perform(SearchViewAction.typeSearchViewText("Microsoft"))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-            .check(matches(hasDescendant(withText("microsoft.com"))))
-            .check(matches(hasDescendant(withText("microsoft account 1"))))
-        onView(withId(R.id.token_list))
-            .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+        composeRule.awaitTokenCardCount(2)
+
+        composeRule.onNodeWithTag(UiTestTags.SEARCH_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.SEARCH_FIELD)
+        composeRule.onNodeWithTag(UiTestTags.SEARCH_FIELD).performTextReplacement("Microsoft")
+        composeRule.awaitTokenCardCount(1)
+        composeRule.assertCardAtPositionHasText(0, "microsoft.com")
+        composeRule.assertCardAtPositionHasText(0, "microsoft account 1")
+        composeRule.clickCardAtPosition(0)
+
+        // Collapsing search clears query and restores full list
+        composeRule.onNodeWithTag(UiTestTags.SEARCH_COLLAPSE_BUTTON).performClick()
+        composeRule.awaitTokenCardCount(2)
     }
 
     @Test
@@ -295,20 +282,14 @@ class MainActivityTest {
                 }
             }
 
-            onView(withText(containsString("GitHub")))
-                .check(matches(isDisplayed()))
-            onView(withText(containsString("alice@example.com")))
-                .check(matches(isDisplayed()))
+            composeRule.awaitTextDisplayed("GitHub", substring = true)
+            composeRule.awaitTextDisplayed("alice@example.com", substring = true)
 
-            onView(withText(R.string.add))
-                .perform(click())
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
-            TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
-            onView(withId(R.id.token_list))
-                .check(RecyclerViewAssertion.childrenCount(1))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
-                .check(matches(hasDescendant(withText("GitHub"))))
-                .check(matches(hasDescendant(withText("alice@example.com"))))
+            composeRule.awaitTokenCardCount(1)
+            composeRule.assertCardAtPositionHasText(0, "GitHub")
+            composeRule.assertCardAtPositionHasText(0, "alice@example.com")
         }
     }
 
@@ -322,15 +303,34 @@ class MainActivityTest {
         ).setClass(context, MainActivity::class.java)
 
         ActivityScenario.launch<MainActivity>(intent).use {
-            onView(withText(containsString("bob@example.com")))
-                .check(matches(isDisplayed()))
-
-            onView(withText(R.string.cancel_text))
-                .perform(click())
-
-            onView(withId(R.id.token_list))
-                .check(RecyclerViewAssertion.childrenCount(0))
+            composeRule.awaitTextDisplayed("bob@example.com", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+            composeRule.awaitTokenCardCount(0)
         }
+    }
+
+    @Test
+    fun testBuiltInIconPickerInAddTokenSelectsIconAndSaves() {
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.TOKEN_AVATAR_BUTTON)
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_AVATAR_BUTTON).performClick()
+        composeRule.awaitTextDisplayed(string(R.string.choose_builtin_icon))
+        composeRule.onNodeWithText(string(R.string.choose_builtin_icon)).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ICON_SEARCH_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ICON_SEARCH_INPUT).performTextReplacement("GitHub")
+        composeRule.awaitTagDisplayed(UiTestTags.builtInIconItemTag("GitHub"))
+        composeRule.onNodeWithTag(UiTestTags.builtInIconItemTag("GitHub")).performClick()
+
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("CustomGitService")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("dev@custom.example")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("JBSWY3DPEHPK3PXP")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).performClick()
+
+        val saved = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1).single()
+        assertThat(saved.imagePath).isEqualTo("builtin:GitHub")
     }
 
     private fun populateTestData() {
