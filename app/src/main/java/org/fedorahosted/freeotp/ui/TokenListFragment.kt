@@ -287,7 +287,9 @@ class TokenListFragment : Fragment() {
                     when (val currentFilter = viewModel.getCurrentCategoryFilter()) {
                         null -> allItem.isChecked = true
                         MainViewModel.CATEGORY_UNCATEGORIZED -> uncategorizedItem.isChecked = true
-                        else -> categoryItems.firstOrNull { it.first == currentFilter }?.second?.isChecked = true
+                        else -> categoryItems.firstOrNull {
+                            it.first.equals(currentFilter, ignoreCase = true)
+                        }?.second?.isChecked = true
                     }
                 }
 

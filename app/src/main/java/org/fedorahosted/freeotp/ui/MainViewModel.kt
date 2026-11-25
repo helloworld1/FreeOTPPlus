@@ -15,17 +15,20 @@ import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.util.AppSessionManager
+import org.fedorahosted.freeotp.util.CATEGORY_UNCATEGORIZED_VALUE
+import org.fedorahosted.freeotp.util.Settings
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val tokenMigrationUtil: MigrationUtil,
     private val otpTokenDatabase: OtpTokenDatabase,
-    private val appSessionManager: AppSessionManager
+    private val appSessionManager: AppSessionManager,
+    private val settings: Settings
 ) : ViewModel() {
 
     private val tokenSearchQuery = MutableStateFlow("")
-    private val categoryFilter = MutableStateFlow<String?>(null)
+    private val categoryFilter = MutableStateFlow<String?>(settings.selectedCategory)
     private val imageRefreshVersion = MutableStateFlow(0L)
     private val activeTokenCodes: MutableMap<Long, TokenCode> = ArrayMap()
 
@@ -33,11 +36,20 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             otpTokenDatabase.otpTokenDao().getAllCategories().collect { availableCategories ->
                 val current = categoryFilter.value
-                if (current != null &&
-                    current != CATEGORY_UNCATEGORIZED &&
-                    availableCategories.none { it.equals(current, ignoreCase = true) }
-                ) {
-                    categoryFilter.value = null
+                if (current != null && current != CATEGORY_UNCATEGORIZED) {
+                    if (!tokenMigrationUtil.isMigrated()) {
+                        return@collect
+                    }
+                    val canonicalMatch = availableCategories.firstOrNull {
+                        it.equals(current, ignoreCase = true)
+                    }
+                    if (canonicalMatch == null) {
+                        categoryFilter.value = null
+                        settings.selectedCategory = null
+                    } else if (canonicalMatch != current) {
+                        categoryFilter.value = canonicalMatch
+                        settings.selectedCategory = canonicalMatch
+                    }
                 }
             }
         }
@@ -68,6 +80,7 @@ class MainViewModel @Inject constructor(
 
     fun setCategoryFilter(category: String?) {
         categoryFilter.value = category
+        settings.selectedCategory = category
     }
 
     fun getCategoryFilter(): Flow<String?> = categoryFilter
@@ -185,6 +198,6 @@ class MainViewModel @Inject constructor(
     }
 
     companion object {
-        const val CATEGORY_UNCATEGORIZED = "uncategorized_special_value"
+        const val CATEGORY_UNCATEGORIZED = CATEGORY_UNCATEGORIZED_VALUE
     }
 }

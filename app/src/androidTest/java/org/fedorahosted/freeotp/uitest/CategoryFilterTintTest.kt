@@ -164,7 +164,7 @@ class CategoryFilterTintTest {
             }
 
             // Existing "Work" chip is checked; toggle "Personal" on as well
-            onView(withText("Work")).check(matches(isChecked()))
+            TestWaitUtil.awaitViewMatching(withText("Work"), isChecked())
             onView(withText("Personal")).perform(scrollTo(), click())
 
             // Add a brand new category "Cloud" via [+ New category] chip
@@ -391,6 +391,92 @@ class CategoryFilterTintTest {
             awaitViewDisplayed(withId(R.id.empty_view))
             onView(withId(R.id.empty_view))
                 .check(matches(withText(R.string.no_keys)))
+        }
+    }
+
+    @Test
+    fun testSelectedCategoryPersistedOnExitAndRestoredOnNextLaunch() {
+        try {
+            // Launch #1: seed tokens in "Work" and uncategorized, select "Work", and exit
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    activity.settings.selectedCategory = null
+                    runBlocking(Dispatchers.IO) {
+                        activity.otpTokenDatabase.clearAllTables()
+                        activity.otpTokenDatabase.otpTokenDao().insert(
+                            TestData.OTP_HOTP_TOKEN_1.copy(
+                                id = 0L,
+                                ordinal = 0L,
+                                categories = listOf("Work", "Cloud")
+                            )
+                        )
+                        activity.otpTokenDatabase.otpTokenDao().insert(
+                            TestData.OTP_TOTP_TOKEN_2.copy(
+                                id = 0L,
+                                ordinal = 1L,
+                                categories = emptyList()
+                            )
+                        )
+                    }
+                }
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 2)
+
+                onView(withId(R.id.action_filter)).perform(click())
+                onView(withText("Work")).perform(click())
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+            }
+
+            // Launch #2: verify "Work" category filter, icon tint, and checked menu item are restored on launch
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("github.com")))
+
+                scenario.onActivity { activity ->
+                    assertThat(activity.settings.selectedCategory).isEqualTo("Work")
+                    val toolbar = activity.findViewById<Toolbar>(R.id.toolbar)
+                    val filterItem = toolbar.menu.findItem(R.id.action_filter)
+                    val expectedActive = MaterialColors.getColor(toolbar, androidx.appcompat.R.attr.colorPrimary)
+                    assertThat(MenuItemCompat.getIconTintList(filterItem)?.defaultColor).isEqualTo(expectedActive)
+                }
+
+                // Switch to "Uncategorized" and exit
+                onView(withId(R.id.action_filter)).perform(click())
+                onView(withText(R.string.uncategorized)).perform(click())
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+            }
+
+            // Launch #3: verify "Uncategorized" is restored on launch, then test fallback when a saved category disappears
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+
+                // Select "Work" again, then delete all tokens with "Work" -> filter resets to All categories
+                onView(withId(R.id.action_filter)).perform(click())
+                onView(withText("Work")).perform(click())
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+
+                scenario.onActivity { activity ->
+                    runBlocking(Dispatchers.IO) {
+                        val all = activity.otpTokenDatabase.otpTokenDao().getAll().first()
+                        val workToken = all.first { "Work" in it.categories }
+                        activity.otpTokenDatabase.otpTokenDao().deleteById(workToken.id)
+                    }
+                }
+
+                TestWaitUtil.awaitRecyclerItemCount(R.id.token_list, 1)
+                TestWaitUtil.awaitViewMatching(withId(R.id.token_list), hasDescendant(withText("microsoft.com")))
+                scenario.onActivity { activity ->
+                    assertThat(activity.settings.selectedCategory).isNull()
+                }
+            }
+        } finally {
+            @Suppress("DEPRECATION")
+            android.preference.PreferenceManager.getDefaultSharedPreferences(getInstrumentation().targetContext)
+                .edit()
+                .remove("selectedCategory")
+                .commit()
         }
     }
 }

@@ -324,6 +324,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        settings.selectedCategory = viewModel.getCurrentCategoryFilter()
         settings.sharedPreferences.unregisterOnSharedPreferenceChangeListener(authModePrefListener)
         super.onStop()
     }

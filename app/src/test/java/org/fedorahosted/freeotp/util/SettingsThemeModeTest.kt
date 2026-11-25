@@ -83,6 +83,34 @@ class SettingsThemeModeTest {
         assertThat(Settings(prefsChecked).themeMode).isEqualTo(ThemeMode.DARK)
     }
 
+    @Test
+    fun selectedCategory_persistsCategoryUncategorizedAndClearsForAllCategoriesWithoutCollision() {
+        val prefs = InMemorySharedPreferences()
+        val settings = Settings(prefs)
+
+        assertThat(settings.selectedCategory).isNull()
+
+        // Named category
+        settings.selectedCategory = "Work"
+        assertThat(settings.selectedCategory).isEqualTo("Work")
+        assertThat(prefs.getString(SELECTED_CATEGORY_KEY, null)).isEqualTo("category:Work")
+
+        // Built-in Uncategorized sentinel
+        settings.selectedCategory = CATEGORY_UNCATEGORIZED_VALUE
+        assertThat(settings.selectedCategory).isEqualTo(CATEGORY_UNCATEGORIZED_VALUE)
+        assertThat(prefs.getString(SELECTED_CATEGORY_KEY, null)).isEqualTo("uncategorized")
+
+        // User-created category literally named "uncategorized" does not collide with sentinel
+        settings.selectedCategory = "uncategorized"
+        assertThat(settings.selectedCategory).isEqualTo("uncategorized")
+        assertThat(prefs.getString(SELECTED_CATEGORY_KEY, null)).isEqualTo("category:uncategorized")
+
+        // Resetting to All categories (null / blank) removes preference
+        settings.selectedCategory = null
+        assertThat(settings.selectedCategory).isNull()
+        assertThat(prefs.contains(SELECTED_CATEGORY_KEY)).isFalse()
+    }
+
     private class InMemorySharedPreferences : SharedPreferences {
         private val data = mutableMapOf<String, Any?>()
 
