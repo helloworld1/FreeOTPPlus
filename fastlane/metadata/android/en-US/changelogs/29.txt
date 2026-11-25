@@ -1,0 +1,7 @@
+RELEASE-3.7
+* Import Aegis Authenticator JSON backups (plaintext and password-encrypted, with groups and custom icons)
+* Import original FreeOTP XML backups (encrypted and legacy)
+* Choose to append (at top of list) or replace all tokens when importing FreeOTP+ JSON, FreeOTP XML, and Aegis JSON
+* Remember selected category filter across app launches
+* Reorganize Import and Export menus for clarity
+* Modernize app icon, upgrade to Room 3, and update dependencies (Android 7.0+)

@@ -11,7 +11,7 @@ Detta inkluderar utmärkta företagslösningar som <a href="https://www.freeipa.
 <b>Funktioner:</b>
 <ul>
 <li>Skanna QR-koder eller ange tokenkonfigurationer manuellt.</li>
-<li>Exportera och importera tokens (JSON eller Key URI, i klartext eller krypterade) och anpassade tokenbilder (ZIP) via Google Drive eller andra dokumentleverantörer.</li>
+<li>Exportera och importera tokens (FreeOTP+ JSON eller Key URI, i klartext eller krypterade, med val att lägga till eller ersätta), importera säkerhetskopior från FreeOTP XML och Aegis Authenticator JSON samt anpassade tokenbilder (ZIP) via Google Drive eller andra dokumentleverantörer.</li>
 <li>Material Design 3-gränssnitt med system-, ljust och mörkt tema.</li>
 <li>Sök efter tokens, tilldela flera kategorier med kategorifilter och sortera efter konto, utfärdare eller dra-och-släpp.</li>
 <li>Visa och redigera tokendetaljer, dela via QR-kod eller kopiera token-URI:er.</li>

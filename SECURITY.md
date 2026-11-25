@@ -6,8 +6,8 @@ Security fixes are applied to the latest release on the `master` branch. Please 
 
 | Version | Supported          |
 | ------- | ------------------ |
-| >= 3.6  | Yes                |
-| < 3.6   | No                 |
+| >= 3.7  | Yes                |
+| < 3.7   | No                 |
 
 ## Reporting a Vulnerability
 
@@ -54,7 +54,7 @@ FreeOTP+ offers three user-selectable authentication modes:
 - Bypass of the **Authentication mode** (`App launch` or `Token encrypted`) lock gate, 2-minute session timeout, or sensitive-action authentication prompts (secret reveal, QR/URI share, or JSON / Key URI / Token Images `.zip` export) from an unprivileged context
 - Cryptographic implementation flaws in **Token encrypted** mode (PBKDF2 key derivation, `AndroidKeyStore` biometric key wrapping, AES-256-GCM secret encryption, or encrypted backup export/import)
 - Unauthorized cross-app access to OTP secrets, codes, or internal app files (including path traversal in custom image or `.zip` backup handling) on non-rooted Android devices
-- Vulnerabilities in `otpauth://` URI handling, QR code scanning, SVG icon parsing, or JSON / Key URI / `.zip` import parsing (e.g., XXE, injection, spoofing, or silent state modification without user confirmation)
+- Vulnerabilities in `otpauth://` URI handling, QR code scanning, SVG icon parsing, or FreeOTP+ JSON / Key URI / `.zip` / FreeOTP XML / Aegis JSON import parsing (e.g., XXE, unsafe deserialization, injection, spoofing, or silent state modification without user confirmation)
 - Bypass of `FLAG_SECURE`, sensitive clipboard protections, or Android Auto Backup exclusion / client-side encryption rules, or unintended exposure of secrets in logs, broadcasts, or exported components
 
 ### Known Design Choices (Out of Scope)
@@ -64,7 +64,7 @@ The following behaviors are intentional design trade-offs for usability and inte
 - **Rooted devices / physical debug access**: In **None** and **App launch** modes, FreeOTP+ relies on the Android OS application sandbox and device encryption to protect app-private storage (`Room` database). In **Token encrypted** mode, token secrets are encrypted at rest, but runtime memory inspection while unlocked, offline brute-force of weak user-chosen keys, or attacks requiring `root` privileges, unlocked bootloaders, custom ROMs, or authenticated `adb` access are out of scope.
 - **Unencrypted token metadata**: In **Token encrypted** mode, only the OTP `secret` is encrypted; non-secret metadata (`issuer`, `label`, `categories`, `algorithm`, `digits`, `period`, `counter`, `imagePath`) remains unencrypted to support listing, searching, category filtering, sorting, and HOTP counter updates.
 - **Backups, exports, and single-token sharing**:
-  - In **None** and **App launch** modes, manual JSON / Key URI exports and Device-to-Device (D2D) transfers (as well as cloud backups on Android 6.0–8.1 devices prior to OS client-side backup encryption) store token secrets without app-layer encryption for cross-device and cross-app portability. On Android 9+ (API 28+), cloud backups run only when OS client-side backup encryption is enabled.
+  - In **None** and **App launch** modes, manual JSON / Key URI exports and Device-to-Device (D2D) transfers (as well as cloud backups on Android 7.0–8.1 devices prior to OS client-side backup encryption) store token secrets without app-layer encryption for cross-device and cross-app portability. On Android 9+ (API 28+), cloud backups run only when OS client-side backup encryption is enabled.
   - In **Token encrypted** mode, Android system backup stores encrypted token secrets (recoverable on a new device using the user's encryption key), and bulk JSON / Key URI exports let the user choose between **encrypted** (`freeotp-backup-encrypted_<datetime>.json` / `.txt`) and **decrypted** files.
   - Single-token sharing (**Share QR Code** and **Copy token URI**) outputs standard unencrypted `otpauth://` URIs after authentication so target services and authenticator apps can import them. Users remain responsible for securing decrypted backup files, shared QR codes, and copied URIs.
 - **Optional authentication and encryption**: App-launch authentication and token secret encryption are opt-in in settings (`None` is the default); secret reveal, token sharing, and exports require authentication whenever a system screen lock is configured (or encryption key verification in **Token encrypted** mode when no screen lock is configured).

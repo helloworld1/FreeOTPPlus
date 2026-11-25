@@ -11,7 +11,7 @@ Ini mencakup solusi kelas perusahaan seperti <a href="https://www.freeipa.org/">
 <b>Fitur:</b>
 <ul>
 <li>Pindai kode QR atau masukkan konfigurasi token secara manual.</li>
-<li>Ekspor dan impor token (JSON atau Key URI, teks biasa atau terenkripsi) serta gambar token kustom (ZIP) melalui Google Drive atau penyedia dokumen lainnya.</li>
+<li>Ekspor dan impor token (JSON FreeOTP+ atau Key URI, teks biasa atau terenkripsi, dengan opsi tambahkan atau ganti semua), impor dari cadangan XML FreeOTP asli dan JSON Aegis Authenticator, serta gambar token kustom (ZIP) melalui Google Drive atau penyedia dokumen lainnya.</li>
 <li>Antarmuka Material Design 3 dengan pilihan tema Sistem, Terang, dan Gelap.</li>
 <li>Cari token, tetapkan beberapa kategori dengan filter kategori, serta urutkan berdasarkan akun, penerbit, atau seret dan lepas.</li>
 <li>Lihat dan edit detail token, bagikan melalui kode QR, atau salin URI token.</li>

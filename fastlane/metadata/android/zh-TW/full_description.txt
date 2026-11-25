@@ -11,7 +11,7 @@ FreeOTP 支援許多您經常使用的線上服務，包括 Google、Facebook、
 <b>功能特色：</b>
 <ul>
 <li>掃描 QR Code 或手動輸入權杖設定。</li>
-<li>透過 Google 雲端硬碟或其他文件提供者匯出與匯入權杖（JSON 或 Key URI，支援純文字或加密）以及自訂權杖圖示（ZIP）。</li>
+<li>透過 Google 雲端硬碟或其他文件提供者匯出與匯入權杖（FreeOTP+ JSON 或 Key URI，支援純文字或加密，可選擇附加或取代全部）、匯入原版 FreeOTP XML 與 Aegis Authenticator JSON 備份，以及備份自訂權杖圖示（ZIP）。</li>
 <li>支援跟隨系統、淺色與深色主題的 Material Design 3 介面。</li>
 <li>支援搜尋權杖、指派多個分類並依分類篩選，以及依帳號、發行者或拖曳順序排序。</li>
 <li>檢視與編輯權杖詳細資訊、透過 QR Code 分享或複製權杖 URI。</li>

@@ -11,7 +11,7 @@ FreeOTP 支持您日常使用的众多主流在线服务，包括 Google、Faceb
 <b>功能特性：</b>
 <ul>
 <li>扫描二维码或手动输入令牌配置。</li>
-<li>通过 Google 云端硬盘或其他文档提供程序导出和导入令牌（JSON 或 Key URI，支持明文或加密）以及自定义令牌图标（ZIP）。</li>
+<li>通过 Google 云端硬盘或其他文档提供程序导出和导入令牌（FreeOTP+ JSON 或 Key URI，支持明文或加密，可选择追加或替换全部）、导入原版 FreeOTP XML 与 Aegis Authenticator JSON 备份，以及备份自定义令牌图标（ZIP）。</li>
 <li>支持跟随系统、浅色和深色主题的 Material Design 3 界面。</li>
 <li>支持搜索令牌、分配多个分类并按分类筛选，以及按账户、发行方或拖拽顺序排序。</li>
 <li>查看和编辑令牌详情、通过二维码分享或复制令牌 URI。</li>

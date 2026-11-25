@@ -11,7 +11,7 @@ Cela inclut d'excellentes solutions d'entreprise telles que <a href="https://www
 <b>Fonctionnalités :</b>
 <ul>
 <li>Scan de codes QR ou saisie manuelle de la configuration des jetons.</li>
-<li>Exportation et importation des jetons (JSON ou Key URI, en texte brut ou chiffrés) et des images personnalisées (ZIP) via Google Drive ou d'autres fournisseurs de documents.</li>
+<li>Exportation et importation des jetons (JSON FreeOTP+ ou Key URI, en texte brut ou chiffrés, avec option d'ajout ou de remplacement), importation depuis les sauvegardes XML FreeOTP et JSON Aegis Authenticator, et sauvegarde des images personnalisées (ZIP) via Google Drive ou d'autres fournisseurs de documents.</li>
 <li>Interface Material Design 3 avec thèmes Système, Clair et Sombre.</li>
 <li>Recherche de jetons, attribution de plusieurs catégories avec filtres et tri par compte, émetteur ou glisser-déposer.</li>
 <li>Affichage et modification des détails du jeton, partage par code QR ou copie de l'URI du jeton.</li>

@@ -11,7 +11,7 @@ Patří sem skvělá podniková řešení jako <a href="https://www.freeipa.org/
 <b>Funkce:</b>
 <ul>
 <li>Skenování QR kódů nebo ruční zadání konfigurace tokenu.</li>
-<li>Export a import tokenů (JSON nebo Key URI, nešifrovaně i šifrovaně) a vlastních obrázků tokenů (ZIP) přes Disk Google nebo jiné poskytovatele dokumentů.</li>
+<li>Export a import tokenů (FreeOTP+ JSON nebo Key URI, nešifrovaně i šifrovaně, s volbou připojení nebo nahrazení), import ze záloh původního FreeOTP XML a Aegis Authenticator JSON a vlastních obrázků tokenů (ZIP) přes Disk Google nebo jiné poskytovatele dokumentů.</li>
 <li>Rozhraní Material Design 3 se systémovým, světlým a tmavým motivem.</li>
 <li>Vyhledávání tokenů, přiřazení více kategorií s filtrováním a řazení podle účtu, vydavatele nebo přetažením.</li>
 <li>Zobrazení a úprava podrobností tokenu, sdílení pomocí QR kódu nebo zkopírování URI tokenu.</li>

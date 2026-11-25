@@ -11,7 +11,7 @@ Buna <a href="https://www.freeipa.org/">FreeIPA</a> gibi gelişmiş kurumsal ç�
 <b>Özellikler:</b>
 <ul>
 <li>QR kodlarını tarama veya token yapılandırmasını manuel olarak girme.</li>
-<li>Tokenları (JSON veya Key URI, düz metin ya da şifrelenmiş) ve özel token görsellerini (ZIP) Google Drive veya diğer belge sağlayıcıları aracılığıyla dışa ve içe aktarma.</li>
+<li>Tokenları dışa ve içe aktarma (FreeOTP+ JSON veya Key URI, düz metin ya da şifrelenmiş, ekleme veya tümünü değiştirme seçeneğiyle), orijinal FreeOTP XML ve Aegis Authenticator JSON yedeklerinden içe aktarma ve özel token görsellerini (ZIP) Google Drive veya diğer belge sağlayıcıları aracılığıyla yedekleme.</li>
 <li>Sistem, Açık ve Koyu tema seçenekleriyle Material Design 3 arayüzü.</li>
 <li>Token arama, kategori filtreleriyle birden fazla kategori atama ve hesaba, sağlayıcıya veya sürükle-bırak sırasına göre sıralama.</li>
 <li>Token ayrıntılarını görüntüleme ve düzenleme, QR koduyla paylaşma veya token URI'lerini kopyalama.</li>

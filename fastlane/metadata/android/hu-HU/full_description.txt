@@ -11,7 +11,7 @@ Ide tartoznak az olyan kiváló vállalati megoldások, mint a <a href="https://
 <b>Funkciók:</b>
 <ul>
 <li>QR-kódok beolvasása vagy a tokenkonfiguráció kézi megadása.</li>
-<li>Tokenek (JSON vagy Key URI, egyszerű szövegként vagy titkosítva) és egyéni tokenképek (ZIP) exportálása és importálása a Google Drive-on vagy más dokumentumszolgáltatókon keresztül.</li>
+<li>Tokenek exportálása és importálása (FreeOTP+ JSON vagy Key URI, egyszerű szövegként vagy titkosítva, hozzáfűzési vagy csere lehetőséggel), importálás eredeti FreeOTP XML és Aegis Authenticator JSON biztonsági mentésekből, valamint egyéni tokenképek (ZIP) mentése a Google Drive-on vagy más dokumentumszolgáltatókon keresztül.</li>
 <li>Material Design 3 felület rendszer-, világos és sötét témával.</li>
 <li>Tokenek keresése, több kategória hozzárendelése szűrőkkel, valamint rendezés fiók, kibocsátó vagy fogd-és-vidd sorrend szerint.</li>
 <li>Token részleteinek megtekintése és szerkesztése, megosztás QR-kóddal vagy a token URI-jának másolása.</li>

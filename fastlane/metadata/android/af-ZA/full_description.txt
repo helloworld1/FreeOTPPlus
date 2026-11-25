@@ -11,7 +11,7 @@ Dit sluit uitstekende ondernemingsoplossings soos <a href="https://www.freeipa.o
 <b>Kenmerke:</b>
 <ul>
 <li>Skandeer QR-kodes of voer kentekenopstellings handmatig in.</li>
-<li>Voer kentekens (JSON of Key URI, gewone teks of geënkripteer) en pasgemaakte kentekenprente (ZIP) uit en in via Google Drive of ander dokumentverskaffers.</li>
+<li>Voer kentekens uit en in (FreeOTP+ JSON of Key URI, gewone teks of geënkripteer, met Opsie om by te voeg of te vervang), voer rugsteune in vanaf oorspronklike FreeOTP XML en Aegis Authenticator JSON, en rugsteun pasgemaakte kentekenprente (ZIP) via Google Drive of ander dokumentverskaffers.</li>
 <li>Material Design 3-koppelvlak met Stelsel-, Ligte en Donker temas.</li>
 <li>Soek kentekens, wys veelvuldige kategorieë toe met kategoriefilters, en sorteer volgens rekening, uitreiker of sleep-en-los-volgorde.</li>
 <li>Bekyk en wysig kentekenbesonderhede, deel via QR-kode of kopieer kenteken-URI's.</li>

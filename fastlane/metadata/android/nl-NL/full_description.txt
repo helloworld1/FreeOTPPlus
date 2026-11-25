@@ -11,7 +11,7 @@ Hieronder vallen ook bewezen zakelijke oplossingen zoals <a href="https://www.fr
 <b>Functies:</b>
 <ul>
 <li>QR-codes scannen of tokenconfiguraties handmatig invoeren.</li>
-<li>Tokens (JSON of Key URI, in platte tekst of versleuteld) en aangepaste tokenafbeeldingen (ZIP) exporteren en importeren via Google Drive of andere opslagdiensten.</li>
+<li>Tokens exporteren en importeren (FreeOTP+ JSON of Key URI, in platte tekst of versleuteld, met keuze om toe te voegen of te vervangen), back-ups importeren vanuit originele FreeOTP XML en Aegis Authenticator JSON, en aangepaste tokenafbeeldingen (ZIP) bewaren via Google Drive of andere opslagdiensten.</li>
 <li>Material Design 3-interface met Systeem-, Licht en Donker thema.</li>
 <li>Tokens doorzoeken, meerdere categorieën toewijzen met categoriefilters en sorteren op account, uitgever of via slepen en neerzetten.</li>
 <li>Tokendetails bekijken en bewerken, delen via QR-code of token-URI's kopiëren.</li>

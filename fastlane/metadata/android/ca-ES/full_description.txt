@@ -11,7 +11,7 @@ Això inclou grans solucions empresarials com <a href="https://www.freeipa.org/"
 <b>Característiques:</b>
 <ul>
 <li>Escaneig de codis QR o introducció manual de la configuració de l'OTP.</li>
-<li>Exportació i importació d'OTP (JSON o Key URI, en text pla o xifrats) i d'imatges personalitzades (ZIP) mitjançant Google Drive o altres proveïdors de documents.</li>
+<li>Exportació i importació d'OTP (FreeOTP+ JSON o Key URI, en text pla o xifrats, amb opció d'afegir o substituir), importació des de còpies de seguretat XML de FreeOTP i JSON d'Aegis Authenticator, i d'imatges personalitzades (ZIP) mitjançant Google Drive o altres proveïdors de documents.</li>
 <li>Interfície Material Design 3 amb temes del sistema, clar i fosc.</li>
 <li>Cerca d'entrades OTP, assignació de múltiples categories amb filtres i ordenació per compte, emissor o arrossegant i deixant anar.</li>
 <li>Visualització i edició dels detalls de l'OTP, compartició per codi QR o còpia de l'URI.</li>

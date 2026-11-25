@@ -11,7 +11,7 @@ Obejmuje to świetne rozwiązania korporacyjne, takie jak <a href="https://www.f
 <b>Funkcje:</b>
 <ul>
 <li>Skanowanie kodów QR lub ręczne wprowadzanie konfiguracji tokenu.</li>
-<li>Eksportowanie i importowanie tokenów (JSON lub Key URI, jako zwykły tekst lub zaszyfrowanych) oraz własnych obrazów tokenów (ZIP) przez Dysk Google lub innych dostawców dokumentów.</li>
+<li>Eksportowanie i importowanie tokenów (FreeOTP+ JSON lub Key URI, jako zwykły tekst lub zaszyfrowanych, z opcją dopisania lub zastąpienia), import z kopii zapasowych XML FreeOTP oraz JSON Aegis Authenticator, a także własnych obrazów tokenów (ZIP) przez Dysk Google lub innych dostawców dokumentów.</li>
 <li>Interfejs Material Design 3 z motywem systemowym, jasnym i ciemnym.</li>
 <li>Wyszukiwanie tokenów, przypisywanie wielu kategorii z filtrami oraz sortowanie według konta, wystawcy lub metodą przeciągnij i upuść.</li>
 <li>Podgląd i edycja szczegółów tokenu, udostępnianie przez kod QR lub kopiowanie URI tokenu.</li>

@@ -1,15 +1,15 @@
 # FreeOTP Plus
 
 FreeOTP Plus (FreeOTP+) is a modern, privacy-focused fork of Red Hat's [FreeOTP](https://github.com/freeotp/freeotp-android) two-factor authenticator with the following enhancements:
-* **Backup & Restore**: Export and import tokens in JSON or Key URI (`otpauth://`) format (plaintext or AES-256-GCM encrypted, with automatic encrypted backup detection) and back up custom token images as a `.zip` archive via Google Drive or any Storage Access Framework document provider
+* **Backup, Restore & Easy Migration**: Export and import tokens in FreeOTP+ JSON or Key URI (`otpauth://`) format (plaintext or AES-256-GCM encrypted, with automatic encrypted backup detection and **Append / Replace All** options), import directly from **FreeOTP** (`FreeOTP Backup XML`) and **Aegis Authenticator** (`Aegis JSON`, plaintext or password-encrypted, preserving groups and custom icons), and back up custom token images as a `.zip` archive via Google Drive or any Storage Access Framework document provider
 * **Three Authentication Modes**: **None**, **App launch** (Biometric / PIN), and **Token encrypted** (AES-256-GCM encrypted token secrets unlocked via biometric or manual key), with automatic background session locking
 * **100% Offline & Privacy-Hardened**: Requires **no `INTERNET` or storage permissions**, blocks screenshots across all screens (`FLAG_SECURE`), marks copied OTP codes as sensitive with automatic clipboard clearing, and enforces client-side encryption for Android cloud backups (API 28+)
 * **Material Design 3 UI**: Modern single-Activity interface with **System default / Light / Dark** theme selection
 * **450+ Built-in Offline Icons & Custom SVG/Image Support**: Automatic heuristic icon matching for 450+ services, a searchable built-in icon picker, and custom raster or SVG token icons
-* **Categories, Search & Sorting**: Assign multiple categories per token, filter by category chips, search tokens instantly, and sort by account, issuer, or custom drag-and-drop order
+* **Categories, Search & Sorting**: Assign multiple categories per token, filter by category (remembered across app launches), search tokens instantly, and sort by account, issuer, or custom drag-and-drop order
 * **Rich Token Management**: View and edit token details (including HOTP counter), share tokens via QR code, or copy token URIs for interoperability with other authenticators
 * **Fast QR Scanning**: Powered by CameraX with automatic front-camera fallback on devices without a rear camera
-* **Broad Compatibility**: Supports Android 6.0+ (`minSdk 23`) with extensive reliability and security improvements
+* **Broad Compatibility**: Supports Android 7.0+ (`minSdk 24`) with extensive reliability and security improvements
 
 Most of the codebase has been rewritten in Kotlin using modern Android Jetpack libraries.
 
@@ -22,7 +22,7 @@ Most of the codebase has been rewritten in Kotlin using modern Android Jetpack l
 
 ## Requirements
 
-* Android 6.0+
+* Android 7.0+
 
 ## Screenshots
 
@@ -61,10 +61,14 @@ Under **Authentication mode** in the menu, FreeOTP+ supports three modes:
 
 ## Backup & Import Notes
 
-* **JSON & Key URI Backups**:
-  * Plaintext JSON backups preserve token order, multiple categories, HOTP counters, and built-in icon selections.
+* **FreeOTP+ JSON (`Preferred`) & Key URI Backups**:
+  * Plaintext FreeOTP+ JSON backups preserve token order, multiple categories, HOTP counters, and built-in icon selections.
+  * Importing **FreeOTP+ JSON (Preferred)** lets you choose between **Append to existing tokens** (inserting imported tokens at the top of the list) and **Replace all existing tokens**. Importing **Key URI** files appends tokens to the list.
   * When importing from legacy plaintext JSON, at least one of `label` or `issuerExt` is required, `secret` must be an array/list of signed/unsigned byte integer values, and `tokenOrder` is required (tokens not listed in `tokenOrder` are ignored).
   * When importing an encrypted JSON or Key URI backup (`freeotp-backup-encrypted_*`), FreeOTP+ automatically detects encryption and prompts for the backup's encryption key regardless of the app's current authentication mode.
+* **Importing from Other Authenticators**:
+  * **FreeOTP Backup XML**: Supports password-encrypted FreeOTP v2 backups (`externalBackup.xml` / `tokenBackup.xml`) and legacy FreeOTP v1 `tokens.xml` backups, with **Append** (top of list) or **Replace all** options.
+  * **Aegis JSON**: Supports plaintext and password-encrypted (`scrypt` + AES-256-GCM) [Aegis Authenticator](https://github.com/beemdevelopment/Aegis) JSON vaults (`Aegis JSON`), preserving TOTP/HOTP/Steam entries, mapping Aegis groups to FreeOTP+ categories, importing embedded custom icons (`PNG`, `JPEG`, `WEBP`, `SVG`), and offering **Append** (top of list) or **Replace all** options.
 * **Custom Token Images Backup (`.zip`)**:
   * Built-in icons selected via **Choose built-in icon** are stored as portable references inside JSON and Key URI backups automatically.
-  * User-uploaded custom raster/SVG token icons can be exported and restored across devices via **Export -> Token images (.zip)** and **Import -> Token images (.zip)**.
+  * User-uploaded custom raster/SVG token icons can be exported and restored across devices via **Export -> Token images** and **Import -> Token images**.

@@ -11,7 +11,7 @@ Dazu gehören bewährte Unternehmenslösungen wie <a href="https://www.freeipa.o
 <b>Funktionen:</b>
 <ul>
 <li>QR-Codes scannen oder Token-Konfigurationen manuell eingeben.</li>
-<li>Exportieren und Importieren von Token (JSON oder Key-URI, im Klartext oder verschlüsselt) sowie eigenen Token-Bildern (ZIP) über Google Drive oder andere Dokumentenanbieter.</li>
+<li>Exportieren und Importieren von Token (FreeOTP+ JSON oder Key-URI, im Klartext oder verschlüsselt, wahlweise Anhängen oder Ersetzen), Import aus originalen FreeOTP-XML- und Aegis-Authenticator-JSON-Backups sowie eigenen Token-Bildern (ZIP) über Google Drive oder andere Dokumentenanbieter.</li>
 <li>Material Design 3-Oberfläche mit System-, hellem und dunklem Design.</li>
 <li>Token durchsuchen, mehrere Kategorien mit Kategoriefiltern zuweisen und nach Konto, Aussteller oder per Drag-and-drop sortieren.</li>
 <li>Token-Details anzeigen und bearbeiten, per QR-Code teilen oder Token-URIs kopieren.</li>

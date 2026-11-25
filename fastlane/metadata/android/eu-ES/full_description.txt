@@ -11,7 +11,7 @@ Horren barruan <a href="https://www.freeipa.org/">FreeIPA</a> bezalako enpresa-i
 <b>Ezaugarriak:</b>
 <ul>
 <li>Eskaneatu QR kodeak edo sartu tokenaren konfigurazioa eskuz.</li>
-<li>Esportatu eta inportatu tokenak (JSON edo Key URI, testu arruntean edo zifratuta) eta tokenen irudi pertsonalizatuak (ZIP) Google Drive edo beste dokumentu-hornitzaile batzuen bidez.</li>
+<li>Esportatu eta inportatu tokenak (FreeOTP+ JSON edo Key URI, testu arruntean edo zifratuta, gehitzeko edo ordezkatzeko aukerarekin), inportatu jatorrizko FreeOTP XML eta Aegis Authenticator JSON babeskopietatik, eta tokenen irudi pertsonalizatuak (ZIP) Google Drive edo beste dokumentu-hornitzaile batzuen bidez.</li>
 <li>Material Design 3 interfazea sistemaren gaiarekin, gai argiarekin eta ilunarekin.</li>
 <li>Bilatu tokenak, esleitu hainbat kategoria iragazkiekin eta ordenatu kontuaren, jaulkitzailearen edo arrastatu eta jaregitearen arabera.</li>
 <li>Ikusi eta editatu tokenaren xehetasunak, partekatu QR kode bidez edo kopiatu tokenaren URIak.</li>

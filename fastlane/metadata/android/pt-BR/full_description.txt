@@ -11,7 +11,7 @@ Isso inclui excelentes soluções corporativas como o <a href="https://www.freei
 <b>Recursos:</b>
 <ul>
 <li>Escaneamento de códigos QR ou inserção manual da configuração do token.</li>
-<li>Exportação e importação de tokens (JSON ou Key URI, em texto simples ou criptografados) e imagens personalizadas de tokens (ZIP) pelo Google Drive ou outros provedores de documentos.</li>
+<li>Exportação e importação de tokens (FreeOTP+ JSON ou Key URI, em texto simples ou criptografados, com opção de adicionar ou substituir), importação de backups XML do FreeOTP original e JSON do Aegis Authenticator, além de imagens personalizadas de tokens (ZIP) pelo Google Drive ou outros provedores de documentos.</li>
 <li>Interface Material Design 3 com temas do sistema, claro e escuro.</li>
 <li>Pesquisa de tokens, atribuição de múltiplas categorias com filtros e ordenação por conta, emissor ou arrastar e soltar.</li>
 <li>Visualização e edição dos detalhes do token, compartilhamento via código QR ou cópia do URI do token.</li>

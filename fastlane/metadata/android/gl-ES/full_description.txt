@@ -11,7 +11,7 @@ Isto inclúe excelentes solucións empresariais como <a href="https://www.freeip
 <b>Características:</b>
 <ul>
 <li>Escaneo de códigos QR ou introdución manual da configuración do token.</li>
-<li>Exportación e importación de tokens (JSON ou Key URI, en texto simple ou cifrados) e imaxes personalizadas de tokens (ZIP) mediante Google Drive ou outros provedores de documentos.</li>
+<li>Exportación e importación de tokens (FreeOTP+ JSON ou Key URI, en texto simple ou cifrados, con opción de engadir ou substituír), importación dende copias de seguranza XML de FreeOTP e JSON de Aegis Authenticator, e imaxes personalizadas de tokens (ZIP) mediante Google Drive ou outros provedores de documentos.</li>
 <li>Interface Material Design 3 con temas do sistema, claro e escuro.</li>
 <li>Busca de tokens, asignación de varias categorías con filtros e ordenación por conta, emisor ou arrastrar e soltar.</li>
 <li>Consulta e edición dos detalles do token, compartición mediante código QR ou copia do URI do token.</li>
