@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -734,6 +735,9 @@ private fun TokenListOverflowMenu(
                 )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.theme)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_theme_24px), contentDescription = null)
+                    },
                     trailingIcon = {
                         Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
                     },
@@ -741,6 +745,9 @@ private fun TokenListOverflowMenu(
                 )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.authentication_mode)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_security_24px), contentDescription = null)
+                    },
                     trailingIcon = {
                         Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
                     },
@@ -749,14 +756,22 @@ private fun TokenListOverflowMenu(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 48.dp)
                         .toggleable(
                             value = copyToClipboard,
                             role = Role.Checkbox,
                             onValueChange = { onToggleCopyToClipboard() },
                         )
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(
+                        painter = painterResource(R.drawable.content_copy_24px),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = stringResource(R.string.copy_to_clipboard),
                         style = MaterialTheme.typography.labelLarge,
@@ -764,10 +779,15 @@ private fun TokenListOverflowMenu(
                         modifier = Modifier.weight(1f),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Checkbox(
-                        checked = copyToClipboard,
-                        onCheckedChange = null,
-                    )
+                    Box(
+                        modifier = Modifier.size(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Checkbox(
+                            checked = copyToClipboard,
+                            onCheckedChange = null,
+                        )
+                    }
                 }
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.about_freeotp)) },

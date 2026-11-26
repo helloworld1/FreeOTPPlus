@@ -387,6 +387,52 @@ class MainActivityTest {
         }
     }
 
+    @Test
+    fun testOverflowMenuThemeAuthModeAndCopyToClipboardHaveLeadingIconsAndToggleCopy() {
+        activityRule.scenario.onActivity { activity ->
+            activity.settings.copyToClipboard = true
+        }
+        composeRule.openOverflowMenu()
+        composeRule.awaitTextDisplayed(string(R.string.theme))
+
+        val referenceLeftPx = composeRule
+            .onNodeWithText(string(R.string.scan_qr_code), useUnmergedTree = true)
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .left
+        val menuLeftPx = composeRule
+            .onNodeWithTag(UiTestTags.OVERFLOW_MENU)
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .left
+        val density = getInstrumentation().targetContext.resources.displayMetrics.density
+        // With a 24dp leading icon + 12dp padding + 12dp spacer, text is inset >= 40dp from menu left
+        assertThat(referenceLeftPx - menuLeftPx).isAtLeast(40f * density)
+
+        for (labelRes in listOf(R.string.theme, R.string.authentication_mode, R.string.copy_to_clipboard, R.string.about_freeotp)) {
+            val itemTextLeftPx = composeRule
+                .onNodeWithText(string(labelRes), useUnmergedTree = true)
+                .fetchSemanticsNode()
+                .boundsInRoot
+                .left
+            assertThat(itemTextLeftPx).isWithin(2f).of(referenceLeftPx)
+        }
+
+        // Verify clicking "Copy to clipboard" toggles the setting and closes the menu
+        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
+        composeRule.waitForIdle()
+        activityRule.scenario.onActivity { activity ->
+            assertThat(activity.settings.copyToClipboard).isFalse()
+        }
+
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
+        composeRule.waitForIdle()
+        activityRule.scenario.onActivity { activity ->
+            assertThat(activity.settings.copyToClipboard).isTrue()
+        }
+    }
+
     private fun populateTestData() {
         activityRule.scenario.onActivity { activity ->
             runBlocking {
