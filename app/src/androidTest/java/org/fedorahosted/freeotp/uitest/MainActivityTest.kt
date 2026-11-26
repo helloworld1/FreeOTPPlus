@@ -2,6 +2,9 @@ package org.fedorahosted.freeotp.uitest
 
 import android.content.Intent
 import android.net.Uri
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -11,7 +14,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -20,7 +25,9 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
@@ -28,6 +35,7 @@ import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
+import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -44,10 +52,15 @@ class MainActivityTest {
 
     @Before
     fun setUp() {
+        AuthenticationUtil.hasScreenLockOverride = null
+        AuthenticationUtil.appLaunchAuthCallbackOverride = null
         activityRule.scenario.onActivity { activity ->
             runBlocking {
                 activity.otpTokenDatabase.otpTokenDao().deleteAll()
             }
+            activity.settings.selectedCategory = null
+            activity.settings.authMode = AuthMode.NONE
+            activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         }
     }
 
@@ -331,6 +344,47 @@ class MainActivityTest {
 
         val saved = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1).single()
         assertThat(saved.imagePath).isEqualTo("builtin:GitHub")
+    }
+
+    @Test
+    fun testAppTitleStaysSingleLineOnNarrowScreenWithAllToolbarActions() {
+        AuthenticationUtil.hasScreenLockOverride = true
+        try {
+            for (widthDp in listOf(320, 280)) {
+                activityRule.scenario.onActivity { activity ->
+                    // Show all 4 TopAppBar action buttons (Search, Filter, Quit & Lock, Overflow)
+                    activity.appSessionManager.prepareAuthenticatedSession()
+                    activity.settings.authMode = AuthMode.APP_LAUNCH
+                    activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+
+                    val content = activity.findViewById<View>(android.R.id.content)
+                    val params = content.layoutParams
+                    params.width = (widthDp * activity.resources.displayMetrics.density).toInt()
+                    content.layoutParams = params
+                }
+                composeRule.waitForIdle()
+                composeRule.awaitTagDisplayed(UiTestTags.APP_TITLE)
+                composeRule.onNodeWithTag(UiTestTags.QUIT_AND_LOCK_BUTTON).assertIsDisplayed()
+
+                val results = mutableListOf<TextLayoutResult>()
+                composeRule.onNodeWithTag(UiTestTags.APP_TITLE)
+                    .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { action ->
+                        action(results)
+                    }
+                assertThat(results).isNotEmpty()
+                assertThat(results.single().lineCount).isEqualTo(1)
+            }
+        } finally {
+            AuthenticationUtil.hasScreenLockOverride = null
+            activityRule.scenario.onActivity { activity ->
+                activity.settings.authMode = AuthMode.NONE
+                activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+                val content = activity.findViewById<View>(android.R.id.content)
+                val params = content.layoutParams
+                params.width = ViewGroup.LayoutParams.MATCH_PARENT
+                content.layoutParams = params
+            }
+        }
     }
 
     private fun populateTestData() {

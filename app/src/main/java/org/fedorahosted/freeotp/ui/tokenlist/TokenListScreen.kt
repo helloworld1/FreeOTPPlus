@@ -28,7 +28,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -70,9 +72,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
@@ -259,9 +263,21 @@ fun TokenListScreen(
                                 .testTag(UiTestTags.SEARCH_FIELD),
                         )
                     } else {
-                        Text(
+                        val titleStyle = MaterialTheme.typography.titleLarge
+                        BasicText(
                             text = stringResource(R.string.app_name),
-                            fontWeight = FontWeight.SemiBold,
+                            style = titleStyle.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 15.sp,
+                                maxFontSize = titleStyle.fontSize,
+                                stepSize = 1.sp,
+                            ),
+                            modifier = Modifier.testTag(UiTestTags.APP_TITLE),
                         )
                     }
                 },

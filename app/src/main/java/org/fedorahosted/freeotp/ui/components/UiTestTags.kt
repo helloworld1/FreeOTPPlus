@@ -6,6 +6,7 @@ package org.fedorahosted.freeotp.ui.components
 object UiTestTags {
     // Top bar & overflow menus
     const val TOP_APP_BAR = "top_app_bar"
+    const val APP_TITLE = "app_title"
     const val NAV_BACK_BUTTON = "nav_back_button"
     const val QUIT_AND_LOCK_BUTTON = "quit_and_lock_button"
     const val OVERFLOW_MENU_BUTTON = "overflow_menu_button"
