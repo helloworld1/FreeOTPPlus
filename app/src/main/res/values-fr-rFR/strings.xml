@@ -65,6 +65,9 @@
     <string name="theme_dark">Sombre</string>
     <string name="add_token_success">Le jeton a été ajouté avec succès</string>
     <string name="copy_to_clipboard">Copier dans le presse-papiers</string>
+    <string name="copy_to_clipboard_off">Désactivé</string>
+    <string name="copy_to_clipboard_on_reveal">À l\'affichage</string>
+    <string name="copy_to_clipboard_tap_revealed">Appuyer sur le code affiché</string>
     <string name="require_authentication">Exiger l’authentification</string>
     <string name="quit_and_lock">Quitter et verrouiller</string>
     <string name="authentication_succeeded">Authentification réussie !</string>

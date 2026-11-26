@@ -65,6 +65,9 @@
     <string name="theme_dark">இருள்</string>
     <string name="add_token_success">டோக்கன் வெற்றிகரமாகச் சேர்க்கப்பட்டது</string>
     <string name="copy_to_clipboard">கிளிப்போர்டுக்கு நகலெடு</string>
+    <string name="copy_to_clipboard_off">ஆஃப்</string>
+    <string name="copy_to_clipboard_on_reveal">காட்டும்போது</string>
+    <string name="copy_to_clipboard_tap_revealed">காட்டப்பட்ட குறியீட்டைத் தட்டு</string>
     <string name="require_authentication">அங்கீகாரம் தேவை</string>
     <string name="quit_and_lock">வெளியேறிப் பூட்டு</string>
     <string name="authentication_succeeded">அங்கீகாரம் வெற்றியடைந்தது!</string>

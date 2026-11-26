@@ -65,6 +65,9 @@
     <string name="theme_dark">Ciemny</string>
     <string name="add_token_success">Token został pomyślnie dodany</string>
     <string name="copy_to_clipboard">Kopiuj do schowka</string>
+    <string name="copy_to_clipboard_off">Wyłączone</string>
+    <string name="copy_to_clipboard_on_reveal">Po odkryciu</string>
+    <string name="copy_to_clipboard_tap_revealed">Dotknij odkrytego kodu</string>
     <string name="require_authentication">Wymagaj uwierzytelnienia</string>
     <string name="quit_and_lock">Wyjdź i zablokuj</string>
     <string name="authentication_succeeded">Uwierzytelniono pomyślnie!</string>

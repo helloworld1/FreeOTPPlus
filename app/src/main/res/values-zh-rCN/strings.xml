@@ -65,6 +65,9 @@
     <string name="theme_dark">深色</string>
     <string name="add_token_success">已成功添加令牌</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>
+    <string name="copy_to_clipboard_off">关闭</string>
+    <string name="copy_to_clipboard_on_reveal">显示时</string>
+    <string name="copy_to_clipboard_tap_revealed">轻触已显示的验证码</string>
     <string name="require_authentication">需要身份验证</string>
     <string name="quit_and_lock">退出并锁定</string>
     <string name="authentication_succeeded">身份验证成功！</string>

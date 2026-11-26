@@ -41,6 +41,7 @@ import org.fedorahosted.freeotp.ui.navigation.FreeOtpDestination
 import org.fedorahosted.freeotp.ui.scan.ScanTokenScreen
 import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.ui.tokenlist.TokenListScreen
+import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import java.util.concurrent.ExecutorService
@@ -80,7 +81,7 @@ fun FreeOtpApp(
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
-    onToggleCopyToClipboard: () -> Unit,
+    onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
     dialogHostContent: @Composable () -> Unit,
 ) {
@@ -88,7 +89,7 @@ fun FreeOtpApp(
     val authState by viewModel.authStateFlow.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeModeFlow.collectAsStateWithLifecycle()
     val authMode by viewModel.authModeFlow.collectAsStateWithLifecycle()
-    val copyToClipboard by viewModel.copyToClipboardFlow.collectAsStateWithLifecycle()
+    val copyToClipboardMode by viewModel.copyToClipboardModeFlow.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQueryFlow.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.categoryFilterFlow.collectAsStateWithLifecycle()
     val imageRefreshVersion by viewModel.imageRefreshVersionFlow.collectAsStateWithLifecycle()
@@ -149,7 +150,7 @@ fun FreeOtpApp(
                                 imageRefreshVersion = imageRefreshVersion,
                                 themeMode = themeMode,
                                 authMode = authMode,
-                                copyToClipboard = copyToClipboard,
+                                copyToClipboardMode = copyToClipboardMode,
                                 snackbarHostState = snackbarHostState,
                                 onSearchQueryChange = viewModel::setTokenSearchQuery,
                                 onSelectCategory = viewModel::setCategoryFilter,
@@ -194,7 +195,7 @@ fun FreeOtpApp(
                                 onRequestSort = onRequestSort,
                                 onSelectThemeMode = onSelectThemeMode,
                                 onSelectAuthMode = onSelectAuthMode,
-                                onToggleCopyToClipboard = onToggleCopyToClipboard,
+                                onSelectCopyToClipboardMode = onSelectCopyToClipboardMode,
                                 onQuitAndLock = onQuitAndLock,
                             )
                         }

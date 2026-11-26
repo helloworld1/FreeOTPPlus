@@ -65,6 +65,9 @@
     <string name="theme_dark">Тёмная</string>
     <string name="add_token_success">Токен успешно добавлен</string>
     <string name="copy_to_clipboard">Копировать в буфер обмена</string>
+    <string name="copy_to_clipboard_off">Выкл.</string>
+    <string name="copy_to_clipboard_on_reveal">При показе</string>
+    <string name="copy_to_clipboard_tap_revealed">Нажатие на показанный код</string>
     <string name="require_authentication">Требовать аутентификацию</string>
     <string name="quit_and_lock">Выйти и заблокировать</string>
     <string name="authentication_succeeded">Аутентификация прошла успешно!</string>

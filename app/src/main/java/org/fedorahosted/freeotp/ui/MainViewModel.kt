@@ -19,6 +19,7 @@ import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.CATEGORY_UNCATEGORIZED_VALUE
+import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.ThemeMode
 import javax.inject.Inject
@@ -51,6 +52,7 @@ class MainViewModel @Inject constructor(
     val authStateFlow: StateFlow<AuthState> = appSessionManager.authState
     val themeModeFlow: StateFlow<ThemeMode> = settings.themeModeFlow
     val authModeFlow: StateFlow<AuthMode> = settings.authModeFlow
+    val copyToClipboardModeFlow: StateFlow<CopyToClipboardMode> = settings.copyToClipboardModeFlow
     val copyToClipboardFlow: StateFlow<Boolean> = settings.copyToClipboardFlow
 
     init {
@@ -147,6 +149,10 @@ class MainViewModel @Inject constructor(
         _activeTokenCodes.update { existing ->
             if (tokenId in existing) existing - tokenId else existing
         }
+    }
+
+    fun clearActiveTokenCodes() {
+        _activeTokenCodes.value = emptyMap()
     }
 
     fun setAuthState(auth: AuthState) {

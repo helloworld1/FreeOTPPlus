@@ -77,6 +77,7 @@ fun TokenCard(
     onShareToOtherApps: (OtpToken) -> Unit,
     onShareQrCode: (OtpToken) -> Unit,
     modifier: Modifier = Modifier,
+    allowImmediateTapWhenRevealed: Boolean = false,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val placeholder = remember(token.digits) { TokenDisplayUtil.buildPlaceholder(token.digits) }
@@ -125,6 +126,7 @@ fun TokenCard(
     }
 
     val isActive = displayedCode != null
+    val canTapCard = (isTapEnabled || (isActive && allowImmediateTapWhenRevealed)) && !isDragging
     val avatarAlpha by animateFloatAsState(
         targetValue = if (isActive) 0.14f else 1f,
         label = "tokenAvatarAlpha",
@@ -140,7 +142,7 @@ fun TokenCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(TokenCardShape)
-            .clickable(enabled = isTapEnabled && !isDragging) { onCardClick(token) }
+            .clickable(enabled = canTapCard) { onCardClick(token) }
             .testTag(UiTestTags.tokenCardTag(token.id)),
         shape = TokenCardShape,
         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),

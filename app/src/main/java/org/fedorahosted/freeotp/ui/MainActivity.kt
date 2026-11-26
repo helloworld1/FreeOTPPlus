@@ -66,6 +66,7 @@ import org.fedorahosted.freeotp.ui.navigation.FreeOtpDestination
 import org.fedorahosted.freeotp.util.AppSessionManager
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.ClipboardUtil
+import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.ThemeMode
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
@@ -403,8 +404,8 @@ class MainActivity : AppCompatActivity() {
                 onRequestSort = ::showSortConfirmationDialog,
                 onSelectThemeMode = ::applyThemeMode,
                 onSelectAuthMode = ::selectAuthenticationMode,
-                onToggleCopyToClipboard = {
-                    settings.copyToClipboard = !settings.copyToClipboard
+                onSelectCopyToClipboardMode = { mode ->
+                    settings.copyToClipboardMode = mode
                 },
                 onQuitAndLock = ::quitAndLock,
                 dialogHostContent = {
@@ -608,6 +609,18 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
+            val copyMode = settings.copyToClipboardMode
+            val alreadyRevealedCode = viewModel.getActiveTokenCode(token.id)
+                ?.currentCode
+                ?.takeIf { it.isNotEmpty() }
+            if (copyMode == CopyToClipboardMode.TAP_REVEALED && alreadyRevealedCode != null) {
+                clipboardUtil.copySensitiveText(null, alreadyRevealedCode)
+                if (ClipboardUtil.shouldShowAppCopyFeedback()) {
+                    showSnackbar(R.string.code_copied)
+                }
+                return@launch
+            }
+
             val codes = try {
                 tokenCodeUtil.generateTokenCode(token)
             } catch (e: CancellationException) {
@@ -635,7 +648,7 @@ class MainActivity : AppCompatActivity() {
                 otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
             }
 
-            if (settings.copyToClipboard) {
+            if (copyMode == CopyToClipboardMode.ON_REVEAL) {
                 clipboardUtil.copySensitiveText(null, code)
                 if (ClipboardUtil.shouldShowAppCopyFeedback()) {
                     showSnackbar(R.string.code_copied)
@@ -769,6 +782,10 @@ class MainActivity : AppCompatActivity() {
         deleteTokenId = null
         finish()
         viewModel.lockSession()
+    }
+
+    internal fun clearActiveTokenCodes() {
+        viewModel.clearActiveTokenCodes()
     }
 
     override fun onNewIntent(intent: Intent) {

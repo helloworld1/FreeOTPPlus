@@ -87,6 +87,9 @@
     <string name="theme_dark">Dark</string>
     <string name="add_token_success">The token was successfully added</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="copy_to_clipboard_off">Off</string>
+    <string name="copy_to_clipboard_on_reveal">On reveal</string>
+    <string name="copy_to_clipboard_tap_revealed">Tap revealed code</string>
     <string name="require_authentication">Require authentication</string>
     <string name="quit_and_lock">Quit and lock</string>
     <string name="authentication_succeeded">Authentication succeeded!</string>

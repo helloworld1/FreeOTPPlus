@@ -130,6 +130,60 @@ class SettingsThemeModeTest {
         assertThat(Settings(prefs).enableBiometricUnlock).isTrue()
     }
 
+    @Test
+    fun copyToClipboardMode_upgradesLegacyBooleanAndPersistsAllThreeModes() {
+        // 1. Fresh install defaults to ON_REVEAL
+        val freshPrefs = InMemorySharedPreferences()
+        val freshSettings = Settings(freshPrefs)
+        assertThat(freshSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.ON_REVEAL)
+        assertThat(freshSettings.copyToClipboard).isTrue()
+
+        // 2. Legacy copyToClipboard=false upgrades to OFF
+        val legacyOffPrefs = InMemorySharedPreferences().apply {
+            edit().putBoolean(COPY_TO_CLIPBOARD_KEY, false).apply()
+        }
+        val legacyOffSettings = Settings(legacyOffPrefs)
+        assertThat(legacyOffSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.OFF)
+        assertThat(legacyOffSettings.copyToClipboard).isFalse()
+
+        // 3. Legacy copyToClipboard=true upgrades to ON_REVEAL
+        val legacyOnPrefs = InMemorySharedPreferences().apply {
+            edit().putBoolean(COPY_TO_CLIPBOARD_KEY, true).apply()
+        }
+        val legacyOnSettings = Settings(legacyOnPrefs)
+        assertThat(legacyOnSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.ON_REVEAL)
+        assertThat(legacyOnSettings.copyToClipboard).isTrue()
+
+        // 4. Persisting OFF, ON_REVEAL, and TAP_REVEALED keeps legacy boolean synced
+        freshSettings.copyToClipboardMode = CopyToClipboardMode.TAP_REVEALED
+        assertThat(freshSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.TAP_REVEALED)
+        assertThat(freshSettings.copyToClipboard).isTrue()
+        assertThat(freshPrefs.getString(COPY_TO_CLIPBOARD_MODE_KEY, null)).isEqualTo("TAP_REVEALED")
+        assertThat(freshPrefs.getBoolean(COPY_TO_CLIPBOARD_KEY, false)).isTrue()
+        assertThat(Settings(freshPrefs).copyToClipboardMode).isEqualTo(CopyToClipboardMode.TAP_REVEALED)
+
+        freshSettings.copyToClipboardMode = CopyToClipboardMode.OFF
+        assertThat(freshSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.OFF)
+        assertThat(freshSettings.copyToClipboard).isFalse()
+        assertThat(freshPrefs.getString(COPY_TO_CLIPBOARD_MODE_KEY, null)).isEqualTo("OFF")
+        assertThat(freshPrefs.getBoolean(COPY_TO_CLIPBOARD_KEY, true)).isFalse()
+
+        freshSettings.copyToClipboardMode = CopyToClipboardMode.ON_REVEAL
+        assertThat(freshSettings.copyToClipboardMode).isEqualTo(CopyToClipboardMode.ON_REVEAL)
+        assertThat(freshSettings.copyToClipboard).isTrue()
+        assertThat(freshPrefs.getString(COPY_TO_CLIPBOARD_MODE_KEY, null)).isEqualTo("ON_REVEAL")
+        assertThat(freshPrefs.getBoolean(COPY_TO_CLIPBOARD_KEY, false)).isTrue()
+
+        // 5. Unknown enum string falls back to legacy boolean
+        val unknownPrefs = InMemorySharedPreferences().apply {
+            edit()
+                .putString(COPY_TO_CLIPBOARD_MODE_KEY, "FUTURE_MODE")
+                .putBoolean(COPY_TO_CLIPBOARD_KEY, false)
+                .apply()
+        }
+        assertThat(Settings(unknownPrefs).copyToClipboardMode).isEqualTo(CopyToClipboardMode.OFF)
+    }
+
     private class InMemorySharedPreferences : SharedPreferences {
         private val data = mutableMapOf<String, Any?>()
 

@@ -65,6 +65,9 @@
     <string name="theme_dark">Темна</string>
     <string name="add_token_success">Ключ успішно додано</string>
     <string name="copy_to_clipboard">Копіювати до буфера обміну</string>
+    <string name="copy_to_clipboard_off">Вимк.</string>
+    <string name="copy_to_clipboard_on_reveal">Під час показу</string>
+    <string name="copy_to_clipboard_tap_revealed">Дотик до показаного коду</string>
     <string name="require_authentication">Вимагати автентифікацію</string>
     <string name="quit_and_lock">Вийти й заблокувати</string>
     <string name="authentication_succeeded">Автентифікація успішна!</string>

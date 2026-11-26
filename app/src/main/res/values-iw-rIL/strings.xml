@@ -65,6 +65,9 @@
     <string name="theme_dark">כהה</string>
     <string name="add_token_success">האסימון נוסף בהצלחה</string>
     <string name="copy_to_clipboard">העתקה ללוח</string>
+    <string name="copy_to_clipboard_off">כבוי</string>
+    <string name="copy_to_clipboard_on_reveal">בעת חשיפה</string>
+    <string name="copy_to_clipboard_tap_revealed">הקשה על קוד גלוי</string>
     <string name="require_authentication">דרישת אימות</string>
     <string name="quit_and_lock">יציאה ונעילה</string>
     <string name="authentication_succeeded">האימות הצליח!</string>

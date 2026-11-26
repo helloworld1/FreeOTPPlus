@@ -65,6 +65,9 @@
     <string name="theme_dark">Mörkt</string>
     <string name="add_token_success">Token har lagts till</string>
     <string name="copy_to_clipboard">Kopiera till urklipp</string>
+    <string name="copy_to_clipboard_off">Av</string>
+    <string name="copy_to_clipboard_on_reveal">Vid visning</string>
+    <string name="copy_to_clipboard_tap_revealed">Tryck på visad kod</string>
     <string name="require_authentication">Kräv autentisering</string>
     <string name="quit_and_lock">Avsluta och lås</string>
     <string name="authentication_succeeded">Autentiseringen lyckades!</string>

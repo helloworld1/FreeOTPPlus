@@ -65,6 +65,9 @@
     <string name="theme_dark">Fosc</string>
     <string name="add_token_success">L\'entrada OTP s\'ha afegit correctament</string>
     <string name="copy_to_clipboard">Copia al porta-retalls</string>
+    <string name="copy_to_clipboard_off">Desactivat</string>
+    <string name="copy_to_clipboard_on_reveal">En mostrar</string>
+    <string name="copy_to_clipboard_tap_revealed">En tocar el codi mostrat</string>
     <string name="require_authentication">Requereix autenticació</string>
     <string name="quit_and_lock">Surt i bloca</string>
     <string name="authentication_succeeded">Autenticació correcta!</string>

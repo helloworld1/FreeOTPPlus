@@ -1,15 +1,26 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -30,12 +41,16 @@ import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.AuthenticationUtil
+import org.fedorahosted.freeotp.util.COPY_TO_CLIPBOARD_KEY
+import org.fedorahosted.freeotp.util.COPY_TO_CLIPBOARD_MODE_KEY
+import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -60,6 +75,7 @@ class MainActivityTest {
             }
             activity.settings.selectedCategory = null
             activity.settings.authMode = AuthMode.NONE
+            activity.settings.copyToClipboardMode = CopyToClipboardMode.ON_REVEAL
             activity.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
         }
     }
@@ -388,10 +404,11 @@ class MainActivityTest {
     }
 
     @Test
-    fun testOverflowMenuThemeAuthModeAndCopyToClipboardHaveLeadingIconsAndToggleCopy() {
-        activityRule.scenario.onActivity { activity ->
-            activity.settings.copyToClipboard = true
-        }
+    fun testOverflowMenuLeadingIconsAndCopyToClipboardModesForTotpAndHotp() {
+        populateTestData()
+        composeRule.awaitTokenCardCount(2)
+
+        // 1. Verify leading-icon column alignment across Theme, Authentication mode, Copy to clipboard, and About
         composeRule.openOverflowMenu()
         composeRule.awaitTextDisplayed(string(R.string.theme))
 
@@ -406,7 +423,6 @@ class MainActivityTest {
             .boundsInRoot
             .left
         val density = getInstrumentation().targetContext.resources.displayMetrics.density
-        // With a 24dp leading icon + 12dp padding + 12dp spacer, text is inset >= 40dp from menu left
         assertThat(referenceLeftPx - menuLeftPx).isAtLeast(40f * density)
 
         for (labelRes in listOf(R.string.theme, R.string.authentication_mode, R.string.copy_to_clipboard, R.string.about_freeotp)) {
@@ -418,19 +434,127 @@ class MainActivityTest {
             assertThat(itemTextLeftPx).isWithin(2f).of(referenceLeftPx)
         }
 
-        // Verify clicking "Copy to clipboard" toggles the setting and closes the menu
-        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
-        composeRule.waitForIdle()
+        // 2. Verify legacy boolean false -> Off radio selected in submenu
         activityRule.scenario.onActivity { activity ->
-            assertThat(activity.settings.copyToClipboard).isFalse()
+            activity.settings.sharedPreferences.edit()
+                .remove(COPY_TO_CLIPBOARD_MODE_KEY)
+                .putBoolean(COPY_TO_CLIPBOARD_KEY, false)
+                .commit()
+            activity.settings.refreshFlows()
         }
+        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
+        composeRule.awaitNodeDisplayed(copyRadioMatcher(R.string.copy_to_clipboard_off))
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_off)).assertIsSelected()
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_on_reveal)).assertIsNotSelected()
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed)).assertIsNotSelected()
 
+        // 3. Select "Off": revealing or re-tapping TOTP never copies to clipboard
+        setClipboardSentinel("SENTINEL_OFF")
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_off)).performClick()
+        composeRule.clickCardAtPosition(1)
+        composeRule.waitForIdle()
+        assertThat(readClipboardText()).isEqualTo("SENTINEL_OFF")
+        composeRule.clickCardAtPosition(1)
+        composeRule.waitForIdle()
+        assertThat(readClipboardText()).isEqualTo("SENTINEL_OFF")
+
+        // Reset revealed codes before testing "On reveal"
+        activityRule.scenario.onActivity { activity ->
+            activity.clearActiveTokenCodes()
+        }
+        composeRule.assertCardAtPositionHasText(1, "--- ---")
+
+        // 4. Select "On reveal": first tap on hidden HOTP (id=1, counter=0 -> "047 701") reveals AND copies immediately
+        setClipboardSentinel("SENTINEL_ON_REVEAL")
         composeRule.openOverflowMenu()
         composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
-        composeRule.waitForIdle()
+        composeRule.awaitNodeDisplayed(copyRadioMatcher(R.string.copy_to_clipboard_on_reveal))
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_on_reveal)).performClick()
+
+        composeRule.clickCardAtPosition(0)
+        composeRule.assertCardAtPositionHasText(0, "047 701")
+        composeRule.waitUntil(5_000L) { readClipboardText() == "047701" }
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+            .assertTextEquals("1")
+
+        // Hide active codes before testing "Tap revealed code"
         activityRule.scenario.onActivity { activity ->
-            assertThat(activity.settings.copyToClipboard).isTrue()
+            activity.clearActiveTokenCodes()
         }
+        composeRule.assertCardAtPositionHasText(0, "--- ---")
+        composeRule.assertCardAtPositionHasText(1, "--- ---")
+
+        // 5. Select "Tap revealed code":
+        //    - First tap on HOTP (counter=1 -> 2) reveals code & advances counter to "2", WITHOUT copying
+        //    - Immediate second tap copies that exact revealed code WITHOUT advancing HOTP counter beyond "2"
+        setClipboardSentinel("SENTINEL_TAP_REVEALED")
+        composeRule.openOverflowMenu()
+        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
+        composeRule.awaitNodeDisplayed(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed))
+        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed)).performClick()
+
+        composeRule.clickCardAtPosition(0)
+        val formattedSixDigitRegex = Regex("\\b(\\d{3}) (\\d{3})\\b")
+        var revealedHotpRaw = ""
+        composeRule.waitUntil(5_000L) {
+            val texts = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+                .onChildren()[0]
+                .fetchSemanticsNode()
+                .config
+                .getOrNull(SemanticsProperties.Text)
+                ?.joinToString(" ") { it.text }
+                .orEmpty()
+            val match = formattedSixDigitRegex.find(texts)
+            if (match != null) {
+                revealedHotpRaw = match.groupValues[1] + match.groupValues[2]
+                true
+            } else {
+                false
+            }
+        }
+        assertThat(revealedHotpRaw).isNotEqualTo("047701")
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+            .assertTextEquals("2")
+        assertThat(readClipboardText()).isEqualTo("SENTINEL_TAP_REVEALED")
+
+        // Immediate second tap (well within the 5s HOTP cooldown) copies without incrementing counter
+        composeRule.clickCardAtPosition(0)
+        composeRule.waitUntil(5_000L) { readClipboardText() == revealedHotpRaw }
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+            .assertTextEquals("2")
+
+        // Also verify TOTP in "Tap revealed code" mode: first tap reveals without copying, second tap copies
+        setClipboardSentinel("SENTINEL_TOTP")
+        composeRule.clickCardAtPosition(1)
+        composeRule.waitForIdle()
+        assertThat(readClipboardText()).isEqualTo("SENTINEL_TOTP")
+
+        composeRule.clickCardAtPosition(1)
+        composeRule.waitUntil(5_000L) {
+            val clip = readClipboardText()
+            clip != null && clip != "SENTINEL_TOTP" && clip.length == 6 && clip.all { it.isDigit() }
+        }
+    }
+
+    private fun copyRadioMatcher(titleRes: Int): SemanticsMatcher {
+        return SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
+            hasText(string(titleRes))
+    }
+
+    private fun setClipboardSentinel(value: String) {
+        activityRule.scenario.onActivity { activity ->
+            val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("sentinel", value))
+        }
+    }
+
+    private fun readClipboardText(): String? {
+        var text: String? = null
+        activityRule.scenario.onActivity { activity ->
+            val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        }
+        return text
     }
 
     private fun populateTestData() {

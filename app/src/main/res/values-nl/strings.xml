@@ -65,6 +65,9 @@
     <string name="theme_dark">Donker</string>
     <string name="add_token_success">Het token is succesvol toegevoegd</string>
     <string name="copy_to_clipboard">Kopiëren naar klembord</string>
+    <string name="copy_to_clipboard_off">Uit</string>
+    <string name="copy_to_clipboard_on_reveal">Bij tonen</string>
+    <string name="copy_to_clipboard_tap_revealed">Tik op getoonde code</string>
     <string name="require_authentication">Authenticatie vereisen</string>
     <string name="quit_and_lock">Afsluiten en vergrendelen</string>
     <string name="authentication_succeeded">Authenticatie geslaagd!</string>

@@ -65,6 +65,9 @@
     <string name="theme_dark">深色</string>
     <string name="add_token_success">已成功新增權杖</string>
     <string name="copy_to_clipboard">複製到剪貼簿</string>
+    <string name="copy_to_clipboard_off">關閉</string>
+    <string name="copy_to_clipboard_on_reveal">顯示時</string>
+    <string name="copy_to_clipboard_tap_revealed">輕觸已顯示的驗證碼</string>
     <string name="require_authentication">需要身分驗證</string>
     <string name="quit_and_lock">離開並鎖定</string>
     <string name="authentication_succeeded">身分驗證成功！</string>

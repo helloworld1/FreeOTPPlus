@@ -14,10 +14,23 @@ internal const val DARK_MODE_KEY = "darkMode"
 internal const val THEME_MODE_KEY = "themeMode"
 internal const val SELECTED_CATEGORY_KEY = "selectedCategory"
 internal const val ENABLE_BIOMETRIC_UNLOCK_KEY = "enableBiometricUnlock"
-private const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
+internal const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
+internal const val COPY_TO_CLIPBOARD_MODE_KEY = "copyToClipboardMode"
 private const val PREF_UNCATEGORIZED = "uncategorized"
 private const val PREF_CATEGORY_PREFIX = "category:"
 internal const val CATEGORY_UNCATEGORIZED_VALUE = "uncategorized_special_value"
+
+enum class CopyToClipboardMode(val prefValue: String) {
+    OFF("OFF"),
+    ON_REVEAL("ON_REVEAL"),
+    TAP_REVEALED("TAP_REVEALED");
+
+    companion object {
+        fun fromPrefValue(value: String): CopyToClipboardMode? {
+            return entries.firstOrNull { it.prefValue == value }
+        }
+    }
+}
 
 enum class ThemeMode(val prefValue: String, val nightMode: Int) {
     SYSTEM("SYSTEM", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM),
@@ -39,6 +52,9 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
     private val _authModeFlow = MutableStateFlow(readAuthMode())
     val authModeFlow: StateFlow<AuthMode> = _authModeFlow.asStateFlow()
 
+    private val _copyToClipboardModeFlow = MutableStateFlow(readCopyToClipboardMode())
+    val copyToClipboardModeFlow: StateFlow<CopyToClipboardMode> = _copyToClipboardModeFlow.asStateFlow()
+
     private val _copyToClipboardFlow = MutableStateFlow(readCopyToClipboard())
     val copyToClipboardFlow: StateFlow<Boolean> = _copyToClipboardFlow.asStateFlow()
 
@@ -48,7 +64,10 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
             THEME_MODE_KEY, DARK_MODE_KEY -> _themeModeFlow.value = readThemeMode()
             TokenCryptoManager.AUTH_MODE_KEY, TokenCryptoManager.REQUIRE_AUTHENTICATION_KEY ->
                 _authModeFlow.value = readAuthMode()
-            COPY_TO_CLIPBOARD_KEY -> _copyToClipboardFlow.value = readCopyToClipboard()
+            COPY_TO_CLIPBOARD_MODE_KEY, COPY_TO_CLIPBOARD_KEY -> {
+                _copyToClipboardModeFlow.value = readCopyToClipboardMode()
+                _copyToClipboardFlow.value = readCopyToClipboard()
+            }
         }
     }
 
@@ -59,6 +78,7 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
     fun refreshFlows() {
         _themeModeFlow.value = readThemeMode()
         _authModeFlow.value = readAuthMode()
+        _copyToClipboardModeFlow.value = readCopyToClipboardMode()
         _copyToClipboardFlow.value = readCopyToClipboard()
     }
 
@@ -74,8 +94,20 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
         }
     }
 
+    private fun readCopyToClipboardMode(): CopyToClipboardMode {
+        val raw = sharedPreferences.getString(COPY_TO_CLIPBOARD_MODE_KEY, null)
+        if (raw != null) {
+            CopyToClipboardMode.fromPrefValue(raw)?.let { return it }
+        }
+        return if (sharedPreferences.getBoolean(COPY_TO_CLIPBOARD_KEY, true)) {
+            CopyToClipboardMode.ON_REVEAL
+        } else {
+            CopyToClipboardMode.OFF
+        }
+    }
+
     private fun readCopyToClipboard(): Boolean {
-        return sharedPreferences.getBoolean(COPY_TO_CLIPBOARD_KEY, true)
+        return readCopyToClipboardMode() != CopyToClipboardMode.OFF
     }
 
     private fun readAuthMode(): AuthMode {
@@ -106,11 +138,22 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
             themeMode = if (value) ThemeMode.DARK else ThemeMode.SYSTEM
         }
 
-    var copyToClipboard: Boolean
-        get() = readCopyToClipboard()
+    var copyToClipboardMode: CopyToClipboardMode
+        get() = readCopyToClipboardMode()
         set(value) {
-            sharedPreferences.edit().putBoolean(COPY_TO_CLIPBOARD_KEY, value).apply()
-            _copyToClipboardFlow.value = value
+            val enabled = value != CopyToClipboardMode.OFF
+            sharedPreferences.edit()
+                .putString(COPY_TO_CLIPBOARD_MODE_KEY, value.prefValue)
+                .putBoolean(COPY_TO_CLIPBOARD_KEY, enabled)
+                .apply()
+            _copyToClipboardModeFlow.value = value
+            _copyToClipboardFlow.value = enabled
+        }
+
+    var copyToClipboard: Boolean
+        get() = copyToClipboardMode != CopyToClipboardMode.OFF
+        set(value) {
+            copyToClipboardMode = if (value) CopyToClipboardMode.ON_REVEAL else CopyToClipboardMode.OFF
         }
 
     var authMode: AuthMode

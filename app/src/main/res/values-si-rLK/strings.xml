@@ -65,6 +65,9 @@
     <string name="theme_dark">අඳුරු</string>
     <string name="add_token_success">ටෝකනය සාර්ථකව එක් කරන ලදී</string>
     <string name="copy_to_clipboard">පසුරු පුවරුවට පිටපත් කරන්න</string>
+    <string name="copy_to_clipboard_off">අක්‍රියයි</string>
+    <string name="copy_to_clipboard_on_reveal">පෙන්වූ විට</string>
+    <string name="copy_to_clipboard_tap_revealed">පෙන්වූ කේතය තට්ටු කිරීමෙන්</string>
     <string name="require_authentication">සත්‍යාපනය අවශ්‍යයි</string>
     <string name="quit_and_lock">ඉවත් වී අගුලු දමන්න</string>
     <string name="authentication_succeeded">සත්‍යාපනය සාර්ථකයි!</string>

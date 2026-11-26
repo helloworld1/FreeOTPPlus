@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,11 +27,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,6 +85,7 @@ import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
+import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
 
 private enum class OverflowSubMenu {
@@ -97,6 +95,7 @@ private enum class OverflowSubMenu {
     SORT,
     THEME,
     AUTH_MODE,
+    COPY_TO_CLIPBOARD,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,7 +109,7 @@ fun TokenListScreen(
     imageRefreshVersion: Long,
     themeMode: ThemeMode,
     authMode: AuthMode,
-    copyToClipboard: Boolean,
+    copyToClipboardMode: CopyToClipboardMode,
     snackbarHostState: SnackbarHostState,
     onSearchQueryChange: (String) -> Unit,
     onSelectCategory: (String?) -> Unit,
@@ -135,7 +134,7 @@ fun TokenListScreen(
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
-    onToggleCopyToClipboard: () -> Unit,
+    onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -361,7 +360,7 @@ fun TokenListScreen(
                                 currentSubMenu = currentSubMenu,
                                 themeMode = themeMode,
                                 authMode = authMode,
-                                copyToClipboard = copyToClipboard,
+                                copyToClipboardMode = copyToClipboardMode,
                                 onSubMenuChange = { currentSubMenu = it },
                                 onDismiss = closeMenu,
                                 onNavigateToScanQr = {
@@ -416,9 +415,9 @@ fun TokenListScreen(
                                     closeMenu()
                                     onSelectAuthMode(mode)
                                 },
-                                onToggleCopyToClipboard = {
-                                    onToggleCopyToClipboard()
+                                onSelectCopyToClipboardMode = { mode ->
                                     closeMenu()
+                                    onSelectCopyToClipboardMode(mode)
                                 },
                                 onNavigateToAbout = {
                                     closeMenu()
@@ -539,6 +538,7 @@ fun TokenListScreen(
                         activeEntry = activeTokenCodes[token.id],
                         imageRefreshVersion = imageRefreshVersion,
                         isDragging = isDragging,
+                        allowImmediateTapWhenRevealed = copyToClipboardMode == CopyToClipboardMode.TAP_REVEALED,
                         onCardClick = onTokenCardClick,
                         onCodeExpired = onTokenCodeExpired,
                         onEdit = onEditToken,
@@ -663,7 +663,7 @@ private fun TokenListOverflowMenu(
     currentSubMenu: OverflowSubMenu,
     themeMode: ThemeMode,
     authMode: AuthMode,
-    copyToClipboard: Boolean,
+    copyToClipboardMode: CopyToClipboardMode,
     onSubMenuChange: (OverflowSubMenu) -> Unit,
     onDismiss: () -> Unit,
     onNavigateToScanQr: () -> Unit,
@@ -679,7 +679,7 @@ private fun TokenListOverflowMenu(
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
-    onToggleCopyToClipboard: () -> Unit,
+    onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onNavigateToAbout: () -> Unit,
 ) {
     DropdownMenu(
@@ -753,42 +753,16 @@ private fun TokenListOverflowMenu(
                     },
                     onClick = { onSubMenuChange(OverflowSubMenu.AUTH_MODE) },
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp)
-                        .toggleable(
-                            value = copyToClipboard,
-                            role = Role.Checkbox,
-                            onValueChange = { onToggleCopyToClipboard() },
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.content_copy_24px),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp),
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(R.string.copy_to_clipboard),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Box(
-                        modifier = Modifier.size(24.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Checkbox(
-                            checked = copyToClipboard,
-                            onCheckedChange = null,
-                        )
-                    }
-                }
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.copy_to_clipboard)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.content_copy_24px), contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
+                    },
+                    onClick = { onSubMenuChange(OverflowSubMenu.COPY_TO_CLIPBOARD) },
+                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.about_freeotp)) },
                     leadingIcon = {
@@ -910,6 +884,28 @@ private fun TokenListOverflowMenu(
                     onClick = { onSelectAuthMode(AuthMode.TOKEN_ENCRYPTED) },
                 )
             }
+
+            OverflowSubMenu.COPY_TO_CLIPBOARD -> {
+                SubMenuHeader(
+                    titleRes = R.string.copy_to_clipboard,
+                    onBack = { onSubMenuChange(OverflowSubMenu.ROOT) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.copy_to_clipboard_off,
+                    selected = copyToClipboardMode == CopyToClipboardMode.OFF,
+                    onClick = { onSelectCopyToClipboardMode(CopyToClipboardMode.OFF) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.copy_to_clipboard_on_reveal,
+                    selected = copyToClipboardMode == CopyToClipboardMode.ON_REVEAL,
+                    onClick = { onSelectCopyToClipboardMode(CopyToClipboardMode.ON_REVEAL) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.copy_to_clipboard_tap_revealed,
+                    selected = copyToClipboardMode == CopyToClipboardMode.TAP_REVEALED,
+                    onClick = { onSelectCopyToClipboardMode(CopyToClipboardMode.TAP_REVEALED) },
+                )
+            }
         }
     }
 }
@@ -1004,7 +1000,7 @@ private fun TokenListScreenPreview() {
             imageRefreshVersion = 0L,
             themeMode = ThemeMode.LIGHT,
             authMode = AuthMode.TOKEN_ENCRYPTED,
-            copyToClipboard = true,
+            copyToClipboardMode = CopyToClipboardMode.ON_REVEAL,
             snackbarHostState = remember { SnackbarHostState() },
             onSearchQueryChange = {},
             onSelectCategory = {},
@@ -1029,7 +1025,7 @@ private fun TokenListScreenPreview() {
             onRequestSort = {},
             onSelectThemeMode = {},
             onSelectAuthMode = {},
-            onToggleCopyToClipboard = {},
+            onSelectCopyToClipboardMode = {},
             onQuitAndLock = {},
         )
     }

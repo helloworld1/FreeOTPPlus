@@ -65,6 +65,9 @@
     <string name="theme_dark">Koyu</string>
     <string name="add_token_success">Token başarıyla eklendi</string>
     <string name="copy_to_clipboard">Panoya kopyala</string>
+    <string name="copy_to_clipboard_off">Kapalı</string>
+    <string name="copy_to_clipboard_on_reveal">Gösterildiğinde</string>
+    <string name="copy_to_clipboard_tap_revealed">Gösterilen koda dokununca</string>
     <string name="require_authentication">Kimlik doğrulama iste</string>
     <string name="quit_and_lock">Çık ve kilitle</string>
     <string name="authentication_succeeded">Kimlik doğrulama başarılı!</string>

@@ -65,6 +65,9 @@
     <string name="theme_dark">Dunkel</string>
     <string name="add_token_success">Der Token wurde erfolgreich hinzugefügt</string>
     <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
+    <string name="copy_to_clipboard_off">Aus</string>
+    <string name="copy_to_clipboard_on_reveal">Beim Anzeigen</string>
+    <string name="copy_to_clipboard_tap_revealed">Angezeigten Code antippen</string>
     <string name="require_authentication">Authentifizierung verlangen</string>
     <string name="quit_and_lock">Beenden und sperren</string>
     <string name="authentication_succeeded">Authentifizierung erfolgreich!</string>

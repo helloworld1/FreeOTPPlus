@@ -65,6 +65,9 @@
     <string name="theme_dark">ダーク</string>
     <string name="add_token_success">トークンを追加しました</string>
     <string name="copy_to_clipboard">クリップボードにコピー</string>
+    <string name="copy_to_clipboard_off">オフ</string>
+    <string name="copy_to_clipboard_on_reveal">表示時</string>
+    <string name="copy_to_clipboard_tap_revealed">表示中のコードをタップ</string>
     <string name="require_authentication">認証を要求する</string>
     <string name="quit_and_lock">終了してロック</string>
     <string name="authentication_succeeded">認証に成功しました！</string>

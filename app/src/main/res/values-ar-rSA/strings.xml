@@ -65,6 +65,9 @@
     <string name="theme_dark">داكن</string>
     <string name="add_token_success">تمت إضافة الرمز بنجاح</string>
     <string name="copy_to_clipboard">نسخ إلى الحافظة</string>
+    <string name="copy_to_clipboard_off">إيقاف</string>
+    <string name="copy_to_clipboard_on_reveal">عند الإظهار</string>
+    <string name="copy_to_clipboard_tap_revealed">النقر على الرمز الظاهر</string>
     <string name="require_authentication">طلب المصادقة</string>
     <string name="quit_and_lock">خروج وقفل</string>
     <string name="authentication_succeeded">نجحت المصادقة!</string>

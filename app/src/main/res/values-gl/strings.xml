@@ -65,6 +65,9 @@
     <string name="theme_dark">Escuro</string>
     <string name="add_token_success">O token engadiuse correctamente</string>
     <string name="copy_to_clipboard">Copiar no portapapeis</string>
+    <string name="copy_to_clipboard_off">Desactivado</string>
+    <string name="copy_to_clipboard_on_reveal">Ao mostrar</string>
+    <string name="copy_to_clipboard_tap_revealed">Tocar o código mostrado</string>
     <string name="require_authentication">Requirir autenticación</string>
     <string name="quit_and_lock">Saír e bloquear</string>
     <string name="authentication_succeeded">Autenticación correcta!</string>

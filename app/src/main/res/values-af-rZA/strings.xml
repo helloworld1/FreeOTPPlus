@@ -65,6 +65,9 @@
     <string name="theme_dark">Donker</string>
     <string name="add_token_success">Die kenteken is suksesvol bygevoeg</string>
     <string name="copy_to_clipboard">Kopieer na knipbord</string>
+    <string name="copy_to_clipboard_off">Af</string>
+    <string name="copy_to_clipboard_on_reveal">By wys</string>
+    <string name="copy_to_clipboard_tap_revealed">Tik op gewysde kode</string>
     <string name="require_authentication">Vereis verifikasie</string>
     <string name="quit_and_lock">Verlaat en sluit</string>
     <string name="authentication_succeeded">Verifikasie geslaag!</string>

@@ -65,6 +65,9 @@
     <string name="theme_dark">Sötét</string>
     <string name="add_token_success">A token sikeresen hozzáadva</string>
     <string name="copy_to_clipboard">Másolás a vágólapra</string>
+    <string name="copy_to_clipboard_off">Ki</string>
+    <string name="copy_to_clipboard_on_reveal">Megjelenítéskor</string>
+    <string name="copy_to_clipboard_tap_revealed">Megjelenített kód érintésekor</string>
     <string name="require_authentication">Hitelesítés megkövetelése</string>
     <string name="quit_and_lock">Kilépés és zárolás</string>
     <string name="authentication_succeeded">A hitelesítés sikerült!</string>

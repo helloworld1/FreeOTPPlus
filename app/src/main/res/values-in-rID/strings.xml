@@ -65,6 +65,9 @@
     <string name="theme_dark">Gelap</string>
     <string name="add_token_success">Token berhasil ditambahkan</string>
     <string name="copy_to_clipboard">Salin ke papan klip</string>
+    <string name="copy_to_clipboard_off">Nonaktif</string>
+    <string name="copy_to_clipboard_on_reveal">Saat ditampilkan</string>
+    <string name="copy_to_clipboard_tap_revealed">Ketuk kode yang tampil</string>
     <string name="require_authentication">Wajibkan autentikasi</string>
     <string name="quit_and_lock">Keluar dan kunci</string>
     <string name="authentication_succeeded">Autentikasi berhasil!</string>

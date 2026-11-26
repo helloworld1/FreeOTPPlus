@@ -65,6 +65,9 @@
     <string name="theme_dark">Tmavý</string>
     <string name="add_token_success">Token byl úspěšně přidán</string>
     <string name="copy_to_clipboard">Kopírovat do schránky</string>
+    <string name="copy_to_clipboard_off">Vypnuto</string>
+    <string name="copy_to_clipboard_on_reveal">Při zobrazení</string>
+    <string name="copy_to_clipboard_tap_revealed">Klepnutím na zobrazený kód</string>
     <string name="require_authentication">Vyžadovat ověření</string>
     <string name="quit_and_lock">Ukončit a zamknout</string>
     <string name="authentication_succeeded">Ověření bylo úspěšné!</string>
