@@ -14,6 +14,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
@@ -866,6 +867,112 @@ class TokenEncryptionTest {
             }
         } finally {
             encryptedBackupFile.delete()
+        }
+    }
+
+    @Test
+    fun testEnableBiometricUnlockOptionRememberedWhenUnselectedAndReselected() {
+        val fakeBackend = FakeKeyStoreBackend()
+        AuthenticationUtil.hasStrongBiometricOverride = false
+
+        // 1. Set up Token encrypted mode with manual key only
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.clearAllTables()
+                    activity.otpTokenDatabase.otpTokenDao().insert(TestData.OTP_HOTP_TOKEN_1)
+                }
+            }
+
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.waitForIdle()
+            scenario.onActivity { activity ->
+                assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isFalse()
+                assertThat(activity.settings.enableBiometricUnlock).isTrue()
+                activity.tokenCryptoManager.lock()
+            }
+        }
+
+        // 2. Strong biometric becomes available: checkbox starts ON by default; user unselects it and unlocks
+        AuthenticationUtil.hasStrongBiometricOverride = true
+        var bioPromptCount = 0
+        AuthenticationUtil.biometricCryptoCallbackOverride = { cipher, onSuccess, _, _ ->
+            bioPromptCount++
+            onSuccess(cipher)
+        }
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+            }
+            composeRule.awaitTagDisplayed(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX)
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOn()
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).performClick()
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOff()
+
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.waitForIdle()
+            assertThat(bioPromptCount).isEqualTo(0)
+            scenario.onActivity { activity ->
+                assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isFalse()
+                assertThat(activity.settings.enableBiometricUnlock).isFalse()
+                activity.tokenCryptoManager.lock()
+            }
+        }
+
+        // 3. Next launch: "Enable biometric unlock" must start UNSELECTED by default and stay unselected
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+            }
+            composeRule.awaitTagDisplayed(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX)
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOff()
+
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.waitForIdle()
+            assertThat(bioPromptCount).isEqualTo(0)
+            scenario.onActivity { activity ->
+                assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isFalse()
+                assertThat(activity.settings.enableBiometricUnlock).isFalse()
+                activity.tokenCryptoManager.lock()
+            }
+        }
+
+        // 4. Subsequent launch: still unselected by default; user re-selects it and unlocks -> enables biometric
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                activity.tokenCryptoManager.keyStoreBackend = fakeBackend
+            }
+            composeRule.awaitTagDisplayed(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX)
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOff()
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).performClick()
+            composeRule.onNodeWithTag(UiTestTags.ENABLE_BIOMETRIC_CHECKBOX).assertIsOn()
+
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("myMasterKey")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.waitForIdle()
+            assertThat(bioPromptCount).isEqualTo(1)
+            scenario.onActivity { activity ->
+                assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isTrue()
+                assertThat(activity.settings.enableBiometricUnlock).isTrue()
+            }
         }
     }
 

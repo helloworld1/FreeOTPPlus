@@ -13,6 +13,7 @@ import javax.inject.Singleton
 internal const val DARK_MODE_KEY = "darkMode"
 internal const val THEME_MODE_KEY = "themeMode"
 internal const val SELECTED_CATEGORY_KEY = "selectedCategory"
+internal const val ENABLE_BIOMETRIC_UNLOCK_KEY = "enableBiometricUnlock"
 private const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
 private const val PREF_UNCATEGORIZED = "uncategorized"
 private const val PREF_CATEGORY_PREFIX = "category:"
@@ -126,6 +127,12 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
         get() = authMode != AuthMode.NONE
         set(value) {
             authMode = if (value) AuthMode.APP_LAUNCH else AuthMode.NONE
+        }
+
+    var enableBiometricUnlock: Boolean
+        get() = sharedPreferences.getBoolean(ENABLE_BIOMETRIC_UNLOCK_KEY, true)
+        set(value) {
+            sharedPreferences.edit().putBoolean(ENABLE_BIOMETRIC_UNLOCK_KEY, value).apply()
         }
 
     var selectedCategory: String?

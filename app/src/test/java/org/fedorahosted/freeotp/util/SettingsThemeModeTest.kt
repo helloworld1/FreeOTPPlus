@@ -111,6 +111,25 @@ class SettingsThemeModeTest {
         assertThat(prefs.contains(SELECTED_CATEGORY_KEY)).isFalse()
     }
 
+    @Test
+    fun enableBiometricUnlock_defaultsTrueAndPersistsUnselectedAndReselectedState() {
+        val prefs = InMemorySharedPreferences()
+        val settings = Settings(prefs)
+
+        assertThat(settings.enableBiometricUnlock).isTrue()
+        assertThat(prefs.contains(ENABLE_BIOMETRIC_UNLOCK_KEY)).isFalse()
+
+        settings.enableBiometricUnlock = false
+        assertThat(settings.enableBiometricUnlock).isFalse()
+        assertThat(prefs.getBoolean(ENABLE_BIOMETRIC_UNLOCK_KEY, true)).isFalse()
+        assertThat(Settings(prefs).enableBiometricUnlock).isFalse()
+
+        settings.enableBiometricUnlock = true
+        assertThat(settings.enableBiometricUnlock).isTrue()
+        assertThat(prefs.getBoolean(ENABLE_BIOMETRIC_UNLOCK_KEY, false)).isTrue()
+        assertThat(Settings(prefs).enableBiometricUnlock).isTrue()
+    }
+
     private class InMemorySharedPreferences : SharedPreferences {
         private val data = mutableMapOf<String, Any?>()
 

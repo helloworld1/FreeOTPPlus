@@ -176,13 +176,16 @@ fun ManualKeyPromptDialog(
     @StringRes positiveButtonRes: Int,
     cancelable: Boolean = true,
     @StringRes biometricCheckboxLabelRes: Int? = null,
+    initialBiometricChecked: Boolean = true,
     onCancel: () -> Unit,
     onSubmit: suspend (passphrase: CharArray, biometricChecked: Boolean) -> String?,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val keyController = rememberSecurePassphraseController()
     val incorrectKeyMessage = stringResource(R.string.incorrect_encryption_key)
-    var biometricChecked by rememberSaveable(biometricCheckboxLabelRes) { mutableStateOf(true) }
+    var biometricChecked by rememberSaveable(biometricCheckboxLabelRes, initialBiometricChecked) {
+        mutableStateOf(initialBiometricChecked)
+    }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
 

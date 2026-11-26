@@ -139,6 +139,7 @@ class MainActivity : AppCompatActivity() {
             val isLaunchGate: Boolean,
             val biometricInvalidated: Boolean,
             val canOfferBiometric: Boolean,
+            val initialBiometricChecked: Boolean,
             @param:StringRes val biometricCheckboxLabelRes: Int?,
             @param:StringRes val messageRes: Int,
         ) : AuthGateDialogState
@@ -458,6 +459,7 @@ class MainActivity : AppCompatActivity() {
                         positiveButtonRes = R.string.unlock_text,
                         cancelable = !authDialog.isLaunchGate,
                         biometricCheckboxLabelRes = authDialog.biometricCheckboxLabelRes,
+                        initialBiometricChecked = authDialog.initialBiometricChecked,
                         onCancel = {
                             activeAuthGateDialog = AuthGateDialogState.None
                             if (authDialog.isLaunchGate) {
@@ -468,6 +470,9 @@ class MainActivity : AppCompatActivity() {
                             if (!tokenCryptoManager.unlockWithPassphrase(chars)) {
                                 getString(R.string.incorrect_encryption_key)
                             } else {
+                                if (authDialog.canOfferBiometric) {
+                                    settings.enableBiometricUnlock = biometricChecked
+                                }
                                 activeAuthGateDialog = AuthGateDialogState.None
                                 if (authDialog.canOfferBiometric && biometricChecked) {
                                     promptReenableBiometricAfterManualUnlock()
@@ -1319,6 +1324,7 @@ class MainActivity : AppCompatActivity() {
                         )
                         appSessionManager.prepareAuthenticatedSession()
                         tokenCryptoManager.enableTokenEncryption(setupMaterial, wrappedBlob)
+                        settings.enableBiometricUnlock = true
                         settings.refreshFlows()
                         onAuthCompleted()
                         showSnackbar(R.string.token_encryption_enabled)
@@ -1573,6 +1579,7 @@ class MainActivity : AppCompatActivity() {
             isLaunchGate = isLaunchGate,
             biometricInvalidated = biometricInvalidated,
             canOfferBiometric = canOfferBiometric,
+            initialBiometricChecked = settings.enableBiometricUnlock,
             biometricCheckboxLabelRes = biometricLabelRes,
             messageRes = messageRes,
         )
