@@ -26,6 +26,7 @@ import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.data.third_party.AegisBackupParser
 import org.fedorahosted.freeotp.data.third_party.FreeOtpBackupParser
 import org.fedorahosted.freeotp.ui.MainActivity
+import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
@@ -59,7 +60,12 @@ class ImportExportTest {
 
     private fun clearTokens() = runBlocking {
         lateinit var activity: MainActivity
-        activityRule.scenario.onActivity { activity = it }
+        activityRule.scenario.onActivity {
+            activity = it
+            it.settings.selectedCategory = null
+            it.settings.authMode = AuthMode.NONE
+            it.appSessionManager.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
+        }
         activity.otpTokenDatabase.otpTokenDao().deleteAll()
     }
 

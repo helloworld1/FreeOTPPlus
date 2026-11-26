@@ -451,32 +451,34 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             is AuthGateDialogState.ManualKeyUnlock -> {
-                ManualKeyPromptDialog(
-                    titleRes = R.string.unlock_tokens_title,
-                    messageRes = authDialog.messageRes,
-                    positiveButtonRes = R.string.unlock_text,
-                    cancelable = !authDialog.isLaunchGate,
-                    biometricCheckboxLabelRes = authDialog.biometricCheckboxLabelRes,
-                    onCancel = {
-                        activeAuthGateDialog = AuthGateDialogState.None
-                        if (authDialog.isLaunchGate) {
-                            finish()
-                        }
-                    },
-                    onSubmit = { chars, biometricChecked ->
-                        if (!tokenCryptoManager.unlockWithPassphrase(chars)) {
-                            getString(R.string.incorrect_encryption_key)
-                        } else {
+                androidx.compose.runtime.key(authDialog) {
+                    ManualKeyPromptDialog(
+                        titleRes = R.string.unlock_tokens_title,
+                        messageRes = authDialog.messageRes,
+                        positiveButtonRes = R.string.unlock_text,
+                        cancelable = !authDialog.isLaunchGate,
+                        biometricCheckboxLabelRes = authDialog.biometricCheckboxLabelRes,
+                        onCancel = {
                             activeAuthGateDialog = AuthGateDialogState.None
-                            if (authDialog.canOfferBiometric && biometricChecked) {
-                                promptReenableBiometricAfterManualUnlock()
-                            } else {
-                                onAuthCompleted()
+                            if (authDialog.isLaunchGate) {
+                                finish()
                             }
-                            null
-                        }
-                    },
-                )
+                        },
+                        onSubmit = { chars, biometricChecked ->
+                            if (!tokenCryptoManager.unlockWithPassphrase(chars)) {
+                                getString(R.string.incorrect_encryption_key)
+                            } else {
+                                activeAuthGateDialog = AuthGateDialogState.None
+                                if (authDialog.canOfferBiometric && biometricChecked) {
+                                    promptReenableBiometricAfterManualUnlock()
+                                } else {
+                                    onAuthCompleted()
+                                }
+                                null
+                            }
+                        },
+                    )
+                }
             }
         }
 
@@ -544,47 +546,51 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             is TransientDialogState.VerifyKeyPrompt -> {
-                ManualKeyPromptDialog(
-                    titleRes = transient.titleRes,
-                    messageRes = transient.messageRes,
-                    positiveButtonRes = transient.positiveButtonRes,
-                    cancelable = true,
-                    biometricCheckboxLabelRes = null,
-                    onCancel = { activeTransientDialog = null },
-                    onSubmit = { chars, _ ->
-                        transient.onSubmit(chars)
-                    },
-                )
+                androidx.compose.runtime.key(transient) {
+                    ManualKeyPromptDialog(
+                        titleRes = transient.titleRes,
+                        messageRes = transient.messageRes,
+                        positiveButtonRes = transient.positiveButtonRes,
+                        cancelable = true,
+                        biometricCheckboxLabelRes = null,
+                        onCancel = { activeTransientDialog = null },
+                        onSubmit = { chars, _ ->
+                            transient.onSubmit(chars)
+                        },
+                    )
+                }
             }
             is TransientDialogState.BackupImport -> {
-                BackupImportDialog(
-                    requiresPassword = transient.requiresPassword,
-                    titleRes = transient.titleRes,
-                    encryptedMessageRes = transient.encryptedMessageRes,
-                    unencryptedMessageRes = transient.unencryptedMessageRes,
-                    passwordHintRes = transient.passwordHintRes,
-                    incorrectPasswordRes = transient.incorrectPasswordRes,
-                    onDismiss = { activeTransientDialog = null },
-                    onSubmit = { passphrase, selectedMode ->
-                        try {
-                            transient.onImport(passphrase, selectedMode)
-                            Glide.get(this@MainActivity).clearMemory()
-                            viewModel.notifyTokenImagesChanged()
-                            activeTransientDialog = null
-                            showSnackbar(R.string.import_succeeded_text)
-                            null
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (_: InvalidEncryptionKeyException) {
-                            getString(transient.incorrectPasswordRes)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Import ${transient.logLabel} failed", e)
-                            activeTransientDialog = null
-                            showSnackbar(transient.failedSnackbarRes)
-                            null
-                        }
-                    },
-                )
+                androidx.compose.runtime.key(transient) {
+                    BackupImportDialog(
+                        requiresPassword = transient.requiresPassword,
+                        titleRes = transient.titleRes,
+                        encryptedMessageRes = transient.encryptedMessageRes,
+                        unencryptedMessageRes = transient.unencryptedMessageRes,
+                        passwordHintRes = transient.passwordHintRes,
+                        incorrectPasswordRes = transient.incorrectPasswordRes,
+                        onDismiss = { activeTransientDialog = null },
+                        onSubmit = { passphrase, selectedMode ->
+                            try {
+                                transient.onImport(passphrase, selectedMode)
+                                Glide.get(this@MainActivity).clearMemory()
+                                viewModel.notifyTokenImagesChanged()
+                                activeTransientDialog = null
+                                showSnackbar(R.string.import_succeeded_text)
+                                null
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: InvalidEncryptionKeyException) {
+                                getString(transient.incorrectPasswordRes)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Import ${transient.logLabel} failed", e)
+                                activeTransientDialog = null
+                                showSnackbar(transient.failedSnackbarRes)
+                                null
+                            }
+                        },
+                    )
+                }
             }
         }
     }

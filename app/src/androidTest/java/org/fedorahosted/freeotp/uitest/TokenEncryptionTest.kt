@@ -3,6 +3,10 @@ package org.fedorahosted.freeotp.uitest
 import android.content.Intent
 import android.preference.PreferenceManager
 import android.security.keystore.KeyPermanentlyInvalidatedException
+import android.text.method.PasswordTransformationMethod
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Checkable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.IdlingResource
@@ -26,6 +30,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.test.core.app.ActivityScenario
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.google.android.material.R as MaterialR
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -133,6 +140,9 @@ class TokenEncryptionTest {
         boundCryptoManager?.keyStoreBackend = TokenCryptoManager.AndroidKeyStoreBackend()
         boundCryptoManager?.lock()
         boundCryptoManager = null
+        val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
+        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().commit()
         AuthenticationUtil.hasScreenLockOverride = null
         AuthenticationUtil.hasStrongBiometricOverride = null
         AuthenticationUtil.authCallbackOverride = null
@@ -742,6 +752,139 @@ class TokenEncryptionTest {
                 assertThat(recreatedActivity.tokenCryptoManager.isUnlocked()).isTrue()
             }
         }
+    }
+
+    @Test
+    fun testEncryptionKeyAndBackupPasswordFieldsHiddenByDefault() {
+        val context = getInstrumentation().targetContext
+        val encryptedBackupFile = File(context.cacheDir, "masking_check_encrypted.json")
+
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    attachCryptoIdlingResource(activity.tokenCryptoManager)
+                    runBlocking(Dispatchers.IO) {
+                        activity.otpTokenDatabase.clearAllTables()
+                        activity.otpTokenDatabase.otpTokenDao().insert(
+                            TestData.OTP_TOTP_TOKEN_2.copy(id = 1L, ordinal = 1L)
+                        )
+                    }
+                }
+
+                // 1. SetEncryptionKeyDialog: both key and confirm fields start hidden by default
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+                composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("HiddenPassphrase123")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("HiddenPassphrase123")
+                composeRule.waitForIdle()
+
+                scenario.onActivity { activity ->
+                    val layouts = findDialogPasswordLayouts(activity)
+                    assertThat(layouts).hasSize(2)
+                    for (layout in layouts) {
+                        val editText = layout.editText as TextInputEditText
+                        val endIcon = layout.findViewById<View>(MaterialR.id.text_input_end_icon)
+                        assertThat(editText.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+                        assertThat((endIcon as Checkable).isChecked).isFalse()
+                    }
+
+                    // Toggle visibility ON on the first field, then cancel dialog
+                    val firstEndIcon = layouts[0].findViewById<View>(MaterialR.id.text_input_end_icon)
+                    firstEndIcon.performClick()
+                    assertThat(layouts[0].editText?.transformationMethod).isNull()
+                    assertThat((firstEndIcon as Checkable).isChecked).isTrue()
+                }
+
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+                composeRule.waitForIdle()
+
+                // Reopen SetEncryptionKeyDialog: both fields must start hidden again by default
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+                composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                scenario.onActivity { activity ->
+                    val layouts = findDialogPasswordLayouts(activity)
+                    assertThat(layouts).hasSize(2)
+                    for (layout in layouts) {
+                        val editText = layout.editText as TextInputEditText
+                        val endIcon = layout.findViewById<View>(MaterialR.id.text_input_end_icon)
+                        assertThat(editText.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+                        assertThat((endIcon as Checkable).isChecked).isFalse()
+                    }
+                }
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("HiddenPassphrase123")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("HiddenPassphrase123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.waitForIdle()
+
+                // Export encrypted backup while unlocked, then lock session
+                scenario.onActivity { activity ->
+                    runBlocking(Dispatchers.IO) {
+                        activity.importFromUtil.exportJsonFile(encryptedBackupFile.toUri(), encrypt = true)
+                    }
+                    activity.appSessionManager.lockSession()
+                }
+
+                // 2. ManualKeyPromptDialog (unlock prompt): encryption key field starts hidden by default
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                scenario.onActivity { activity ->
+                    val layouts = findDialogPasswordLayouts(activity)
+                    assertThat(layouts).hasSize(1)
+                    val editText = layouts[0].editText as TextInputEditText
+                    val endIcon = layouts[0].findViewById<View>(MaterialR.id.text_input_end_icon)
+                    assertThat(editText.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+                    assertThat((endIcon as Checkable).isChecked).isFalse()
+                }
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("HiddenPassphrase123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.waitForIdle()
+
+                // 3. BackupImportDialog (encrypted backup password prompt): field starts hidden by default
+                scenario.onActivity { activity ->
+                    activity.onDocumentPicked(
+                        MainActivity.DocumentAction.IMPORT_JSON,
+                        encryptedBackupFile.toUri(),
+                    )
+                }
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                scenario.onActivity { activity ->
+                    val layouts = findDialogPasswordLayouts(activity)
+                    assertThat(layouts).hasSize(1)
+                    val editText = layouts[0].editText as TextInputEditText
+                    val endIcon = layouts[0].findViewById<View>(MaterialR.id.text_input_end_icon)
+                    assertThat(editText.transformationMethod).isInstanceOf(PasswordTransformationMethod::class.java)
+                    assertThat((endIcon as Checkable).isChecked).isFalse()
+                }
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+            }
+        } finally {
+            encryptedBackupFile.delete()
+        }
+    }
+
+    private fun findDialogPasswordLayouts(activity: MainActivity): List<TextInputLayout> {
+        val result = mutableListOf<TextInputLayout>()
+        fun collect(view: View) {
+            if (view is TextInputLayout) {
+                result += view
+            }
+            if (view is ViewGroup) {
+                for (i in 0 until view.childCount) {
+                    collect(view.getChildAt(i))
+                }
+            }
+        }
+        for (window in activity.dialogWindowRegistry.snapshot()) {
+            collect(window.decorView)
+        }
+        return result
     }
 
     private fun authRadioMatcher(titleRes: Int): SemanticsMatcher {

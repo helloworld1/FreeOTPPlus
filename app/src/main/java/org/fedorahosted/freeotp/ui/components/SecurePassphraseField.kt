@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.InputType
+import android.text.method.PasswordTransformationMethod
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.ViewGroup
@@ -57,6 +58,7 @@ import org.fedorahosted.freeotp.util.AuthenticationUtil
  */
 @Stable
 class SecurePassphraseController {
+    internal var layout: TextInputLayout? = null
     internal var editText: TextInputEditText? = null
 
     fun extractCharArray(): CharArray {
@@ -66,12 +68,22 @@ class SecurePassphraseController {
 
     fun scrubAndCancelAutofill() {
         val target = editText ?: return
-        if (Looper.myLooper() == Looper.getMainLooper()) {
+        val parentLayout = layout
+        val scrubAndMask = {
             AuthenticationUtil.clearAndCancelAutofill(target.context, target)
-        } else {
-            Handler(Looper.getMainLooper()).post {
-                AuthenticationUtil.clearAndCancelAutofill(target.context, target)
+            if (target.transformationMethod !is PasswordTransformationMethod) {
+                target.transformationMethod = PasswordTransformationMethod.getInstance()
+                if (parentLayout?.endIconMode == TextInputLayout.END_ICON_PASSWORD_TOGGLE) {
+                    parentLayout.endIconMode = TextInputLayout.END_ICON_NONE
+                    parentLayout.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+                    target.transformationMethod = PasswordTransformationMethod.getInstance()
+                }
             }
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            scrubAndMask()
+        } else {
+            Handler(Looper.getMainLooper()).post(scrubAndMask)
         }
     }
 
@@ -124,6 +136,7 @@ fun SecurePassphraseField(
         onDispose {
             controller.scrubAndCancelAutofill()
             controller.editText = null
+            controller.layout = null
         }
     }
 
@@ -183,7 +196,6 @@ fun SecurePassphraseField(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                     )
-                    endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
                     boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ViewCompat.setImportantForAutofill(
@@ -199,8 +211,11 @@ fun SecurePassphraseField(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                     )
-                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    // Set single-line before inputType/transformationMethod because
+                    // TextView.setSingleLine(true) replaces transformationMethod with SingleLineTransformationMethod.
                     isSingleLine = true
+                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    transformationMethod = PasswordTransformationMethod.getInstance()
                     imeOptions = imeAction or noPersonalizedLearningFlag
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ViewCompat.setImportantForAutofill(
@@ -225,6 +240,9 @@ fun SecurePassphraseField(
                 }
 
                 layout.addView(input)
+                layout.endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+                input.transformationMethod = PasswordTransformationMethod.getInstance()
+                controller.layout = layout
                 controller.editText = input
                 layout
             },
