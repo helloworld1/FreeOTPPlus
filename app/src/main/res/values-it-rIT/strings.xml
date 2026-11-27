@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Nessun token corrispondente trovato.</string>
     <string name="add_token">Aggiungi token</string>
     <string name="scan_qr_code">Scansiona codice QR</string>
+    <string name="paste_key_uri">Incolla URI della chiave</string>
+    <string name="invalid_clipboard_key_uri">Gli appunti non contengono un URI della chiave valido</string>
     <string name="interval">Intervallo</string>
     <string name="counter">Contatore</string>
     <string name="issuer">Emittente</string>

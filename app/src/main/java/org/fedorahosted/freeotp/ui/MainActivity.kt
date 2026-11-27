@@ -394,6 +394,7 @@ class MainActivity : AppCompatActivity() {
                     isSessionAuthenticated()
                 },
                 isSessionAuthenticated = ::isSessionAuthenticated,
+                onPasteKeyUri = ::pasteKeyUriFromClipboard,
                 onImportJson = ::startImportJson,
                 onImportKeyUri = ::startImportKeyUri,
                 onImportTokenImages = ::startImportTokenImages,
@@ -838,11 +839,30 @@ class MainActivity : AppCompatActivity() {
         showAddTokenDeepLinkConfirmation(uri)
     }
 
-    private fun showAddTokenDeepLinkConfirmation(uri: Uri) {
+    internal fun pasteKeyUriFromClipboard() {
+        if (!isSessionAuthenticated()) {
+            verifyAuthentication()
+            return
+        }
+        val rawText = clipboardUtil.readPlainText()?.trim()
+        if (rawText.isNullOrEmpty() || rawText.contains('\n') || rawText.contains('\r')) {
+            showSnackbar(R.string.invalid_clipboard_key_uri)
+            return
+        }
+        showAddTokenDeepLinkConfirmation(
+            uri = Uri.parse(rawText),
+            invalidUriMessageRes = R.string.invalid_clipboard_key_uri,
+        )
+    }
+
+    private fun showAddTokenDeepLinkConfirmation(
+        uri: Uri,
+        @StringRes invalidUriMessageRes: Int = R.string.invalid_token_uri_received,
+    ) {
         val token = try {
             OtpTokenFactory.createFromUri(uri)
         } catch (_: Exception) {
-            showSnackbar(R.string.invalid_token_uri_received)
+            showSnackbar(invalidUriMessageRes)
             return
         }
 

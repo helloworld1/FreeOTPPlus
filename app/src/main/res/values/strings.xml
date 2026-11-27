@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">No matching tokens found.</string>
     <string name="add_token">Add Token</string>
     <string name="scan_qr_code">Scan QR Code</string>
+    <string name="paste_key_uri">Paste key URI</string>
+    <string name="invalid_clipboard_key_uri">Clipboard does not contain a valid key URI</string>
     <string name="interval">Interval</string>
     <string name="counter">Counter</string>
     <string name="counter_symbol" translatable="false">#</string>

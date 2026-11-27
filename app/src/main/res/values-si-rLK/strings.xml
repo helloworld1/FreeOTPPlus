@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">ගැළපෙන ටෝකන හමු නොවීය.</string>
     <string name="add_token">ටෝකනයක් එක් කරන්න</string>
     <string name="scan_qr_code">QR කේතය පරිලෝකනය කරන්න</string>
+    <string name="paste_key_uri">යතුරු URI අලවන්න</string>
+    <string name="invalid_clipboard_key_uri">පසුරු පුවරුවේ වලංගු යතුරු URI එකක් නොමැත</string>
     <string name="interval">කාල පරතරය</string>
     <string name="counter">ගණකය</string>
     <string name="issuer">නිකුත් කරන්නා</string>

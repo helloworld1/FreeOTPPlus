@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">一致するトークンが見つかりません。</string>
     <string name="add_token">トークンを追加</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
+    <string name="paste_key_uri">キーURIを貼り付け</string>
+    <string name="invalid_clipboard_key_uri">クリップボードに有効なキーURIがありません</string>
     <string name="interval">間隔</string>
     <string name="counter">カウンター</string>
     <string name="issuer">発行者</string>

@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Inga matchande tokens hittades.</string>
     <string name="add_token">Lägg till token</string>
     <string name="scan_qr_code">Skanna QR-kod</string>
+    <string name="paste_key_uri">Klistra in nyckel-URI</string>
+    <string name="invalid_clipboard_key_uri">Urklipp innehåller ingen giltig nyckel-URI</string>
     <string name="interval">Intervall</string>
     <string name="counter">Räknare</string>
     <string name="issuer">Utfärdare</string>

@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">لم يتم العثور على رموز مطابقة.</string>
     <string name="add_token">إضافة رمز</string>
     <string name="scan_qr_code">مسح رمز QR</string>
+    <string name="paste_key_uri">لصق رابط URI للمفتاح</string>
+    <string name="invalid_clipboard_key_uri">لا تحتوي الحافظة على رابط URI صالح للمفتاح</string>
     <string name="interval">الفاصل الزمني</string>
     <string name="counter">العدّاد</string>
     <string name="issuer">الجهة المُصدِرة</string>

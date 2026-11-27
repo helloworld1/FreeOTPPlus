@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Geen overeenkomende tokens gevonden.</string>
     <string name="add_token">Token toevoegen</string>
     <string name="scan_qr_code">QR-code scannen</string>
+    <string name="paste_key_uri">Sleutel-URI plakken</string>
+    <string name="invalid_clipboard_key_uri">Klembord bevat geen geldige sleutel-URI</string>
     <string name="interval">Interval</string>
     <string name="counter">Teller</string>
     <string name="issuer">Uitgever</string>

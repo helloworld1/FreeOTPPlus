@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Eşleşen token bulunamadı.</string>
     <string name="add_token">Token Ekle</string>
     <string name="scan_qr_code">QR Kodunu Tara</string>
+    <string name="paste_key_uri">Anahtar URI\'sini yapıştır</string>
+    <string name="invalid_clipboard_key_uri">Panoda geçerli bir anahtar URI\'si yok</string>
     <string name="interval">Aralık</string>
     <string name="counter">Sayaç</string>
     <string name="issuer">Yayıncı</string>

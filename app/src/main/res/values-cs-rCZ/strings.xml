@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Nebyly nalezeny žádné odpovídající tokeny.</string>
     <string name="add_token">Přidat token</string>
     <string name="scan_qr_code">Naskenovat QR kód</string>
+    <string name="paste_key_uri">Vložit URI klíče</string>
+    <string name="invalid_clipboard_key_uri">Schránka neobsahuje platné URI klíče</string>
     <string name="interval">Interval</string>
     <string name="counter">Počítadlo</string>
     <string name="issuer">Vydavatel</string>

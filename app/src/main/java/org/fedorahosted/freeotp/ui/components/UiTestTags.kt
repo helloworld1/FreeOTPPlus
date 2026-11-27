@@ -30,6 +30,7 @@ object UiTestTags {
     const val FAB_MENU_BUTTON = "fab_menu_button"
     const val FAB_MENU_SCRIM = "fab_menu_scrim"
     const val FAB_ADD_TOKEN_ITEM = "fab_add_token_item"
+    const val FAB_PASTE_URI_ITEM = "fab_paste_uri_item"
     const val FAB_SCAN_QR_ITEM = "fab_scan_qr_item"
     const val SCAN_FAB = FAB_MENU_BUTTON
 

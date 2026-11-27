@@ -71,6 +71,7 @@ fun FreeOtpApp(
     onShowSnackbar: (Int) -> Unit,
     onVaultLocked: () -> Unit,
     isSessionAuthenticated: () -> Boolean,
+    onPasteKeyUri: () -> Unit,
     onImportJson: () -> Unit,
     onImportKeyUri: () -> Unit,
     onImportTokenImages: () -> Unit,
@@ -180,6 +181,7 @@ fun FreeOtpApp(
                                         launchSingleTop = true
                                     }
                                 },
+                                onPasteKeyUri = onPasteKeyUri,
                                 onNavigateToAbout = {
                                     snackbarHostState.currentSnackbarData?.dismiss()
                                     navController.navigate(FreeOtpDestination.ABOUT) {

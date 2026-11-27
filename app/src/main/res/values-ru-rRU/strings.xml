@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Подходящие токены не найдены.</string>
     <string name="add_token">Добавить токен</string>
     <string name="scan_qr_code">Сканировать QR-код</string>
+    <string name="paste_key_uri">Вставить URI ключа</string>
+    <string name="invalid_clipboard_key_uri">Буфер обмена не содержит допустимого URI ключа</string>
     <string name="interval">Интервал</string>
     <string name="counter">Счётчик</string>
     <string name="issuer">Издатель</string>

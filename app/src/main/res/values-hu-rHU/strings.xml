@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Nem található egyező token.</string>
     <string name="add_token">Token hozzáadása</string>
     <string name="scan_qr_code">QR-kód beolvasása</string>
+    <string name="paste_key_uri">Kulcs URI beillesztése</string>
+    <string name="invalid_clipboard_key_uri">A vágólap nem tartalmaz érvényes kulcs URI-t</string>
     <string name="interval">Időköz</string>
     <string name="counter">Számláló</string>
     <string name="issuer">Kibocsátó</string>

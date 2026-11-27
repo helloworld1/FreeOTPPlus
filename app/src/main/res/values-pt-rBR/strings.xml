@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Nenhum token correspondente encontrado.</string>
     <string name="add_token">Adicionar token</string>
     <string name="scan_qr_code">Escanear código QR</string>
+    <string name="paste_key_uri">Colar URI da chave</string>
+    <string name="invalid_clipboard_key_uri">A área de transferência não contém um URI de chave válido</string>
     <string name="interval">Intervalo</string>
     <string name="counter">Contador</string>
     <string name="issuer">Emissor</string>

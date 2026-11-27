@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Nie znaleziono pasujących tokenów.</string>
     <string name="add_token">Dodaj token</string>
     <string name="scan_qr_code">Zeskanuj kod QR</string>
+    <string name="paste_key_uri">Wklej URI klucza</string>
+    <string name="invalid_clipboard_key_uri">Schowek nie zawiera prawidłowego URI klucza</string>
     <string name="interval">Interwał</string>
     <string name="counter">Licznik</string>
     <string name="issuer">Wydawca</string>

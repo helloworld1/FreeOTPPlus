@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">未找到匹配的令牌。</string>
     <string name="add_token">添加令牌</string>
     <string name="scan_qr_code">扫描二维码</string>
+    <string name="paste_key_uri">粘贴密钥 URI</string>
+    <string name="invalid_clipboard_key_uri">剪贴板不包含有效的密钥 URI</string>
     <string name="interval">间隔</string>
     <string name="counter">计数器</string>
     <string name="issuer">发行方</string>

@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Non se atoparon tokens coincidentes.</string>
     <string name="add_token">Engadir token</string>
     <string name="scan_qr_code">Escanear código QR</string>
+    <string name="paste_key_uri">Pegar URI da chave</string>
+    <string name="invalid_clipboard_key_uri">O portapapeis non contén un URI de chave válido</string>
     <string name="interval">Intervalo</string>
     <string name="counter">Contador</string>
     <string name="issuer">Emisor</string>

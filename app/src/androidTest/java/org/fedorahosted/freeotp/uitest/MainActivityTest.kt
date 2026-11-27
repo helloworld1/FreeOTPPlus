@@ -613,12 +613,14 @@ class MainActivityTest {
             .assertIsNotSelected()
             .assertContentDescriptionEquals(string(R.string.add))
         composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).assertDoesNotExist()
         composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
         composeRule.onNodeWithTag(UiTestTags.FAB_MENU_SCRIM).assertDoesNotExist()
 
         // 2. Tap FAB to expand Material 3 FAB menu; verify vertical stacking & trailing alignment
         composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
         composeRule.awaitTagDisplayed(UiTestTags.FAB_ADD_TOKEN_ITEM)
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
         composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
 
         composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON)
@@ -626,16 +628,21 @@ class MainActivityTest {
             .assertContentDescriptionEquals(string(R.string.cancel_text))
         composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM)
             .assertTextEquals(string(R.string.add_token))
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM)
+            .assertTextEquals(string(R.string.paste_key_uri))
         composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM)
             .assertTextEquals(string(R.string.scan_qr_code))
 
         val fabBounds = composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).fetchSemanticsNode().boundsInRoot
         val scanItemBounds = composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).fetchSemanticsNode().boundsInRoot
+        val pasteItemBounds = composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).fetchSemanticsNode().boundsInRoot
         val addItemBounds = composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).fetchSemanticsNode().boundsInRoot
 
-        assertThat(addItemBounds.bottom).isLessThan(scanItemBounds.top)
+        assertThat(addItemBounds.bottom).isLessThan(pasteItemBounds.top)
+        assertThat(pasteItemBounds.bottom).isLessThan(scanItemBounds.top)
         assertThat(scanItemBounds.bottom).isLessThan(fabBounds.top)
         assertThat(scanItemBounds.right).isWithin(2f).of(fabBounds.right)
+        assertThat(pasteItemBounds.right).isWithin(2f).of(fabBounds.right)
         assertThat(addItemBounds.right).isWithin(2f).of(fabBounds.right)
 
         // 3. Tapping outside on scrim (directly over card 0) dismisses menu WITHOUT revealing card 0
@@ -703,6 +710,78 @@ class MainActivityTest {
         composeRule.awaitTokenCardCount(3)
         composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
         composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
+    }
+
+    @Test
+    fun testPasteKeyUriFromFabValidatesClipboardAndConfirmsAdd() {
+        // 1. Empty / whitespace clipboard shows invalid key URI snackbar without opening confirmation dialog
+        setClipboardSentinel("   ")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+
+        composeRule.awaitTextDisplayed(string(R.string.invalid_clipboard_key_uri))
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).assertDoesNotExist()
+        composeRule.awaitTokenCardCount(0)
+
+        activityRule.scenario.onActivity { it.dismissSnackbar() }
+        composeRule.waitForIdle()
+
+        // 2. Non-otpauth text in clipboard shows invalid key URI snackbar
+        setClipboardSentinel("https://example.com/not-otpauth")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+
+        composeRule.awaitTextDisplayed(string(R.string.invalid_clipboard_key_uri))
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).assertDoesNotExist()
+        composeRule.awaitTokenCardCount(0)
+
+        activityRule.scenario.onActivity { it.dismissSnackbar() }
+        composeRule.waitForIdle()
+
+        // 3. Malformed otpauth URI (invalid Base32 secret) shows invalid key URI snackbar
+        setClipboardSentinel("otpauth://totp/GitHub:alice?secret=!!!")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+
+        composeRule.awaitTextDisplayed(string(R.string.invalid_clipboard_key_uri))
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).assertDoesNotExist()
+        composeRule.awaitTokenCardCount(0)
+
+        activityRule.scenario.onActivity { it.dismissSnackbar() }
+        composeRule.waitForIdle()
+
+        // 4. Valid TOTP key URI (with surrounding whitespace) opens confirmation dialog; Cancel skips insert
+        setClipboardSentinel("  otpauth://totp/GitLab:carol@gitlab.com?secret=JBSWY3DPEHPK3PXP\n")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+
+        composeRule.awaitTextDisplayed("GitLab", substring = true)
+        composeRule.awaitTextDisplayed("carol@gitlab.com", substring = true)
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+        composeRule.awaitTokenCardCount(0)
+
+        // 5. Valid HOTP key URI opens confirmation dialog; Add inserts token and generates RFC 4226 count=5 code
+        setClipboardSentinel(
+            "otpauth://hotp/Cloudflare:dave@cf.example?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&digits=6&counter=5"
+        )
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+
+        composeRule.awaitTextDisplayed("Cloudflare", substring = true)
+        composeRule.awaitTextDisplayed("dave@cf.example", substring = true)
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+        composeRule.awaitTokenCardCount(1)
+        composeRule.assertCardAtPositionHasText(0, "Cloudflare")
+        composeRule.assertCardAtPositionHasText(0, "dave@cf.example")
+        composeRule.clickCardAtPosition(0)
+        composeRule.assertCardAtPositionHasText(0, "254 676")
     }
 
     private fun copyRadioMatcher(titleRes: Int): SemanticsMatcher {

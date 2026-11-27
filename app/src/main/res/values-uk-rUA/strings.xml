@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Відповідних ключів не знайдено.</string>
     <string name="add_token">Додати ключ</string>
     <string name="scan_qr_code">Сканувати QR-код</string>
+    <string name="paste_key_uri">Вставити URI ключа</string>
+    <string name="invalid_clipboard_key_uri">Буфер обміну не містить дійсного URI ключа</string>
     <string name="interval">Інтервал</string>
     <string name="counter">Лічильник</string>
     <string name="issuer">Видавець</string>

@@ -74,6 +74,15 @@ class ClipboardUtil @Inject constructor(
     }
 
     @MainThread
+    fun readPlainText(): String? {
+        val clip = runCatching { clipboardManager.primaryClip }.getOrNull() ?: return null
+        if (clip.itemCount <= 0) return null
+        val item = clip.getItemAt(0) ?: return null
+        return item.text?.toString()
+            ?: item.uri?.takeIf { it.scheme.equals("otpauth", ignoreCase = true) }?.toString()
+    }
+
+    @MainThread
     fun copySensitiveText(
         label: CharSequence?,
         text: CharSequence,

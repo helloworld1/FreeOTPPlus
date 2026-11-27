@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Aucun jeton correspondant trouvé.</string>
     <string name="add_token">Ajouter un jeton</string>
     <string name="scan_qr_code">Scanner un code QR</string>
+    <string name="paste_key_uri">Coller l\'URI de la clé</string>
+    <string name="invalid_clipboard_key_uri">Le presse-papiers ne contient pas d\'URI de clé valide</string>
     <string name="interval">Intervalle</string>
     <string name="counter">Compteur</string>
     <string name="issuer">Émetteur</string>

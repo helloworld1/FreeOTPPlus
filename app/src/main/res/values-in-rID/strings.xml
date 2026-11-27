@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Tidak ada token yang cocok ditemukan.</string>
     <string name="add_token">Tambah Token</string>
     <string name="scan_qr_code">Pindai Kode QR</string>
+    <string name="paste_key_uri">Tempel URI kunci</string>
+    <string name="invalid_clipboard_key_uri">Papan klip tidak berisi URI kunci yang valid</string>
     <string name="interval">Interval</string>
     <string name="counter">Penghitung</string>
     <string name="issuer">Penerbit</string>

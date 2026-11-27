@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">பொருந்தும் டோக்கன்கள் எதுவும் கிடைக்கவில்லை.</string>
     <string name="add_token">டோக்கனைச் சேர்</string>
     <string name="scan_qr_code">QR குறியீட்டை ஸ்கேன் செய்</string>
+    <string name="paste_key_uri">சாவி URI-ஐ ஒட்டு</string>
+    <string name="invalid_clipboard_key_uri">கிளிப்போர்டில் செல்லுபடியான சாவி URI இல்லை</string>
     <string name="interval">கால இடைவெளி</string>
     <string name="counter">எண்ணிக்கை</string>
     <string name="issuer">வழங்குநர்</string>

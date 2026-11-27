@@ -164,6 +164,7 @@ fun TokenListScreen(
     onQuitAndLock: () -> Unit,
     modifier: Modifier = Modifier,
     onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
+    onPasteKeyUri: () -> Unit = {},
     initialFabMenuExpanded: Boolean = false,
 ) {
     val gridState = rememberLazyGridState()
@@ -641,6 +642,10 @@ fun TokenListScreen(
                 isFabMenuExpanded = false
                 onNavigateToAddToken()
             },
+            onPasteKeyUri = {
+                isFabMenuExpanded = false
+                onPasteKeyUri()
+            },
             onScanQr = {
                 isFabMenuExpanded = false
                 onNavigateToScanQr()
@@ -661,6 +666,7 @@ private fun TokenListFabMenu(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onAddToken: () -> Unit,
+    onPasteKeyUri: () -> Unit,
     onScanQr: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -732,6 +738,13 @@ private fun TokenListFabMenu(
                     labelRes = R.string.add_token,
                     onClick = onAddToken,
                     modifier = Modifier.testTag(UiTestTags.FAB_ADD_TOKEN_ITEM),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                FabMenuActionItem(
+                    iconRes = R.drawable.content_paste_24px,
+                    labelRes = R.string.paste_key_uri,
+                    onClick = onPasteKeyUri,
+                    modifier = Modifier.testTag(UiTestTags.FAB_PASTE_URI_ITEM),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 FabMenuActionItem(

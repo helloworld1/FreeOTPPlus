@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Geen ooreenstemmende kentekens gevind nie.</string>
     <string name="add_token">Voeg kenteken by</string>
     <string name="scan_qr_code">Skandeer QR-kode</string>
+    <string name="paste_key_uri">Plak sleutel-URI</string>
+    <string name="invalid_clipboard_key_uri">Knipbord bevat nie \'n geldige sleutel-URI nie</string>
     <string name="interval">Interval</string>
     <string name="counter">Teller</string>
     <string name="issuer">Uitreiker</string>

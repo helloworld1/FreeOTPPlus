@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">לא נמצאו אסימונים תואמים.</string>
     <string name="add_token">הוספת אסימון</string>
     <string name="scan_qr_code">סריקת קוד QR</string>
+    <string name="paste_key_uri">הדבקת URI של מפתח</string>
+    <string name="invalid_clipboard_key_uri">הלוח אינו מכיל URI תקין של מפתח</string>
     <string name="interval">מרווח</string>
     <string name="counter">מונה</string>
     <string name="issuer">מנפיק</string>

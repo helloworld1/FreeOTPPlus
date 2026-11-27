@@ -9,6 +9,8 @@
     <string name="no_matching_tokens">Ez da bat datorren tokenik aurkitu.</string>
     <string name="add_token">Gehitu tokena</string>
     <string name="scan_qr_code">Eskaneatu QR kodea</string>
+    <string name="paste_key_uri">Itsatsi gakoaren URIa</string>
+    <string name="invalid_clipboard_key_uri">Arbelak ez du baliozko gako-URIrik</string>
     <string name="interval">Tartea</string>
     <string name="counter">Kontagailua</string>
     <string name="issuer">Igorlea</string>
