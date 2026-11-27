@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Ordina per Emittente decrescente</string>
     <string name="sort_tokens_warning_title">Ordinare i token?</string>
     <string name="sort_tokens_warning_message">L\'ordinamento automatico sovrascriverà tutto l\'ordine manuale e non può essere annullato. Si consiglia di creare prima un backup JSON.</string>
+    <string name="visual">Aspetto</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Chiaro</string>

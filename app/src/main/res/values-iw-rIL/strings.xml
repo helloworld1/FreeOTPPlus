@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">מיון לפי מנפיק בסדר יורד</string>
     <string name="sort_tokens_warning_title">למיין את האסימונים?</string>
     <string name="sort_tokens_warning_message">שימוש במיון אוטומטי יבטל את כל הסידור הידני ולא ניתן לבטל פעולה זו. מומלץ ליצור גיבוי JSON תחילה.</string>
+    <string name="visual">תצוגה</string>
     <string name="theme">ערכת עיצוב</string>
     <string name="theme_system">מערכת</string>
     <string name="theme_light">בהירה</string>

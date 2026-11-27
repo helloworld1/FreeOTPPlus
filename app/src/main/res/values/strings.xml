@@ -84,6 +84,7 @@
     <string name="sort_by_issuer_desc">Sort by Issuer Descending</string>
     <string name="sort_tokens_warning_title">Sort tokens?</string>
     <string name="sort_tokens_warning_message">Using automatic sorting will revert all manual ordering and cannot be undone. Creating a JSON backup first is recommended.</string>
+    <string name="visual">Visual</string>
     <string name="theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>

@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">按发行方降序排列</string>
     <string name="sort_tokens_warning_title">排序令牌？</string>
     <string name="sort_tokens_warning_message">使用自动排序将重置所有手动排序且无法撤销。建议先创建一份 JSON 备份。</string>
+    <string name="visual">外观</string>
     <string name="theme">主题</string>
     <string name="theme_system">跟随系统</string>
     <string name="theme_light">浅色</string>

@@ -18,6 +18,7 @@ import com.google.common.truth.Truth.assertThat
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.DARK_MODE_KEY
 import org.fedorahosted.freeotp.util.Settings
@@ -84,6 +85,17 @@ class ThemeModeTest {
 
             openThemeSubmenu()
             assertThemeRadioStates(systemChecked = true, lightChecked = false, darkChecked = false)
+
+            // Back from Theme submenu returns to Visual submenu, and Back from Visual returns to root menu
+            composeRule.onNodeWithText(string(R.string.theme)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.visual))
+            composeRule.awaitTextDisplayed(string(R.string.theme))
+            composeRule.onNode(radioRowMatcher(R.string.theme_system)).assertDoesNotExist()
+
+            composeRule.onNodeWithText(string(R.string.visual)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.import_text))
+            composeRule.awaitTextDisplayed(string(R.string.visual))
+            composeRule.onNodeWithText(string(R.string.theme)).assertDoesNotExist()
         }
     }
 
@@ -107,6 +119,17 @@ class ThemeModeTest {
 
             openThemeSubmenu()
             assertThemeRadioStates(systemChecked = true, lightChecked = false, darkChecked = false)
+
+            // Back from Theme submenu returns to Visual submenu, and Back from Visual returns to root menu
+            composeRule.onNodeWithText(string(R.string.theme)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.visual))
+            composeRule.awaitTextDisplayed(string(R.string.theme))
+            composeRule.onNode(radioRowMatcher(R.string.theme_system)).assertDoesNotExist()
+
+            composeRule.onNodeWithText(string(R.string.visual)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.import_text))
+            composeRule.awaitTextDisplayed(string(R.string.visual))
+            composeRule.onNodeWithText(string(R.string.theme)).assertDoesNotExist()
         }
     }
 
@@ -135,6 +158,9 @@ class ThemeModeTest {
 
     private fun openThemeSubmenu() {
         composeRule.openOverflowMenu()
+        composeRule.awaitTextDisplayed(string(R.string.visual))
+        composeRule.onNodeWithText(string(R.string.visual)).performClick()
+        composeRule.awaitTextDisplayed(string(R.string.theme))
         composeRule.onNodeWithText(string(R.string.theme)).performClick()
         composeRule.awaitNodeDisplayed(radioRowMatcher(R.string.theme_system))
     }

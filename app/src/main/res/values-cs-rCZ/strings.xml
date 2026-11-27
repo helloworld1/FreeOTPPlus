@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Seřadit podle vydavatele sestupně</string>
     <string name="sort_tokens_warning_title">Seřadit tokeny?</string>
     <string name="sort_tokens_warning_message">Použití automatického řazení zruší veškeré ruční uspořádání a tuto akci nelze vrátit zpět. Doporučujeme nejprve vytvořit zálohu ve formátu JSON.</string>
+    <string name="visual">Vzhled</string>
     <string name="theme">Motiv</string>
     <string name="theme_system">Systém</string>
     <string name="theme_light">Světlý</string>

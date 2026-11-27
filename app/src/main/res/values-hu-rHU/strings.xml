@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Rendezés Kibocsátó szerint csökkenő</string>
     <string name="sort_tokens_warning_title">Tokenek rendezése?</string>
     <string name="sort_tokens_warning_message">Az automatikus rendezés felülírja a kézi sorrendet, és ez a művelet nem vonható vissza. Javasolt előbb JSON biztonsági mentést készíteni.</string>
+    <string name="visual">Megjelenés</string>
     <string name="theme">Téma</string>
     <string name="theme_system">Rendszer</string>
     <string name="theme_light">Világos</string>

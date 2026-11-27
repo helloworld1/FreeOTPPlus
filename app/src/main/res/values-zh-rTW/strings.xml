@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">依發行者降冪排列</string>
     <string name="sort_tokens_warning_title">排序權杖？</string>
     <string name="sort_tokens_warning_message">使用自動排序將會重置所有手動排序，且無法復原。建議先建立一份 JSON 備份。</string>
+    <string name="visual">外觀</string>
     <string name="theme">主題</string>
     <string name="theme_system">跟隨系統</string>
     <string name="theme_light">淺色</string>

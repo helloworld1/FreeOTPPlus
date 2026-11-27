@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">නිකුත් කරන්නා අනුව අවරෝහණව වර්ග කරන්න</string>
     <string name="sort_tokens_warning_title">ටෝකන වර්ග කරන්නද?</string>
     <string name="sort_tokens_warning_message">ස්වයංක්‍රීය වර්ග කිරීම භාවිතා කිරීමෙන් ඔබගේ සියලුම අතින් සකස් කළ අනුපිළිවෙල අහෝසි වන අතර එය ආපසු හැරවිය නොහැක. පළමුව JSON උපස්ථයක් සෑදීම නිර්දේශ කෙරේ.</string>
+    <string name="visual">දෘශ්‍ය</string>
     <string name="theme">තේමාව</string>
     <string name="theme_system">පද්ධතිය</string>
     <string name="theme_light">දීප්තිමත්</string>

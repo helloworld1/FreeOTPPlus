@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Yayıncıya göre azalan sırala</string>
     <string name="sort_tokens_warning_title">Tokenler sıralansın mı?</string>
     <string name="sort_tokens_warning_message">Otomatik sıralama kullanıldığında tüm elle yapılan sıralama sıfırlanır ve bu işlem geri alınamaz. Önce bir JSON yedeği oluşturmanız önerilir.</string>
+    <string name="visual">Görünüm</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Açık</string>

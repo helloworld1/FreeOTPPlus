@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Trier par Émetteur décroissant</string>
     <string name="sort_tokens_warning_title">Trier les jetons ?</string>
     <string name="sort_tokens_warning_message">L’utilisation du tri automatique annulera tout classement manuel et cette action est irréversible. Il est recommandé de créer d’abord une sauvegarde JSON.</string>
+    <string name="visual">Affichage</string>
     <string name="theme">Thème</string>
     <string name="theme_system">Système</string>
     <string name="theme_light">Clair</string>

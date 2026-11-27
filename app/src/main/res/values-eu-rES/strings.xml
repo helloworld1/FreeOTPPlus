@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Ordenatu Igorlearen arabera beherantz</string>
     <string name="sort_tokens_warning_title">Tokenak ordenatu?</string>
     <string name="sort_tokens_warning_message">Ordenatze automatikoa erabiltzeak eskuzko ordena guztia leheneratuko du eta ezin da desegin. Lehenik JSON babeskopia bat sortzea gomendatzen da.</string>
+    <string name="visual">Bisuala</string>
     <string name="theme">Gaia</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Argia</string>

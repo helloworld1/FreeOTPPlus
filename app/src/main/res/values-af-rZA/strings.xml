@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Sorteer volgens Uitreiker aflopend</string>
     <string name="sort_tokens_warning_title">Sorteer kentekens?</string>
     <string name="sort_tokens_warning_message">Outomatiese sortering sal alle handmatige volgorde terugstel en kan nie ontdoen word nie. Dit word aanbeveel om eers \'n JSON-rugsteun te skep.</string>
+    <string name="visual">Visueel</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Stelsel</string>
     <string name="theme_light">Lig</string>

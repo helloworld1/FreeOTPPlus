@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Sortera efter Utfärdare fallande</string>
     <string name="sort_tokens_warning_title">Sortera tokens?</string>
     <string name="sort_tokens_warning_message">Automatisk sortering återställer all manuell ordning och går inte att ångra. Vi rekommenderar att du skapar en JSON-säkerhetskopia först.</string>
+    <string name="visual">Visuellt</string>
     <string name="theme">Tema</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Ljust</string>

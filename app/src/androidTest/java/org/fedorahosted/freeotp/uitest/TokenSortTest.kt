@@ -70,7 +70,7 @@ class TokenSortTest {
             }
             composeRule.awaitTokenCardCount(3)
 
-            // Verify menu ordering: Export -> Sort -> Theme
+            // Verify menu ordering: Export -> Sort -> Visual
             composeRule.openOverflowMenu()
             composeRule.awaitTagDisplayed(UiTestTags.OVERFLOW_MENU)
             val menuItemTitles = composeRule.onNodeWithTag(UiTestTags.OVERFLOW_MENU)
@@ -81,10 +81,10 @@ class TokenSortTest {
                 }
             val exportIdx = menuItemTitles.indexOf(string(R.string.export_text))
             val sortIdx = menuItemTitles.indexOf(string(R.string.sort))
-            val themeIdx = menuItemTitles.indexOf(string(R.string.theme))
+            val visualIdx = menuItemTitles.indexOf(string(R.string.visual))
             assertThat(exportIdx).isAtLeast(0)
             assertThat(sortIdx).isEqualTo(exportIdx + 1)
-            assertThat(themeIdx).isEqualTo(sortIdx + 1)
+            assertThat(visualIdx).isEqualTo(sortIdx + 1)
 
             // Select Sort -> Sort by Account Ascending -> Cancel keeps manual order [Slack, Amazon, GitHub]
             composeRule.onNodeWithText(string(R.string.sort)).performClick()

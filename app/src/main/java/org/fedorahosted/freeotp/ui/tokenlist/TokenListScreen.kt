@@ -120,6 +120,7 @@ private enum class OverflowSubMenu {
     IMPORT,
     EXPORT,
     SORT,
+    VISUAL,
     THEME,
     AUTH_MODE,
     COPY_TO_CLIPBOARD,
@@ -990,14 +991,14 @@ private fun TokenListOverflowMenu(
                     onClick = { onSubMenuChange(OverflowSubMenu.SORT) },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.theme)) },
+                    text = { Text(text = stringResource(R.string.visual)) },
                     leadingIcon = {
-                        Icon(painter = painterResource(R.drawable.ic_theme_24px), contentDescription = null)
+                        Icon(painter = painterResource(R.drawable.ic_visual_24px), contentDescription = null)
                     },
                     trailingIcon = {
                         Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
                     },
-                    onClick = { onSubMenuChange(OverflowSubMenu.THEME) },
+                    onClick = { onSubMenuChange(OverflowSubMenu.VISUAL) },
                 )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.authentication_mode)) },
@@ -1097,10 +1098,27 @@ private fun TokenListOverflowMenu(
                 )
             }
 
+            OverflowSubMenu.VISUAL -> {
+                SubMenuHeader(
+                    titleRes = R.string.visual,
+                    onBack = { onSubMenuChange(OverflowSubMenu.ROOT) },
+                )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.theme)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_theme_24px), contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
+                    },
+                    onClick = { onSubMenuChange(OverflowSubMenu.THEME) },
+                )
+            }
+
             OverflowSubMenu.THEME -> {
                 SubMenuHeader(
                     titleRes = R.string.theme,
-                    onBack = { onSubMenuChange(OverflowSubMenu.ROOT) },
+                    onBack = { onSubMenuChange(OverflowSubMenu.VISUAL) },
                 )
                 SubMenuRadioItem(
                     titleRes = R.string.theme_system,

@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Sortuj według Wydawcy malejąco</string>
     <string name="sort_tokens_warning_title">Posortować tokeny?</string>
     <string name="sort_tokens_warning_message">Użycie automatycznego sortowania nadpisze całe ręczne uporządkowanie i nie można tego cofnąć. Zaleca się wcześniejsze utworzenie kopii zapasowej JSON.</string>
+    <string name="visual">Wygląd</string>
     <string name="theme">Motyw</string>
     <string name="theme_system">Systemowy</string>
     <string name="theme_light">Jasny</string>

@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">الفرز حسب الجهة المُصدِرة تنازليًا</string>
     <string name="sort_tokens_warning_title">فرز الرموز؟</string>
     <string name="sort_tokens_warning_message">سيؤدي استخدام الفرز التلقائي إلى إلغاء كل الترتيب اليدوي ولا يمكن التراجع عنه. يُنصح بإنشاء نسخة احتياطية بتنسيق JSON أولاً.</string>
+    <string name="visual">العرض المرئي</string>
     <string name="theme">المظهر</string>
     <string name="theme_system">النظام</string>
     <string name="theme_light">فاتح</string>

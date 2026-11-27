@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Urutkan berdasarkan Penerbit Menurun</string>
     <string name="sort_tokens_warning_title">Urutkan token?</string>
     <string name="sort_tokens_warning_message">Menggunakan pengurutan otomatis akan menghapus semua urutan manual dan tidak dapat dibatalkan. Disarankan untuk membuat cadangan JSON terlebih dahulu.</string>
+    <string name="visual">Visual</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_light">Terang</string>

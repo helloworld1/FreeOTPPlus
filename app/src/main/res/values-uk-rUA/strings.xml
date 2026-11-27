@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Сортувати за Видавцем за спаданням</string>
     <string name="sort_tokens_warning_title">Відсортувати ключі?</string>
     <string name="sort_tokens_warning_message">Використання автоматичного сортування скасує весь ручний порядок, і цю дію неможливо скасувати. Рекомендується спочатку створити резервну копію у форматі JSON.</string>
+    <string name="visual">Вигляд</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системна</string>
     <string name="theme_light">Світла</string>

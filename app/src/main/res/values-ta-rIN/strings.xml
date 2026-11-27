@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">வழங்குநர் அடிப்படையில் இறங்குவரிசையில்</string>
     <string name="sort_tokens_warning_title">டோக்கன்களை வரிசைப்படுத்தவா?</string>
     <string name="sort_tokens_warning_message">தானியங்கி வரிசைப்படுத்தலைப் பயன்படுத்தினால் கைமுறையாக அமைத்த வரிசை அனைத்தும் மாற்றப்படும், இதைச் செயல்தவிர்க்க முடியாது. முதலில் JSON காப்புப்பிரதியை உருவாக்க பரிந்துரைக்கப்படுகிறது.</string>
+    <string name="visual">காட்சி</string>
     <string name="theme">தோற்றம்</string>
     <string name="theme_system">சிஸ்டம்</string>
     <string name="theme_light">ஒளி</string>

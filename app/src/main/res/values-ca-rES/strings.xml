@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Ordena per Emissor descendent</string>
     <string name="sort_tokens_warning_title">Vols ordenar els tokens?</string>
     <string name="sort_tokens_warning_message">L\'ús de l\'ordenació automàtica revertirà tota l\'ordenació manual i no es pot desfer. Es recomana crear primer una còpia de seguretat en format JSON.</string>
+    <string name="visual">Visual</string>
     <string name="theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Clar</string>

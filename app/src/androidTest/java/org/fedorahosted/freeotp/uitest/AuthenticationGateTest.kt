@@ -322,10 +322,10 @@ class AuthenticationGateTest {
                 .onChildren()
                 .fetchSemanticsNodes()
                 .mapNotNull { it.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { s -> s.text } }
-            val themeIdx = titles.indexOf(string(R.string.theme))
+            val visualIdx = titles.indexOf(string(R.string.visual))
             val authIdx = titles.indexOf(string(R.string.authentication_mode))
-            assertThat(themeIdx).isAtLeast(0)
-            assertThat(authIdx).isEqualTo(themeIdx + 1)
+            assertThat(visualIdx).isAtLeast(0)
+            assertThat(authIdx).isEqualTo(visualIdx + 1)
 
             composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
             composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).performClick()

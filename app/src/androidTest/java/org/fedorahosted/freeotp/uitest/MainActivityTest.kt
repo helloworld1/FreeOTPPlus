@@ -429,11 +429,12 @@ class MainActivityTest {
         populateTestData()
         composeRule.awaitTokenCardCount(2)
 
-        // 1. Verify Scan QR Code & Add Token are absent from overflow menu, and verify leading-icon alignment
+        // 1. Verify Scan QR Code & Add Token & Theme are absent from root overflow menu, and verify leading-icon alignment
         composeRule.openOverflowMenu()
-        composeRule.awaitTextDisplayed(string(R.string.theme))
+        composeRule.awaitTextDisplayed(string(R.string.visual))
         composeRule.onNodeWithText(string(R.string.scan_qr_code)).assertDoesNotExist()
         composeRule.onNodeWithText(string(R.string.add_token)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.theme)).assertDoesNotExist()
 
         val referenceLeftPx = composeRule
             .onNodeWithText(string(R.string.import_text), useUnmergedTree = true)
@@ -451,7 +452,7 @@ class MainActivityTest {
         for (labelRes in listOf(
             R.string.export_text,
             R.string.sort,
-            R.string.theme,
+            R.string.visual,
             R.string.authentication_mode,
             R.string.copy_to_clipboard,
             R.string.about_freeotp,

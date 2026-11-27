@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Aussteller (absteigend)</string>
     <string name="sort_tokens_warning_title">Token sortieren?</string>
     <string name="sort_tokens_warning_message">Durch die automatische Sortierung wird die gesamte manuelle Reihenfolge überschrieben und dies kann nicht rückgängig gemacht werden. Es wird empfohlen, zuerst ein JSON-Backup zu erstellen.</string>
+    <string name="visual">Darstellung</string>
     <string name="theme">Design</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>

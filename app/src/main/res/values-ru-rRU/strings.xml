@@ -62,6 +62,7 @@
     <string name="sort_by_issuer_desc">Сортировать по Издателю (по убыванию)</string>
     <string name="sort_tokens_warning_title">Отсортировать токены?</string>
     <string name="sort_tokens_warning_message">Автоматическая сортировка сбросит весь ручной порядок, и это действие нельзя отменить. Рекомендуется сначала создать резервную копию в формате JSON.</string>
+    <string name="visual">Оформление</string>
     <string name="theme">Тема</string>
     <string name="theme_system">Системная</string>
     <string name="theme_light">Светлая</string>
