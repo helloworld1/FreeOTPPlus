@@ -17,6 +17,7 @@
     <string name="account">Konto</string>
     <string name="id">ID</string>
     <string name="secret">Hemlig nyckel</string>
+    <string name="generate_random_secret">Generera slumpmässig hemlighet</string>
     <string name="type">Typ</string>
     <string name="algorithm">Algoritm</string>
     <string name="digits">Siffror</string>

@@ -17,6 +17,7 @@
     <string name="account">账户</string>
     <string name="id">ID</string>
     <string name="secret">密钥</string>
+    <string name="generate_random_secret">生成随机密钥</string>
     <string name="type">类型</string>
     <string name="algorithm">算法</string>
     <string name="digits">位数</string>

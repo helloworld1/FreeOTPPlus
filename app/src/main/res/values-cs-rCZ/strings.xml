@@ -17,6 +17,7 @@
     <string name="account">Účet</string>
     <string name="id">ID</string>
     <string name="secret">Tajný klíč</string>
+    <string name="generate_random_secret">Vygenerovat náhodné tajemství</string>
     <string name="type">Typ</string>
     <string name="algorithm">Algoritmus</string>
     <string name="digits">Číslice</string>

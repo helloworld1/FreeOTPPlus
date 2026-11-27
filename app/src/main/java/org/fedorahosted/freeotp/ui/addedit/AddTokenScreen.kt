@@ -107,6 +107,7 @@ fun AddTokenScreen(
         onIssuerChange = viewModel::updateIssuer,
         onLabelChange = viewModel::updateLabel,
         onSecretChange = viewModel::updateSecret,
+        onGenerateRandomSecret = viewModel::generateRandomSecret,
         onTokenTypeChange = viewModel::updateTokenType,
         onDigitsChange = viewModel::updateDigits,
         onAlgorithmChange = viewModel::updateAlgorithm,
@@ -164,6 +165,7 @@ internal fun AddTokenScreenContent(
     onIssuerChange: (String) -> Unit,
     onLabelChange: (String) -> Unit,
     onSecretChange: (String) -> Unit,
+    onGenerateRandomSecret: () -> Unit,
     onTokenTypeChange: (OtpTokenType) -> Unit,
     onDigitsChange: (Int) -> Unit,
     onAlgorithmChange: (String) -> Unit,
@@ -339,6 +341,18 @@ internal fun AddTokenScreenContent(
                 value = state.secret,
                 onValueChange = onSecretChange,
                 label = { Text(text = stringResource(R.string.secret)) },
+                trailingIcon = {
+                    IconButton(
+                        onClick = onGenerateRandomSecret,
+                        enabled = !state.isSubmitting,
+                        modifier = Modifier.testTag(UiTestTags.GENERATE_SECRET_BUTTON),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.casino_24px),
+                            contentDescription = stringResource(R.string.generate_random_secret),
+                        )
+                    }
+                },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
                 keyboardOptions = KeyboardOptions(
@@ -500,6 +514,7 @@ private fun AddTokenScreenPreview() {
             onIssuerChange = {},
             onLabelChange = {},
             onSecretChange = {},
+            onGenerateRandomSecret = {},
             onTokenTypeChange = {},
             onDigitsChange = {},
             onAlgorithmChange = {},

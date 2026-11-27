@@ -17,6 +17,7 @@
     <string name="account">アカウント</string>
     <string name="id">ID</string>
     <string name="secret">秘密鍵</string>
+    <string name="generate_random_secret">ランダムなシークレットを生成</string>
     <string name="type">タイプ</string>
     <string name="algorithm">アルゴリズム</string>
     <string name="digits">桁数</string>

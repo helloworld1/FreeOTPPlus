@@ -17,6 +17,7 @@
     <string name="account">Rekening</string>
     <string name="id">ID</string>
     <string name="secret">Geheime sleutel</string>
+    <string name="generate_random_secret">Genereer ewekansige geheim</string>
     <string name="type">Tipe</string>
     <string name="algorithm">Algoritme</string>
     <string name="digits">Syfers</string>

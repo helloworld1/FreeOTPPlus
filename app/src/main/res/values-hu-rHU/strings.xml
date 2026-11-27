@@ -17,6 +17,7 @@
     <string name="account">Fiók</string>
     <string name="id">Azonosító</string>
     <string name="secret">Titkos kulcs</string>
+    <string name="generate_random_secret">Véletlenszerű titok generálása</string>
     <string name="type">Típus</string>
     <string name="algorithm">Algoritmus</string>
     <string name="digits">Számjegyek</string>

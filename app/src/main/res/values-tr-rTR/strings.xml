@@ -17,6 +17,7 @@
     <string name="account">Hesap</string>
     <string name="id">Kimlik</string>
     <string name="secret">Gizli Anahtar</string>
+    <string name="generate_random_secret">Rastgele gizli anahtar oluştur</string>
     <string name="type">Tür</string>
     <string name="algorithm">Algoritma</string>
     <string name="digits">Basamak Sayısı</string>

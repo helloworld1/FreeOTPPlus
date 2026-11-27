@@ -17,6 +17,7 @@
     <string name="account">ගිණුම</string>
     <string name="id">හැඳුනුම</string>
     <string name="secret">රහස් යතුර</string>
+    <string name="generate_random_secret">අහඹු රහසක් ජනනය කරන්න</string>
     <string name="type">වර්ගය</string>
     <string name="algorithm">ඇල්ගොරිතමය</string>
     <string name="digits">ඉලක්කම්</string>

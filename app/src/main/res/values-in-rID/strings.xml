@@ -17,6 +17,7 @@
     <string name="account">Akun</string>
     <string name="id">ID</string>
     <string name="secret">Kunci Rahasia</string>
+    <string name="generate_random_secret">Buat rahasia acak</string>
     <string name="type">Tipe</string>
     <string name="algorithm">Algoritma</string>
     <string name="digits">Digit</string>

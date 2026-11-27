@@ -17,6 +17,7 @@
     <string name="account">الحساب</string>
     <string name="id">المعرّف</string>
     <string name="secret">المفتاح السري</string>
+    <string name="generate_random_secret">إنشاء سر عشوائي</string>
     <string name="type">النوع</string>
     <string name="algorithm">الخوارزمية</string>
     <string name="digits">عدد الأرقام</string>

@@ -934,6 +934,63 @@ class MainActivityTest {
         }
     }
 
+    @Test
+    fun testGenerateRandomSecretInAddTokenCreatesWorkingToken() {
+        composeRule.openAddTokenFromFab()
+
+        composeRule.awaitTagDisplayed(UiTestTags.GENERATE_SECRET_BUTTON)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("RandomSecretIssuer")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("random@example.com")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).assertIsNotEnabled()
+
+        // 1. Default SHA1 algorithm generates a 32-char (160-bit) Base32 secret and enables Add
+        composeRule.onNodeWithTag(UiTestTags.GENERATE_SECRET_BUTTON).performClick()
+        composeRule.waitForIdle()
+        val firstSecret = composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT)
+            .fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+        assertThat(firstSecret).hasLength(32)
+        assertThat(firstSecret.matches(Regex("^[A-Z2-7]{32}$"))).isTrue()
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).assertIsEnabled()
+
+        // 2. Tapping again generates a fresh distinct secret
+        composeRule.onNodeWithTag(UiTestTags.GENERATE_SECRET_BUTTON).performClick()
+        composeRule.waitForIdle()
+        val secondSecret = composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT)
+            .fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+        assertThat(secondSecret).hasLength(32)
+        assertThat(secondSecret.matches(Regex("^[A-Z2-7]{32}$"))).isTrue()
+        assertThat(secondSecret).isNotEqualTo(firstSecret)
+
+        // 3. Selecting SHA256 generates a 52-char (256-bit) Base32 secret and saves a working token
+        composeRule.onNodeWithTag(UiTestTags.ALGORITHM_DROPDOWN).performScrollTo().performClick()
+        composeRule.awaitTextDisplayed("SHA256")
+        composeRule.onNodeWithText("SHA256").performClick()
+
+        composeRule.onNodeWithTag(UiTestTags.GENERATE_SECRET_BUTTON).performScrollTo().performClick()
+        composeRule.waitForIdle()
+        val sha256Secret = composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT)
+            .fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+        assertThat(sha256Secret).hasLength(52)
+        assertThat(sha256Secret.matches(Regex("^[A-Z2-7]{52}$"))).isTrue()
+
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).performClick()
+
+        val savedToken = TestWaitUtil.awaitStoredTokens(activityRule.scenario, 1).single()
+        assertThat(savedToken.issuer).isEqualTo("RandomSecretIssuer")
+        assertThat(savedToken.label).isEqualTo("random@example.com")
+        assertThat(savedToken.algorithm).isEqualTo("SHA256")
+        assertThat(savedToken.secret).isEqualTo(sha256Secret)
+
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(savedToken.id))
+        composeRule.clickCardAtPosition(0)
+        composeRule.waitForIdle()
+        val displayedCode = composeRule.onNodeWithTag(UiTestTags.tokenCodeTag(savedToken.id), useUnmergedTree = true)
+            .fetchSemanticsNode().config.getOrNull(SemanticsProperties.Text)
+            ?.joinToString("") { it.text }
+            .orEmpty()
+        assertThat(displayedCode.matches(Regex("^\\d{3} \\d{3}$"))).isTrue()
+    }
+
     private fun copyRadioMatcher(titleRes: Int): SemanticsMatcher {
         return SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
             hasText(string(titleRes))

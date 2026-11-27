@@ -17,6 +17,7 @@
     <string name="account">Compte</string>
     <string name="id">Identificador</string>
     <string name="secret">Clau secreta</string>
+    <string name="generate_random_secret">Genera un secret aleatori</string>
     <string name="type">Tipus</string>
     <string name="algorithm">Algorisme</string>
     <string name="digits">Dígits</string>

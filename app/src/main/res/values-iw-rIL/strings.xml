@@ -17,6 +17,7 @@
     <string name="account">חשבון</string>
     <string name="id">מזהה</string>
     <string name="secret">מפתח סודי</string>
+    <string name="generate_random_secret">יצירת סוד אקראי</string>
     <string name="type">סוג</string>
     <string name="algorithm">אלגוריתם</string>
     <string name="digits">ספרות</string>

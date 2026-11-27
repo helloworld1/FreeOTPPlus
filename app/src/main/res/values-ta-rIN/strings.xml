@@ -17,6 +17,7 @@
     <string name="account">கணக்கு</string>
     <string name="id">அடையாள எண்</string>
     <string name="secret">இரகசியத் திறவுகோல்</string>
+    <string name="generate_random_secret">சீரற்ற இரகசியத்தை உருவாக்கு</string>
     <string name="type">வகை</string>
     <string name="algorithm">வழிமுறை</string>
     <string name="digits">இலக்கங்கள்</string>

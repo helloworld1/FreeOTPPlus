@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.apps.authenticator.Base32String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -22,6 +23,8 @@ import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.TokenImageBackupUtil
 import org.fedorahosted.freeotp.util.ImageUtil
+import java.security.SecureRandom
+import java.util.Locale
 import javax.inject.Inject
 
 data class AddTokenUiState(
@@ -90,6 +93,11 @@ class AddTokenViewModel @Inject constructor(
     fun updateSecret(rawValue: String) {
         val cleaned = normalizeTypedBase32Secret(rawValue)
         _uiState.update { it.copy(secret = cleaned) }
+    }
+
+    fun generateRandomSecret() {
+        val generated = generateStrongBase32Secret(_uiState.value.algorithm)
+        _uiState.update { it.copy(secret = generated) }
     }
 
     fun updateTokenType(type: OtpTokenType) {
@@ -217,6 +225,32 @@ class AddTokenViewModel @Inject constructor(
     }
 
     companion object {
+        private val SECURE_RANDOM = SecureRandom()
+        internal const val DEFAULT_SECRET_BYTES = 20 // 160 bits (32 Base32 chars) for SHA1 / MD5
+        internal const val SHA256_SECRET_BYTES = 32 // 256 bits (52 Base32 chars) for SHA256
+        internal const val SHA512_SECRET_BYTES = 64 // 512 bits (103 Base32 chars) for SHA512
+
+        internal fun secretByteLengthForAlgorithm(algorithm: String): Int {
+            return when (algorithm.trim().uppercase(Locale.US)) {
+                "SHA256" -> SHA256_SECRET_BYTES
+                "SHA512" -> SHA512_SECRET_BYTES
+                else -> DEFAULT_SECRET_BYTES
+            }
+        }
+
+        internal fun generateStrongBase32Secret(
+            algorithm: String = "SHA1",
+            secureRandom: SecureRandom = SECURE_RANDOM,
+        ): String {
+            val bytes = ByteArray(secretByteLengthForAlgorithm(algorithm))
+            return try {
+                secureRandom.nextBytes(bytes)
+                Base32String.encode(bytes)
+            } finally {
+                bytes.fill(0)
+            }
+        }
+
         internal fun normalizeTypedBase32Secret(raw: String): String {
             if (raw.isEmpty()) return ""
             val filtered = buildString(raw.length) {

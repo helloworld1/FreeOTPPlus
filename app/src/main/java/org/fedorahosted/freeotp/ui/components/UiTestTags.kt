@@ -47,6 +47,7 @@ object UiTestTags {
     const val ISSUER_INPUT = "issuer_input"
     const val LABEL_INPUT = "label_input"
     const val SECRET_INPUT = "secret_input"
+    const val GENERATE_SECRET_BUTTON = "generate_secret_button"
     const val TYPE_TOTP_BUTTON = "type_totp_button"
     const val TYPE_HOTP_BUTTON = "type_hotp_button"
     const val ALGORITHM_DROPDOWN = "algorithm_dropdown"

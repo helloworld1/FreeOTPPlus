@@ -17,6 +17,7 @@
     <string name="account">Обліковий запис</string>
     <string name="id">ID</string>
     <string name="secret">Секретний ключ</string>
+    <string name="generate_random_secret">Згенерувати випадковий секрет</string>
     <string name="type">Тип</string>
     <string name="algorithm">Алгоритм</string>
     <string name="digits">Цифри</string>

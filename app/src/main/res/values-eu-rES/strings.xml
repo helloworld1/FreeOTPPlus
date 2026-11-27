@@ -17,6 +17,7 @@
     <string name="account">Kontua</string>
     <string name="id">ID</string>
     <string name="secret">Gako sekretua</string>
+    <string name="generate_random_secret">Sortu ausazko sekretua</string>
     <string name="type">Mota</string>
     <string name="algorithm">Algoritmoa</string>
     <string name="digits">Digituak</string>
