@@ -865,36 +865,40 @@ class MainActivityTest {
         val pasted1Top = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(pasted1Id)).fetchSemanticsNode().boundsInRoot.top
         assertThat(pasted2Top).isLessThan(pasted1Top)
 
-        // 4. Scroll down to bottom again, then Scan QR Code -> jumps to scanned token
+        // 4. Scroll down to bottom again, then Scan QR Code -> opens Add Token confirmation dialog
         composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(seedCount + 2)
         composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(lastSeededId))
         composeRule.onNodeWithTag(UiTestTags.tokenCardTag(pasted2Id)).assertDoesNotExist()
 
-        ScanTokenConfig.simulatedQrTextForTest =
-            "otpauth://totp/JumpScanned:scan@example.com?secret=JBSWY3DPEHPK3PXP"
         try {
+            // 4a. Cancel in Add Token confirmation dialog after scanning QR skips adding the token
+            ScanTokenConfig.simulatedQrTextForTest =
+                "otpauth://totp/ScanCancelIssuer:cancel@example.com?secret=JBSWY3DPEHPK3PXP"
             composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
             composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
             composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
-            composeRule.waitForIdle()
 
-            var scannedId = 0L
-            composeRule.waitUntil(5_000L) {
-                var found: Long? = null
-                activityRule.scenario.onActivity { activity ->
-                    found = runBlocking {
-                        activity.otpTokenDatabase.otpTokenDao().getAll().first()
-                            .firstOrNull { it.issuer == "JumpScanned" }
-                            ?.id
-                    }
-                }
-                if (found != null) {
-                    scannedId = found!!
-                    true
-                } else {
-                    false
-                }
-            }
+            composeRule.awaitTextDisplayed("ScanCancelIssuer", substring = true)
+            composeRule.awaitTextDisplayed("cancel@example.com", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+            composeRule.waitForIdle()
+            TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 3)
+            composeRule.onNodeWithTag(UiTestTags.tokenCardTag(lastSeededId)).assertIsDisplayed()
+
+            // 4b. Confirm Add in confirmation dialog after scanning QR adds the token and jumps to it
+            ScanTokenConfig.simulatedQrTextForTest =
+                "otpauth://totp/JumpScanned:scan@example.com?secret=JBSWY3DPEHPK3PXP"
+            composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
+            composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
+
+            composeRule.awaitTextDisplayed("JumpScanned", substring = true)
+            composeRule.awaitTextDisplayed("scan@example.com", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            val scannedId = TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 4)
+                .first { it.issuer == "JumpScanned" }
+                .id
             composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(scannedId))
             composeRule.onNodeWithTag(UiTestTags.tokenCardTag(lastSeededId)).assertDoesNotExist()
 

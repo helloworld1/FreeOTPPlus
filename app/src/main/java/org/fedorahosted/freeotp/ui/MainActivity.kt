@@ -394,6 +394,7 @@ class MainActivity : AppCompatActivity() {
                     isSessionAuthenticated()
                 },
                 isSessionAuthenticated = ::isSessionAuthenticated,
+                onQrCodeScanned = ::onQrCodeScanned,
                 onPasteKeyUri = ::pasteKeyUriFromClipboard,
                 onImportJson = ::startImportJson,
                 onImportKeyUri = ::startImportKeyUri,
@@ -836,6 +837,15 @@ class MainActivity : AppCompatActivity() {
         }
         val uri = pendingDeepLinkUri ?: return
         pendingDeepLinkUri = null
+        showAddTokenDeepLinkConfirmation(uri)
+    }
+
+    internal fun onQrCodeScanned(uri: Uri) {
+        if (!isSessionAuthenticated()) {
+            pendingDeepLinkUri = uri
+            verifyAuthentication()
+            return
+        }
         showAddTokenDeepLinkConfirmation(uri)
     }
 

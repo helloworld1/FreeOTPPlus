@@ -2,6 +2,7 @@ package org.fedorahosted.freeotp.ui.scan
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import android.view.Surface
@@ -59,14 +60,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
-import org.fedorahosted.freeotp.data.OtpToken
-import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
-import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.ui.theme.ScanScrimColor
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
@@ -107,20 +104,16 @@ internal fun chooseCameraChoice(
 @Composable
 fun ScanTokenScreen(
     tokenQRCodeDecoder: TokenQRCodeDecoder,
-    otpTokenDatabase: OtpTokenDatabase,
-    tokenCryptoManager: TokenCryptoManager,
     executorService: ExecutorService,
     onNavigateBack: () -> Unit,
-    onVaultLocked: () -> Unit,
+    onQrScanned: (Uri) -> Unit,
     modifier: Modifier = Modifier,
-    onTokenAdded: (Long, OtpToken) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
-    val currentOnVaultLocked by rememberUpdatedState(onVaultLocked)
-    val currentOnTokenAdded by rememberUpdatedState(onTokenAdded)
+    val currentOnQrScanned by rememberUpdatedState(onQrScanned)
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -144,28 +137,12 @@ fun ScanTokenScreen(
         }
     }
 
-    suspend fun processScannedQrText(qrText: String) {
+    fun processScannedQrText(qrText: String) {
         try {
-            val token = OtpTokenFactory.createFromUri(qrText.toUri())
-            val insertedId = otpTokenDatabase.otpTokenDao().insertAtTop(
-                tokenCryptoManager.encryptTokenForStorage(token)
-            )
-            currentOnTokenAdded(insertedId, token)
+            val uri = qrText.trim().toUri()
+            OtpTokenFactory.createFromUri(uri)
             currentOnNavigateBack()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IllegalStateException) {
-            Log.w(TAG, "Token vault locked while saving scanned token", e)
-            if (!tokenCryptoManager.isUnlocked()) {
-                currentOnVaultLocked()
-            } else {
-                val now = SystemClock.elapsedRealtime()
-                if (now - lastInvalidToastMs.get() > 2_500L) {
-                    lastInvalidToastMs.set(now)
-                    Toast.makeText(context, R.string.invalid_token, Toast.LENGTH_SHORT).show()
-                }
-            }
-            foundTokenFlag.set(false)
+            currentOnQrScanned(uri)
         } catch (e: Exception) {
             Log.w(TAG, "Invalid token URI scanned", e)
             val now = SystemClock.elapsedRealtime()

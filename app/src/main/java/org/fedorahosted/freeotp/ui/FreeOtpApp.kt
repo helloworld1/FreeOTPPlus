@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
+import android.net.Uri
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,6 +72,7 @@ fun FreeOtpApp(
     onShowSnackbar: (Int) -> Unit,
     onVaultLocked: () -> Unit,
     isSessionAuthenticated: () -> Boolean,
+    onQrCodeScanned: (Uri) -> Unit,
     onPasteKeyUri: () -> Unit,
     onImportJson: () -> Unit,
     onImportKeyUri: () -> Unit,
@@ -240,16 +242,13 @@ fun FreeOtpApp(
                         composable(FreeOtpDestination.SCAN_TOKEN) {
                             ScanTokenScreen(
                                 tokenQRCodeDecoder = tokenQRCodeDecoder,
-                                otpTokenDatabase = otpTokenDatabase,
-                                tokenCryptoManager = tokenCryptoManager,
                                 executorService = executorService,
                                 onNavigateBack = {
                                     if (navController.currentDestination?.route == FreeOtpDestination.SCAN_TOKEN) {
                                         navController.popBackStack()
                                     }
                                 },
-                                onVaultLocked = onVaultLocked,
-                                onTokenAdded = viewModel::onTokenAdded,
+                                onQrScanned = onQrCodeScanned,
                             )
                         }
 
