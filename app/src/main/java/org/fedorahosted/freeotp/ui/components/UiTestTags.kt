@@ -38,6 +38,8 @@ object UiTestTags {
     fun tokenMenuButtonTag(tokenId: Long): String = "token_menu_$tokenId"
     fun tokenAvatarTag(tokenId: Long): String = "token_avatar_$tokenId"
     fun tokenCodeTag(tokenId: Long): String = "token_code_$tokenId"
+    fun tokenProgressRingTag(tokenId: Long): String = "token_progress_ring_$tokenId"
+    fun tokenProgressBarTag(tokenId: Long): String = "token_progress_bar_$tokenId"
     fun tokenCounterContainerTag(tokenId: Long): String = "token_counter_container_$tokenId"
     fun tokenCounterValueTag(tokenId: Long): String = "token_counter_value_$tokenId"
 

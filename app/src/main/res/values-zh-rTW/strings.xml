@@ -67,6 +67,9 @@
     <string name="theme_system">跟隨系統</string>
     <string name="theme_light">淺色</string>
     <string name="theme_dark">深色</string>
+    <string name="token_timer_style">計時器樣式</string>
+    <string name="timer_style_circle">圓環</string>
+    <string name="timer_style_progress_bar">進度列</string>
     <string name="add_token_success">已成功新增權杖</string>
     <string name="copy_to_clipboard">複製到剪貼簿</string>
     <string name="copy_to_clipboard_off">關閉</string>

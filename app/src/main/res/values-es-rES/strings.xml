@@ -67,6 +67,9 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
+    <string name="token_timer_style">Estilo del temporizador</string>
+    <string name="timer_style_circle">Círculo</string>
+    <string name="timer_style_progress_bar">Barra de progreso</string>
     <string name="add_token_success">El token se ha añadido correctamente</string>
     <string name="copy_to_clipboard">Copiar al portapapeles</string>
     <string name="copy_to_clipboard_off">Desactivado</string>

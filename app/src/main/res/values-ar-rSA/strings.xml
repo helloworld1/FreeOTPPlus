@@ -67,6 +67,9 @@
     <string name="theme_system">النظام</string>
     <string name="theme_light">فاتح</string>
     <string name="theme_dark">داكن</string>
+    <string name="token_timer_style">نمط المؤقت</string>
+    <string name="timer_style_circle">دائرة</string>
+    <string name="timer_style_progress_bar">شريط التقدم</string>
     <string name="add_token_success">تمت إضافة الرمز بنجاح</string>
     <string name="copy_to_clipboard">نسخ إلى الحافظة</string>
     <string name="copy_to_clipboard_off">إيقاف</string>

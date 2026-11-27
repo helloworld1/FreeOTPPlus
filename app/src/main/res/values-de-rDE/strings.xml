@@ -67,6 +67,9 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
+    <string name="token_timer_style">Timer-Stil</string>
+    <string name="timer_style_circle">Kreis</string>
+    <string name="timer_style_progress_bar">Fortschrittsbalken</string>
     <string name="add_token_success">Der Token wurde erfolgreich hinzugefügt</string>
     <string name="copy_to_clipboard">In die Zwischenablage kopieren</string>
     <string name="copy_to_clipboard_off">Aus</string>

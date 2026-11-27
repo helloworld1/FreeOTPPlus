@@ -406,6 +406,9 @@ class MainActivity : AppCompatActivity() {
                 onExportTokenImages = ::startExportTokenImages,
                 onRequestSort = ::showSortConfirmationDialog,
                 onSelectThemeMode = ::applyThemeMode,
+                onSelectTokenTimerStyle = { style ->
+                    settings.tokenTimerStyle = style
+                },
                 onSelectAuthMode = ::selectAuthenticationMode,
                 onSelectCopyToClipboardMode = { mode ->
                     settings.copyToClipboardMode = mode

@@ -67,6 +67,9 @@
     <string name="theme_system">சிஸ்டம்</string>
     <string name="theme_light">ஒளி</string>
     <string name="theme_dark">இருள்</string>
+    <string name="token_timer_style">நேரங்காட்டி பாணி</string>
+    <string name="timer_style_circle">வட்டம்</string>
+    <string name="timer_style_progress_bar">முன்னேற்றப் பட்டை</string>
     <string name="add_token_success">டோக்கன் வெற்றிகரமாகச் சேர்க்கப்பட்டது</string>
     <string name="copy_to_clipboard">கிளிப்போர்டுக்கு நகலெடு</string>
     <string name="copy_to_clipboard_off">ஆஃப்</string>

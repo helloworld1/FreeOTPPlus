@@ -12,6 +12,7 @@ import javax.inject.Singleton
 
 internal const val DARK_MODE_KEY = "darkMode"
 internal const val THEME_MODE_KEY = "themeMode"
+internal const val TOKEN_TIMER_STYLE_KEY = "tokenTimerStyle"
 internal const val SELECTED_CATEGORY_KEY = "selectedCategory"
 internal const val ENABLE_BIOMETRIC_UNLOCK_KEY = "enableBiometricUnlock"
 internal const val COPY_TO_CLIPBOARD_KEY = "copyToClipboard"
@@ -44,10 +45,24 @@ enum class ThemeMode(val prefValue: String, val nightMode: Int) {
     }
 }
 
+enum class TokenTimerStyle(val prefValue: String) {
+    CIRCLE("CIRCLE"),
+    PROGRESS_BAR("PROGRESS_BAR");
+
+    companion object {
+        fun fromPrefValue(value: String): TokenTimerStyle? {
+            return entries.firstOrNull { it.prefValue == value }
+        }
+    }
+}
+
 @Singleton
 class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
     private val _themeModeFlow = MutableStateFlow(readThemeMode())
     val themeModeFlow: StateFlow<ThemeMode> = _themeModeFlow.asStateFlow()
+
+    private val _tokenTimerStyleFlow = MutableStateFlow(readTokenTimerStyle())
+    val tokenTimerStyleFlow: StateFlow<TokenTimerStyle> = _tokenTimerStyleFlow.asStateFlow()
 
     private val _authModeFlow = MutableStateFlow(readAuthMode())
     val authModeFlow: StateFlow<AuthMode> = _authModeFlow.asStateFlow()
@@ -62,6 +77,7 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
         when (key) {
             null -> refreshFlows()
             THEME_MODE_KEY, DARK_MODE_KEY -> _themeModeFlow.value = readThemeMode()
+            TOKEN_TIMER_STYLE_KEY -> _tokenTimerStyleFlow.value = readTokenTimerStyle()
             TokenCryptoManager.AUTH_MODE_KEY, TokenCryptoManager.REQUIRE_AUTHENTICATION_KEY ->
                 _authModeFlow.value = readAuthMode()
             COPY_TO_CLIPBOARD_MODE_KEY, COPY_TO_CLIPBOARD_KEY -> {
@@ -77,9 +93,18 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
 
     fun refreshFlows() {
         _themeModeFlow.value = readThemeMode()
+        _tokenTimerStyleFlow.value = readTokenTimerStyle()
         _authModeFlow.value = readAuthMode()
         _copyToClipboardModeFlow.value = readCopyToClipboardMode()
         _copyToClipboardFlow.value = readCopyToClipboard()
+    }
+
+    private fun readTokenTimerStyle(): TokenTimerStyle {
+        val raw = sharedPreferences.getString(TOKEN_TIMER_STYLE_KEY, null)
+        if (raw != null) {
+            TokenTimerStyle.fromPrefValue(raw)?.let { return it }
+        }
+        return TokenTimerStyle.CIRCLE
     }
 
     private fun readThemeMode(): ThemeMode {
@@ -136,6 +161,15 @@ class Settings @Inject constructor(val sharedPreferences: SharedPreferences) {
         get() = themeMode == ThemeMode.DARK
         set(value) {
             themeMode = if (value) ThemeMode.DARK else ThemeMode.SYSTEM
+        }
+
+    var tokenTimerStyle: TokenTimerStyle
+        get() = readTokenTimerStyle()
+        set(value) {
+            sharedPreferences.edit()
+                .putString(TOKEN_TIMER_STYLE_KEY, value.prefValue)
+                .apply()
+            _tokenTimerStyleFlow.value = value
         }
 
     var copyToClipboardMode: CopyToClipboardMode

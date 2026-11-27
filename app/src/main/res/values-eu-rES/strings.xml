@@ -67,6 +67,9 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Argia</string>
     <string name="theme_dark">Iluna</string>
+    <string name="token_timer_style">Tenporizadorearen estiloa</string>
+    <string name="timer_style_circle">Zirkulua</string>
+    <string name="timer_style_progress_bar">Aurrerapen-barra</string>
     <string name="add_token_success">Tokena ongi gehitu da</string>
     <string name="copy_to_clipboard">Kopiatu arbelera</string>
     <string name="copy_to_clipboard_off">Desaktibatuta</string>

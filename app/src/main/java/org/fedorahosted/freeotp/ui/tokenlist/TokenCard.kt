@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,6 +58,7 @@ import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.ui.MainViewModel
+import org.fedorahosted.freeotp.ui.components.OtpProgressBar
 import org.fedorahosted.freeotp.ui.components.OtpProgressRing
 import org.fedorahosted.freeotp.ui.components.TokenAvatar
 import org.fedorahosted.freeotp.ui.components.UiTestTags
@@ -64,6 +66,7 @@ import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.ui.theme.OtpCodeCompactTextStyle
 import org.fedorahosted.freeotp.ui.theme.OtpCodeTextStyle
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenTimerStyle
 
 private const val DEFAULT_HOTP_COOLDOWN_MS = 5_000L
 internal val TokenCardShape = RoundedCornerShape(16.dp)
@@ -87,6 +90,7 @@ fun TokenCard(
     onShareToOtherApps: (OtpToken) -> Unit,
     onShareQrCode: (OtpToken) -> Unit,
     modifier: Modifier = Modifier,
+    tokenTimerStyle: TokenTimerStyle = TokenTimerStyle.CIRCLE,
     allowImmediateTapWhenRevealed: Boolean = false,
     onAdvanceHotp: (OtpToken) -> Unit = onCardClick,
 ) {
@@ -141,7 +145,7 @@ fun TokenCard(
     val isActive = displayedCode != null
     val canTapCard = (isTapEnabled || (isActive && allowImmediateTapWhenRevealed)) && !isDragging
     val avatarAlpha by animateFloatAsState(
-        targetValue = if (isActive) 0.14f else 1f,
+        targetValue = if (isActive && tokenTimerStyle == TokenTimerStyle.CIRCLE) 0.14f else 1f,
         label = "tokenAvatarAlpha",
     )
 
@@ -164,6 +168,7 @@ fun TokenCard(
             color = if (isDragging) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
         ),
     ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -188,12 +193,14 @@ fun TokenCard(
                         modifier = Modifier.testTag(UiTestTags.tokenAvatarTag(token.id)),
                     )
 
-                    if (isActive) {
+                    if (isActive && tokenTimerStyle == TokenTimerStyle.CIRCLE) {
                         OtpProgressRing(
                             currentProgress = currentProgress,
                             totalProgress = totalProgress,
                             isHotp = token.tokenType == OtpTokenType.HOTP,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .testTag(UiTestTags.tokenProgressRingTag(token.id)),
                         )
                     }
                 }
@@ -374,6 +381,25 @@ fun TokenCard(
                     )
                 }
             }
+        }
+
+        if (isActive && tokenTimerStyle == TokenTimerStyle.PROGRESS_BAR) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(1.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+            ) {
+                OtpProgressBar(
+                    currentProgress = currentProgress,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .testTag(UiTestTags.tokenProgressBarTag(token.id)),
+                )
+            }
+        }
         }
     }
 }

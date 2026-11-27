@@ -67,6 +67,9 @@
     <string name="theme_system">Stelsel</string>
     <string name="theme_light">Lig</string>
     <string name="theme_dark">Donker</string>
+    <string name="token_timer_style">Aftellerstyl</string>
+    <string name="timer_style_circle">Sirkel</string>
+    <string name="timer_style_progress_bar">Vorderingsbalk</string>
     <string name="add_token_success">Die kenteken is suksesvol bygevoeg</string>
     <string name="copy_to_clipboard">Kopieer na knipbord</string>
     <string name="copy_to_clipboard_off">Af</string>

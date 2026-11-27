@@ -184,6 +184,31 @@ class SettingsThemeModeTest {
         assertThat(Settings(unknownPrefs).copyToClipboardMode).isEqualTo(CopyToClipboardMode.OFF)
     }
 
+    @Test
+    fun tokenTimerStyle_defaultsToCircleAndPersistsBothStylesWithUnknownFallback() {
+        val prefs = InMemorySharedPreferences()
+        val settings = Settings(prefs)
+
+        assertThat(settings.tokenTimerStyle).isEqualTo(TokenTimerStyle.CIRCLE)
+        assertThat(settings.tokenTimerStyleFlow.value).isEqualTo(TokenTimerStyle.CIRCLE)
+
+        settings.tokenTimerStyle = TokenTimerStyle.PROGRESS_BAR
+        assertThat(settings.tokenTimerStyle).isEqualTo(TokenTimerStyle.PROGRESS_BAR)
+        assertThat(settings.tokenTimerStyleFlow.value).isEqualTo(TokenTimerStyle.PROGRESS_BAR)
+        assertThat(prefs.getString(TOKEN_TIMER_STYLE_KEY, null)).isEqualTo("PROGRESS_BAR")
+        assertThat(Settings(prefs).tokenTimerStyle).isEqualTo(TokenTimerStyle.PROGRESS_BAR)
+
+        settings.tokenTimerStyle = TokenTimerStyle.CIRCLE
+        assertThat(settings.tokenTimerStyle).isEqualTo(TokenTimerStyle.CIRCLE)
+        assertThat(settings.tokenTimerStyleFlow.value).isEqualTo(TokenTimerStyle.CIRCLE)
+        assertThat(prefs.getString(TOKEN_TIMER_STYLE_KEY, null)).isEqualTo("CIRCLE")
+
+        prefs.edit().putString(TOKEN_TIMER_STYLE_KEY, "UNKNOWN_STYLE").apply()
+        settings.refreshFlows()
+        assertThat(settings.tokenTimerStyle).isEqualTo(TokenTimerStyle.CIRCLE)
+        assertThat(settings.tokenTimerStyleFlow.value).isEqualTo(TokenTimerStyle.CIRCLE)
+    }
+
     private class InMemorySharedPreferences : SharedPreferences {
         private val data = mutableMapOf<String, Any?>()
 

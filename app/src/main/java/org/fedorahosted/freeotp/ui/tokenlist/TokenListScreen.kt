@@ -114,6 +114,7 @@ import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenTimerStyle
 
 private enum class OverflowSubMenu {
     ROOT,
@@ -122,6 +123,7 @@ private enum class OverflowSubMenu {
     SORT,
     VISUAL,
     THEME,
+    TOKEN_TIMER_STYLE,
     AUTH_MODE,
     COPY_TO_CLIPBOARD,
 }
@@ -165,6 +167,8 @@ fun TokenListScreen(
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
     modifier: Modifier = Modifier,
+    tokenTimerStyle: TokenTimerStyle = TokenTimerStyle.CIRCLE,
+    onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit = {},
     onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
     onPasteKeyUri: () -> Unit = {},
     scrollToTokenRequest: MainViewModel.ScrollToTokenRequest? = null,
@@ -406,6 +410,7 @@ fun TokenListScreen(
                                 expanded = menuExpanded,
                                 currentSubMenu = currentSubMenu,
                                 themeMode = themeMode,
+                                tokenTimerStyle = tokenTimerStyle,
                                 authMode = authMode,
                                 copyToClipboardMode = copyToClipboardMode,
                                 onSubMenuChange = { currentSubMenu = it },
@@ -449,6 +454,10 @@ fun TokenListScreen(
                                 onSelectThemeMode = { mode ->
                                     closeMenu()
                                     onSelectThemeMode(mode)
+                                },
+                                onSelectTokenTimerStyle = { style ->
+                                    closeMenu()
+                                    onSelectTokenTimerStyle(style)
                                 },
                                 onSelectAuthMode = { mode ->
                                     closeMenu()
@@ -570,6 +579,7 @@ fun TokenListScreen(
                         activeEntry = activeTokenCodes[token.id],
                         imageRefreshVersion = imageRefreshVersion,
                         isDragging = isDragging,
+                        tokenTimerStyle = tokenTimerStyle,
                         allowImmediateTapWhenRevealed = copyToClipboardMode == CopyToClipboardMode.TAP_REVEALED,
                         onCardClick = onTokenCardClick,
                         onAdvanceHotp = onAdvanceHotp,
@@ -935,6 +945,7 @@ private fun TokenListOverflowMenu(
     expanded: Boolean,
     currentSubMenu: OverflowSubMenu,
     themeMode: ThemeMode,
+    tokenTimerStyle: TokenTimerStyle,
     authMode: AuthMode,
     copyToClipboardMode: CopyToClipboardMode,
     onSubMenuChange: (OverflowSubMenu) -> Unit,
@@ -949,6 +960,7 @@ private fun TokenListOverflowMenu(
     onExportTokenImages: () -> Unit,
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
+    onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onNavigateToAbout: () -> Unit,
@@ -1113,6 +1125,16 @@ private fun TokenListOverflowMenu(
                     },
                     onClick = { onSubMenuChange(OverflowSubMenu.THEME) },
                 )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.token_timer_style)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_timer_24px), contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
+                    },
+                    onClick = { onSubMenuChange(OverflowSubMenu.TOKEN_TIMER_STYLE) },
+                )
             }
 
             OverflowSubMenu.THEME -> {
@@ -1134,6 +1156,23 @@ private fun TokenListOverflowMenu(
                     titleRes = R.string.theme_dark,
                     selected = themeMode == ThemeMode.DARK,
                     onClick = { onSelectThemeMode(ThemeMode.DARK) },
+                )
+            }
+
+            OverflowSubMenu.TOKEN_TIMER_STYLE -> {
+                SubMenuHeader(
+                    titleRes = R.string.token_timer_style,
+                    onBack = { onSubMenuChange(OverflowSubMenu.VISUAL) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.timer_style_circle,
+                    selected = tokenTimerStyle == TokenTimerStyle.CIRCLE,
+                    onClick = { onSelectTokenTimerStyle(TokenTimerStyle.CIRCLE) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.timer_style_progress_bar,
+                    selected = tokenTimerStyle == TokenTimerStyle.PROGRESS_BAR,
+                    onClick = { onSelectTokenTimerStyle(TokenTimerStyle.PROGRESS_BAR) },
                 )
             }
 

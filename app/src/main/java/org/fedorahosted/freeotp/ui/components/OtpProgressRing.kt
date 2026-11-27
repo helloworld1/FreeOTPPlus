@@ -1,8 +1,11 @@
 package org.fedorahosted.freeotp.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -13,6 +16,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.util.ThemeMode
@@ -125,6 +129,77 @@ private fun OtpProgressRingExpiringDarkPreview() {
                 totalProgress = 180,
                 isHotp = false,
                 modifier = Modifier.size(84.dp),
+            )
+        }
+    }
+}
+
+/**
+ * Thin Material 3 OTP countdown progress bar displayed along the bottom edge of a TokenCard.
+ *
+ * - Tracks [currentProgress] out of [max] (default 1000) across the card width.
+ * - Transitions from [MaterialTheme.colorScheme.primary] to [MaterialTheme.colorScheme.error]
+ *   when remaining time drops to 25% or below, matching [OtpProgressRing].
+ */
+@Composable
+fun OtpProgressBar(
+    currentProgress: Int,
+    modifier: Modifier = Modifier,
+    max: Int = 1000,
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val errorColor = MaterialTheme.colorScheme.error
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val safeMax = if (max > 0) max else 1000
+
+    val percent = currentProgress * 100 / safeMax
+    val barColor = if (percent > 25 || currentProgress <= 0) primaryColor else errorColor
+    val fraction = currentProgress.coerceIn(0, safeMax).toFloat() / safeMax.toFloat()
+
+    Canvas(modifier = modifier) {
+        drawRect(color = trackColor)
+
+        val barWidth = size.width * fraction
+        if (barWidth > 0f) {
+            val startX = if (layoutDirection == LayoutDirection.Rtl) {
+                size.width - barWidth
+            } else {
+                0f
+            }
+            drawRect(
+                color = barColor,
+                topLeft = Offset(startX, 0f),
+                size = Size(width = barWidth, height = size.height),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OtpProgressBarNormalPreview() {
+    FreeOtpTheme(themeMode = ThemeMode.LIGHT) {
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, modifier = Modifier.width(300.dp).padding(8.dp)) {
+            OtpProgressBar(
+                currentProgress = 680,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OtpProgressBarExpiringDarkPreview() {
+    FreeOtpTheme(themeMode = ThemeMode.DARK) {
+        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, modifier = Modifier.width(300.dp).padding(8.dp)) {
+            OtpProgressBar(
+                currentProgress = 180,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp),
             )
         }
     }

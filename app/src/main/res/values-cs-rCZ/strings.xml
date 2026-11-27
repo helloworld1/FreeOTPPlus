@@ -67,6 +67,9 @@
     <string name="theme_system">Systém</string>
     <string name="theme_light">Světlý</string>
     <string name="theme_dark">Tmavý</string>
+    <string name="token_timer_style">Styl časovače</string>
+    <string name="timer_style_circle">Kruh</string>
+    <string name="timer_style_progress_bar">Ukazatel průběhu</string>
     <string name="add_token_success">Token byl úspěšně přidán</string>
     <string name="copy_to_clipboard">Kopírovat do schránky</string>
     <string name="copy_to_clipboard_off">Vypnuto</string>

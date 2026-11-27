@@ -45,6 +45,7 @@ import org.fedorahosted.freeotp.ui.tokenlist.TokenListScreen
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
+import org.fedorahosted.freeotp.util.TokenTimerStyle
 import java.util.concurrent.ExecutorService
 
 @Composable
@@ -84,6 +85,7 @@ fun FreeOtpApp(
     onExportTokenImages: () -> Unit,
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
+    onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
@@ -92,6 +94,7 @@ fun FreeOtpApp(
     val context = androidx.compose.ui.platform.LocalContext.current
     val authState by viewModel.authStateFlow.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeModeFlow.collectAsStateWithLifecycle()
+    val tokenTimerStyle by viewModel.tokenTimerStyleFlow.collectAsStateWithLifecycle()
     val authMode by viewModel.authModeFlow.collectAsStateWithLifecycle()
     val copyToClipboardMode by viewModel.copyToClipboardModeFlow.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQueryFlow.collectAsStateWithLifecycle()
@@ -201,6 +204,8 @@ fun FreeOtpApp(
                                 onExportTokenImages = onExportTokenImages,
                                 onRequestSort = onRequestSort,
                                 onSelectThemeMode = onSelectThemeMode,
+                                tokenTimerStyle = tokenTimerStyle,
+                                onSelectTokenTimerStyle = onSelectTokenTimerStyle,
                                 onSelectAuthMode = onSelectAuthMode,
                                 onSelectCopyToClipboardMode = onSelectCopyToClipboardMode,
                                 onQuitAndLock = onQuitAndLock,
