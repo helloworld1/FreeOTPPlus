@@ -3,7 +3,7 @@ package org.fedorahosted.freeotp.data.third_party
 import android.content.SharedPreferences
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.Base32String
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first

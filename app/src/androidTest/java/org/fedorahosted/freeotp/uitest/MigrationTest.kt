@@ -7,7 +7,6 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
-import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -134,7 +133,8 @@ class MigrationTest {
     @Test
     fun testHotpToken() {
         val secondTokenId = getMigratedTokenIdAt(1)
-        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).onChildren()[1].assert(hasText("15"))
+        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(secondTokenId), useUnmergedTree = true)
+            .assertTextEquals("15")
 
         composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(secondTokenId)).performClick()
         composeRule.onNodeWithText(string(R.string.edit)).performClick()

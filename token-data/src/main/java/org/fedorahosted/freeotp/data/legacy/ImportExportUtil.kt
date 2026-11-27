@@ -3,7 +3,7 @@ package org.fedorahosted.freeotp.data.legacy
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.Base32String
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -135,7 +135,7 @@ class ImportExportUtil @Inject constructor(
             } else {
                 val plainTokens = otpTokens.map { tokenCryptoManager.decryptToken(it) }
                 val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(plainTokens)
-                val tokenOrder = legacyTokens.map { it.id }
+                val tokenOrder = legacyTokens.mapNotNull { it.id }
                 gson.toJson(SavedTokens(legacyTokens, tokenOrder))
             }
 

@@ -1,6 +1,6 @@
 package org.fedorahosted.freeotp.data.third_party
 
-import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.Base32String
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser

@@ -1,6 +1,6 @@
 package org.fedorahosted.freeotp.ui.addedit
 
-import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.Base32String
 import com.google.common.truth.Truth.assertThat
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType

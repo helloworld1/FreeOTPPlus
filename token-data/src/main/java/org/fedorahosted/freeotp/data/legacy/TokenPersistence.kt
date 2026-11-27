@@ -157,7 +157,7 @@ class TokenPersistence @Inject constructor(@param:ApplicationContext private val
 
     @Throws(Token.TokenUriInvalidException::class)
     private suspend fun add(token: Token) = withContext(Dispatchers.IO) {
-        val key = token.id
+        val key = token.id ?: return@withContext
 
         // Shared preference may have key but delete in the order
         // The toke order is the source for tokens in the list

@@ -1,7 +1,7 @@
 package org.fedorahosted.freeotp.data
 
 import android.net.Uri
-import com.google.android.apps.authenticator.Base32String
+import org.fedorahosted.freeotp.data.util.Base32String
 import org.fedorahosted.freeotp.data.util.CategoryUtil
 import org.fedorahosted.freeotp.data.util.CryptoEngine
 import java.security.NoSuchAlgorithmException
