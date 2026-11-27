@@ -409,6 +409,9 @@ class MainActivity : AppCompatActivity() {
                 onSelectTokenTimerStyle = { style ->
                     settings.tokenTimerStyle = style
                 },
+                onSelectTokenCodeGrouping = { grouping ->
+                    settings.tokenCodeGrouping = grouping
+                },
                 onSelectAuthMode = ::selectAuthenticationMode,
                 onSelectCopyToClipboardMode = { mode ->
                     settings.copyToClipboardMode = mode

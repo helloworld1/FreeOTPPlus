@@ -70,6 +70,9 @@
     <string name="token_timer_style">Styl licznika czasu</string>
     <string name="timer_style_circle">Okrąg</string>
     <string name="timer_style_progress_bar">Pasek postępu</string>
+    <string name="token_code_grouping">Grupowanie kodu</string>
+    <string name="code_grouping_two_groups">Dwie grupy</string>
+    <string name="code_grouping_none">Bez grupowania</string>
     <string name="add_token_success">Token został pomyślnie dodany</string>
     <string name="copy_to_clipboard">Kopiuj do schowka</string>
     <string name="copy_to_clipboard_off">Wyłączone</string>

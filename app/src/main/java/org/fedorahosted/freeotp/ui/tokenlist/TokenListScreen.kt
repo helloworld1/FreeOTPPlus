@@ -114,6 +114,7 @@ import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenCodeGrouping
 import org.fedorahosted.freeotp.util.TokenTimerStyle
 
 private enum class OverflowSubMenu {
@@ -124,6 +125,7 @@ private enum class OverflowSubMenu {
     VISUAL,
     THEME,
     TOKEN_TIMER_STYLE,
+    TOKEN_CODE_GROUPING,
     AUTH_MODE,
     COPY_TO_CLIPBOARD,
 }
@@ -169,6 +171,8 @@ fun TokenListScreen(
     modifier: Modifier = Modifier,
     tokenTimerStyle: TokenTimerStyle = TokenTimerStyle.CIRCLE,
     onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit = {},
+    tokenCodeGrouping: TokenCodeGrouping = TokenCodeGrouping.TWO_GROUPS,
+    onSelectTokenCodeGrouping: (TokenCodeGrouping) -> Unit = {},
     onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
     onPasteKeyUri: () -> Unit = {},
     scrollToTokenRequest: MainViewModel.ScrollToTokenRequest? = null,
@@ -411,6 +415,7 @@ fun TokenListScreen(
                                 currentSubMenu = currentSubMenu,
                                 themeMode = themeMode,
                                 tokenTimerStyle = tokenTimerStyle,
+                                tokenCodeGrouping = tokenCodeGrouping,
                                 authMode = authMode,
                                 copyToClipboardMode = copyToClipboardMode,
                                 onSubMenuChange = { currentSubMenu = it },
@@ -458,6 +463,10 @@ fun TokenListScreen(
                                 onSelectTokenTimerStyle = { style ->
                                     closeMenu()
                                     onSelectTokenTimerStyle(style)
+                                },
+                                onSelectTokenCodeGrouping = { grouping ->
+                                    closeMenu()
+                                    onSelectTokenCodeGrouping(grouping)
                                 },
                                 onSelectAuthMode = { mode ->
                                     closeMenu()
@@ -580,6 +589,7 @@ fun TokenListScreen(
                         imageRefreshVersion = imageRefreshVersion,
                         isDragging = isDragging,
                         tokenTimerStyle = tokenTimerStyle,
+                        tokenCodeGrouping = tokenCodeGrouping,
                         allowImmediateTapWhenRevealed = copyToClipboardMode == CopyToClipboardMode.TAP_REVEALED,
                         onCardClick = onTokenCardClick,
                         onAdvanceHotp = onAdvanceHotp,
@@ -946,6 +956,7 @@ private fun TokenListOverflowMenu(
     currentSubMenu: OverflowSubMenu,
     themeMode: ThemeMode,
     tokenTimerStyle: TokenTimerStyle,
+    tokenCodeGrouping: TokenCodeGrouping,
     authMode: AuthMode,
     copyToClipboardMode: CopyToClipboardMode,
     onSubMenuChange: (OverflowSubMenu) -> Unit,
@@ -961,6 +972,7 @@ private fun TokenListOverflowMenu(
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit,
+    onSelectTokenCodeGrouping: (TokenCodeGrouping) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onNavigateToAbout: () -> Unit,
@@ -1135,6 +1147,16 @@ private fun TokenListOverflowMenu(
                     },
                     onClick = { onSubMenuChange(OverflowSubMenu.TOKEN_TIMER_STYLE) },
                 )
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(R.string.token_code_grouping)) },
+                    leadingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_code_grouping_24px), contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Icon(painter = painterResource(R.drawable.ic_chevron_right_24px), contentDescription = null)
+                    },
+                    onClick = { onSubMenuChange(OverflowSubMenu.TOKEN_CODE_GROUPING) },
+                )
             }
 
             OverflowSubMenu.THEME -> {
@@ -1173,6 +1195,23 @@ private fun TokenListOverflowMenu(
                     titleRes = R.string.timer_style_progress_bar,
                     selected = tokenTimerStyle == TokenTimerStyle.PROGRESS_BAR,
                     onClick = { onSelectTokenTimerStyle(TokenTimerStyle.PROGRESS_BAR) },
+                )
+            }
+
+            OverflowSubMenu.TOKEN_CODE_GROUPING -> {
+                SubMenuHeader(
+                    titleRes = R.string.token_code_grouping,
+                    onBack = { onSubMenuChange(OverflowSubMenu.VISUAL) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.code_grouping_two_groups,
+                    selected = tokenCodeGrouping == TokenCodeGrouping.TWO_GROUPS,
+                    onClick = { onSelectTokenCodeGrouping(TokenCodeGrouping.TWO_GROUPS) },
+                )
+                SubMenuRadioItem(
+                    titleRes = R.string.code_grouping_none,
+                    selected = tokenCodeGrouping == TokenCodeGrouping.NONE,
+                    onClick = { onSelectTokenCodeGrouping(TokenCodeGrouping.NONE) },
                 )
             }
 

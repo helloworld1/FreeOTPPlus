@@ -70,6 +70,9 @@
     <string name="token_timer_style">Стиль таймера</string>
     <string name="timer_style_circle">Коло</string>
     <string name="timer_style_progress_bar">Смужка прогресу</string>
+    <string name="token_code_grouping">Групування коду</string>
+    <string name="code_grouping_two_groups">Дві групи</string>
+    <string name="code_grouping_none">Без групування</string>
     <string name="add_token_success">Ключ успішно додано</string>
     <string name="copy_to_clipboard">Копіювати до буфера обміну</string>
     <string name="copy_to_clipboard_off">Вимк.</string>

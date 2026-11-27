@@ -209,6 +209,31 @@ class SettingsThemeModeTest {
         assertThat(settings.tokenTimerStyleFlow.value).isEqualTo(TokenTimerStyle.CIRCLE)
     }
 
+    @Test
+    fun tokenCodeGrouping_defaultsToTwoGroupsAndPersistsBothOptionsWithUnknownFallback() {
+        val prefs = InMemorySharedPreferences()
+        val settings = Settings(prefs)
+
+        assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+        assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+
+        settings.tokenCodeGrouping = TokenCodeGrouping.NONE
+        assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)
+        assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.NONE)
+        assertThat(prefs.getString(TOKEN_CODE_GROUPING_KEY, null)).isEqualTo("NONE")
+        assertThat(Settings(prefs).tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)
+
+        settings.tokenCodeGrouping = TokenCodeGrouping.TWO_GROUPS
+        assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+        assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+        assertThat(prefs.getString(TOKEN_CODE_GROUPING_KEY, null)).isEqualTo("TWO_GROUPS")
+
+        prefs.edit().putString(TOKEN_CODE_GROUPING_KEY, "UNKNOWN_GROUPING").apply()
+        settings.refreshFlows()
+        assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+        assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+    }
+
     private class InMemorySharedPreferences : SharedPreferences {
         private val data = mutableMapOf<String, Any?>()
 

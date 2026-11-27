@@ -70,6 +70,9 @@
     <string name="token_timer_style">タイマーのスタイル</string>
     <string name="timer_style_circle">円形</string>
     <string name="timer_style_progress_bar">プログレスバー</string>
+    <string name="token_code_grouping">コードの区切り</string>
+    <string name="code_grouping_two_groups">2グループ</string>
+    <string name="code_grouping_none">区切りなし</string>
     <string name="add_token_success">トークンを追加しました</string>
     <string name="copy_to_clipboard">クリップボードにコピー</string>
     <string name="copy_to_clipboard_off">オフ</string>

@@ -44,6 +44,7 @@ import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.ui.tokenlist.TokenListScreen
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenCodeGrouping
 import org.fedorahosted.freeotp.util.TokenQRCodeDecoder
 import org.fedorahosted.freeotp.util.TokenTimerStyle
 import java.util.concurrent.ExecutorService
@@ -86,6 +87,7 @@ fun FreeOtpApp(
     onRequestSort: (TokenSortOrder) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSelectTokenTimerStyle: (TokenTimerStyle) -> Unit,
+    onSelectTokenCodeGrouping: (TokenCodeGrouping) -> Unit,
     onSelectAuthMode: (AuthMode) -> Unit,
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
@@ -95,6 +97,7 @@ fun FreeOtpApp(
     val authState by viewModel.authStateFlow.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeModeFlow.collectAsStateWithLifecycle()
     val tokenTimerStyle by viewModel.tokenTimerStyleFlow.collectAsStateWithLifecycle()
+    val tokenCodeGrouping by viewModel.tokenCodeGroupingFlow.collectAsStateWithLifecycle()
     val authMode by viewModel.authModeFlow.collectAsStateWithLifecycle()
     val copyToClipboardMode by viewModel.copyToClipboardModeFlow.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQueryFlow.collectAsStateWithLifecycle()
@@ -206,6 +209,8 @@ fun FreeOtpApp(
                                 onSelectThemeMode = onSelectThemeMode,
                                 tokenTimerStyle = tokenTimerStyle,
                                 onSelectTokenTimerStyle = onSelectTokenTimerStyle,
+                                tokenCodeGrouping = tokenCodeGrouping,
+                                onSelectTokenCodeGrouping = onSelectTokenCodeGrouping,
                                 onSelectAuthMode = onSelectAuthMode,
                                 onSelectCopyToClipboardMode = onSelectCopyToClipboardMode,
                                 onQuitAndLock = onQuitAndLock,

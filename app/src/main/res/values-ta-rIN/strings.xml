@@ -70,6 +70,9 @@
     <string name="token_timer_style">நேரங்காட்டி பாணி</string>
     <string name="timer_style_circle">வட்டம்</string>
     <string name="timer_style_progress_bar">முன்னேற்றப் பட்டை</string>
+    <string name="token_code_grouping">குறியீடு குழுவாக்கம்</string>
+    <string name="code_grouping_two_groups">இரண்டு குழுக்கள்</string>
+    <string name="code_grouping_none">குழுவாக்கம் இல்லை</string>
     <string name="add_token_success">டோக்கன் வெற்றிகரமாகச் சேர்க்கப்பட்டது</string>
     <string name="copy_to_clipboard">கிளிப்போர்டுக்கு நகலெடு</string>
     <string name="copy_to_clipboard_off">ஆஃப்</string>

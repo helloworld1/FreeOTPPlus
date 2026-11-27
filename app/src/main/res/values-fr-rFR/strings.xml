@@ -70,6 +70,9 @@
     <string name="token_timer_style">Style du minuteur</string>
     <string name="timer_style_circle">Cercle</string>
     <string name="timer_style_progress_bar">Barre de progression</string>
+    <string name="token_code_grouping">Regroupement du code</string>
+    <string name="code_grouping_two_groups">Deux groupes</string>
+    <string name="code_grouping_none">Aucun regroupement</string>
     <string name="add_token_success">Le jeton a été ajouté avec succès</string>
     <string name="copy_to_clipboard">Copier dans le presse-papiers</string>
     <string name="copy_to_clipboard_off">Désactivé</string>

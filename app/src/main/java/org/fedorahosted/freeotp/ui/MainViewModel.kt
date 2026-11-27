@@ -23,6 +23,7 @@ import org.fedorahosted.freeotp.util.CATEGORY_UNCATEGORIZED_VALUE
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenCodeGrouping
 import org.fedorahosted.freeotp.util.TokenTimerStyle
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
@@ -67,6 +68,7 @@ class MainViewModel @Inject constructor(
     val authStateFlow: StateFlow<AuthState> = appSessionManager.authState
     val themeModeFlow: StateFlow<ThemeMode> = settings.themeModeFlow
     val tokenTimerStyleFlow: StateFlow<TokenTimerStyle> = settings.tokenTimerStyleFlow
+    val tokenCodeGroupingFlow: StateFlow<TokenCodeGrouping> = settings.tokenCodeGroupingFlow
     val authModeFlow: StateFlow<AuthMode> = settings.authModeFlow
     val copyToClipboardModeFlow: StateFlow<CopyToClipboardMode> = settings.copyToClipboardModeFlow
     val copyToClipboardFlow: StateFlow<Boolean> = settings.copyToClipboardFlow

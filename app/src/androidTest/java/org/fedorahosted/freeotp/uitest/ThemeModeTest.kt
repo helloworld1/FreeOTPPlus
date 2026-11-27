@@ -30,8 +30,10 @@ import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.DARK_MODE_KEY
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.THEME_MODE_KEY
+import org.fedorahosted.freeotp.util.TOKEN_CODE_GROUPING_KEY
 import org.fedorahosted.freeotp.util.TOKEN_TIMER_STYLE_KEY
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenCodeGrouping
 import org.fedorahosted.freeotp.util.TokenTimerStyle
 import org.junit.After
 import org.junit.Rule
@@ -52,7 +54,12 @@ class ThemeModeTest {
         val context = getInstrumentation().targetContext
         @Suppress("DEPRECATION")
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().remove(THEME_MODE_KEY).remove(DARK_MODE_KEY).remove(TOKEN_TIMER_STYLE_KEY).commit()
+        prefs.edit()
+            .remove(THEME_MODE_KEY)
+            .remove(DARK_MODE_KEY)
+            .remove(TOKEN_TIMER_STYLE_KEY)
+            .remove(TOKEN_CODE_GROUPING_KEY)
+            .commit()
         getInstrumentation().runOnMainSync {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -277,6 +284,144 @@ class ThemeModeTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testCodeGroupingSwitchBetweenTwoGroupsAndNoGrouping() {
+        val context = getInstrumentation().targetContext
+        @Suppress("DEPRECATION")
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        prefs.edit().remove(TOKEN_CODE_GROUPING_KEY).commit()
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            var sixDigitId = 0L
+            var eightDigitId = 0L
+            var unrevealedId = 0L
+            scenario.onActivity { activity ->
+                runBlocking {
+                    activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                    sixDigitId = activity.otpTokenDatabase.otpTokenDao().insert(
+                        OtpTokenFactory.create(
+                            type = OtpTokenType.HOTP,
+                            issuer = "GroupingSix",
+                            label = "six@example.com",
+                            secret = "JBSWY3DPEHPK3PXP",
+                            digits = 6,
+                            initialCounter = 1L,
+                        )
+                    )
+                    eightDigitId = activity.otpTokenDatabase.otpTokenDao().insert(
+                        OtpTokenFactory.create(
+                            type = OtpTokenType.HOTP,
+                            issuer = "GroupingEight",
+                            label = "eight@example.com",
+                            secret = "JBSWY3DPEHPK3PXP",
+                            digits = 8,
+                            initialCounter = 1L,
+                        )
+                    )
+                    unrevealedId = activity.otpTokenDatabase.otpTokenDao().insert(
+                        OtpTokenFactory.create(
+                            type = OtpTokenType.TOTP,
+                            issuer = "GroupingPlaceholder",
+                            label = "placeholder@example.com",
+                            secret = "JBSWY3DPEHPK3PXP",
+                            digits = 6,
+                        )
+                    )
+                }
+            }
+
+            try {
+                composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(sixDigitId))
+
+                // 1. Default in Visual -> Code grouping is Two groups (current style)
+                openCodeGroupingSubmenu()
+                assertRadioChecked(R.string.code_grouping_two_groups, true)
+                assertRadioChecked(R.string.code_grouping_none, false)
+
+                // Back from Code grouping returns to Visual submenu
+                composeRule.onNodeWithText(string(R.string.token_code_grouping)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.visual))
+                composeRule.awaitTextDisplayed(string(R.string.theme))
+                composeRule.awaitTextDisplayed(string(R.string.token_timer_style))
+                composeRule.awaitTextDisplayed(string(R.string.token_code_grouping))
+                composeRule.onNode(radioRowMatcher(R.string.code_grouping_two_groups)).assertDoesNotExist()
+
+                // Dismiss menu by selecting Two groups explicitly
+                composeRule.onNodeWithText(string(R.string.token_code_grouping)).performClick()
+                composeRule.awaitNodeDisplayed(radioRowMatcher(R.string.code_grouping_two_groups))
+                composeRule.onNode(radioRowMatcher(R.string.code_grouping_two_groups)).performClick()
+
+                // 2. Unrevealed placeholders default to Two groups
+                assertThat(readTokenCodeText(sixDigitId)).isEqualTo("--- ---")
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo("---- ----")
+                assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")
+
+                // 3. Reveal 6-digit and 8-digit HOTP codes -> grouped into two groups
+                composeRule.onNodeWithTag(UiTestTags.tokenCardTag(sixDigitId)).performClick()
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(sixDigitId).matches(Regex("""^\d{3} \d{3}$"""))
+                }
+                val groupedSix = readTokenCodeText(sixDigitId)
+
+                composeRule.onNodeWithTag(UiTestTags.tokenCardTag(eightDigitId)).performClick()
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(eightDigitId).matches(Regex("""^\d{4} \d{4}$"""))
+                }
+                val groupedEight = readTokenCodeText(eightDigitId)
+
+                // 4. Switch to No grouping -> live-updates both revealed codes and unrevealed placeholder
+                openCodeGroupingSubmenu()
+                composeRule.onNode(radioRowMatcher(R.string.code_grouping_none)).performClick()
+
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(sixDigitId) == groupedSix.replace(" ", "")
+                }
+                scenario.onActivity { activity ->
+                    assertThat(activity.settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)
+                }
+                assertThat(readTokenCodeText(sixDigitId)).matches("""^\d{6}$""")
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(groupedEight.replace(" ", ""))
+                assertThat(readTokenCodeText(eightDigitId)).matches("""^\d{8}$""")
+                assertThat(readTokenCodeText(unrevealedId)).isEqualTo("------")
+
+                // 5. Switch back to Two groups -> restores grouped display
+                openCodeGroupingSubmenu()
+                assertRadioChecked(R.string.code_grouping_two_groups, false)
+                assertRadioChecked(R.string.code_grouping_none, true)
+                composeRule.onNode(radioRowMatcher(R.string.code_grouping_two_groups)).performClick()
+
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(sixDigitId) == groupedSix
+                }
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(groupedEight)
+                assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")
+            } finally {
+                scenario.onActivity { activity ->
+                    runBlocking {
+                        activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun readTokenCodeText(tokenId: Long): String {
+        val node = composeRule.onNodeWithTag(
+            UiTestTags.tokenCodeTag(tokenId),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode()
+        return node.config[SemanticsProperties.Text].joinToString("") { it.text }
+    }
+
+    private fun openCodeGroupingSubmenu() {
+        composeRule.openOverflowMenu()
+        composeRule.awaitTextDisplayed(string(R.string.visual))
+        composeRule.onNodeWithText(string(R.string.visual)).performClick()
+        composeRule.awaitTextDisplayed(string(R.string.token_code_grouping))
+        composeRule.onNodeWithText(string(R.string.token_code_grouping)).performClick()
+        composeRule.awaitNodeDisplayed(radioRowMatcher(R.string.code_grouping_two_groups))
     }
 
     private fun openTimerStyleSubmenu() {

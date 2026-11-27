@@ -66,6 +66,7 @@ import org.fedorahosted.freeotp.ui.theme.FreeOtpTheme
 import org.fedorahosted.freeotp.ui.theme.OtpCodeCompactTextStyle
 import org.fedorahosted.freeotp.ui.theme.OtpCodeTextStyle
 import org.fedorahosted.freeotp.util.ThemeMode
+import org.fedorahosted.freeotp.util.TokenCodeGrouping
 import org.fedorahosted.freeotp.util.TokenTimerStyle
 
 private const val DEFAULT_HOTP_COOLDOWN_MS = 5_000L
@@ -91,13 +92,16 @@ fun TokenCard(
     onShareQrCode: (OtpToken) -> Unit,
     modifier: Modifier = Modifier,
     tokenTimerStyle: TokenTimerStyle = TokenTimerStyle.CIRCLE,
+    tokenCodeGrouping: TokenCodeGrouping = TokenCodeGrouping.TWO_GROUPS,
     allowImmediateTapWhenRevealed: Boolean = false,
     onAdvanceHotp: (OtpToken) -> Unit = onCardClick,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-    val placeholder = remember(token.digits) { TokenDisplayUtil.buildPlaceholder(token.digits) }
+    val placeholder = remember(token.digits, tokenCodeGrouping) {
+        TokenDisplayUtil.buildPlaceholder(token.digits, tokenCodeGrouping)
+    }
 
-    var displayedCode by remember(token.id) { mutableStateOf<String?>(null) }
+    var rawDisplayedCode by remember(token.id) { mutableStateOf<String?>(null) }
     var currentProgress by remember(token.id) { mutableIntStateOf(0) }
     var totalProgress by remember(token.id) { mutableIntStateOf(0) }
     var isTapEnabled by remember(token.id) { mutableStateOf(true) }
@@ -106,7 +110,7 @@ fun TokenCard(
     LaunchedEffect(token.id, activeEntry?.generation, activeEntry?.code, lifecycleOwner) {
         val codes = activeEntry?.code
         if (codes == null) {
-            displayedCode = null
+            rawDisplayedCode = null
             currentProgress = 0
             totalProgress = 0
             isTapEnabled = true
@@ -124,14 +128,14 @@ fun TokenCard(
             while (true) {
                 val raw = codes.currentCode
                 if (raw == null) {
-                    displayedCode = null
+                    rawDisplayedCode = null
                     currentProgress = 0
                     totalProgress = 0
                     isTapEnabled = true
                     onCodeExpired(token.id)
                     break
                 }
-                displayedCode = TokenDisplayUtil.formatCodeForDisplay(raw)
+                rawDisplayedCode = raw
                 currentProgress = codes.currentProgress
                 totalProgress = codes.totalProgress
                 if (!isTapEnabled && System.currentTimeMillis() - startTimeMs > hotpCooldownMs) {
@@ -142,6 +146,9 @@ fun TokenCard(
         }
     }
 
+    val displayedCode = remember(rawDisplayedCode, tokenCodeGrouping) {
+        rawDisplayedCode?.let { TokenDisplayUtil.formatCodeForDisplay(it, tokenCodeGrouping) }
+    }
     val isActive = displayedCode != null
     val canTapCard = (isTapEnabled || (isActive && allowImmediateTapWhenRevealed)) && !isDragging
     val avatarAlpha by animateFloatAsState(
@@ -209,7 +216,11 @@ fun TokenCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             val textToDisplay = displayedCode ?: placeholder
-            val codeStyle = if (textToDisplay.length >= 9) OtpCodeCompactTextStyle else OtpCodeTextStyle
+            val codeStyle = if (token.digits >= 8 || textToDisplay.length >= 9) {
+                OtpCodeCompactTextStyle
+            } else {
+                OtpCodeTextStyle
+            }
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
