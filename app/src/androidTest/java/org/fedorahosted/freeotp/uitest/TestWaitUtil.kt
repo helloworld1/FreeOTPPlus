@@ -34,6 +34,13 @@ object TestWaitUtil {
         onNodeWithTag(UiTestTags.OVERFLOW_MENU_BUTTON).performClick()
     }
 
+    fun ComposeTestRule.openAddTokenFromFab() {
+        awaitTagDisplayed(UiTestTags.FAB_MENU_BUTTON)
+        onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        awaitTagDisplayed(UiTestTags.FAB_ADD_TOKEN_ITEM)
+        onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).performClick()
+    }
+
     fun ComposeTestRule.awaitNodeDisplayed(
         matcher: SemanticsMatcher,
         timeoutMs: Long = 5_000L,

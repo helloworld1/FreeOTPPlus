@@ -54,6 +54,7 @@ import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openAddTokenFromFab
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.COPY_TO_CLIPBOARD_KEY
@@ -107,8 +108,7 @@ class MainActivityTest {
 
     @Test
     fun testInsertToken() {
-        composeRule.openOverflowMenu()
-        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+        composeRule.openAddTokenFromFab()
 
         composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
         composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("issuer1")
@@ -125,8 +125,7 @@ class MainActivityTest {
 
     @Test
     fun testInsertTokenWithoutIssuer() {
-        composeRule.openOverflowMenu()
-        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+        composeRule.openAddTokenFromFab()
 
         composeRule.awaitTagDisplayed(UiTestTags.LABEL_INPUT)
         composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("account_no_issuer")
@@ -251,8 +250,7 @@ class MainActivityTest {
 
     @Test
     fun testAddHotpTokenWithCustomCounterAndIncrementOnUse() {
-        composeRule.openOverflowMenu()
-        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+        composeRule.openAddTokenFromFab()
 
         composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
         composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("RFC4226")
@@ -352,8 +350,7 @@ class MainActivityTest {
 
     @Test
     fun testBuiltInIconPickerInAddTokenSelectsIconAndSaves() {
-        composeRule.openOverflowMenu()
-        composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+        composeRule.openAddTokenFromFab()
 
         composeRule.awaitTagDisplayed(UiTestTags.TOKEN_AVATAR_BUTTON)
         composeRule.onNodeWithTag(UiTestTags.TOKEN_AVATAR_BUTTON).performClick()
@@ -420,12 +417,14 @@ class MainActivityTest {
         populateTestData()
         composeRule.awaitTokenCardCount(2)
 
-        // 1. Verify leading-icon column alignment across Theme, Authentication mode, Copy to clipboard, and About
+        // 1. Verify Scan QR Code & Add Token are absent from overflow menu, and verify leading-icon alignment
         composeRule.openOverflowMenu()
         composeRule.awaitTextDisplayed(string(R.string.theme))
+        composeRule.onNodeWithText(string(R.string.scan_qr_code)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.add_token)).assertDoesNotExist()
 
         val referenceLeftPx = composeRule
-            .onNodeWithText(string(R.string.scan_qr_code), useUnmergedTree = true)
+            .onNodeWithText(string(R.string.import_text), useUnmergedTree = true)
             .fetchSemanticsNode()
             .boundsInRoot
             .left
@@ -437,7 +436,14 @@ class MainActivityTest {
         val density = getInstrumentation().targetContext.resources.displayMetrics.density
         assertThat(referenceLeftPx - menuLeftPx).isAtLeast(40f * density)
 
-        for (labelRes in listOf(R.string.theme, R.string.authentication_mode, R.string.copy_to_clipboard, R.string.about_freeotp)) {
+        for (labelRes in listOf(
+            R.string.export_text,
+            R.string.sort,
+            R.string.theme,
+            R.string.authentication_mode,
+            R.string.copy_to_clipboard,
+            R.string.about_freeotp,
+        )) {
             val itemTextLeftPx = composeRule
                 .onNodeWithText(string(labelRes), useUnmergedTree = true)
                 .fetchSemanticsNode()

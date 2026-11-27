@@ -51,6 +51,7 @@ import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTextDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTokenCardCount
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.clickCardAtPosition
+import org.fedorahosted.freeotp.uitest.TestWaitUtil.openAddTokenFromFab
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.openOverflowMenu
 import org.fedorahosted.freeotp.util.AuthenticationUtil
 import org.fedorahosted.freeotp.util.Settings
@@ -225,8 +226,7 @@ class TokenEncryptionTest {
             composeRule.assertCardAtPositionHasText(0, "047 701")
 
             // Add a new token while in Token encrypted mode and verify it is stored encrypted too
-            composeRule.openOverflowMenu()
-            composeRule.onNodeWithText(string(R.string.add_token)).performClick()
+            composeRule.openAddTokenFromFab()
             composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
             composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("gitlab.com")
             composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("bob")

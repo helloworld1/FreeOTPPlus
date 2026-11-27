@@ -403,14 +403,6 @@ fun TokenListScreen(
                                 copyToClipboardMode = copyToClipboardMode,
                                 onSubMenuChange = { currentSubMenu = it },
                                 onDismiss = closeMenu,
-                                onNavigateToScanQr = {
-                                    closeMenu()
-                                    onNavigateToScanQr()
-                                },
-                                onNavigateToAddToken = {
-                                    closeMenu()
-                                    onNavigateToAddToken()
-                                },
                                 onImportJson = {
                                     closeMenu()
                                     onImportJson()
@@ -928,8 +920,6 @@ private fun TokenListOverflowMenu(
     copyToClipboardMode: CopyToClipboardMode,
     onSubMenuChange: (OverflowSubMenu) -> Unit,
     onDismiss: () -> Unit,
-    onNavigateToScanQr: () -> Unit,
-    onNavigateToAddToken: () -> Unit,
     onImportJson: () -> Unit,
     onImportKeyUri: () -> Unit,
     onImportTokenImages: () -> Unit,
@@ -951,20 +941,6 @@ private fun TokenListOverflowMenu(
     ) {
         when (currentSubMenu) {
             OverflowSubMenu.ROOT -> {
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.scan_qr_code)) },
-                    leadingIcon = {
-                        Icon(painter = painterResource(R.drawable.ic_qr_code_24px), contentDescription = null)
-                    },
-                    onClick = onNavigateToScanQr,
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.add_token)) },
-                    leadingIcon = {
-                        Icon(painter = painterResource(R.drawable.add_24px), contentDescription = null)
-                    },
-                    onClick = onNavigateToAddToken,
-                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(R.string.import_text)) },
                     leadingIcon = {
