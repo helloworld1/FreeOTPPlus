@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import org.fedorahosted.freeotp.util.CATEGORY_UNCATEGORIZED_VALUE
 import org.fedorahosted.freeotp.util.CopyToClipboardMode
 import org.fedorahosted.freeotp.util.Settings
 import org.fedorahosted.freeotp.util.ThemeMode
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,6 +38,18 @@ class MainViewModel @Inject constructor(
         val code: TokenCode,
         val generation: Int,
     )
+
+    data class ScrollToTokenRequest(
+        val tokenId: Long,
+        val requestId: Long,
+    )
+
+    private val scrollRequestCounter = AtomicLong(1L)
+    @Volatile
+    private var lastExplicitlyRequestedTokenId: Long = 0L
+
+    private val _scrollToTokenRequest = MutableStateFlow<ScrollToTokenRequest?>(null)
+    val scrollToTokenRequestFlow: StateFlow<ScrollToTokenRequest?> = _scrollToTokenRequest.asStateFlow()
 
     private val tokenSearchQuery = MutableStateFlow("")
     val searchQueryFlow: StateFlow<String> = tokenSearchQuery.asStateFlow()
@@ -83,6 +97,38 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            var knownIds: Set<Long>? = null
+            otpTokenDatabase.otpTokenDao().getAll().collect { tokens ->
+                if (!tokenMigrationUtil.isMigrated() && tokens.isEmpty()) {
+                    return@collect
+                }
+                val currentIds = tokens.mapTo(LinkedHashSet(tokens.size)) { it.id }
+                val previousIds = knownIds
+                knownIds = currentIds
+                if (previousIds == null || tokens.isEmpty()) {
+                    return@collect
+                }
+                val addedTokens = tokens.filter { it.id !in previousIds }
+                if (addedTokens.isEmpty()) {
+                    return@collect
+                }
+                val addedIdSet = addedTokens.mapTo(HashSet(addedTokens.size)) { it.id }
+                val isAppendedAtBottom = previousIds.isNotEmpty() &&
+                    tokens.first().id !in addedIdSet &&
+                    tokens.last().id in addedIdSet
+                val targetToken = if (isAppendedAtBottom) {
+                    addedTokens.last()
+                } else {
+                    addedTokens.first()
+                }
+                if (lastExplicitlyRequestedTokenId == targetToken.id) {
+                    lastExplicitlyRequestedTokenId = 0L
+                } else {
+                    emitScrollRequest(targetToken.id)
+                }
+            }
+        }
     }
 
     fun migrateOldData() {
@@ -114,6 +160,58 @@ class MainViewModel @Inject constructor(
 
     fun notifyTokenImagesChanged() {
         imageRefreshVersion.value++
+    }
+
+    fun onTokenAdded(tokenId: Long, addedToken: OtpToken? = null) {
+        if (tokenId <= 0L) return
+        lastExplicitlyRequestedTokenId = tokenId
+        if (addedToken != null) {
+            ensureTokenVisibleInFilters(addedToken)
+            emitScrollRequest(tokenId)
+        } else {
+            viewModelScope.launch {
+                val stored = otpTokenDatabase.otpTokenDao().get(tokenId).first()
+                if (stored != null) {
+                    ensureTokenVisibleInFilters(stored)
+                }
+                emitScrollRequest(tokenId)
+            }
+        }
+    }
+
+    fun consumeScrollToTokenRequest(requestId: Long) {
+        _scrollToTokenRequest.update { current ->
+            if (current?.requestId == requestId) null else current
+        }
+    }
+
+    private fun emitScrollRequest(tokenId: Long) {
+        _scrollToTokenRequest.value = ScrollToTokenRequest(
+            tokenId = tokenId,
+            requestId = scrollRequestCounter.getAndIncrement(),
+        )
+    }
+
+    private fun ensureTokenVisibleInFilters(token: OtpToken) {
+        val currentQuery = tokenSearchQuery.value
+        if (currentQuery.isNotEmpty()) {
+            val matchesQuery = token.label.contains(currentQuery, ignoreCase = true) ||
+                (token.issuer?.contains(currentQuery, ignoreCase = true) == true)
+            if (!matchesQuery) {
+                tokenSearchQuery.value = ""
+            }
+        }
+        val currentCategory = categoryFilter.value
+        if (currentCategory != null) {
+            val matchesCategory = if (currentCategory == CATEGORY_UNCATEGORIZED) {
+                token.categories.isEmpty()
+            } else {
+                token.categories.any { it.equals(currentCategory, ignoreCase = true) }
+            }
+            if (!matchesCategory) {
+                setCategoryFilter(null)
+            }
+        }
     }
 
     fun sortTokens(order: TokenSortOrder) {

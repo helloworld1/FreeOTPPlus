@@ -96,6 +96,7 @@ fun FreeOtpApp(
     val selectedCategory by viewModel.categoryFilterFlow.collectAsStateWithLifecycle()
     val imageRefreshVersion by viewModel.imageRefreshVersionFlow.collectAsStateWithLifecycle()
     val activeTokenCodes by viewModel.activeTokenCodesFlow.collectAsStateWithLifecycle()
+    val scrollToTokenRequest by viewModel.scrollToTokenRequestFlow.collectAsStateWithLifecycle()
 
     val listState by viewModel.getTokenListState().collectAsStateWithLifecycle(
         initialValue = MainViewModel.TokenListState(
@@ -201,6 +202,8 @@ fun FreeOtpApp(
                                 onSelectAuthMode = onSelectAuthMode,
                                 onSelectCopyToClipboardMode = onSelectCopyToClipboardMode,
                                 onQuitAndLock = onQuitAndLock,
+                                scrollToTokenRequest = scrollToTokenRequest,
+                                onConsumeScrollToTokenRequest = viewModel::consumeScrollToTokenRequest,
                             )
                         }
 
@@ -211,6 +214,7 @@ fun FreeOtpApp(
                                 onNavigateBack = { navController.popBackStack() },
                                 onVaultLocked = onVaultLocked,
                                 onShowSnackbar = onShowSnackbar,
+                                onTokenAdded = viewModel::onTokenAdded,
                             )
                         }
 
@@ -245,6 +249,7 @@ fun FreeOtpApp(
                                     }
                                 },
                                 onVaultLocked = onVaultLocked,
+                                onTokenAdded = viewModel::onTokenAdded,
                             )
                         }
 

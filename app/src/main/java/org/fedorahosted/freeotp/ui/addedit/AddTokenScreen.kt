@@ -66,6 +66,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.ui.components.CategorySelectorFlowRow
 import org.fedorahosted.freeotp.ui.components.TokenAvatar
@@ -84,6 +85,7 @@ fun AddTokenScreen(
     onVaultLocked: () -> Unit,
     onShowSnackbar: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onTokenAdded: (Long, OtpToken) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -117,7 +119,10 @@ fun AddTokenScreen(
         onSubmit = {
             viewModel.submitNewToken { result ->
                 when (result) {
-                    AddTokenSubmitResult.Success -> onNavigateBack()
+                    is AddTokenSubmitResult.Success -> {
+                        onTokenAdded(result.insertedTokenId, result.addedToken)
+                        onNavigateBack()
+                    }
                     AddTokenSubmitResult.VaultLocked -> onVaultLocked()
                     is AddTokenSubmitResult.Error -> onShowSnackbar(result.messageRes)
                 }

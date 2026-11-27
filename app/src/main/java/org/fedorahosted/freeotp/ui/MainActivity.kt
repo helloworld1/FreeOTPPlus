@@ -887,9 +887,10 @@ class MainActivity : AppCompatActivity() {
         }
         lifecycleScope.launch {
             try {
-                otpTokenDatabase.otpTokenDao().insert(
+                val insertedId = otpTokenDatabase.otpTokenDao().insertAtTop(
                     tokenCryptoManager.encryptTokenForStorage(token)
                 )
+                viewModel.onTokenAdded(insertedId, token)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IllegalStateException) {

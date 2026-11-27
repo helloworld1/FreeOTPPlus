@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.OtpTokenType
@@ -51,7 +52,7 @@ data class AddTokenUiState(
 }
 
 sealed interface AddTokenSubmitResult {
-    data object Success : AddTokenSubmitResult
+    data class Success(val insertedTokenId: Long, val addedToken: OtpToken) : AddTokenSubmitResult
     data object VaultLocked : AddTokenSubmitResult
     data class Error(val messageRes: Int) : AddTokenSubmitResult
 }
@@ -195,8 +196,10 @@ class AddTokenViewModel @Inject constructor(
                     imagePath = current.selectedImagePath,
                     categories = current.selectedCategories,
                 )
-                otpTokenDatabase.otpTokenDao().insert(tokenCryptoManager.encryptTokenForStorage(token))
-                onResult(AddTokenSubmitResult.Success)
+                val insertedId = otpTokenDatabase.otpTokenDao().insertAtTop(
+                    tokenCryptoManager.encryptTokenForStorage(token)
+                )
+                onResult(AddTokenSubmitResult.Success(insertedId, token))
             } catch (e: CancellationException) {
                 throw e
             } catch (_: IllegalStateException) {

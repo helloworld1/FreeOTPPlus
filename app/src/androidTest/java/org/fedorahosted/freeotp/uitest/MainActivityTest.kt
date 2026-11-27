@@ -29,6 +29,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
@@ -43,10 +44,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.AuthMode
+import org.fedorahosted.freeotp.data.OtpTokenFactory
+import org.fedorahosted.freeotp.data.OtpTokenType
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
 import org.fedorahosted.freeotp.ui.navigation.FreeOtpDestination
+import org.fedorahosted.freeotp.ui.scan.ScanTokenConfig
 import org.fedorahosted.freeotp.ui.tokenlist.TokenCardConfig
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
@@ -65,6 +69,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
+import java.io.File
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class MainActivityTest {
@@ -82,6 +87,7 @@ class MainActivityTest {
         AuthenticationUtil.hasScreenLockOverride = null
         AuthenticationUtil.appLaunchAuthCallbackOverride = null
         TokenCardConfig.hotpCooldownMsOverride = null
+        ScanTokenConfig.simulatedQrTextForTest = null
         activityRule.scenario.onActivity { activity ->
             runBlocking {
                 activity.otpTokenDatabase.otpTokenDao().deleteAll()
@@ -782,6 +788,135 @@ class MainActivityTest {
         composeRule.assertCardAtPositionHasText(0, "dave@cf.example")
         composeRule.clickCardAtPosition(0)
         composeRule.assertCardAtPositionHasText(0, "254 676")
+    }
+
+    @Test
+    fun testTokenListJumpsToLastAddedTokenAcrossAddPasteScanAndImport() {
+        val seedCount = 20
+        var firstSeededId = 0L
+        var lastSeededId = 0L
+        activityRule.scenario.onActivity { activity ->
+            runBlocking {
+                val seeded = (1..seedCount).map { idx ->
+                    OtpTokenFactory.create(
+                        type = OtpTokenType.TOTP,
+                        issuer = "SeedIssuer$idx",
+                        label = "seed$idx@example.com",
+                        secret = "JBSWY3DPEHPK3PXP",
+                    ).copy(id = 0L, ordinal = idx.toLong())
+                }
+                val ids = activity.otpTokenDatabase.otpTokenDao().insertAll(seeded)
+                firstSeededId = ids.first()
+                lastSeededId = ids.last()
+            }
+        }
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(firstSeededId))
+
+        // 1. Scroll down to bottom (index 19) so top card is off-screen, then Add Token -> jumps to newly added card
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(seedCount - 1)
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(lastSeededId))
+        composeRule.onNodeWithTag(UiTestTags.tokenCardTag(firstSeededId)).assertDoesNotExist()
+
+        composeRule.openAddTokenFromFab()
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("JumpAddedIssuer")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("added@example.com")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("JBSWY3DPEHPK3PXP")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).performClick()
+
+        val addedId = TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 1)
+            .first { it.issuer == "JumpAddedIssuer" }
+            .id
+        // Without calling performScrollToIndex, verify TokenListScreen jumped directly to addedId at the top
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(addedId))
+        composeRule.onNodeWithTag(UiTestTags.tokenCardTag(lastSeededId)).assertDoesNotExist()
+
+        // 2. Scroll down to bottom again, then Paste key URI -> jumps to pasted token
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(seedCount)
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(lastSeededId))
+        composeRule.onNodeWithTag(UiTestTags.tokenCardTag(addedId)).assertDoesNotExist()
+
+        setClipboardSentinel("otpauth://totp/JumpPasted1:paste1@example.com?secret=JBSWY3DPEHPK3PXP")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+        composeRule.awaitTextDisplayed("JumpPasted1", substring = true)
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+        val pasted1Id = TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 2)
+            .first { it.issuer == "JumpPasted1" }
+            .id
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(pasted1Id))
+        composeRule.onNodeWithTag(UiTestTags.tokenCardTag(lastSeededId)).assertDoesNotExist()
+
+        // 3. While already at index 0, Paste a second key URI -> stays at new index 0 (above pasted1Id)
+        setClipboardSentinel("otpauth://totp/JumpPasted2:paste2@example.com?secret=JBSWY3DPEHPK3PXP")
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
+        composeRule.awaitTextDisplayed("JumpPasted2", substring = true)
+        composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+        val pasted2Id = TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 3)
+            .first { it.issuer == "JumpPasted2" }
+            .id
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(pasted2Id))
+        val pasted2Top = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(pasted2Id)).fetchSemanticsNode().boundsInRoot.top
+        val pasted1Top = composeRule.onNodeWithTag(UiTestTags.tokenCardTag(pasted1Id)).fetchSemanticsNode().boundsInRoot.top
+        assertThat(pasted2Top).isLessThan(pasted1Top)
+
+        // 4. Scroll down to bottom again, then Scan QR Code -> jumps to scanned token
+        composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST).performScrollToIndex(seedCount + 2)
+        composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(lastSeededId))
+        composeRule.onNodeWithTag(UiTestTags.tokenCardTag(pasted2Id)).assertDoesNotExist()
+
+        ScanTokenConfig.simulatedQrTextForTest =
+            "otpauth://totp/JumpScanned:scan@example.com?secret=JBSWY3DPEHPK3PXP"
+        try {
+            composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
+            composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
+            composeRule.waitForIdle()
+
+            var scannedId = 0L
+            composeRule.waitUntil(5_000L) {
+                var found: Long? = null
+                activityRule.scenario.onActivity { activity ->
+                    found = runBlocking {
+                        activity.otpTokenDatabase.otpTokenDao().getAll().first()
+                            .firstOrNull { it.issuer == "JumpScanned" }
+                            ?.id
+                    }
+                }
+                if (found != null) {
+                    scannedId = found!!
+                    true
+                } else {
+                    false
+                }
+            }
+            composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(scannedId))
+            composeRule.onNodeWithTag(UiTestTags.tokenCardTag(lastSeededId)).assertDoesNotExist()
+
+            // 5. While at top, import a Key URI file (which appends at the bottom) -> jumps down to last added token
+            val keyUriFile = File(getInstrumentation().targetContext.cacheDir, "jump-key-uri-test.txt")
+            try {
+                keyUriFile.writeText("otpauth://totp/JumpKeyUriImport:bottom@example.com?secret=JBSWY3DPEHPK3PXP\n")
+                activityRule.scenario.onActivity { activity ->
+                    runBlocking {
+                        activity.importFromUtil.importKeyUriFile(Uri.fromFile(keyUriFile))
+                    }
+                }
+                val bottomImportedId = TestWaitUtil.awaitStoredTokens(activityRule.scenario, seedCount + 5)
+                    .first { it.issuer == "JumpKeyUriImport" }
+                    .id
+                composeRule.awaitTagDisplayed(UiTestTags.tokenCardTag(bottomImportedId))
+            } finally {
+                keyUriFile.delete()
+            }
+        } finally {
+            ScanTokenConfig.simulatedQrTextForTest = null
+        }
     }
 
     private fun copyRadioMatcher(titleRes: Int): SemanticsMatcher {

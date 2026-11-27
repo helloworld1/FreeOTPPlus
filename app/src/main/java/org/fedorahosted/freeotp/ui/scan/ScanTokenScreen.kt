@@ -8,6 +8,7 @@ import android.view.Surface
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -62,6 +63,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
+import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
 import org.fedorahosted.freeotp.data.OtpTokenFactory
 import org.fedorahosted.freeotp.data.TokenCryptoManager
@@ -75,6 +77,12 @@ import kotlin.math.min
 
 private const val TAG = "ScanTokenScreen"
 private val ANY_CAMERA_SELECTOR: CameraSelector = CameraSelector.Builder().build()
+
+object ScanTokenConfig {
+    @VisibleForTesting
+    @Volatile
+    var simulatedQrTextForTest: String? = null
+}
 
 internal enum class CameraChoice {
     BACK,
@@ -105,12 +113,14 @@ fun ScanTokenScreen(
     onNavigateBack: () -> Unit,
     onVaultLocked: () -> Unit,
     modifier: Modifier = Modifier,
+    onTokenAdded: (Long, OtpToken) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
     val currentOnVaultLocked by rememberUpdatedState(onVaultLocked)
+    val currentOnTokenAdded by rememberUpdatedState(onTokenAdded)
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -134,9 +144,51 @@ fun ScanTokenScreen(
         }
     }
 
+    suspend fun processScannedQrText(qrText: String) {
+        try {
+            val token = OtpTokenFactory.createFromUri(qrText.toUri())
+            val insertedId = otpTokenDatabase.otpTokenDao().insertAtTop(
+                tokenCryptoManager.encryptTokenForStorage(token)
+            )
+            currentOnTokenAdded(insertedId, token)
+            currentOnNavigateBack()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "Token vault locked while saving scanned token", e)
+            if (!tokenCryptoManager.isUnlocked()) {
+                currentOnVaultLocked()
+            } else {
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastInvalidToastMs.get() > 2_500L) {
+                    lastInvalidToastMs.set(now)
+                    Toast.makeText(context, R.string.invalid_token, Toast.LENGTH_SHORT).show()
+                }
+            }
+            foundTokenFlag.set(false)
+        } catch (e: Exception) {
+            Log.w(TAG, "Invalid token URI scanned", e)
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastInvalidToastMs.get() > 2_500L) {
+                lastInvalidToastMs.set(now)
+                Toast.makeText(
+                    context,
+                    R.string.invalid_token_uri_received,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+            foundTokenFlag.set(false)
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+        val simulated = ScanTokenConfig.simulatedQrTextForTest
+        if (simulated != null && foundTokenFlag.compareAndSet(false, true)) {
+            ScanTokenConfig.simulatedQrTextForTest = null
+            processScannedQrText(simulated)
         }
     }
 
@@ -144,10 +196,18 @@ fun ScanTokenScreen(
         val activePreviewView = previewViewRef
         var boundProvider: ProcessCameraProvider? = null
 
-        if (hasCameraPermission && activePreviewView != null) {
+        if (
+            hasCameraPermission &&
+            activePreviewView != null &&
+            ScanTokenConfig.simulatedQrTextForTest == null &&
+            !foundTokenFlag.get()
+        ) {
             val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
             cameraProviderFuture.addListener(
                 {
+                    if (foundTokenFlag.get() || ScanTokenConfig.simulatedQrTextForTest != null) {
+                        return@addListener
+                    }
                     try {
                         val cameraProvider = cameraProviderFuture.get()
                         boundProvider = cameraProvider
@@ -167,8 +227,10 @@ fun ScanTokenScreen(
                             CameraChoice.NONE -> null
                         }
                         if (selector == null) {
-                            Toast.makeText(context, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
-                            currentOnNavigateBack()
+                            if (!foundTokenFlag.get()) {
+                                Toast.makeText(context, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
+                                currentOnNavigateBack()
+                            }
                             return@addListener
                         }
 
@@ -203,39 +265,7 @@ fun ScanTokenScreen(
                             }
 
                             coroutineScope.launch(Dispatchers.Main.immediate) {
-                                try {
-                                    val token = OtpTokenFactory.createFromUri(qrText.toUri())
-                                    otpTokenDatabase.otpTokenDao().insert(
-                                        tokenCryptoManager.encryptTokenForStorage(token)
-                                    )
-                                    currentOnNavigateBack()
-                                } catch (e: CancellationException) {
-                                    throw e
-                                } catch (e: IllegalStateException) {
-                                    Log.w(TAG, "Token vault locked while saving scanned token", e)
-                                    if (!tokenCryptoManager.isUnlocked()) {
-                                        currentOnVaultLocked()
-                                    } else {
-                                        val now = SystemClock.elapsedRealtime()
-                                        if (now - lastInvalidToastMs.get() > 2_500L) {
-                                            lastInvalidToastMs.set(now)
-                                            Toast.makeText(context, R.string.invalid_token, Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                    foundTokenFlag.set(false)
-                                } catch (e: Exception) {
-                                    Log.w(TAG, "Invalid token URI scanned", e)
-                                    val now = SystemClock.elapsedRealtime()
-                                    if (now - lastInvalidToastMs.get() > 2_500L) {
-                                        lastInvalidToastMs.set(now)
-                                        Toast.makeText(
-                                            context,
-                                            R.string.invalid_token_uri_received,
-                                            Toast.LENGTH_SHORT,
-                                        ).show()
-                                    }
-                                    foundTokenFlag.set(false)
-                                }
+                                processScannedQrText(qrText)
                             }
                         }
 
@@ -243,8 +273,10 @@ fun ScanTokenScreen(
                         cameraProvider.bindToLifecycle(lifecycleOwner, selector, preview, imageAnalysis)
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to start and bind camera", e)
-                        Toast.makeText(context, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
-                        currentOnNavigateBack()
+                        if (!foundTokenFlag.get()) {
+                            Toast.makeText(context, R.string.error_camera_open, Toast.LENGTH_SHORT).show()
+                            currentOnNavigateBack()
+                        }
                     }
                 },
                 ContextCompat.getMainExecutor(context),

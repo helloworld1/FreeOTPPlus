@@ -72,6 +72,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -165,6 +166,8 @@ fun TokenListScreen(
     modifier: Modifier = Modifier,
     onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
     onPasteKeyUri: () -> Unit = {},
+    scrollToTokenRequest: MainViewModel.ScrollToTokenRequest? = null,
+    onConsumeScrollToTokenRequest: (Long) -> Unit = {},
     initialFabMenuExpanded: Boolean = false,
 ) {
     val gridState = rememberLazyGridState()
@@ -174,28 +177,30 @@ fun TokenListScreen(
         onCommitMovePairs = onCommitTokenReorder,
     )
 
-    // Scroll to index 0 when new tokens are prepended (added/imported) without changing search/category filter
-    var previousFilterKey by remember { mutableStateOf<Pair<String, String?>?>(null) }
-    var previousTopTokenId by remember { mutableStateOf<Long?>(null) }
-    var previousTokenCount by remember { mutableIntStateOf(0) }
-    LaunchedEffect(listState.tokens, searchQuery, selectedCategory) {
-        val currentFilterKey = searchQuery to selectedCategory
-        val topId = listState.tokens.firstOrNull()?.id
-        val currentCount = listState.tokens.size
-        val shouldScrollToTop = previousFilterKey == currentFilterKey &&
-            previousTopTokenId != null &&
-            topId != null &&
-            topId != previousTopTokenId &&
-            currentCount > previousTokenCount
-        previousFilterKey = currentFilterKey
-        previousTopTokenId = topId
-        previousTokenCount = currentCount
-        if (shouldScrollToTop) {
-            gridState.scrollToItem(0)
+    var isSearchExpanded by rememberSaveable { mutableStateOf(searchQuery.isNotEmpty()) }
+
+    LaunchedEffect(scrollToTokenRequest, reorderState.displayedTokens, listState.isAuthenticated) {
+        val request = scrollToTokenRequest ?: return@LaunchedEffect
+        if (!listState.isAuthenticated) return@LaunchedEffect
+        val targetIndex = reorderState.displayedTokens.indexOfFirst { it.id == request.tokenId }
+        if (targetIndex < 0) return@LaunchedEffect
+        if (searchQuery.isEmpty() && isSearchExpanded) {
+            isSearchExpanded = false
         }
+        gridState.scrollToItem(targetIndex)
+        withFrameNanos { }
+        val settledIndex = reorderState.displayedTokens.indexOfFirst { it.id == request.tokenId }
+        if (settledIndex >= 0) {
+            val isTargetVisible = gridState.layoutInfo.visibleItemsInfo.any { it.index == settledIndex }
+            val isTopShifted = settledIndex == 0 &&
+                (gridState.firstVisibleItemIndex != 0 || gridState.firstVisibleItemScrollOffset != 0)
+            if (!isTargetVisible || isTopShifted) {
+                gridState.scrollToItem(settledIndex)
+            }
+        }
+        onConsumeScrollToTokenRequest(request.requestId)
     }
 
-    var isSearchExpanded by rememberSaveable { mutableStateOf(searchQuery.isNotEmpty()) }
     var requestSearchFocus by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
     var filterMenuExpanded by remember { mutableStateOf(false) }

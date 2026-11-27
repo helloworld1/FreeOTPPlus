@@ -50,7 +50,7 @@ interface OtpTokenDao {
     suspend fun deleteAll()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(otpTokenList: List<OtpToken>)
+    suspend fun insertAll(otpTokenList: List<OtpToken>): List<Long>
 
     @Transaction
     suspend fun replaceAll(otpTokenList: List<OtpToken>) {
@@ -59,7 +59,18 @@ interface OtpTokenDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(otpToken: OtpToken)
+    suspend fun insert(otpToken: OtpToken): Long
+
+    @Transaction
+    suspend fun insertAtTop(otpToken: OtpToken): Long {
+        val firstOrdinal = getFirstOrdinal()
+        val targetOrdinal = if (firstOrdinal != null) {
+            minOf(otpToken.ordinal, firstOrdinal - 1L)
+        } else {
+            otpToken.ordinal
+        }
+        return insert(otpToken.copy(ordinal = targetOrdinal))
+    }
 
     @Update
     suspend fun update(otpToken: OtpToken)
