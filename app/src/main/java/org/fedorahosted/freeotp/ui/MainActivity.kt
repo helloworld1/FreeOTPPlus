@@ -374,6 +374,7 @@ class MainActivity : AppCompatActivity() {
                     deleteTokenId = token.id
                 },
                 onTokenCardClick = ::handleTokenCardClick,
+                onAdvanceHotp = ::handleAdvanceHotpCounter,
                 onShareToOtherApps = ::handleShareTokenToOtherApps,
                 onRequestRevealSecret = ::handleRevealTokenSecret,
                 onCopySensitiveSecret = { plainSecret ->
@@ -621,42 +622,60 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
-            val codes = try {
-                tokenCodeUtil.generateTokenCode(token)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
-                    viewModel.onSessionStart()
-                } else {
-                    showSnackbar(R.string.invalid_token)
-                }
-                return@launch
-            }
-
-            val code = codes.currentCode
-            if (code.isNullOrEmpty()) {
-                if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
-                    viewModel.onSessionStart()
-                } else {
-                    showSnackbar(R.string.invalid_token)
-                }
-                return@launch
-            }
-
-            if (token.tokenType == OtpTokenType.HOTP) {
-                otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
-            }
-
-            if (copyMode == CopyToClipboardMode.ON_REVEAL) {
-                clipboardUtil.copySensitiveText(null, code)
-                if (ClipboardUtil.shouldShowAppCopyFeedback()) {
-                    showSnackbar(R.string.code_copied)
-                }
-            }
-
-            viewModel.putActiveTokenCode(token.id, codes)
+            generateAndRevealTokenCode(token, copyMode)
         }
+    }
+
+    private fun handleAdvanceHotpCounter(clickedToken: OtpToken) {
+        lifecycleScope.launch {
+            val token = otpTokenDatabase.otpTokenDao().get(clickedToken.id).first() ?: return@launch
+            if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                viewModel.onSessionStart()
+                return@launch
+            }
+            generateAndRevealTokenCode(token, settings.copyToClipboardMode)
+        }
+    }
+
+    private suspend fun generateAndRevealTokenCode(
+        token: OtpToken,
+        copyMode: CopyToClipboardMode,
+    ) {
+        val codes = try {
+            tokenCodeUtil.generateTokenCode(token)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                viewModel.onSessionStart()
+            } else {
+                showSnackbar(R.string.invalid_token)
+            }
+            return
+        }
+
+        val code = codes.currentCode
+        if (code.isNullOrEmpty()) {
+            if (token.encryptionType == EncryptionType.ENCRYPTED && !tokenCryptoManager.isUnlocked()) {
+                viewModel.onSessionStart()
+            } else {
+                showSnackbar(R.string.invalid_token)
+            }
+            return
+        }
+
+        if (token.tokenType == OtpTokenType.HOTP) {
+            otpTokenDatabase.otpTokenDao().incrementCounter(token.id)
+        }
+
+        if (copyMode == CopyToClipboardMode.ON_REVEAL) {
+            clipboardUtil.copySensitiveText(null, code)
+            if (ClipboardUtil.shouldShowAppCopyFeedback()) {
+                showSnackbar(R.string.code_copied)
+            }
+        }
+
+        viewModel.putActiveTokenCode(token.id, codes)
     }
 
     private fun handleShareTokenToOtherApps(token: OtpToken) {

@@ -137,6 +137,7 @@ fun TokenListScreen(
     onSelectCopyToClipboardMode: (CopyToClipboardMode) -> Unit,
     onQuitAndLock: () -> Unit,
     modifier: Modifier = Modifier,
+    onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
 ) {
     val gridState = rememberLazyGridState()
     val reorderState = rememberReorderableGridState(
@@ -540,6 +541,7 @@ fun TokenListScreen(
                         isDragging = isDragging,
                         allowImmediateTapWhenRevealed = copyToClipboardMode == CopyToClipboardMode.TAP_REVEALED,
                         onCardClick = onTokenCardClick,
+                        onAdvanceHotp = onAdvanceHotp,
                         onCodeExpired = onTokenCodeExpired,
                         onEdit = onEditToken,
                         onDelete = onDeleteToken,

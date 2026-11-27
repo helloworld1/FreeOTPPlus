@@ -40,6 +40,7 @@ import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.ui.tokenlist.TokenCardConfig
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitTagDisplayed
@@ -69,6 +70,7 @@ class MainActivityTest {
     fun setUp() {
         AuthenticationUtil.hasScreenLockOverride = null
         AuthenticationUtil.appLaunchAuthCallbackOverride = null
+        TokenCardConfig.hotpCooldownMsOverride = null
         activityRule.scenario.onActivity { activity ->
             runBlocking {
                 activity.otpTokenDatabase.otpTokenDao().deleteAll()
@@ -486,42 +488,89 @@ class MainActivityTest {
 
         // 5. Select "Tap revealed code":
         //    - First tap on HOTP (counter=1 -> 2) reveals code & advances counter to "2", WITHOUT copying
-        //    - Immediate second tap copies that exact revealed code WITHOUT advancing HOTP counter beyond "2"
-        setClipboardSentinel("SENTINEL_TAP_REVEALED")
-        composeRule.openOverflowMenu()
-        composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
-        composeRule.awaitNodeDisplayed(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed))
-        composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed)).performClick()
+        //    - Counter badge is disabled during HOTP cooldown, while immediate second tap on card body copies without advancing
+        //    - After cooldown elapses, tapping the "# Counter" badge advances HOTP to counter "3" and reveals next code,
+        //      and tapping the card body copies that newly advanced HOTP code
+        TokenCardConfig.hotpCooldownMsOverride = 600L
+        try {
+            setClipboardSentinel("SENTINEL_TAP_REVEALED")
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.copy_to_clipboard)).performClick()
+            composeRule.awaitNodeDisplayed(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed))
+            composeRule.onNode(copyRadioMatcher(R.string.copy_to_clipboard_tap_revealed)).performClick()
 
-        composeRule.clickCardAtPosition(0)
-        val formattedSixDigitRegex = Regex("\\b(\\d{3}) (\\d{3})\\b")
-        var revealedHotpRaw = ""
-        composeRule.waitUntil(5_000L) {
-            val texts = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
-                .onChildren()[0]
-                .fetchSemanticsNode()
-                .config
-                .getOrNull(SemanticsProperties.Text)
-                ?.joinToString(" ") { it.text }
-                .orEmpty()
-            val match = formattedSixDigitRegex.find(texts)
-            if (match != null) {
-                revealedHotpRaw = match.groupValues[1] + match.groupValues[2]
-                true
-            } else {
-                false
+            composeRule.clickCardAtPosition(0)
+            val formattedSixDigitRegex = Regex("\\b(\\d{3}) (\\d{3})\\b")
+            var revealedHotpRaw = ""
+            composeRule.waitUntil(5_000L) {
+                val texts = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+                    .onChildren()[0]
+                    .fetchSemanticsNode()
+                    .config
+                    .getOrNull(SemanticsProperties.Text)
+                    ?.joinToString(" ") { it.text }
+                    .orEmpty()
+                val match = formattedSixDigitRegex.find(texts)
+                if (match != null) {
+                    revealedHotpRaw = match.groupValues[1] + match.groupValues[2]
+                    true
+                } else {
+                    false
+                }
             }
-        }
-        assertThat(revealedHotpRaw).isNotEqualTo("047701")
-        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
-            .assertTextEquals("2")
-        assertThat(readClipboardText()).isEqualTo("SENTINEL_TAP_REVEALED")
+            assertThat(revealedHotpRaw).isNotEqualTo("047701")
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+                .assertTextEquals("2")
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterContainerTag(1L))
+                .assertIsNotEnabled()
+            assertThat(readClipboardText()).isEqualTo("SENTINEL_TAP_REVEALED")
 
-        // Immediate second tap (well within the 5s HOTP cooldown) copies without incrementing counter
-        composeRule.clickCardAtPosition(0)
-        composeRule.waitUntil(5_000L) { readClipboardText() == revealedHotpRaw }
-        composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
-            .assertTextEquals("2")
+            // Immediate second tap (while counter badge is still in cooldown) copies without incrementing counter
+            composeRule.clickCardAtPosition(0)
+            composeRule.waitUntil(5_000L) { readClipboardText() == revealedHotpRaw }
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+                .assertTextEquals("2")
+
+            // Wait for HOTP cooldown to finish, then tap the "# Counter" badge to advance to counter "3"
+            composeRule.waitUntil(5_000L) {
+                runCatching {
+                    composeRule.onNodeWithTag(UiTestTags.tokenCounterContainerTag(1L)).assertIsEnabled()
+                    true
+                }.getOrDefault(false)
+            }
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterContainerTag(1L)).performClick()
+
+            var advancedHotpRaw = ""
+            composeRule.waitUntil(5_000L) {
+                val texts = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+                    .onChildren()[0]
+                    .fetchSemanticsNode()
+                    .config
+                    .getOrNull(SemanticsProperties.Text)
+                    ?.joinToString(" ") { it.text }
+                    .orEmpty()
+                val match = formattedSixDigitRegex.find(texts)
+                val candidate = match?.let { it.groupValues[1] + it.groupValues[2] }.orEmpty()
+                if (candidate.isNotEmpty() && candidate != revealedHotpRaw) {
+                    advancedHotpRaw = candidate
+                    true
+                } else {
+                    false
+                }
+            }
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+                .assertTextEquals("3")
+            // Advancing via "# Counter" in Tap revealed mode does not overwrite clipboard until card is tapped
+            assertThat(readClipboardText()).isEqualTo(revealedHotpRaw)
+
+            // Tapping the revealed card body now copies the newly advanced HOTP code without incrementing past "3"
+            composeRule.clickCardAtPosition(0)
+            composeRule.waitUntil(5_000L) { readClipboardText() == advancedHotpRaw }
+            composeRule.onNodeWithTag(UiTestTags.tokenCounterValueTag(1L), useUnmergedTree = true)
+                .assertTextEquals("3")
+        } finally {
+            TokenCardConfig.hotpCooldownMsOverride = null
+        }
 
         // Also verify TOTP in "Tap revealed code" mode: first tap reveals without copying, second tap copies
         setClipboardSentinel("SENTINEL_TOTP")

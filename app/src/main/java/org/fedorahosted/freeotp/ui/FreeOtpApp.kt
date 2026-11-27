@@ -63,6 +63,7 @@ fun FreeOtpApp(
     onOpenShareQrDialog: (OtpToken) -> Unit,
     onOpenDeleteTokenDialog: (OtpToken) -> Unit,
     onTokenCardClick: (OtpToken) -> Unit,
+    onAdvanceHotp: (OtpToken) -> Unit,
     onShareToOtherApps: (OtpToken) -> Unit,
     onRequestRevealSecret: (OtpToken, (String) -> Unit) -> Unit,
     onCopySensitiveSecret: (String) -> Unit,
@@ -155,6 +156,7 @@ fun FreeOtpApp(
                                 onSearchQueryChange = viewModel::setTokenSearchQuery,
                                 onSelectCategory = viewModel::setCategoryFilter,
                                 onTokenCardClick = onTokenCardClick,
+                                onAdvanceHotp = onAdvanceHotp,
                                 onTokenCodeExpired = viewModel::removeActiveTokenCode,
                                 onCommitTokenReorder = viewModel::moveTokenPairs,
                                 onEditToken = { token ->
