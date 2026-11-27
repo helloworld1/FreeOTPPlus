@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.uitest
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -7,17 +8,20 @@ import android.content.Intent
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onChildren
@@ -27,11 +31,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.rule.GrantPermissionRule
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -40,6 +46,7 @@ import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.ui.MainActivity
 import org.fedorahosted.freeotp.ui.MainViewModel
 import org.fedorahosted.freeotp.ui.components.UiTestTags
+import org.fedorahosted.freeotp.ui.navigation.FreeOtpDestination
 import org.fedorahosted.freeotp.ui.tokenlist.TokenCardConfig
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.assertCardAtPositionHasText
 import org.fedorahosted.freeotp.uitest.TestWaitUtil.awaitNodeDisplayed
@@ -64,7 +71,10 @@ class MainActivityTest {
     private val activityRule = activityScenarioRule<MainActivity>()
 
     @get:Rule
-    val ruleChain: RuleChain = RuleChain.outerRule(composeRule).around(activityRule)
+    val ruleChain: RuleChain = RuleChain
+        .outerRule(GrantPermissionRule.grant(Manifest.permission.CAMERA))
+        .around(composeRule)
+        .around(activityRule)
 
     @Before
     fun setUp() {
@@ -583,6 +593,110 @@ class MainActivityTest {
             val clip = readClipboardText()
             clip != null && clip != "SENTINEL_TOTP" && clip.length == 6 && clip.all { it.isDigit() }
         }
+    }
+
+    @Test
+    fun testMultiFunctionFabMenuAddTokenScanQrAndDismiss() {
+        populateTestData()
+        composeRule.awaitTokenCardCount(2)
+
+        // 1. Collapsed initial state
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON)
+            .assertIsDisplayed()
+            .assertIsEnabled()
+            .assertIsNotSelected()
+            .assertContentDescriptionEquals(string(R.string.add))
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_SCRIM).assertDoesNotExist()
+
+        // 2. Tap FAB to expand Material 3 FAB menu; verify vertical stacking & trailing alignment
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_ADD_TOKEN_ITEM)
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
+
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON)
+            .assertIsSelected()
+            .assertContentDescriptionEquals(string(R.string.cancel_text))
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM)
+            .assertTextEquals(string(R.string.add_token))
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM)
+            .assertTextEquals(string(R.string.scan_qr_code))
+
+        val fabBounds = composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).fetchSemanticsNode().boundsInRoot
+        val scanItemBounds = composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).fetchSemanticsNode().boundsInRoot
+        val addItemBounds = composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).fetchSemanticsNode().boundsInRoot
+
+        assertThat(addItemBounds.bottom).isLessThan(scanItemBounds.top)
+        assertThat(scanItemBounds.bottom).isLessThan(fabBounds.top)
+        assertThat(scanItemBounds.right).isWithin(2f).of(fabBounds.right)
+        assertThat(addItemBounds.right).isWithin(2f).of(fabBounds.right)
+
+        // 3. Tapping outside on scrim (directly over card 0) dismisses menu WITHOUT revealing card 0
+        val card0Center = composeRule.onNodeWithTag(UiTestTags.TOKEN_LIST)
+            .onChildren()[0]
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .center
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_SCRIM)
+            .performTouchInput { click(Offset(card0Center.x, card0Center.y)) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
+        composeRule.assertCardAtPositionHasText(0, "--- ---")
+
+        // 4. Pressing system Back collapses the expanded FAB menu without leaving TokenListScreen
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_ADD_TOKEN_ITEM)
+        activityRule.scenario.onActivity { activity ->
+            activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
+        activityRule.scenario.onActivity { activity ->
+            assertThat(activity.currentRoute()).isEqualTo(FreeOtpDestination.TOKEN_LIST)
+        }
+
+        // 5. Tapping the expanded toggle (close) button collapses the FAB menu
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
+
+        // 6. Selecting "Add Token" from FAB menu navigates to AddTokenScreen and returns collapsed
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_ADD_TOKEN_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.ISSUER_INPUT)
+        composeRule.onNodeWithTag(UiTestTags.ISSUER_INPUT).performTextReplacement("FabIssuer")
+        composeRule.onNodeWithTag(UiTestTags.LABEL_INPUT).performTextReplacement("FabAccount")
+        composeRule.onNodeWithTag(UiTestTags.SECRET_INPUT).performTextReplacement("JBSWY3DPEHPK3PXP")
+        composeRule.onNodeWithTag(UiTestTags.ADD_SUBMIT_BUTTON).performClick()
+
+        composeRule.awaitTokenCardCount(3)
+        composeRule.assertCardAtPositionHasText(0, "FabIssuer")
+        composeRule.onNodeWithTag(UiTestTags.FAB_ADD_TOKEN_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
+
+        // 7. Selecting "Scan QR Code" from FAB menu navigates to ScanTokenScreen and returns collapsed
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
+        composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
+
+        composeRule.awaitTagDisplayed(UiTestTags.SCAN_BACK_BUTTON)
+        activityRule.scenario.onActivity { activity ->
+            assertThat(activity.currentRoute()).isEqualTo(FreeOtpDestination.SCAN_TOKEN)
+        }
+        composeRule.onNodeWithTag(UiTestTags.SCAN_BACK_BUTTON).performClick()
+
+        composeRule.awaitTokenCardCount(3)
+        composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).assertDoesNotExist()
+        composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).assertIsNotSelected()
     }
 
     private fun copyRadioMatcher(titleRes: Int): SemanticsMatcher {

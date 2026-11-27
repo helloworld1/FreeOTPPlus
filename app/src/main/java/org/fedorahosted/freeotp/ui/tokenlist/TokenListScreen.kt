@@ -1,12 +1,23 @@
 package org.fedorahosted.freeotp.ui.tokenlist
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +25,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -27,13 +42,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +58,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -60,11 +77,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +97,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import org.fedorahosted.freeotp.R
@@ -138,6 +164,7 @@ fun TokenListScreen(
     onQuitAndLock: () -> Unit,
     modifier: Modifier = Modifier,
     onAdvanceHotp: (OtpToken) -> Unit = onTokenCardClick,
+    initialFabMenuExpanded: Boolean = false,
 ) {
     val gridState = rememberLazyGridState()
     val reorderState = rememberReorderableGridState(
@@ -173,6 +200,13 @@ fun TokenListScreen(
     var filterMenuExpanded by remember { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
     var currentSubMenu by remember { mutableStateOf(OverflowSubMenu.ROOT) }
+    var isFabMenuExpanded by rememberSaveable { mutableStateOf(initialFabMenuExpanded) }
+
+    LaunchedEffect(listState.isAuthenticated) {
+        if (!listState.isAuthenticated) {
+            isFabMenuExpanded = false
+        }
+    }
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.isNotEmpty()) {
@@ -192,13 +226,18 @@ fun TokenListScreen(
         isSearchExpanded = false
     }
 
+    BackHandler(enabled = listState.isAuthenticated && isFabMenuExpanded) {
+        isFabMenuExpanded = false
+    }
+
     val closeMenu = {
         menuExpanded = false
         currentSubMenu = OverflowSubMenu.ROOT
     }
 
+    Box(modifier = modifier.fillMaxSize()) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -442,19 +481,12 @@ fun TokenListScreen(
         },
         floatingActionButton = {
             if (listState.isAuthenticated) {
-                FloatingActionButton(
-                    onClick = onNavigateToScanQr,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                // Reserve M3 FAB clearance so SnackbarHost positions above the collapsed FAB
+                Spacer(
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.navigationBars)
-                        .testTag(UiTestTags.SCAN_FAB),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_qr_code_24px),
-                        contentDescription = stringResource(R.string.scan_qr_code),
-                    )
-                }
+                        .size(56.dp),
+                )
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
@@ -577,6 +609,234 @@ fun TokenListScreen(
                     )
                 }
             }
+        }
+    }
+
+    val dismissLabel = stringResource(R.string.cancel_text)
+    AnimatedVisibility(
+        visible = listState.isAuthenticated && isFabMenuExpanded,
+        enter = fadeIn(animationSpec = tween(durationMillis = 150)),
+        exit = fadeOut(animationSpec = tween(durationMillis = 120)),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { isFabMenuExpanded = false })
+                }
+                .semantics {
+                    contentDescription = dismissLabel
+                    onClick {
+                        isFabMenuExpanded = false
+                        true
+                    }
+                }
+                .testTag(UiTestTags.FAB_MENU_SCRIM),
+        )
+    }
+
+    if (listState.isAuthenticated) {
+        TokenListFabMenu(
+            expanded = isFabMenuExpanded,
+            onExpandedChange = { expanded ->
+                if (expanded) {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                }
+                isFabMenuExpanded = expanded
+            },
+            onAddToken = {
+                isFabMenuExpanded = false
+                onNavigateToAddToken()
+            },
+            onScanQr = {
+                isFabMenuExpanded = false
+                onNavigateToScanQr()
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                )
+                .padding(16.dp),
+        )
+    }
+    }
+}
+
+@Composable
+private fun TokenListFabMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onAddToken: () -> Unit,
+    onScanQr: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val menuTransformOrigin = remember(isRtl) {
+        TransformOrigin(pivotFractionX = if (isRtl) 0f else 1f, pivotFractionY = 1f)
+    }
+    val expandProgress by animateFloatAsState(
+        targetValue = if (expanded) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "fabMenuExpandProgress",
+    )
+    val fabCornerRadius = lerp(16.dp, 28.dp, expandProgress)
+    val fabContainerColor = lerp(
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.primary,
+        expandProgress,
+    )
+    val fabContentColor = lerp(
+        MaterialTheme.colorScheme.onPrimaryContainer,
+        MaterialTheme.colorScheme.onPrimary,
+        expandProgress,
+    )
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.Bottom,
+    ) {
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(animationSpec = tween(durationMillis = 150)) +
+                expandVertically(
+                    expandFrom = Alignment.Bottom,
+                    clip = false,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
+                ) +
+                scaleIn(
+                    initialScale = 0.85f,
+                    transformOrigin = menuTransformOrigin,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
+                ),
+            exit = fadeOut(animationSpec = tween(durationMillis = 120)) +
+                shrinkVertically(
+                    shrinkTowards = Alignment.Bottom,
+                    clip = false,
+                    animationSpec = tween(durationMillis = 150),
+                ) +
+                scaleOut(
+                    targetScale = 0.85f,
+                    transformOrigin = menuTransformOrigin,
+                    animationSpec = tween(durationMillis = 150),
+                ),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.End,
+            ) {
+                FabMenuActionItem(
+                    iconRes = R.drawable.add_24px,
+                    labelRes = R.string.add_token,
+                    onClick = onAddToken,
+                    modifier = Modifier.testTag(UiTestTags.FAB_ADD_TOKEN_ITEM),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                FabMenuActionItem(
+                    iconRes = R.drawable.ic_qr_code_24px,
+                    labelRes = R.string.scan_qr_code,
+                    onClick = onScanQr,
+                    modifier = Modifier.testTag(UiTestTags.FAB_SCAN_QR_ITEM),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        val toggleContentDescription = if (expanded) {
+            stringResource(R.string.cancel_text)
+        } else {
+            stringResource(R.string.add)
+        }
+
+        Surface(
+            onClick = { onExpandedChange(!expanded) },
+            shape = RoundedCornerShape(fabCornerRadius),
+            color = fabContainerColor,
+            contentColor = fabContentColor,
+            shadowElevation = 6.dp,
+            tonalElevation = 3.dp,
+            modifier = Modifier
+                .size(56.dp)
+                .semantics {
+                    role = Role.Button
+                    selected = expanded
+                }
+                .testTag(UiTestTags.FAB_MENU_BUTTON),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.add_24px),
+                    contentDescription = if (!expanded) toggleContentDescription else null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer {
+                            rotationZ = 45f * expandProgress
+                            alpha = 1f - expandProgress
+                        },
+                )
+                Icon(
+                    painter = painterResource(R.drawable.ic_close_24px),
+                    contentDescription = if (expanded) toggleContentDescription else null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer {
+                            rotationZ = -45f * (1f - expandProgress)
+                            alpha = expandProgress
+                        },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FabMenuActionItem(
+    @DrawableRes iconRes: Int,
+    @StringRes labelRes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shadowElevation = 4.dp,
+        tonalElevation = 3.dp,
+        modifier = modifier.semantics { role = Role.Button },
+    ) {
+        Row(
+            modifier = Modifier
+                .defaultMinSize(minHeight = 52.dp)
+                .padding(start = 16.dp, top = 12.dp, end = 20.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = stringResource(labelRes),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -1029,6 +1289,73 @@ private fun TokenListScreenPreview() {
             onSelectAuthMode = {},
             onSelectCopyToClipboardMode = {},
             onQuitAndLock = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TokenListScreenFabExpandedPreview() {
+    val tokens = listOf(
+        OtpTokenFactory.create(
+            type = OtpTokenType.HOTP,
+            issuer = "GitHub",
+            label = "octocat@github.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            initialCounter = 5L,
+            categories = listOf("Work"),
+        ).copy(id = 1L),
+        OtpTokenFactory.create(
+            type = OtpTokenType.TOTP,
+            issuer = "Microsoft",
+            label = "alice@microsoft.com",
+            secret = "JBSWY3DPEHPK3PXP",
+            categories = listOf("Personal"),
+        ).copy(id = 2L),
+    )
+    FreeOtpTheme(themeMode = ThemeMode.LIGHT) {
+        TokenListScreen(
+            listState = MainViewModel.TokenListState(
+                tokens = tokens,
+                hasInstalledTokens = true,
+                hasActiveFilterOrSearch = false,
+                isAuthenticated = true,
+            ),
+            searchQuery = "",
+            selectedCategory = null,
+            availableCategories = listOf("Personal", "Work"),
+            activeTokenCodes = emptyMap(),
+            imageRefreshVersion = 0L,
+            themeMode = ThemeMode.LIGHT,
+            authMode = AuthMode.TOKEN_ENCRYPTED,
+            copyToClipboardMode = CopyToClipboardMode.ON_REVEAL,
+            snackbarHostState = remember { SnackbarHostState() },
+            onSearchQueryChange = {},
+            onSelectCategory = {},
+            onTokenCardClick = {},
+            onTokenCodeExpired = {},
+            onCommitTokenReorder = {},
+            onEditToken = {},
+            onDeleteToken = {},
+            onShareToOtherApps = {},
+            onShareQrCode = {},
+            onNavigateToScanQr = {},
+            onNavigateToAddToken = {},
+            onNavigateToAbout = {},
+            onImportJson = {},
+            onImportKeyUri = {},
+            onImportTokenImages = {},
+            onImportFreeOtpBackup = {},
+            onImportAegisJson = {},
+            onExportJson = {},
+            onExportKeyUri = {},
+            onExportTokenImages = {},
+            onRequestSort = {},
+            onSelectThemeMode = {},
+            onSelectAuthMode = {},
+            onSelectCopyToClipboardMode = {},
+            onQuitAndLock = {},
+            initialFabMenuExpanded = true,
         )
     }
 }

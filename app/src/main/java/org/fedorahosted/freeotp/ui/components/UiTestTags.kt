@@ -27,7 +27,11 @@ object UiTestTags {
     // Token list & cards
     const val TOKEN_LIST = "token_list"
     const val EMPTY_VIEW = "empty_view"
-    const val SCAN_FAB = "scan_fab"
+    const val FAB_MENU_BUTTON = "fab_menu_button"
+    const val FAB_MENU_SCRIM = "fab_menu_scrim"
+    const val FAB_ADD_TOKEN_ITEM = "fab_add_token_item"
+    const val FAB_SCAN_QR_ITEM = "fab_scan_qr_item"
+    const val SCAN_FAB = FAB_MENU_BUTTON
 
     fun tokenCardTag(tokenId: Long): String = "token_card_$tokenId"
     fun tokenMenuButtonTag(tokenId: Long): String = "token_menu_$tokenId"
