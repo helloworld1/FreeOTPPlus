@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Checkable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.IdlingResource
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -973,6 +975,86 @@ class TokenEncryptionTest {
                 assertThat(activity.tokenCryptoManager.isBiometricKeyConfigured()).isTrue()
                 assertThat(activity.settings.enableBiometricUnlock).isTrue()
             }
+        }
+    }
+
+    @Test
+    fun testExportEncryptionChoiceDialogButtonsDoNotWrapText() {
+        AuthenticationUtil.hasStrongBiometricOverride = false
+
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                attachCryptoIdlingResource(activity.tokenCryptoManager)
+                runBlocking(Dispatchers.IO) {
+                    activity.otpTokenDatabase.clearAllTables()
+                    activity.otpTokenDatabase.otpTokenDao().insert(TestData.OTP_HOTP_TOKEN_1)
+                }
+            }
+
+            // Enable Token encrypted mode with manual key
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+            composeRule.onNode(authRadioMatcher(R.string.auth_mode_token_encrypted)).performClick()
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("exportDialogKey1")
+            composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("exportDialogKey1")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+            composeRule.waitForIdle()
+
+            // Trigger Overflow -> Export -> FreeOTP+ JSON -> Verify key -> Export tokens dialog
+            composeRule.openOverflowMenu()
+            composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+            composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+            composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+
+            composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+            composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("exportDialogKey1")
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+            composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+
+            val density = getInstrumentation().targetContext.resources.displayMetrics.density
+            val buttonTags = listOf(
+                UiTestTags.DIALOG_POSITIVE_BUTTON,
+                UiTestTags.DIALOG_NEGATIVE_BUTTON,
+                UiTestTags.DIALOG_NEUTRAL_BUTTON,
+            )
+            for (tag in buttonTags) {
+                val buttonNode = composeRule.onNodeWithTag(tag)
+                buttonNode.assertIsDisplayed()
+                val textLayouts = mutableListOf<TextLayoutResult>()
+                val fetched = buttonNode.fetchSemanticsNode()
+                    .config[SemanticsActions.GetTextLayoutResult]
+                    .action?.invoke(textLayouts)
+                assertThat(fetched).isTrue()
+                assertThat(textLayouts).hasSize(1)
+                val layout = textLayouts.single()
+                assertThat(layout.lineCount).isEqualTo(1)
+                assertThat(layout.multiParagraph.didExceedMaxLines).isFalse()
+                assertThat(layout.isLineEllipsized(0)).isFalse()
+                val bounds = buttonNode.fetchSemanticsNode().boundsInRoot
+                assertThat(bounds.height).isAtMost(64f * density)
+            }
+
+            val positiveBounds = composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON)
+                .fetchSemanticsNode().boundsInRoot
+            val negativeBounds = composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON)
+                .fetchSemanticsNode().boundsInRoot
+            val neutralBounds = composeRule.onNodeWithTag(UiTestTags.DIALOG_NEUTRAL_BUTTON)
+                .fetchSemanticsNode().boundsInRoot
+
+            assertThat(positiveBounds.width).isAtLeast(100f * density)
+            assertThat(negativeBounds.width).isAtLeast(100f * density)
+            // On phone portrait, all 3 buttons stack cleanly without vertical overlap and align to trailing edge
+            assertThat(positiveBounds.bottom).isAtMost(negativeBounds.top + 2f * density)
+            assertThat(negativeBounds.bottom).isAtMost(neutralBounds.top + 2f * density)
+            assertThat(kotlin.math.abs(positiveBounds.right - negativeBounds.right)).isAtMost(2f * density)
+            assertThat(kotlin.math.abs(negativeBounds.right - neutralBounds.right)).isAtMost(2f * density)
+
+            // Dismiss via Cancel button
+            composeRule.onNodeWithTag(UiTestTags.DIALOG_NEUTRAL_BUTTON).performClick()
+            composeRule.waitForIdle()
+            composeRule.onNodeWithText(string(R.string.export_encryption_choice_title)).assertDoesNotExist()
         }
     }
 

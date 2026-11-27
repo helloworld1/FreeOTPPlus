@@ -27,12 +27,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpToken
@@ -103,37 +107,140 @@ fun ExportEncryptionChoiceDialog(
             Text(text = stringResource(R.string.export_encryption_choice_message))
         },
         confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_NEUTRAL_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.cancel_text))
-                }
-                SpacerWeight()
-                TextButton(
-                    onClick = onExportDecrypted,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_NEGATIVE_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.export_decrypted))
-                }
-                TextButton(
-                    onClick = onExportEncrypted,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_POSITIVE_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.export_encrypted))
-                }
-            }
+            ThreeActionDialogButtons(
+                primaryButton = {
+                    TextButton(
+                        onClick = onExportEncrypted,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_POSITIVE_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.export_encrypted),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+                secondaryButton = {
+                    TextButton(
+                        onClick = onExportDecrypted,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_NEGATIVE_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.export_decrypted),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_NEUTRAL_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.cancel_text),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+            )
         },
     )
 }
 
+/**
+ * Adaptive Material 3 button layout for 3-action [AlertDialog]s.
+ *
+ * Places `[dismiss] ... [secondary] [primary]` on a single horizontal row only when all three
+ * buttons fit on one line without soft-wrapping; otherwise stacks `[primary]`, `[secondary]`,
+ * `[dismiss]` vertically aligned to the trailing edge so button text never wraps mid-word.
+ */
 @Composable
-private fun androidx.compose.foundation.layout.RowScope.SpacerWeight() {
-    androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+internal fun ThreeActionDialogButtons(
+    primaryButton: @Composable () -> Unit,
+    secondaryButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    horizontalSpacing: Dp = 8.dp,
+    verticalSpacing: Dp = 2.dp,
+) {
+    Layout(
+        content = {
+            primaryButton()
+            secondaryButton()
+            dismissButton()
+        },
+        modifier = modifier.fillMaxWidth(),
+    ) { measurables, constraints ->
+        require(measurables.size == 3) { "Expected exactly 3 dialog action buttons" }
+        val primaryMeasurable = measurables[0]
+        val secondaryMeasurable = measurables[1]
+        val dismissMeasurable = measurables[2]
+
+        val hSpacingPx = horizontalSpacing.roundToPx()
+        val vSpacingPx = verticalSpacing.roundToPx()
+        val childConstraints = Constraints(
+            minWidth = 0,
+            maxWidth = constraints.maxWidth,
+            minHeight = 0,
+            maxHeight = constraints.maxHeight,
+        )
+
+        val singleLineRequiredWidth =
+            primaryMeasurable.maxIntrinsicWidth(Constraints.Infinity).toLong() +
+                secondaryMeasurable.maxIntrinsicWidth(Constraints.Infinity).toLong() +
+                dismissMeasurable.maxIntrinsicWidth(Constraints.Infinity).toLong() +
+                hSpacingPx.toLong() * 2L
+
+        val primaryPlaceable = primaryMeasurable.measure(childConstraints)
+        val secondaryPlaceable = secondaryMeasurable.measure(childConstraints)
+        val dismissPlaceable = dismissMeasurable.measure(childConstraints)
+
+        val layoutWidth = if (constraints.hasBoundedWidth) {
+            constraints.maxWidth
+        } else {
+            maxOf(primaryPlaceable.width, secondaryPlaceable.width, dismissPlaceable.width)
+        }
+
+        val measuredRowWidth =
+            primaryPlaceable.width.toLong() +
+                secondaryPlaceable.width.toLong() +
+                dismissPlaceable.width.toLong() +
+                hSpacingPx.toLong() * 2L
+
+        val fitsSingleRow = constraints.hasBoundedWidth &&
+            singleLineRequiredWidth <= layoutWidth.toLong() &&
+            measuredRowWidth <= layoutWidth.toLong()
+
+        if (fitsSingleRow) {
+            val rowHeight = maxOf(
+                primaryPlaceable.height,
+                secondaryPlaceable.height,
+                dismissPlaceable.height,
+            )
+            layout(layoutWidth, rowHeight) {
+                val primaryY = (rowHeight - primaryPlaceable.height) / 2
+                val secondaryY = (rowHeight - secondaryPlaceable.height) / 2
+                val dismissY = (rowHeight - dismissPlaceable.height) / 2
+                val primaryX = layoutWidth - primaryPlaceable.width
+                val secondaryX = primaryX - hSpacingPx - secondaryPlaceable.width
+                dismissPlaceable.placeRelative(0, dismissY)
+                secondaryPlaceable.placeRelative(secondaryX, secondaryY)
+                primaryPlaceable.placeRelative(primaryX, primaryY)
+            }
+        } else {
+            val totalHeight = primaryPlaceable.height +
+                secondaryPlaceable.height +
+                dismissPlaceable.height +
+                vSpacingPx * 2
+            layout(layoutWidth, totalHeight) {
+                var y = 0
+                primaryPlaceable.placeRelative(layoutWidth - primaryPlaceable.width, y)
+                y += primaryPlaceable.height + vSpacingPx
+                secondaryPlaceable.placeRelative(layoutWidth - secondaryPlaceable.width, y)
+                y += secondaryPlaceable.height + vSpacingPx
+                dismissPlaceable.placeRelative(layoutWidth - dismissPlaceable.width, y)
+            }
+        }
+    }
 }
 
 @Composable
@@ -334,6 +441,50 @@ private fun DeepLinkAddTokenDialogLightPreview() {
     }
 }
 
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+private fun ExportEncryptionChoiceDialogLightPreview() {
+    FreeOtpTheme(themeMode = ThemeMode.LIGHT) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(R.string.export_encryption_choice_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.export_encryption_choice_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                ThreeActionDialogButtons(
+                    primaryButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.export_encrypted))
+                        }
+                    },
+                    secondaryButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.export_decrypted))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.cancel_text))
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, widthDp = 340)
 @Composable
 private fun DeepLinkAddTokenDialogDarkInitialBadgePreview() {
@@ -371,6 +522,50 @@ private fun DeepLinkAddTokenDialogDarkInitialBadgePreview() {
                         Text(text = stringResource(R.string.add))
                     }
                 }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+private fun ExportEncryptionChoiceDialogDarkPreview() {
+    FreeOtpTheme(themeMode = ThemeMode.DARK) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(R.string.export_encryption_choice_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.export_encryption_choice_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                ThreeActionDialogButtons(
+                    primaryButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.export_encrypted))
+                        }
+                    },
+                    secondaryButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.export_decrypted))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {}) {
+                            Text(text = stringResource(R.string.cancel_text))
+                        }
+                    },
+                )
             }
         }
     }

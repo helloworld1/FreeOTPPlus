@@ -2,7 +2,6 @@ package org.fedorahosted.freeotp.ui.dialogs
 
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +33,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -369,30 +369,41 @@ fun ScreenLockDisabledDialog(
             Text(text = stringResource(R.string.screen_lock_disabled_message))
         },
         confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                TextButton(
-                    onClick = onTurnOffAppLaunchAuth,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_NEUTRAL_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.turn_off_button))
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                TextButton(
-                    onClick = onCancelAndExit,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_NEGATIVE_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.cancel_text))
-                }
-                TextButton(
-                    onClick = onSetUpScreenLock,
-                    modifier = Modifier.testTag(UiTestTags.DIALOG_POSITIVE_BUTTON),
-                ) {
-                    Text(text = stringResource(R.string.set_up_screen_lock_button))
-                }
-            }
+            ThreeActionDialogButtons(
+                primaryButton = {
+                    TextButton(
+                        onClick = onSetUpScreenLock,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_POSITIVE_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.set_up_screen_lock_button),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+                secondaryButton = {
+                    TextButton(
+                        onClick = onTurnOffAppLaunchAuth,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_NEUTRAL_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.turn_off_button),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onCancelAndExit,
+                        modifier = Modifier.testTag(UiTestTags.DIALOG_NEGATIVE_BUTTON),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.cancel_text),
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                },
+            )
         },
     )
 }
