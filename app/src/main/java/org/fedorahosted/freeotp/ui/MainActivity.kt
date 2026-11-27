@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
@@ -108,7 +109,6 @@ class MainActivity : AppCompatActivity() {
         data class DeepLinkAddToken(
             val uri: Uri,
             val token: OtpToken,
-            val tokenDetails: String,
         ) : TransientDialogState
         data object ScreenLockRequired : TransientDialogState
         data object SetEncryptionKey : TransientDialogState
@@ -518,8 +518,10 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             is TransientDialogState.DeepLinkAddToken -> {
+                val imageRefreshVersion by viewModel.imageRefreshVersionFlow.collectAsStateWithLifecycle()
                 DeepLinkAddTokenDialog(
-                    tokenDetails = transient.tokenDetails,
+                    token = transient.token,
+                    imageRefreshVersion = imageRefreshVersion,
                     onConfirmAdd = {
                         activeTransientDialog = null
                         confirmDeepLinkAddToken(transient.uri, transient.token)
@@ -876,16 +878,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val tokenDetails = if (token.issuer.isNullOrBlank()) {
-            "${getString(R.string.account)}: ${token.label}"
-        } else {
-            "${getString(R.string.issuer)}: ${token.issuer}\n${getString(R.string.account)}: ${token.label}"
-        }
-
         activeTransientDialog = TransientDialogState.DeepLinkAddToken(
             uri = uri,
             token = token,
-            tokenDetails = tokenDetails,
         )
     }
 

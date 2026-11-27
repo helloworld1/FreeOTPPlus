@@ -327,8 +327,11 @@ class MainActivityTest {
                 }
             }
 
+            composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
             composeRule.awaitTextDisplayed("GitHub", substring = true)
             composeRule.awaitTextDisplayed("alice@example.com", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.ADD_TOKEN_DIALOG_ISSUER).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.ADD_TOKEN_DIALOG_LABEL).assertIsDisplayed()
 
             composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
 
@@ -348,7 +351,10 @@ class MainActivityTest {
         ).setClass(context, MainActivity::class.java)
 
         ActivityScenario.launch<MainActivity>(intent).use {
+            composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
             composeRule.awaitTextDisplayed("bob@example.com", substring = true)
+            composeRule.onNodeWithTag(UiTestTags.ADD_TOKEN_DIALOG_ISSUER).assertIsDisplayed()
+            composeRule.onNodeWithTag(UiTestTags.ADD_TOKEN_DIALOG_LABEL).assertDoesNotExist()
             composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
             composeRule.awaitTokenCardCount(0)
         }
@@ -760,18 +766,20 @@ class MainActivityTest {
         activityRule.scenario.onActivity { it.dismissSnackbar() }
         composeRule.waitForIdle()
 
-        // 4. Valid TOTP key URI (with surrounding whitespace) opens confirmation dialog; Cancel skips insert
-        setClipboardSentinel("  otpauth://totp/GitLab:carol@gitlab.com?secret=JBSWY3DPEHPK3PXP\n")
+        // 4. Valid TOTP key URI (with surrounding whitespace and category) opens confirmation dialog with icon; Cancel skips insert
+        setClipboardSentinel("  otpauth://totp/GitLab:carol@gitlab.com?secret=JBSWY3DPEHPK3PXP&category=DevOps\n")
         composeRule.onNodeWithTag(UiTestTags.FAB_MENU_BUTTON).performClick()
         composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
         composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
 
+        composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
         composeRule.awaitTextDisplayed("GitLab", substring = true)
         composeRule.awaitTextDisplayed("carol@gitlab.com", substring = true)
+        composeRule.onNodeWithTag(UiTestTags.ADD_TOKEN_DIALOG_CATEGORY).assertIsDisplayed()
         composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
         composeRule.awaitTokenCardCount(0)
 
-        // 5. Valid HOTP key URI opens confirmation dialog; Add inserts token and generates RFC 4226 count=5 code
+        // 5. Valid HOTP key URI opens confirmation dialog with icon; Add inserts token and generates RFC 4226 count=5 code
         setClipboardSentinel(
             "otpauth://hotp/Cloudflare:dave@cf.example?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&digits=6&counter=5"
         )
@@ -779,6 +787,7 @@ class MainActivityTest {
         composeRule.awaitTagDisplayed(UiTestTags.FAB_PASTE_URI_ITEM)
         composeRule.onNodeWithTag(UiTestTags.FAB_PASTE_URI_ITEM).performClick()
 
+        composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
         composeRule.awaitTextDisplayed("Cloudflare", substring = true)
         composeRule.awaitTextDisplayed("dave@cf.example", substring = true)
         composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
@@ -878,6 +887,7 @@ class MainActivityTest {
             composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
             composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
 
+            composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
             composeRule.awaitTextDisplayed("ScanCancelIssuer", substring = true)
             composeRule.awaitTextDisplayed("cancel@example.com", substring = true)
             composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
@@ -892,6 +902,7 @@ class MainActivityTest {
             composeRule.awaitTagDisplayed(UiTestTags.FAB_SCAN_QR_ITEM)
             composeRule.onNodeWithTag(UiTestTags.FAB_SCAN_QR_ITEM).performClick()
 
+            composeRule.awaitTagDisplayed(UiTestTags.ADD_TOKEN_DIALOG_AVATAR)
             composeRule.awaitTextDisplayed("JumpScanned", substring = true)
             composeRule.awaitTextDisplayed("scan@example.com", substring = true)
             composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()

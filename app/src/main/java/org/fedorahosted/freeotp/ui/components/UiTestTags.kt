@@ -88,6 +88,10 @@ object UiTestTags {
     const val DELETE_ISSUER = "delete_issuer"
     const val DELETE_LABEL = "delete_label"
     const val DELETE_CATEGORY = "delete_category"
+    const val ADD_TOKEN_DIALOG_AVATAR = "add_token_dialog_avatar"
+    const val ADD_TOKEN_DIALOG_ISSUER = "add_token_dialog_issuer"
+    const val ADD_TOKEN_DIALOG_LABEL = "add_token_dialog_label"
+    const val ADD_TOKEN_DIALOG_CATEGORY = "add_token_dialog_category"
     const val ICON_SEARCH_INPUT = "icon_search_input"
     const val ICON_GRID = "icon_grid"
 
