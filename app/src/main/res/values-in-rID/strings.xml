@@ -72,6 +72,7 @@
     <string name="timer_style_progress_bar">Bilah kemajuan</string>
     <string name="token_code_grouping">Pengelompokan kode</string>
     <string name="code_grouping_two_groups">Dua grup</string>
+    <string name="code_grouping_three_groups">Tiga grup</string>
     <string name="code_grouping_none">Tanpa pengelompokan</string>
     <string name="add_token_success">Token berhasil ditambahkan</string>
     <string name="copy_to_clipboard">Salin ke papan klip</string>

@@ -210,12 +210,18 @@ class SettingsThemeModeTest {
     }
 
     @Test
-    fun tokenCodeGrouping_defaultsToTwoGroupsAndPersistsBothOptionsWithUnknownFallback() {
+    fun tokenCodeGrouping_defaultsToTwoGroupsAndPersistsAllThreeOptionsWithUnknownFallback() {
         val prefs = InMemorySharedPreferences()
         val settings = Settings(prefs)
 
         assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
         assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.TWO_GROUPS)
+
+        settings.tokenCodeGrouping = TokenCodeGrouping.THREE_GROUPS
+        assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.THREE_GROUPS)
+        assertThat(settings.tokenCodeGroupingFlow.value).isEqualTo(TokenCodeGrouping.THREE_GROUPS)
+        assertThat(prefs.getString(TOKEN_CODE_GROUPING_KEY, null)).isEqualTo("THREE_GROUPS")
+        assertThat(Settings(prefs).tokenCodeGrouping).isEqualTo(TokenCodeGrouping.THREE_GROUPS)
 
         settings.tokenCodeGrouping = TokenCodeGrouping.NONE
         assertThat(settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)

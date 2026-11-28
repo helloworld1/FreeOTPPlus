@@ -72,6 +72,7 @@
     <string name="timer_style_progress_bar">Barra de progresso</string>
     <string name="token_code_grouping">Agrupamento do código</string>
     <string name="code_grouping_two_groups">Dois grupos</string>
+    <string name="code_grouping_three_groups">Três grupos</string>
     <string name="code_grouping_none">Sem agrupamento</string>
     <string name="add_token_success">O token foi adicionado com sucesso</string>
     <string name="copy_to_clipboard">Copiar para a área de transferência</string>

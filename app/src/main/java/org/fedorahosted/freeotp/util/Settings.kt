@@ -59,6 +59,7 @@ enum class TokenTimerStyle(val prefValue: String) {
 
 enum class TokenCodeGrouping(val prefValue: String) {
     TWO_GROUPS("TWO_GROUPS"),
+    THREE_GROUPS("THREE_GROUPS"),
     NONE("NONE");
 
     companion object {

@@ -72,6 +72,7 @@
     <string name="timer_style_progress_bar">进度条</string>
     <string name="token_code_grouping">验证码分组</string>
     <string name="code_grouping_two_groups">两组</string>
+    <string name="code_grouping_three_groups">三组</string>
     <string name="code_grouping_none">不分组</string>
     <string name="add_token_success">已成功添加令牌</string>
     <string name="copy_to_clipboard">复制到剪贴板</string>

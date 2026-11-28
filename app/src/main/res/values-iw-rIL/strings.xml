@@ -72,6 +72,7 @@
     <string name="timer_style_progress_bar">פס התקדמות</string>
     <string name="token_code_grouping">קיבוץ קוד</string>
     <string name="code_grouping_two_groups">שתי קבוצות</string>
+    <string name="code_grouping_three_groups">שלוש קבוצות</string>
     <string name="code_grouping_none">ללא קיבוץ</string>
     <string name="add_token_success">האסימון נוסף בהצלחה</string>
     <string name="copy_to_clipboard">העתקה ללוח</string>

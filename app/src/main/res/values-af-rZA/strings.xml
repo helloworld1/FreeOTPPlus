@@ -72,6 +72,7 @@
     <string name="timer_style_progress_bar">Vorderingsbalk</string>
     <string name="token_code_grouping">Kodegroepering</string>
     <string name="code_grouping_two_groups">Twee groepe</string>
+    <string name="code_grouping_three_groups">Drie groepe</string>
     <string name="code_grouping_none">Geen groepering</string>
     <string name="add_token_success">Die kenteken is suksesvol bygevoeg</string>
     <string name="copy_to_clipboard">Kopieer na knipbord</string>

@@ -287,7 +287,7 @@ class ThemeModeTest {
     }
 
     @Test
-    fun testCodeGroupingSwitchBetweenTwoGroupsAndNoGrouping() {
+    fun testCodeGroupingSwitchBetweenTwoGroupsThreeGroupsAndNoGrouping() {
         val context = getInstrumentation().targetContext
         @Suppress("DEPRECATION")
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -295,6 +295,7 @@ class ThemeModeTest {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             var sixDigitId = 0L
+            var sevenCharSteamId = 0L
             var eightDigitId = 0L
             var unrevealedId = 0L
             scenario.onActivity { activity ->
@@ -307,6 +308,16 @@ class ThemeModeTest {
                             label = "six@example.com",
                             secret = "JBSWY3DPEHPK3PXP",
                             digits = 6,
+                            initialCounter = 1L,
+                        )
+                    )
+                    sevenCharSteamId = activity.otpTokenDatabase.otpTokenDao().insert(
+                        OtpTokenFactory.create(
+                            type = OtpTokenType.HOTP,
+                            issuer = "Steam",
+                            label = "steam7@example.com",
+                            secret = "JBSWY3DPEHPK3PXP",
+                            digits = 7,
                             initialCounter = 1L,
                         )
                     )
@@ -338,6 +349,7 @@ class ThemeModeTest {
                 // 1. Default in Visual -> Code grouping is Two groups (current style)
                 openCodeGroupingSubmenu()
                 assertRadioChecked(R.string.code_grouping_two_groups, true)
+                assertRadioChecked(R.string.code_grouping_three_groups, false)
                 assertRadioChecked(R.string.code_grouping_none, false)
 
                 // Back from Code grouping returns to Visual submenu
@@ -355,47 +367,79 @@ class ThemeModeTest {
 
                 // 2. Unrevealed placeholders default to Two groups
                 assertThat(readTokenCodeText(sixDigitId)).isEqualTo("--- ---")
+                assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo("--- ----")
                 assertThat(readTokenCodeText(eightDigitId)).isEqualTo("---- ----")
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")
 
-                // 3. Reveal 6-digit and 8-digit HOTP codes -> grouped into two groups
+                // 3. Reveal 6-digit, 7-character Steam, and 8-digit HOTP codes -> grouped into two groups
                 composeRule.onNodeWithTag(UiTestTags.tokenCardTag(sixDigitId)).performClick()
                 composeRule.waitUntil(5_000L) {
                     readTokenCodeText(sixDigitId).matches(Regex("""^\d{3} \d{3}$"""))
                 }
-                val groupedSix = readTokenCodeText(sixDigitId)
+                val rawSix = readTokenCodeText(sixDigitId).replace(" ", "")
+
+                composeRule.onNodeWithTag(UiTestTags.tokenCardTag(sevenCharSteamId)).performClick()
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(sevenCharSteamId).matches(Regex("""^[A-Z0-9]{3} [A-Z0-9]{4}$"""))
+                }
+                val rawSeven = readTokenCodeText(sevenCharSteamId).replace(" ", "")
 
                 composeRule.onNodeWithTag(UiTestTags.tokenCardTag(eightDigitId)).performClick()
                 composeRule.waitUntil(5_000L) {
                     readTokenCodeText(eightDigitId).matches(Regex("""^\d{4} \d{4}$"""))
                 }
-                val groupedEight = readTokenCodeText(eightDigitId)
+                val rawEight = readTokenCodeText(eightDigitId).replace(" ", "")
 
-                // 4. Switch to No grouping -> live-updates both revealed codes and unrevealed placeholder
+                // 4. Switch to Three groups -> formats 6 as 2-2-2, 7 as 3-2-2, and 8 as 3-3-2
                 openCodeGroupingSubmenu()
+                composeRule.onNode(radioRowMatcher(R.string.code_grouping_three_groups)).performClick()
+
+                val expectedThreeSix = "${rawSix.substring(0, 2)} ${rawSix.substring(2, 4)} ${rawSix.substring(4)}"
+                val expectedThreeSeven = "${rawSeven.substring(0, 3)} ${rawSeven.substring(3, 5)} ${rawSeven.substring(5)}"
+                val expectedThreeEight = "${rawEight.substring(0, 3)} ${rawEight.substring(3, 6)} ${rawEight.substring(6)}"
+
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(sixDigitId) == expectedThreeSix
+                }
+                scenario.onActivity { activity ->
+                    assertThat(activity.settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.THREE_GROUPS)
+                }
+                assertThat(readTokenCodeText(sixDigitId)).matches("""^\d{2} \d{2} \d{2}$""")
+                assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo(expectedThreeSeven)
+                assertThat(readTokenCodeText(sevenCharSteamId)).matches("""^[A-Z0-9]{3} [A-Z0-9]{2} [A-Z0-9]{2}$""")
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(expectedThreeEight)
+                assertThat(readTokenCodeText(eightDigitId)).matches("""^\d{3} \d{3} \d{2}$""")
+                assertThat(readTokenCodeText(unrevealedId)).isEqualTo("-- -- --")
+
+                // 5. Switch to No grouping -> live-updates revealed codes and unrevealed placeholder
+                openCodeGroupingSubmenu()
+                assertRadioChecked(R.string.code_grouping_two_groups, false)
+                assertRadioChecked(R.string.code_grouping_three_groups, true)
+                assertRadioChecked(R.string.code_grouping_none, false)
                 composeRule.onNode(radioRowMatcher(R.string.code_grouping_none)).performClick()
 
                 composeRule.waitUntil(5_000L) {
-                    readTokenCodeText(sixDigitId) == groupedSix.replace(" ", "")
+                    readTokenCodeText(sixDigitId) == rawSix
                 }
                 scenario.onActivity { activity ->
                     assertThat(activity.settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)
                 }
-                assertThat(readTokenCodeText(sixDigitId)).matches("""^\d{6}$""")
-                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(groupedEight.replace(" ", ""))
-                assertThat(readTokenCodeText(eightDigitId)).matches("""^\d{8}$""")
+                assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo(rawSeven)
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(rawEight)
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("------")
 
-                // 5. Switch back to Two groups -> restores grouped display
+                // 6. Switch back to Two groups -> restores two-group display
                 openCodeGroupingSubmenu()
                 assertRadioChecked(R.string.code_grouping_two_groups, false)
+                assertRadioChecked(R.string.code_grouping_three_groups, false)
                 assertRadioChecked(R.string.code_grouping_none, true)
                 composeRule.onNode(radioRowMatcher(R.string.code_grouping_two_groups)).performClick()
 
                 composeRule.waitUntil(5_000L) {
-                    readTokenCodeText(sixDigitId) == groupedSix
+                    readTokenCodeText(sixDigitId) == "${rawSix.substring(0, 3)} ${rawSix.substring(3)}"
                 }
-                assertThat(readTokenCodeText(eightDigitId)).isEqualTo(groupedEight)
+                assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo("${rawSeven.substring(0, 3)} ${rawSeven.substring(3)}")
+                assertThat(readTokenCodeText(eightDigitId)).isEqualTo("${rawEight.substring(0, 4)} ${rawEight.substring(4)}")
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")
             } finally {
                 scenario.onActivity { activity ->

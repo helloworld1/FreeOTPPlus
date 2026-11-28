@@ -1210,6 +1210,11 @@ private fun TokenListOverflowMenu(
                     onClick = { onSelectTokenCodeGrouping(TokenCodeGrouping.TWO_GROUPS) },
                 )
                 SubMenuRadioItem(
+                    titleRes = R.string.code_grouping_three_groups,
+                    selected = tokenCodeGrouping == TokenCodeGrouping.THREE_GROUPS,
+                    onClick = { onSelectTokenCodeGrouping(TokenCodeGrouping.THREE_GROUPS) },
+                )
+                SubMenuRadioItem(
                     titleRes = R.string.code_grouping_none,
                     selected = tokenCodeGrouping == TokenCodeGrouping.NONE,
                     onClick = { onSelectTokenCodeGrouping(TokenCodeGrouping.NONE) },

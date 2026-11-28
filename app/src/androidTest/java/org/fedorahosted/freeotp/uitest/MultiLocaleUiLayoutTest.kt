@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -214,6 +215,25 @@ class MultiLocaleUiLayoutTest {
                     .that(totpLayout.getBoundingBox(0).left)
                     .isLessThan(totpLayout.getBoundingBox(4).left)
 
+                // Also verify THREE_GROUPS renders single-line and strictly LTR across all 3groups (including in RTL)
+                scenario.onActivity { it.settings.tokenCodeGrouping = TokenCodeGrouping.THREE_GROUPS }
+                composeRule.waitForIdle()
+                assertSingleLineNoOverflow(localeTag, hotpCodeTag)
+                val hotpThreeNode = composeRule.onNodeWithTag(hotpCodeTag, useUnmergedTree = true).fetchSemanticsNode()
+                val hotpThreeText = hotpThreeNode.config[SemanticsProperties.Text].joinToString("") { it.text }
+                assertWithMessage("[$localeTag] Expected 8-digit three-group HOTP code")
+                    .that(hotpThreeText)
+                    .matches("^\\d{3} \\d{3} \\d{2}$")
+                val hotpThreeLayout = findFirstTextLayout(hotpThreeNode)!!
+                assertWithMessage("[$localeTag] 3-group OTP code must keep group 1 < group 2 < group 3 visually")
+                    .that(hotpThreeLayout.getBoundingBox(0).left)
+                    .isLessThan(hotpThreeLayout.getBoundingBox(4).left)
+                assertWithMessage("[$localeTag] 3-group OTP code must keep group 2 < group 3 visually")
+                    .that(hotpThreeLayout.getBoundingBox(4).left)
+                    .isLessThan(hotpThreeLayout.getBoundingBox(8).left)
+                scenario.onActivity { it.settings.tokenCodeGrouping = TokenCodeGrouping.TWO_GROUPS }
+                composeRule.waitForIdle()
+
                 // 2. EditTokenScreen: bottom bar buttons single-line & revealed secret LTR order
                 composeRule.onNodeWithTag(UiTestTags.tokenMenuButtonTag(totpId)).performClick()
                 composeRule.onNodeWithText(str(R.string.edit)).performClick()
@@ -289,8 +309,11 @@ class MultiLocaleUiLayoutTest {
                 composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
                 composeRule.waitUntil(5_000L) {
                     resActivity.settings.authMode == AuthMode.TOKEN_ENCRYPTED &&
-                        resActivity.tokenCryptoManager.isUnlocked()
+                        resActivity.tokenCryptoManager.isUnlocked() &&
+                        composeRule.onAllNodesWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).fetchSemanticsNodes().isEmpty()
                 }
+                composeRule.awaitTagDisplayed(UiTestTags.QUIT_AND_LOCK_BUTTON)
+                composeRule.waitForIdle()
 
                 scenario.onActivity { it.handleExportAction(isJson = true) }
                 composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
