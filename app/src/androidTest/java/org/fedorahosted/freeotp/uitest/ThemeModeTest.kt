@@ -294,6 +294,7 @@ class ThemeModeTest {
         prefs.edit().remove(TOKEN_CODE_GROUPING_KEY).commit()
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            var fiveCharSteamId = 0L
             var sixDigitId = 0L
             var sevenCharSteamId = 0L
             var eightDigitId = 0L
@@ -301,6 +302,16 @@ class ThemeModeTest {
             scenario.onActivity { activity ->
                 runBlocking {
                     activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                    fiveCharSteamId = activity.otpTokenDatabase.otpTokenDao().insert(
+                        OtpTokenFactory.create(
+                            type = OtpTokenType.HOTP,
+                            issuer = "Steam",
+                            label = "steam5@example.com",
+                            secret = "JBSWY3DPEHPK3PXP",
+                            digits = 5,
+                            initialCounter = 1L,
+                        )
+                    )
                     sixDigitId = activity.otpTokenDatabase.otpTokenDao().insert(
                         OtpTokenFactory.create(
                             type = OtpTokenType.HOTP,
@@ -366,12 +377,19 @@ class ThemeModeTest {
                 composeRule.onNode(radioRowMatcher(R.string.code_grouping_two_groups)).performClick()
 
                 // 2. Unrevealed placeholders default to Two groups
+                assertThat(readTokenCodeText(fiveCharSteamId)).isEqualTo("--- --")
                 assertThat(readTokenCodeText(sixDigitId)).isEqualTo("--- ---")
                 assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo("--- ----")
                 assertThat(readTokenCodeText(eightDigitId)).isEqualTo("---- ----")
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")
 
-                // 3. Reveal 6-digit, 7-character Steam, and 8-digit HOTP codes -> grouped into two groups
+                // 3. Reveal 5-char Steam, 6-digit, 7-char Steam, and 8-digit HOTP codes -> grouped into two groups
+                composeRule.onNodeWithTag(UiTestTags.tokenCardTag(fiveCharSteamId)).performClick()
+                composeRule.waitUntil(5_000L) {
+                    readTokenCodeText(fiveCharSteamId).matches(Regex("""^[A-Z0-9]{3} [A-Z0-9]{2}$"""))
+                }
+                val rawFive = readTokenCodeText(fiveCharSteamId).replace(" ", "")
+
                 composeRule.onNodeWithTag(UiTestTags.tokenCardTag(sixDigitId)).performClick()
                 composeRule.waitUntil(5_000L) {
                     readTokenCodeText(sixDigitId).matches(Regex("""^\d{3} \d{3}$"""))
@@ -390,10 +408,11 @@ class ThemeModeTest {
                 }
                 val rawEight = readTokenCodeText(eightDigitId).replace(" ", "")
 
-                // 4. Switch to Three groups -> formats 6 as 2-2-2, 7 as 3-2-2, and 8 as 3-3-2
+                // 4. Switch to Three groups -> formats 5 as 2-2-1, 6 as 2-2-2, 7 as 3-2-2, and 8 as 3-3-2
                 openCodeGroupingSubmenu()
                 composeRule.onNode(radioRowMatcher(R.string.code_grouping_three_groups)).performClick()
 
+                val expectedThreeFive = "${rawFive.substring(0, 2)} ${rawFive.substring(2, 4)} ${rawFive.substring(4)}"
                 val expectedThreeSix = "${rawSix.substring(0, 2)} ${rawSix.substring(2, 4)} ${rawSix.substring(4)}"
                 val expectedThreeSeven = "${rawSeven.substring(0, 3)} ${rawSeven.substring(3, 5)} ${rawSeven.substring(5)}"
                 val expectedThreeEight = "${rawEight.substring(0, 3)} ${rawEight.substring(3, 6)} ${rawEight.substring(6)}"
@@ -404,6 +423,8 @@ class ThemeModeTest {
                 scenario.onActivity { activity ->
                     assertThat(activity.settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.THREE_GROUPS)
                 }
+                assertThat(readTokenCodeText(fiveCharSteamId)).isEqualTo(expectedThreeFive)
+                assertThat(readTokenCodeText(fiveCharSteamId)).matches("""^[A-Z0-9]{2} [A-Z0-9]{2} [A-Z0-9]$""")
                 assertThat(readTokenCodeText(sixDigitId)).matches("""^\d{2} \d{2} \d{2}$""")
                 assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo(expectedThreeSeven)
                 assertThat(readTokenCodeText(sevenCharSteamId)).matches("""^[A-Z0-9]{3} [A-Z0-9]{2} [A-Z0-9]{2}$""")
@@ -424,6 +445,7 @@ class ThemeModeTest {
                 scenario.onActivity { activity ->
                     assertThat(activity.settings.tokenCodeGrouping).isEqualTo(TokenCodeGrouping.NONE)
                 }
+                assertThat(readTokenCodeText(fiveCharSteamId)).isEqualTo(rawFive)
                 assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo(rawSeven)
                 assertThat(readTokenCodeText(eightDigitId)).isEqualTo(rawEight)
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("------")
@@ -438,6 +460,7 @@ class ThemeModeTest {
                 composeRule.waitUntil(5_000L) {
                     readTokenCodeText(sixDigitId) == "${rawSix.substring(0, 3)} ${rawSix.substring(3)}"
                 }
+                assertThat(readTokenCodeText(fiveCharSteamId)).isEqualTo("${rawFive.substring(0, 3)} ${rawFive.substring(3)}")
                 assertThat(readTokenCodeText(sevenCharSteamId)).isEqualTo("${rawSeven.substring(0, 3)} ${rawSeven.substring(3)}")
                 assertThat(readTokenCodeText(eightDigitId)).isEqualTo("${rawEight.substring(0, 4)} ${rawEight.substring(4)}")
                 assertThat(readTokenCodeText(unrevealedId)).isEqualTo("--- ---")

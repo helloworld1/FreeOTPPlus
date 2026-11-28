@@ -15,6 +15,7 @@ object TokenDisplayUtil {
         return when (grouping) {
             TokenCodeGrouping.NONE -> raw
             TokenCodeGrouping.TWO_GROUPS -> when (raw.length) {
+                5 -> "${raw.substring(0, 3)} ${raw.substring(3)}"
                 6 -> "${raw.substring(0, 3)} ${raw.substring(3)}"
                 7 -> "${raw.substring(0, 3)} ${raw.substring(3)}"
                 8 -> "${raw.substring(0, 4)} ${raw.substring(4)}"
@@ -23,7 +24,7 @@ object TokenDisplayUtil {
                 else -> raw
             }
             TokenCodeGrouping.THREE_GROUPS -> {
-                if (raw.length < 6) {
+                if (raw.length < 5) {
                     raw
                 } else {
                     val base = raw.length / 3
