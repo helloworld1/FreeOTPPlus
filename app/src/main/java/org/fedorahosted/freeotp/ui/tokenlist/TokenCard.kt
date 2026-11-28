@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -45,6 +47,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -222,25 +225,33 @@ fun TokenCard(
                 OtpCodeTextStyle
             }
 
+            val codeColor = if (isActive) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                BasicText(
                     text = textToDisplay,
-                    style = codeStyle,
-                    color = if (isActive) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    style = codeStyle.copy(color = codeColor),
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Clip,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 14.sp,
+                        maxFontSize = codeStyle.fontSize,
+                        stepSize = 1.sp,
+                    ),
                     modifier = Modifier.testTag(UiTestTags.tokenCodeTag(token.id)),
                 )
 
                 if (token.issuer.isNullOrBlank()) {
                     Text(
                         text = token.label,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            textDirection = TextDirection.Content,
+                        ),
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -249,7 +260,9 @@ fun TokenCard(
                 } else {
                     Text(
                         text = token.issuer.orEmpty(),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            textDirection = TextDirection.Content,
+                        ),
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -258,7 +271,9 @@ fun TokenCard(
                     if (token.label.isNotEmpty()) {
                         Text(
                             text = token.label,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                textDirection = TextDirection.Content,
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -309,9 +324,12 @@ fun TokenCard(
                         )
                         Text(
                             text = displayCounter,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                textDirection = TextDirection.Ltr,
+                            ),
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             modifier = Modifier.testTag(UiTestTags.tokenCounterValueTag(token.id)),

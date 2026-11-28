@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -168,7 +169,7 @@ fun BuiltInIconPickerDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
+                    columns = GridCells.Adaptive(minSize = 76.dp),
                     contentPadding = PaddingValues(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -182,7 +183,7 @@ fun BuiltInIconPickerDialog(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable { onIconSelected(item) }
-                                .padding(6.dp)
+                                .padding(horizontal = 4.dp, vertical = 6.dp)
                                 .testTag(UiTestTags.builtInIconItemTag(item.name)),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
@@ -197,7 +198,9 @@ fun BuiltInIconPickerDialog(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = item.displayName(),
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    hyphens = Hyphens.Auto,
+                                ),
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center,
                                 maxLines = 2,

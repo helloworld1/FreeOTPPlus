@@ -197,6 +197,7 @@ fun SecurePassphraseField(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                     )
                     boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+                    typeface = android.graphics.Typeface.DEFAULT
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         ViewCompat.setImportantForAutofill(
                             this,
@@ -215,6 +216,8 @@ fun SecurePassphraseField(
                     // TextView.setSingleLine(true) replaces transformationMethod with SingleLineTransformationMethod.
                     isSingleLine = true
                     inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    typeface = android.graphics.Typeface.DEFAULT
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
                     transformationMethod = PasswordTransformationMethod.getInstance()
                     imeOptions = imeAction or noPersonalizedLearningFlag
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

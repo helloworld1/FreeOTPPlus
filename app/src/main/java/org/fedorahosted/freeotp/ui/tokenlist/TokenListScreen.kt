@@ -324,6 +324,7 @@ fun TokenListScreen(
                             style = titleStyle.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold,
+                                textDirection = androidx.compose.ui.text.style.TextDirection.Ltr,
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

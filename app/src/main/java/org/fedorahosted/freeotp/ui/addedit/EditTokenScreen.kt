@@ -51,14 +51,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.fedorahosted.freeotp.R
@@ -227,38 +233,50 @@ internal fun EditTokenScreenContent(
                         .imePadding(),
                 ) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Row(
+                    EditTokenBottomBarActions(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 12.dp, top = 10.dp, end = 16.dp, bottom = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TextButton(
-                            onClick = onRestoreDefaults,
-                            enabled = state.canRestore,
-                            modifier = Modifier.testTag(UiTestTags.RESTORE_DEFAULTS_BUTTON),
-                        ) {
-                            Text(text = stringResource(R.string.restore_defaults))
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        TextButton(
-                            onClick = onCancel,
-                            enabled = !state.isSaving,
-                            modifier = Modifier.testTag(UiTestTags.CANCEL_BUTTON),
-                        ) {
-                            Text(text = stringResource(R.string.cancel_text))
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Button(
-                            onClick = onSave,
-                            enabled = state.canSave,
-                            modifier = Modifier.testTag(UiTestTags.SAVE_BUTTON),
-                        ) {
-                            Text(text = stringResource(R.string.save))
-                        }
-                    }
+                        restoreButton = {
+                            TextButton(
+                                onClick = onRestoreDefaults,
+                                enabled = state.canRestore,
+                                modifier = Modifier.testTag(UiTestTags.RESTORE_DEFAULTS_BUTTON),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.restore_defaults),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                        },
+                        cancelButton = {
+                            TextButton(
+                                onClick = onCancel,
+                                enabled = !state.isSaving,
+                                modifier = Modifier.testTag(UiTestTags.CANCEL_BUTTON),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.cancel_text),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                        },
+                        saveButton = {
+                            Button(
+                                onClick = onSave,
+                                enabled = state.canSave,
+                                modifier = Modifier.testTag(UiTestTags.SAVE_BUTTON),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.save),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                        },
+                    )
                 }
             }
         },
@@ -444,9 +462,19 @@ internal fun EditTokenScreenContent(
                         ) {
                             Text(
                                 text = revealedSecret ?: stringResource(R.string.click_to_display),
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                ),
+                                style = if (revealedSecret != null) {
+                                    MaterialTheme.typography.bodyLarge.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        textDirection = TextDirection.Ltr,
+                                        textAlign = if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
+                                            TextAlign.Right
+                                        } else {
+                                            TextAlign.Left
+                                        },
+                                    )
+                                } else {
+                                    MaterialTheme.typography.bodyLarge
+                                },
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .weight(1f)
@@ -480,6 +508,79 @@ internal fun EditTokenScreenContent(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun EditTokenBottomBarActions(
+    restoreButton: @Composable () -> Unit,
+    cancelButton: @Composable () -> Unit,
+    saveButton: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Layout(
+        content = {
+            restoreButton()
+            cancelButton()
+            saveButton()
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        val minSpacerPx = 12.dp.roundToPx()
+        val actionGapPx = 6.dp.roundToPx()
+        val verticalGapPx = 4.dp.roundToPx()
+
+        val restoreIntrinsic = measurables[0].maxIntrinsicWidth(Constraints.Infinity)
+        val cancelIntrinsic = measurables[1].maxIntrinsicWidth(Constraints.Infinity)
+        val saveIntrinsic = measurables[2].maxIntrinsicWidth(Constraints.Infinity)
+
+        val totalWidth = constraints.maxWidth
+        val fitsSingleRow = restoreIntrinsic + minSpacerPx + cancelIntrinsic + actionGapPx + saveIntrinsic <= totalWidth
+
+        val unconstrainedWidth = constraints.copy(minWidth = 0)
+        val restorePlaceable = measurables[0].measure(unconstrainedWidth)
+        val cancelPlaceable = measurables[1].measure(unconstrainedWidth)
+        val savePlaceable = measurables[2].measure(unconstrainedWidth)
+
+        if (fitsSingleRow) {
+            val rowHeight = maxOf(restorePlaceable.height, cancelPlaceable.height, savePlaceable.height)
+            layout(totalWidth, rowHeight) {
+                val restoreY = (rowHeight - restorePlaceable.height) / 2
+                val cancelY = (rowHeight - cancelPlaceable.height) / 2
+                val saveY = (rowHeight - savePlaceable.height) / 2
+                if (layoutDirection == LayoutDirection.Ltr) {
+                    restorePlaceable.placeRelative(0, restoreY)
+                    val saveX = totalWidth - savePlaceable.width
+                    val cancelX = saveX - actionGapPx - cancelPlaceable.width
+                    cancelPlaceable.placeRelative(cancelX, cancelY)
+                    savePlaceable.placeRelative(saveX, saveY)
+                } else {
+                    restorePlaceable.place(totalWidth - restorePlaceable.width, restoreY)
+                    savePlaceable.place(0, saveY)
+                    cancelPlaceable.place(savePlaceable.width + actionGapPx, cancelY)
+                }
+            }
+        } else {
+            val topHeight = restorePlaceable.height
+            val bottomHeight = maxOf(cancelPlaceable.height, savePlaceable.height)
+            val totalHeight = topHeight + verticalGapPx + bottomHeight
+            layout(totalWidth, totalHeight) {
+                val bottomY = topHeight + verticalGapPx
+                val cancelY = bottomY + (bottomHeight - cancelPlaceable.height) / 2
+                val saveY = bottomY + (bottomHeight - savePlaceable.height) / 2
+                if (layoutDirection == LayoutDirection.Ltr) {
+                    restorePlaceable.place(0, 0)
+                    val saveX = totalWidth - savePlaceable.width
+                    val cancelX = (saveX - actionGapPx - cancelPlaceable.width).coerceAtLeast(0)
+                    cancelPlaceable.place(cancelX, cancelY)
+                    savePlaceable.place(saveX, saveY)
+                } else {
+                    restorePlaceable.place(totalWidth - restorePlaceable.width, 0)
+                    savePlaceable.place(0, saveY)
+                    cancelPlaceable.place(savePlaceable.width + actionGapPx, cancelY)
+                }
+            }
         }
     }
 }

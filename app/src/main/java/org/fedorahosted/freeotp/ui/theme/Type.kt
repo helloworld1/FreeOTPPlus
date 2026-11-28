@@ -4,10 +4,19 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
-val FreeOtpTypography = Typography()
+private val DefaultTypography = Typography()
+
+val FreeOtpTypography = Typography(
+    headlineMedium = DefaultTypography.headlineMedium.copy(hyphens = Hyphens.Auto),
+    headlineSmall = DefaultTypography.headlineSmall.copy(hyphens = Hyphens.Auto),
+    titleLarge = DefaultTypography.titleLarge.copy(hyphens = Hyphens.Auto),
+    titleMedium = DefaultTypography.titleMedium.copy(hyphens = Hyphens.Auto),
+)
 
 val OtpCodeTextStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
@@ -16,6 +25,7 @@ val OtpCodeTextStyle = TextStyle(
     lineHeight = 36.sp,
     fontFeatureSettings = "tnum",
     letterSpacing = 0.04.em,
+    textDirection = TextDirection.Ltr,
 )
 
 val OtpCodeCompactTextStyle = TextStyle(
@@ -25,4 +35,5 @@ val OtpCodeCompactTextStyle = TextStyle(
     lineHeight = 32.sp,
     fontFeatureSettings = "tnum",
     letterSpacing = 0.03.em,
+    textDirection = TextDirection.Ltr,
 )

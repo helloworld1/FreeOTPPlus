@@ -113,7 +113,7 @@
     <string name="auth_mode_none">Keine</string>
     <string name="auth_mode_app_launch">App-Start</string>
     <string name="auth_mode_token_encrypted">Token verschlüsselt</string>
-    <string name="set_encryption_key_title">Verschlüsselungsschlüssel festlegen</string>
+    <string name="set_encryption_key_title">Verschlüsselungs&#x00AD;schlüssel festlegen</string>
     <string name="set_encryption_key_message">Geben Sie einen Schlüssel (mindestens %1$d Zeichen) ein, um Ihre geheimen Token-Schlüssel zu verschlüsseln. Merken oder sichern Sie sich diesen Schlüssel — falls die biometrische Authentifizierung ungültig oder nicht verfügbar wird, benötigen Sie ihn zum Entsperren Ihrer Token.</string>
     <string name="encryption_key_hint">Schlüssel</string>
     <string name="confirm_encryption_key_hint">Schlüssel bestätigen</string>
@@ -137,7 +137,7 @@
     <string name="disable_token_encryption_title">Token-Verschlüsselung deaktivieren?</string>
     <string name="disable_token_encryption_warning">Alle geheimen Token-Schlüssel werden entschlüsselt und unverschlüsselt auf diesem Gerät gespeichert. Möchten Sie fortfahren?</string>
     <string name="token_encryption_disabled">Geheime Token-Schlüssel entschlüsselt</string>
-    <string name="verify_encryption_key_title">Verschlüsselungsschlüssel bestätigen</string>
+    <string name="verify_encryption_key_title">Verschlüsselungs&#x00AD;schlüssel bestätigen</string>
     <string name="verify_encryption_key_message">Geben Sie Ihren Verschlüsselungsschlüssel ein, um fortzufahren.</string>
     <string name="export_encryption_choice_title">Token exportieren</string>
     <string name="export_encryption_choice_message">Möchten Sie Ihre Token mit Ihrem aktuellen Schlüssel verschlüsselt oder unverschlüsselt im Klartext exportieren?</string>

@@ -49,6 +49,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -155,7 +156,9 @@ fun AboutScreen(
 
             Text(
                 text = stringResource(R.string.about_copyright),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    textDirection = TextDirection.Ltr,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
@@ -241,12 +244,15 @@ internal fun resolveAboutVersionText(context: Context): String {
     }
 }
 
+private val ANGLE_BRACKET_EMAIL_REGEX = Regex("<([^<>@\\s]+@[^<>@\\s]+)>")
+
 internal fun htmlToLinkedAnnotatedString(
     html: String,
     linkColor: Color,
     onOpenUrl: (String) -> Unit,
 ): AnnotatedString {
-    val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT)
+    val sanitizedHtml = ANGLE_BRACKET_EMAIL_REGEX.replace(html, "&lt;$1&gt;")
+    val spanned = HtmlCompat.fromHtml(sanitizedHtml, HtmlCompat.FROM_HTML_MODE_COMPACT)
     val plain = spanned.toString()
     val urlSpans = spanned.getSpans(0, spanned.length, URLSpan::class.java)
     return buildAnnotatedString {

@@ -23,14 +23,14 @@
     <string name="digits">عدد الأرقام</string>
     <string name="save">حفظ</string>
     <string name="code_copied">تم نسخ الرمز إلى الحافظة.</string>
-    <string name="about_freeotp">حول FreeOTP+</string>
-    <string name="about_version">FreeOTP+ الإصدار %1$s (%2$d)</string>
+    <string name="about_freeotp">حول FreeOTP+&#x200E;</string>
+    <string name="about_version">FreeOTP+&#x200E; الإصدار %1$s (%2$d)</string>
     <string name="about_copyright">© 2013 - Red Hat, Inc., et al.\n© 2016 - Liberty</string>
-    <string name="about_license">FreeOTP+ مرخّص بموجب %1$s.</string>
+    <string name="about_license">FreeOTP+&#x200E; مرخّص بموجب %1$s.</string>
     <string name="about_website">لمزيد من المعلومات، راجع %s الخاص بنا.</string>
     <string name="about_feedback">نرحب بملاحظاتك:&lt;br/&gt;• %1$s&lt;br/&gt;• %2$s</string>
     <string name="about_icons">بعض الأيقونات المستخدمة في هذا التطبيق مأخوذة من أعمال أنشأها وشاركها مشروع Android مفتوح المصدر (Android Open Source Project)، وتُستخدم وفقًا للشروط الموضحة في رخصة Creative Commons 2.5 Attribution License.</string>
-    <string name="about_token_image">تتضمن صور الرموز المصغّرة token_image_*.xml في مكتبة token-images أيقونات من andOTP بموجب &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;رخصة MIT&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer) و&lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) ومساهمي FreeOTP+.</string>
+    <string name="about_token_image">تتضمن صور الرموز المصغّرة token_image_*.xml في مكتبة token-images أيقونات من andOTP بموجب &lt;a href=&quot;https://github.com/andOTP/andOTP/blob/master/LICENSE.txt&quot;&gt;رخصة MIT&lt;/a&gt; (Copyright © 2017-2020 Jakob Nixdorf &lt;andotp@shadowice.org&gt;, Copyright © 2015 Bruno Bierbaumer) و&lt;a href=&quot;https://simpleicons.org/&quot;&gt;Simple Icons&lt;/a&gt; (CC0 1.0) ومساهمي FreeOTP+&#x200E;.</string>
     <string name="error_camera_open">حدث خطأ أثناء فتح الكاميرا!</string>
     <string name="delete_summary">هذه فرصتك الأخيرة: إذا حذفت هذا الرمز فسيُفقد إلى الأبد، ولن يتم تعطيله على الخادم.</string>
     <string name="delete_question">هل تريد حذف هذا الرمز؟</string>
@@ -48,9 +48,9 @@
     <string name="camera_permission_denied_text">تم رفض إذن الكاميرا</string>
     <string name="ok_text">موافق</string>
     <string name="cancel_text">إلغاء</string>
-    <string name="import_json_format">FreeOTP+ JSON (مفضّل)</string>
+    <string name="import_json_format">FreeOTP+&#x200E; JSON (مفضّل)</string>
     <string name="import_key_uri_format">URI المفتاح</string>
-    <string name="export_json_format">FreeOTP+ JSON (مفضّل)</string>
+    <string name="export_json_format">FreeOTP+&#x200E; JSON (مفضّل)</string>
     <string name="export_key_uri_format">URI المفتاح</string>
     <string name="import_token_images">صور الرموز</string>
     <string name="export_token_images">صور الرموز</string>
@@ -84,7 +84,7 @@
     <string name="authentication_error">خطأ في المصادقة:</string>
     <string name="authentication_failed">فشلت المصادقة</string>
     <string name="authentication_dialog_title">المصادقة مطلوبة</string>
-    <string name="authentication_dialog_subtitle">يرجى استخدام المقاييس الحيوية أو رمز PIN للمصادقة في FreeOTP+</string>
+    <string name="authentication_dialog_subtitle">يرجى استخدام المقاييس الحيوية أو رمز PIN للمصادقة في FreeOTP+&#x200E;</string>
     <string name="unable_to_authenticate">تعذّرت المصادقة. هل قفل الشاشة مفعّل باستخدام رمز PIN أو المقاييس الحيوية؟</string>
     <string name="screen_lock_required_title">قفل الشاشة مطلوب</string>
     <string name="screen_lock_required_message">تعتمد مصادقة بدء التطبيق على رمز PIN أو النمط أو كلمة المرور أو المقاييس الحيوية للجهاز. قم بإعداد قفل الشاشة في إعدادات Android أولاً، أو اختر وضع تشفير الرموز.</string>
@@ -165,5 +165,5 @@
     <string name="import_aegis_unencrypted_message">اختر كيفية استيراد الرموز من نسخة Aegis الاحتياطية هذه.</string>
     <string name="import_aegis_failed_text">فشل استيراد Aegis JSON. الملف غير صالح أو تالف.</string>
     <string name="import_json_encrypted_message">أدخل مفتاح التشفير المستخدم عند تصدير هذه النسخة الاحتياطية واختر كيفية استيراد الرموز.</string>
-    <string name="import_json_unencrypted_message">اختر كيفية استيراد الرموز من نسخة FreeOTP+ JSON الاحتياطية هذه.</string>
+    <string name="import_json_unencrypted_message">اختر كيفية استيراد الرموز من نسخة FreeOTP+&#x200E; JSON الاحتياطية هذه.</string>
 </resources>
