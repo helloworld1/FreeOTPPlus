@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">请输入您的加密密钥以继续。</string>
     <string name="export_encryption_choice_title">导出令牌</string>
     <string name="export_encryption_choice_message">您希望使用当前密钥加密导出令牌，还是解密为明文导出？</string>
+    <string name="export_encryption_choice_any_mode_message">您希望使用加密密钥加密导出令牌，还是解密为明文导出？</string>
+    <string name="export_set_encryption_key_message">请输入一个密钥（至少 %1$d 个字符）来加密此 JSON 备份。请牢记此密钥——后续导入该备份时需要使用它。</string>
     <string name="export_encrypted">加密导出</string>
     <string name="export_decrypted">解密导出</string>
     <string name="import_encrypted_backup_title">导入加密令牌</string>

@@ -48,6 +48,9 @@ import org.fedorahosted.freeotp.ui.components.rememberSecurePassphraseController
 
 @Composable
 fun SetEncryptionKeyDialog(
+    @StringRes titleRes: Int = R.string.set_encryption_key_title,
+    @StringRes messageRes: Int = R.string.set_encryption_key_message,
+    @StringRes positiveButtonRes: Int = R.string.ok_text,
     onDismiss: () -> Unit,
     onSubmitValidKey: suspend (passphrase: CharArray) -> Unit,
 ) {
@@ -106,7 +109,7 @@ fun SetEncryptionKeyDialog(
         ),
         title = {
             SecureDialogWindowEffect()
-            Text(text = stringResource(R.string.set_encryption_key_title))
+            Text(text = stringResource(titleRes))
         },
         text = {
             Column(
@@ -115,7 +118,7 @@ fun SetEncryptionKeyDialog(
                     .verticalScroll(rememberScrollState()),
             ) {
                 Text(
-                    text = stringResource(R.string.set_encryption_key_message, CryptoEngine.MIN_KEY_LENGTH),
+                    text = stringResource(messageRes, CryptoEngine.MIN_KEY_LENGTH),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -154,7 +157,7 @@ fun SetEncryptionKeyDialog(
                 enabled = !isSubmitting,
                 modifier = Modifier.testTag(UiTestTags.DIALOG_POSITIVE_BUTTON),
             ) {
-                Text(text = stringResource(R.string.ok_text))
+                Text(text = stringResource(positiveButtonRes))
             }
         },
         dismissButton = {

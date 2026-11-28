@@ -748,4 +748,105 @@ class TokenCryptoManagerTest {
 
         assertThat(unlockedWhenAuthModeChanged).isTrue()
     }
+
+    @Test
+    fun buildExportJsonString_withBackupSetupMaterial_encryptsInNoneAndAppLaunchWithoutMutatingState(): Unit = runBlocking {
+        val gson = Gson()
+        val initialTokens = listOf(
+            sampleHotpToken(1L, "abcd5432").copy(
+                counter = 9L,
+                categories = listOf("Work", "Infra"),
+                imagePath = "builtin:GitHub"
+            ),
+            OtpToken(
+                id = 2L,
+                ordinal = 2L,
+                issuer = null,
+                label = "alice@example.com",
+                imagePath = null,
+                tokenType = OtpTokenType.TOTP,
+                algorithm = "SHA1",
+                secret = "JBSWY3DPEHPK3PXP",
+                digits = 6,
+                counter = 0L,
+                period = 30,
+                encryptionType = EncryptionType.PLAIN_TEXT,
+                categories = emptyList()
+            )
+        )
+
+        for (mode in listOf(AuthMode.NONE, AuthMode.APP_LAUNCH)) {
+            val prefs = InMemorySharedPreferences()
+            val db = createInMemoryDb(initialTokens)
+            val manager = createManager(prefs, db)
+            manager.setAuthMode(mode)
+
+            val passphrase = "backupOnlyKey_${mode.name}".toCharArray()
+            val setupMaterial = manager.deriveSetupMaterial(passphrase)
+            val exportedJson = try {
+                ImportExportUtil.buildExportJsonString(
+                    otpTokens = db.allTokens(),
+                    encrypt = true,
+                    backupSetupMaterial = setupMaterial,
+                    tokenCryptoManager = manager,
+                    gson = gson
+                )
+            } finally {
+                setupMaterial.clear()
+            }
+
+            // Exported JSON is a valid encrypted v1 bundle with no leaked plaintext secrets
+            assertThat(ImportExportUtil.inspectJsonBackupString(gson, exportedJson).requiresPassword).isTrue()
+            assertThat(ImportExportUtil.isJsonStringEncrypted(exportedJson)).isTrue()
+            assertThat(exportedJson).doesNotContain("abcd5432")
+            assertThat(exportedJson).doesNotContain("JBSWY3DPEHPK3PXP")
+
+            // Local authMode, preferences, and database rows remain completely untouched in PLAIN_TEXT
+            assertThat(manager.getAuthMode()).isEqualTo(mode)
+            assertThat(prefs.contains(TokenCryptoManager.KDF_SALT_KEY)).isFalse()
+            assertThat(prefs.contains(TokenCryptoManager.KEY_VERIFIER_KEY)).isFalse()
+            val storedTokens = db.allTokens()
+            assertThat(storedTokens).hasSize(2)
+            assertThat(storedTokens.all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
+            assertThat(storedTokens.map { it.secret }).containsExactly("abcd5432", "JBSWY3DPEHPK3PXP").inOrder()
+
+            // Wrong key is rejected; right key decrypts and restores all fields accurately
+            assertThrows(InvalidEncryptionKeyException::class.java) {
+                ImportExportUtil.decryptJsonBackup(gson, exportedJson, "wrongBackupKey".toCharArray())
+            }
+            val decrypted = ImportExportUtil.decryptJsonBackup(gson, exportedJson, passphrase)
+            assertThat(decrypted).hasSize(2)
+            assertThat(decrypted[0].issuer).isEqualTo("github.com")
+            assertThat(decrypted[0].label).isEqualTo("alice")
+            assertThat(decrypted[0].secret).isEqualTo("abcd5432")
+            assertThat(decrypted[0].counter).isEqualTo(9L)
+            assertThat(decrypted[0].categories).containsExactly("Work", "Infra").inOrder()
+            assertThat(decrypted[0].imagePath).isEqualTo("builtin:GitHub")
+            assertThat(decrypted[1].issuer).isNull()
+            assertThat(decrypted[1].label).isEqualTo("alice@example.com")
+            assertThat(decrypted[1].secret).isEqualTo("JBSWY3DPEHPK3PXP")
+
+            // Can be imported into both NONE/APP_LAUNCH (PLAIN_TEXT) and TOKEN_ENCRYPTED (re-encrypted) vaults
+            val targetEncryptedPrefs = InMemorySharedPreferences()
+            val targetEncryptedDb = createInMemoryDb()
+            val targetEncryptedManager = createManager(targetEncryptedPrefs, targetEncryptedDb)
+            val vaultSetup = targetEncryptedManager.deriveSetupMaterial("vaultMasterKey".toCharArray())
+            targetEncryptedManager.enableTokenEncryption(vaultSetup, null)
+            vaultSetup.clear()
+
+            ImportExportUtil.storeImportedTokens(
+                plaintextTokens = decrypted,
+                mode = TokenImportMode.REPLACE_ALL,
+                filesDir = null,
+                otpTokenDatabase = targetEncryptedDb,
+                tokenCryptoManager = targetEncryptedManager,
+                gson = gson
+            )
+            val importedIntoEncryptedVault = targetEncryptedDb.allTokens()
+            assertThat(importedIntoEncryptedVault).hasSize(2)
+            assertThat(importedIntoEncryptedVault.all { it.encryptionType == EncryptionType.ENCRYPTED }).isTrue()
+            assertThat(targetEncryptedManager.decryptSecret(importedIntoEncryptedVault[0])).isEqualTo("abcd5432")
+            assertThat(targetEncryptedManager.decryptSecret(importedIntoEncryptedVault[1])).isEqualTo("JBSWY3DPEHPK3PXP")
+        }
+    }
 }

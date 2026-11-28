@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">請輸入您的加密金鑰以繼續。</string>
     <string name="export_encryption_choice_title">匯出權杖</string>
     <string name="export_encryption_choice_message">您要使用目前的金鑰加密匯出權杖，還是解密為純文字匯出？</string>
+    <string name="export_encryption_choice_any_mode_message">您要使用加密金鑰加密匯出權杖，還是解密為純文字匯出？</string>
+    <string name="export_set_encryption_key_message">請輸入一組金鑰（至少 %1$d 個字元）來加密此 JSON 備份。請牢記此金鑰——日後匯入此備份時將會用到。</string>
     <string name="export_encrypted">加密匯出</string>
     <string name="export_decrypted">解密匯出</string>
     <string name="import_encrypted_backup_title">匯入加密權杖</string>

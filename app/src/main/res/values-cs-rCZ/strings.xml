@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Zadejte svůj šifrovací klíč pro pokračování.</string>
     <string name="export_encryption_choice_title">Exportovat tokeny</string>
     <string name="export_encryption_choice_message">Chcete exportovat tokeny zašifrované aktuálním klíčem, nebo dešifrované jako prostý text?</string>
+    <string name="export_encryption_choice_any_mode_message">Chcete exportovat tokeny zašifrované šifrovacím klíčem, nebo dešifrované jako prostý text?</string>
+    <string name="export_set_encryption_key_message">Zadejte klíč (alespoň %1$d znaků) k zašifrování této zálohy JSON. Tento klíč si zapamatujte — budete jej potřebovat k pozdějšímu importu zálohy.</string>
     <string name="export_encrypted">Exportovat šifrované</string>
     <string name="export_decrypted">Exportovat dešifrované</string>
     <string name="import_encrypted_backup_title">Importovat šifrované tokeny</string>

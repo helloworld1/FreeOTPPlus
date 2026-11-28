@@ -15,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricPrompt
@@ -105,7 +106,13 @@ class MainActivity : AppCompatActivity() {
 
     private sealed interface TransientDialogState {
         data class SortConfirm(val order: TokenSortOrder) : TransientDialogState
-        data class ExportEncryptionChoice(val isJson: Boolean) : TransientDialogState
+        data class ExportEncryptionChoice(
+            val isJson: Boolean,
+            val useCurrentKey: Boolean,
+        ) : TransientDialogState
+        data class SetExportEncryptionKey(
+            val pendingTargetUri: Uri? = null,
+        ) : TransientDialogState
         data class DeepLinkAddToken(
             val uri: Uri,
             val token: OtpToken,
@@ -156,7 +163,8 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var appSessionManager: AppSessionManager
     @Inject lateinit var clipboardUtil: ClipboardUtil
 
-    private val viewModel: MainViewModel by viewModels()
+    @VisibleForTesting
+    internal val viewModel: MainViewModel by viewModels()
 
     internal val dialogWindowRegistry = DialogWindowRegistry()
     private val snackbarHostState = SnackbarHostState()
@@ -174,6 +182,9 @@ class MainActivity : AppCompatActivity() {
     private var pendingDeepLinkUri: Uri? = null
     private var pendingDocumentResult: PendingDocumentResult? = null
     private var pendingExportEncrypted = false
+
+    @VisibleForTesting
+    internal var createJsonDocumentLauncherOverride: ((suggestedFileName: String) -> Unit)? = null
 
     private val dateFormatter: DateFormat = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US)
 
@@ -510,18 +521,76 @@ class MainActivity : AppCompatActivity() {
             }
             is TransientDialogState.ExportEncryptionChoice -> {
                 ExportEncryptionChoiceDialog(
+                    useCurrentKeyMessage = transient.useCurrentKey,
                     onExportEncrypted = {
-                        activeTransientDialog = null
-                        pendingExportEncrypted = true
-                        launchExportCreateFile(transient.isJson)
+                        viewModel.clearPendingExportSetupMaterial()
+                        if (transient.isJson && settings.authMode != AuthMode.TOKEN_ENCRYPTED) {
+                            activeTransientDialog = TransientDialogState.SetExportEncryptionKey(
+                                pendingTargetUri = null,
+                            )
+                        } else {
+                            activeTransientDialog = null
+                            pendingExportEncrypted = true
+                            launchExportCreateFile(transient.isJson)
+                        }
                     },
                     onExportDecrypted = {
+                        viewModel.clearPendingExportSetupMaterial()
                         activeTransientDialog = null
                         pendingExportEncrypted = false
                         launchExportCreateFile(transient.isJson)
                     },
-                    onDismiss = { activeTransientDialog = null },
+                    onDismiss = {
+                        viewModel.clearPendingExportSetupMaterial()
+                        activeTransientDialog = null
+                    },
                 )
+            }
+            is TransientDialogState.SetExportEncryptionKey -> {
+                androidx.compose.runtime.key(transient) {
+                    SetEncryptionKeyDialog(
+                        titleRes = R.string.set_encryption_key_title,
+                        messageRes = R.string.export_set_encryption_key_message,
+                        onDismiss = {
+                            viewModel.clearPendingExportSetupMaterial()
+                            pendingExportEncrypted = false
+                            activeTransientDialog = null
+                        },
+                        onSubmitValidKey = { passphraseChars ->
+                            val setupMaterial = tokenCryptoManager.deriveSetupMaterial(passphraseChars)
+                            val targetUri = transient.pendingTargetUri
+                            if (targetUri != null) {
+                                try {
+                                    importFromUtil.exportJsonFile(
+                                        uri = targetUri,
+                                        encrypt = true,
+                                        backupSetupMaterial = setupMaterial,
+                                    )
+                                    pendingExportEncrypted = false
+                                    activeTransientDialog = null
+                                    showSnackbar(R.string.export_succeeded_text)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Export JSON failed", e)
+                                    pendingExportEncrypted = false
+                                    activeTransientDialog = null
+                                    showSnackbar(R.string.export_failed_text)
+                                } finally {
+                                    setupMaterial.clear()
+                                }
+                            } else {
+                                viewModel.stagePendingExportSetupMaterial(setupMaterial)
+                                pendingExportEncrypted = true
+                                activeTransientDialog = null
+                                if (!launchExportCreateFile(isJson = true)) {
+                                    viewModel.clearPendingExportSetupMaterial()
+                                    pendingExportEncrypted = false
+                                }
+                            }
+                        },
+                    )
+                }
             }
             is TransientDialogState.DeepLinkAddToken -> {
                 val imageRefreshVersion by viewModel.imageRefreshVersionFlow.collectAsStateWithLifecycle()
@@ -809,6 +878,7 @@ class MainActivity : AppCompatActivity() {
         dismissAuthDialog()
         shareQrTokenId = null
         deleteTokenId = null
+        pendingExportEncrypted = false
         finish()
         viewModel.lockSession()
     }
@@ -922,12 +992,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private inline fun launchSystemPicker(block: () -> Unit) {
-        try {
+    private inline fun launchSystemPicker(block: () -> Unit): Boolean {
+        return try {
             block()
+            true
         } catch (e: ActivityNotFoundException) {
             Log.e(TAG, "Cannot find activity", e)
             Toast.makeText(applicationContext, getString(R.string.launch_file_browser_failure), Toast.LENGTH_SHORT).show()
+            false
         }
     }
 
@@ -976,29 +1048,44 @@ class MainActivity : AppCompatActivity() {
     internal fun handleExportAction(isJson: Boolean) {
         if (!isSessionAuthenticated()) return
         AuthenticationUtil.authenticateForSensitiveAction(this, settings, tokenCryptoManager) {
-            if (settings.authMode == AuthMode.TOKEN_ENCRYPTED) {
-                activeTransientDialog = TransientDialogState.ExportEncryptionChoice(isJson)
+            if (isJson || settings.authMode == AuthMode.TOKEN_ENCRYPTED) {
+                activeTransientDialog = TransientDialogState.ExportEncryptionChoice(
+                    isJson = isJson,
+                    useCurrentKey = settings.authMode == AuthMode.TOKEN_ENCRYPTED,
+                )
             } else {
+                viewModel.clearPendingExportSetupMaterial()
                 pendingExportEncrypted = false
                 launchExportCreateFile(isJson)
             }
         }
     }
 
-    private fun launchExportCreateFile(isJson: Boolean) {
+    private fun launchExportCreateFile(isJson: Boolean): Boolean {
         val baseFileName = exportBaseFileName(encrypted = pendingExportEncrypted)
         val timestamp = dateFormatter.format(Date())
-        launchSystemPicker {
+        val fileName = if (isJson) "${baseFileName}_$timestamp.json" else "${baseFileName}_$timestamp.txt"
+        if (isJson) {
+            createJsonDocumentLauncherOverride?.let { override ->
+                override(fileName)
+                return true
+            }
+        }
+        return launchSystemPicker {
             if (isJson) {
-                createJsonLauncher.launch("${baseFileName}_$timestamp.json")
+                createJsonLauncher.launch(fileName)
             } else {
-                createKeyUriLauncher.launch("${baseFileName}_$timestamp.txt")
+                createKeyUriLauncher.launch(fileName)
             }
         }
     }
 
     internal fun onDocumentPicked(action: DocumentAction, uri: Uri?) {
         if (uri == null) {
+            if (action == DocumentAction.EXPORT_JSON || action == DocumentAction.EXPORT_KEY_URI) {
+                viewModel.clearPendingExportSetupMaterial()
+                pendingExportEncrypted = false
+            }
             appSessionManager.refreshSessionState()
             return
         }
@@ -1021,14 +1108,47 @@ class MainActivity : AppCompatActivity() {
     private fun handleAuthenticatedDocumentResult(action: DocumentAction, uri: Uri) {
         when (action) {
             DocumentAction.EXPORT_JSON -> {
-                val encryptExport = settings.authMode == AuthMode.TOKEN_ENCRYPTED && pendingExportEncrypted
-                lifecycleScope.launch {
-                    try {
-                        importFromUtil.exportJsonFile(uri, encrypt = encryptExport)
-                        showSnackbar(R.string.export_succeeded_text)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Export JSON failed", e)
-                        showSnackbar(R.string.export_failed_text)
+                val shouldEncrypt = pendingExportEncrypted
+                if (shouldEncrypt && settings.authMode != AuthMode.TOKEN_ENCRYPTED) {
+                    val stagedMaterial = viewModel.consumePendingExportSetupMaterial()
+                    if (stagedMaterial == null) {
+                        activeTransientDialog = TransientDialogState.SetExportEncryptionKey(
+                            pendingTargetUri = uri,
+                        )
+                        return
+                    }
+                    pendingExportEncrypted = false
+                    lifecycleScope.launch {
+                        try {
+                            importFromUtil.exportJsonFile(
+                                uri = uri,
+                                encrypt = true,
+                                backupSetupMaterial = stagedMaterial,
+                            )
+                            showSnackbar(R.string.export_succeeded_text)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Export JSON failed", e)
+                            showSnackbar(R.string.export_failed_text)
+                        } finally {
+                            stagedMaterial.clear()
+                        }
+                    }
+                } else {
+                    viewModel.clearPendingExportSetupMaterial()
+                    val encryptWithVaultKey = settings.authMode == AuthMode.TOKEN_ENCRYPTED && shouldEncrypt
+                    pendingExportEncrypted = false
+                    lifecycleScope.launch {
+                        try {
+                            importFromUtil.exportJsonFile(uri, encrypt = encryptWithVaultKey)
+                            showSnackbar(R.string.export_succeeded_text)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Export JSON failed", e)
+                            showSnackbar(R.string.export_failed_text)
+                        }
                     }
                 }
             }

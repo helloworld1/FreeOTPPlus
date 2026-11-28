@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Ange din krypteringsnyckel för att fortsätta.</string>
     <string name="export_encryption_choice_title">Exportera tokens</string>
     <string name="export_encryption_choice_message">Vill du exportera dina tokens krypterade med din nuvarande nyckel eller dekrypterade i klartext?</string>
+    <string name="export_encryption_choice_any_mode_message">Vill du exportera dina tokens krypterade med en krypteringsnyckel eller dekrypterade i klartext?</string>
+    <string name="export_set_encryption_key_message">Ange en nyckel (minst %1$d tecken) för att kryptera denna JSON-säkerhetskopia. Kom ihåg denna nyckel — du behöver den för att importera säkerhetskopian senare.</string>
     <string name="export_encrypted">Exportera krypterade</string>
     <string name="export_decrypted">Exportera dekrypterade</string>
     <string name="import_encrypted_backup_title">Importera krypterade tokens</string>

@@ -1,5 +1,6 @@
 package org.fedorahosted.freeotp.ui
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,7 @@ import org.fedorahosted.freeotp.data.AuthMode
 import org.fedorahosted.freeotp.data.MigrationUtil
 import org.fedorahosted.freeotp.data.OtpToken
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
+import org.fedorahosted.freeotp.data.TokenCryptoManager
 import org.fedorahosted.freeotp.data.TokenSortOrder
 import org.fedorahosted.freeotp.data.legacy.TokenCode
 import org.fedorahosted.freeotp.util.AppSessionManager
@@ -49,6 +51,9 @@ class MainViewModel @Inject constructor(
     private val scrollRequestCounter = AtomicLong(1L)
     @Volatile
     private var lastExplicitlyRequestedTokenId: Long = 0L
+
+    private val pendingExportLock = Any()
+    private var pendingExportSetupMaterial: TokenCryptoManager.SetupMaterial? = null
 
     private val _scrollToTokenRequest = MutableStateFlow<ScrollToTokenRequest?>(null)
     val scrollToTokenRequestFlow: StateFlow<ScrollToTokenRequest?> = _scrollToTokenRequest.asStateFlow()
@@ -98,6 +103,7 @@ class MainViewModel @Inject constructor(
             appSessionManager.authState.collect { state ->
                 if (state == AuthState.UNAUTHENTICATED) {
                     _activeTokenCodes.value = emptyMap()
+                    clearPendingExportSetupMaterial()
                 }
             }
         }
@@ -326,7 +332,42 @@ class MainViewModel @Inject constructor(
 
     fun lockSession() {
         _activeTokenCodes.value = emptyMap()
+        clearPendingExportSetupMaterial()
         appSessionManager.lockSession()
+    }
+
+    internal fun stagePendingExportSetupMaterial(material: TokenCryptoManager.SetupMaterial) {
+        synchronized(pendingExportLock) {
+            pendingExportSetupMaterial?.clear()
+            pendingExportSetupMaterial = material
+        }
+    }
+
+    internal fun consumePendingExportSetupMaterial(): TokenCryptoManager.SetupMaterial? {
+        synchronized(pendingExportLock) {
+            val material = pendingExportSetupMaterial
+            pendingExportSetupMaterial = null
+            return material
+        }
+    }
+
+    internal fun clearPendingExportSetupMaterial() {
+        synchronized(pendingExportLock) {
+            pendingExportSetupMaterial?.clear()
+            pendingExportSetupMaterial = null
+        }
+    }
+
+    @VisibleForTesting
+    internal fun hasPendingExportSetupMaterial(): Boolean {
+        synchronized(pendingExportLock) {
+            return pendingExportSetupMaterial != null
+        }
+    }
+
+    override fun onCleared() {
+        clearPendingExportSetupMaterial()
+        super.onCleared()
     }
 
     fun onSessionStart() {

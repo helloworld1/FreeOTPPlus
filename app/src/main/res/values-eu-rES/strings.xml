@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Sartu zure zifratze-gakoa jarraitzeko.</string>
     <string name="export_encryption_choice_title">Esportatu tokenak</string>
     <string name="export_encryption_choice_message">Zure tokenak uneko gakoarekin zifratuta ala testu arruntean deszifratuta esportatu nahi dituzu?</string>
+    <string name="export_encryption_choice_any_mode_message">Zure tokenak zifratze-gako batekin zifratuta ala testu arruntean deszifratuta esportatu nahi dituzu?</string>
+    <string name="export_set_encryption_key_message">Sartu gako bat (gutxienez %1$d karaktere) JSON babeskopia hau zifratzeko. Gogoratu gako hau — geroago babeskopia inportatzeko beharko duzu.</string>
     <string name="export_encrypted">Esportatu zifratuta</string>
     <string name="export_decrypted">Esportatu deszifratuta</string>
     <string name="import_encrypted_backup_title">Inportatu zifratutako tokenak</string>

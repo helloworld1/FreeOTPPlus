@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Voer uw versleutelingssleutel in om door te gaan.</string>
     <string name="export_encryption_choice_title">Tokens exporteren</string>
     <string name="export_encryption_choice_message">Wilt u uw tokens versleuteld met uw huidige sleutel of ontsleuteld in platte tekst exporteren?</string>
+    <string name="export_encryption_choice_any_mode_message">Wilt u uw tokens versleuteld met een versleutelingssleutel of ontsleuteld in platte tekst exporteren?</string>
+    <string name="export_set_encryption_key_message">Voer een sleutel in (minimaal %1$d tekens) om deze JSON-back-up te versleutelen. Onthoud deze sleutel — u hebt deze later nodig om de back-up te importeren.</string>
     <string name="export_encrypted">Versleuteld exporteren</string>
     <string name="export_decrypted">Ontsleuteld exporteren</string>
     <string name="import_encrypted_backup_title">Versleutelde tokens importeren</string>

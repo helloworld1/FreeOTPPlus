@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Adja meg a titkosítási kulcsát a folytatáshoz.</string>
     <string name="export_encryption_choice_title">Tokenek exportálása</string>
     <string name="export_encryption_choice_message">Szeretné a tokeneket a jelenlegi kulcsával titkosítva vagy egyszerű szövegként visszafejtve exportálni?</string>
+    <string name="export_encryption_choice_any_mode_message">Szeretné a tokeneket titkosítási kulccsal titkosítva vagy egyszerű szövegként visszafejtve exportálni?</string>
+    <string name="export_set_encryption_key_message">Adjon meg egy kulcsot (legalább %1$d karakter) ennek a JSON biztonsági mentésnek a titkosításához. Jegyezze meg ezt a kulcsot — később szüksége lesz rá a mentés importálásához.</string>
     <string name="export_encrypted">Exportálás titkosítva</string>
     <string name="export_decrypted">Exportálás visszafejtve</string>
     <string name="import_encrypted_backup_title">Titkosított tokenek importálása</string>

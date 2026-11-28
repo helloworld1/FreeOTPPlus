@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Digite sua chave de criptografia para continuar.</string>
     <string name="export_encryption_choice_title">Exportar tokens</string>
     <string name="export_encryption_choice_message">Deseja exportar seus tokens criptografados com sua chave atual ou descriptografados em texto simples?</string>
+    <string name="export_encryption_choice_any_mode_message">Deseja exportar seus tokens criptografados com uma chave de criptografia ou descriptografados em texto simples?</string>
+    <string name="export_set_encryption_key_message">Digite uma chave (de pelo menos %1$d caracteres) para criptografar este backup JSON. Lembre-se desta chave — você precisará dela para importar o backup mais tarde.</string>
     <string name="export_encrypted">Exportar criptografado</string>
     <string name="export_decrypted">Exportar descriptografado</string>
     <string name="import_encrypted_backup_title">Importar tokens criptografados</string>

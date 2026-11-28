@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Введите ключ шифрования, чтобы продолжить.</string>
     <string name="export_encryption_choice_title">Экспорт токенов</string>
     <string name="export_encryption_choice_message">Экспортировать токены зашифрованными текущим ключом или расшифрованными в виде обычного текста?</string>
+    <string name="export_encryption_choice_any_mode_message">Экспортировать токены зашифрованными ключом шифрования или расшифрованными в виде обычного текста?</string>
+    <string name="export_set_encryption_key_message">Введите ключ (не менее %1$d символов) для шифрования этой резервной копии JSON. Запомните этот ключ — он понадобится для последующего импорта резервной копии.</string>
     <string name="export_encrypted">Экспортировать зашифрованными</string>
     <string name="export_decrypted">Экспортировать расшифрованными</string>
     <string name="import_encrypted_backup_title">Импорт зашифрованных токенов</string>

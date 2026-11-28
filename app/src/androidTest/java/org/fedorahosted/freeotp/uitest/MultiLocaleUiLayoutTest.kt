@@ -287,8 +287,20 @@ class MultiLocaleUiLayoutTest {
                 }
                 composeRule.onNodeWithTag(UiTestTags.NAV_BACK_BUTTON).performClick()
 
-                // 5. SetEncryptionKeyDialog & ExportEncryptionChoiceDialog: single-line action buttons in all locales
+                // 5. ExportEncryptionChoiceDialog & SetExportEncryptionKey in AuthMode.NONE + SetEncryptionKeyDialog in TOKEN_ENCRYPTED
                 AuthenticationUtil.hasStrongBiometricOverride = false
+                scenario.onActivity { it.handleExportAction(isJson = true) }
+                composeRule.awaitTextDisplayed(str(R.string.export_encryption_choice_title))
+                assertSingleLineNoOverflow(localeTag, UiTestTags.DIALOG_POSITIVE_BUTTON)
+                assertSingleLineNoOverflow(localeTag, UiTestTags.DIALOG_NEGATIVE_BUTTON)
+                assertSingleLineNoOverflow(localeTag, UiTestTags.DIALOG_NEUTRAL_BUTTON)
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                assertSingleLineNoOverflow(localeTag, UiTestTags.DIALOG_NEGATIVE_BUTTON)
+                assertSingleLineNoOverflow(localeTag, UiTestTags.DIALOG_POSITIVE_BUTTON)
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+                composeRule.waitForIdle()
+
                 composeRule.openOverflowMenu()
                 composeRule.onNodeWithText(str(R.string.authentication_mode)).performClick()
                 val encryptedRadio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and

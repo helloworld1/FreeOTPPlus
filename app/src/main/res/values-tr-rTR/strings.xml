@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Devam etmek için şifreleme anahtarınızı girin.</string>
     <string name="export_encryption_choice_title">Token\'ları dışa aktar</string>
     <string name="export_encryption_choice_message">Token\'larınızı mevcut anahtarınızla şifrelenmiş olarak mı yoksa düz metin halinde şifresi çözülmüş olarak mı dışa aktarmak istiyorsunuz?</string>
+    <string name="export_encryption_choice_any_mode_message">Token\'larınızı bir şifreleme anahtarıyla şifrelenmiş olarak mı yoksa düz metin halinde şifresi çözülmüş olarak mı dışa aktarmak istiyorsunuz?</string>
+    <string name="export_set_encryption_key_message">Bu JSON yedeğini şifrelemek için bir anahtar (en az %1$d karakter) girin. Bu anahtarı unutmayın — yedeği daha sonra içe aktarmak için buna ihtiyacınız olacaktır.</string>
     <string name="export_encrypted">Şifrelenmiş dışa aktar</string>
     <string name="export_decrypted">Şifresi çözülmüş dışa aktar</string>
     <string name="import_encrypted_backup_title">Şifrelenmiş token\'ları içe aktar</string>

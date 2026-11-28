@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">נא להזין את מפתח ההצפנה כדי להמשיך.</string>
     <string name="export_encryption_choice_title">ייצוא אסימונים</string>
     <string name="export_encryption_choice_message">האם ברצונך לייצא את האסימונים מוצפנים עם המפתח הנוכחי שלך או מפוענחים כטקסט רגיל?</string>
+    <string name="export_encryption_choice_any_mode_message">האם ברצונך לייצא את האסימונים מוצפנים עם מפתח הצפנה או מפוענחים כטקסט רגיל?</string>
+    <string name="export_set_encryption_key_message">נא להזין מפתח (לפחות %1$d תווים) להצפנת גיבוי JSON זה. חשוב לזכור מפתח זה — הוא יידרש לייבוא הגיבוי בהמשך.</string>
     <string name="export_encrypted">ייצוא מוצפן</string>
     <string name="export_decrypted">ייצוא מפוענח</string>
     <string name="import_encrypted_backup_title">ייבוא אסימונים מוצפנים</string>

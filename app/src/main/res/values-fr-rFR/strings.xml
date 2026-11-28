@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Saisissez votre clé de chiffrement pour continuer.</string>
     <string name="export_encryption_choice_title">Exporter les jetons</string>
     <string name="export_encryption_choice_message">Voulez-vous exporter vos jetons chiffrés avec votre clé actuelle ou déchiffrés en texte brut ?</string>
+    <string name="export_encryption_choice_any_mode_message">Voulez-vous exporter vos jetons chiffrés avec une clé de chiffrement ou déchiffrés en texte brut ?</string>
+    <string name="export_set_encryption_key_message">Saisissez une clé (d’au moins %1$d caractères) pour chiffrer cette sauvegarde JSON. Mémorisez cette clé — vous en aurez besoin pour importer la sauvegarde ultérieurement.</string>
     <string name="export_encrypted">Exporter chiffré</string>
     <string name="export_decrypted">Exporter déchiffré</string>
     <string name="import_encrypted_backup_title">Importer des jetons chiffrés</string>

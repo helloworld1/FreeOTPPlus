@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Masukkan kunci enkripsi Anda untuk melanjutkan.</string>
     <string name="export_encryption_choice_title">Ekspor token</string>
     <string name="export_encryption_choice_message">Apakah Anda ingin mengekspor token Anda dalam keadaan terenkripsi dengan kunci saat ini atau didekripsi dalam teks biasa?</string>
+    <string name="export_encryption_choice_any_mode_message">Apakah Anda ingin mengekspor token Anda dalam keadaan terenkripsi dengan kunci enkripsi atau didekripsi dalam teks biasa?</string>
+    <string name="export_set_encryption_key_message">Masukkan kunci (minimal %1$d karakter) untuk mengenkripsi cadangan JSON ini. Ingat kunci ini — Anda akan memerlukannya untuk mengimpor cadangan nanti.</string>
     <string name="export_encrypted">Ekspor terenkripsi</string>
     <string name="export_decrypted">Ekspor didekripsi</string>
     <string name="import_encrypted_backup_title">Impor token terenkripsi</string>

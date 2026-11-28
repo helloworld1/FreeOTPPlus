@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">தொடர உங்கள் மறைகுறியாக்கத் திறவுகோலை உள்ளிடவும்.</string>
     <string name="export_encryption_choice_title">டோக்கன்களை ஏற்றுமதி செய்</string>
     <string name="export_encryption_choice_message">உங்கள் டோக்கன்களை தற்போதைய திறவுகோலுடன் மறைகுறியாக்கி ஏற்றுமதி செய்ய விரும்புகிறீர்களா அல்லது சாதாரண உரையாக மறைகுறி நீக்கி ஏற்றுமதி செய்ய விரும்புகிறீர்களா?</string>
+    <string name="export_encryption_choice_any_mode_message">உங்கள் டோக்கன்களை மறைகுறியாக்கத் திறவுகோலுடன் மறைகுறியாக்கி ஏற்றுமதி செய்ய விரும்புகிறீர்களா அல்லது சாதாரண உரையாக மறைகுறி நீக்கி ஏற்றுமதி செய்ய விரும்புகிறீர்களா?</string>
+    <string name="export_set_encryption_key_message">இந்த JSON காப்புப் பிரதியை மறைகுறியாக்க ஒரு திறவுகோலை (குறைந்தது %1$d எழுத்துகள்) உள்ளிடவும். இந்தத் திறவுகோலை நினைவில் கொள்ளவும் — பின்னர் காப்புப் பிரதியை இறக்குமதி செய்ய இது தேவைப்படும்.</string>
     <string name="export_encrypted">மறைகுறியாக்கி ஏற்றுமதி செய்</string>
     <string name="export_decrypted">மறைகுறி நீக்கி ஏற்றுமதி செய்</string>
     <string name="import_encrypted_backup_title">மறைகுறியாக்கப்பட்ட டோக்கன்களை இறக்குமதி செய்</string>

@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Wprowadź klucz szyfrowania, aby kontynuować.</string>
     <string name="export_encryption_choice_title">Eksportuj tokeny</string>
     <string name="export_encryption_choice_message">Czy chcesz wyeksportować tokeny zaszyfrowane bieżącym kluczem, czy odszyfrowane jako zwykły tekst?</string>
+    <string name="export_encryption_choice_any_mode_message">Czy chcesz wyeksportować tokeny zaszyfrowane kluczem szyfrowania, czy odszyfrowane jako zwykły tekst?</string>
+    <string name="export_set_encryption_key_message">Wprowadź klucz (co najmniej %1$d znaków), aby zaszyfrować tę kopię zapasową JSON. Zapamiętaj ten klucz — będzie potrzebny do późniejszego zaimportowania kopii zapasowej.</string>
     <string name="export_encrypted">Eksportuj zaszyfrowane</string>
     <string name="export_decrypted">Eksportuj odszyfrowane</string>
     <string name="import_encrypted_backup_title">Importuj zaszyfrowane tokeny</string>

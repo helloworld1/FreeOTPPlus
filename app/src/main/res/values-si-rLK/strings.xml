@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">ඉදිරියට යාමට ඔබගේ සංකේතන යතුර ඇතුළත් කරන්න.</string>
     <string name="export_encryption_choice_title">ටෝකන නිර්යාත කරන්න</string>
     <string name="export_encryption_choice_message">ඔබගේ ටෝකන වත්මන් යතුරෙන් සංකේතනය කර නිර්යාත කිරීමට අවශ්‍යද, නැතහොත් සාමාන්‍ය පෙළ ලෙස විකේතනය කර නිර්යාත කිරීමට අවශ්‍යද?</string>
+    <string name="export_encryption_choice_any_mode_message">ඔබගේ ටෝකන සංකේතන යතුරකින් සංකේතනය කර නිර්යාත කිරීමට අවශ්‍යද, නැතහොත් සාමාන්‍ය පෙළ ලෙස විකේතනය කර නිර්යාත කිරීමට අවශ්‍යද?</string>
+    <string name="export_set_encryption_key_message">මෙම JSON උපස්ථය සංකේතනය කිරීමට යතුරක් (අවම වශයෙන් අක්ෂර %1$dක්) ඇතුළත් කරන්න. මෙම යතුර මතක තබා ගන්න — පසුව උපස්ථය ආයාත කිරීමට එය අවශ්‍ය වේ.</string>
     <string name="export_encrypted">සංකේතනය කර නිර්යාත කරන්න</string>
     <string name="export_decrypted">විකේතනය කර නිර්යාත කරන්න</string>
     <string name="import_encrypted_backup_title">සංකේතනය කළ ටෝකන ආයාත කරන්න</string>

@@ -1058,6 +1058,229 @@ class TokenEncryptionTest {
         }
     }
 
+    @Test
+    fun testExportEncryptedAndDecryptedJsonInNoneAndAppLaunchModes() {
+        val context = getInstrumentation().targetContext
+        val noneEncFile = File(context.cacheDir, "none_mode_encrypted_export.json")
+        val noneDecFile = File(context.cacheDir, "none_mode_decrypted_export.json")
+        val appLaunchEncFile = File(context.cacheDir, "app_launch_encrypted_export.json")
+        val appLaunchDecFile = File(context.cacheDir, "app_launch_decrypted_export.json")
+
+        AuthenticationUtil.hasScreenLockOverride = false
+        AuthenticationUtil.hasStrongBiometricOverride = false
+
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                var nextExportTargetFile: File? = null
+                var lastSuggestedFileName: String? = null
+
+                scenario.onActivity { activity ->
+                    attachCryptoIdlingResource(activity.tokenCryptoManager)
+                    activity.createJsonDocumentLauncherOverride = { suggestedName ->
+                        lastSuggestedFileName = suggestedName
+                        activity.onDocumentPicked(
+                            MainActivity.DocumentAction.EXPORT_JSON,
+                            nextExportTargetFile?.toUri(),
+                        )
+                    }
+                    runBlocking(Dispatchers.IO) {
+                        activity.otpTokenDatabase.clearAllTables()
+                        activity.otpTokenDatabase.otpTokenDao().insertAll(
+                            listOf(TestData.OTP_HOTP_TOKEN_1, TestData.OTP_TOTP_TOKEN_2)
+                        )
+                    }
+                    assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                }
+
+                // 1. AuthMode.NONE -> Export JSON -> Choice dialog -> Export encrypted -> Key setup validation & export
+                nextExportTargetFile = noneEncFile
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+                composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+                composeRule.onNodeWithText(string(R.string.export_encryption_choice_any_mode_message))
+                    .assertIsDisplayed()
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+                // Key setup dialog validates short & mismatched keys, and masks fields by default
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                scenario.onActivity { activity ->
+                    val layouts = findDialogPasswordLayouts(activity)
+                    assertThat(layouts).hasSize(2)
+                    for (layout in layouts) {
+                        val editText = layout.editText as TextInputEditText
+                        assertThat(editText.transformationMethod)
+                            .isInstanceOf(PasswordTransformationMethod::class.java)
+                    }
+                }
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("short")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("short")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_ERROR)
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("noneBackupKey123")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("differentKey123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_CONFIRM_KEY_ERROR)
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("noneBackupKey123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_succeeded_text))
+                assertThat(lastSuggestedFileName).startsWith("freeotp-backup-encrypted_")
+                assertThat(lastSuggestedFileName).endsWith(".json")
+
+                scenario.onActivity { activity ->
+                    activity.dismissSnackbar()
+                    assertThat(activity.settings.authMode).isEqualTo(AuthMode.NONE)
+                    assertThat(activity.viewModel.hasPendingExportSetupMaterial()).isFalse()
+                    val isEncrypted = runBlocking {
+                        activity.importFromUtil.isJsonFileEncrypted(noneEncFile.toUri())
+                    }
+                    assertThat(isEncrypted).isTrue()
+                    val dbTokens = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first() }
+                    assertThat(dbTokens).hasSize(2)
+                    assertThat(dbTokens.all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
+                }
+
+                // 2. AuthMode.NONE -> Export decrypted writes unencrypted JSON
+                nextExportTargetFile = noneDecFile
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+                composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_succeeded_text))
+                assertThat(lastSuggestedFileName).startsWith("freeotp-backup_")
+                assertThat(lastSuggestedFileName).doesNotContain("encrypted")
+                scenario.onActivity { activity ->
+                    activity.dismissSnackbar()
+                    val isEncrypted = runBlocking {
+                        activity.importFromUtil.isJsonFileEncrypted(noneDecFile.toUri())
+                    }
+                    assertThat(isEncrypted).isFalse()
+                }
+
+                // 3. Cancel SAF file picker (uri == null) scrubs staged export material
+                nextExportTargetFile = null
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+                composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("cancelledKey123")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("cancelledKey123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.waitForIdle()
+                scenario.onActivity { activity ->
+                    assertThat(activity.viewModel.hasPendingExportSetupMaterial()).isFalse()
+                }
+
+                // 4. AuthMode.APP_LAUNCH -> Export JSON offers both encrypted and decrypted options
+                AuthenticationUtil.hasScreenLockOverride = true
+                AuthenticationUtil.appLaunchAuthCallbackOverride = { onSuccess, _ -> onSuccess() }
+                AuthenticationUtil.authCallbackOverride = { onAuthenticated -> onAuthenticated() }
+
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.authentication_mode)).performClick()
+                composeRule.onNode(authRadioMatcher(R.string.auth_mode_app_launch)).performClick()
+                composeRule.waitForIdle()
+                scenario.onActivity { activity ->
+                    assertThat(activity.settings.authMode).isEqualTo(AuthMode.APP_LAUNCH)
+                }
+
+                nextExportTargetFile = appLaunchEncFile
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+                composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+                composeRule.onNodeWithText(string(R.string.export_encryption_choice_any_mode_message))
+                    .assertIsDisplayed()
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("appLaunchKey456")
+                composeRule.onNodeWithTag(UiTestTags.SECURE_CONFIRM_KEY_INPUT).performTextReplacement("appLaunchKey456")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_succeeded_text))
+                scenario.onActivity { activity ->
+                    activity.dismissSnackbar()
+                    assertThat(activity.settings.authMode).isEqualTo(AuthMode.APP_LAUNCH)
+                    val isEncrypted = runBlocking {
+                        activity.importFromUtil.isJsonFileEncrypted(appLaunchEncFile.toUri())
+                    }
+                    assertThat(isEncrypted).isTrue()
+                    val dbTokens = runBlocking { activity.otpTokenDatabase.otpTokenDao().getAll().first() }
+                    assertThat(dbTokens.all { it.encryptionType == EncryptionType.PLAIN_TEXT }).isTrue()
+                }
+
+                nextExportTargetFile = appLaunchDecFile
+                composeRule.openOverflowMenu()
+                composeRule.onNodeWithText(string(R.string.export_text)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_json_format))
+                composeRule.onNodeWithText(string(R.string.export_json_format)).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.export_encryption_choice_title))
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_NEGATIVE_BUTTON).performClick()
+
+                composeRule.awaitTextDisplayed(string(R.string.export_succeeded_text))
+                scenario.onActivity { activity ->
+                    activity.dismissSnackbar()
+                    val isEncrypted = runBlocking {
+                        activity.importFromUtil.isJsonFileEncrypted(appLaunchDecFile.toUri())
+                    }
+                    assertThat(isEncrypted).isFalse()
+                }
+
+                // 5. Round-trip import of both encrypted backups via the Import JSON dialog
+                scenario.onActivity { activity ->
+                    runBlocking(Dispatchers.IO) {
+                        activity.otpTokenDatabase.otpTokenDao().deleteAll()
+                    }
+                    activity.onDocumentPicked(MainActivity.DocumentAction.IMPORT_JSON, noneEncFile.toUri())
+                }
+                composeRule.awaitTagDisplayed(UiTestTags.SECURE_KEY_INPUT)
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("wrongKey")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                composeRule.awaitTextDisplayed(string(R.string.incorrect_encryption_key))
+
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("noneBackupKey123")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                val restoredFromNone = TestWaitUtil.awaitStoredTokens(scenario, expectedCount = 2)
+                assertThat(restoredFromNone.map { it.secret })
+                    .containsExactly(TestData.OTP_HOTP_TOKEN_1.secret, TestData.OTP_TOTP_TOKEN_2.secret)
+                    .inOrder()
+
+                scenario.onActivity { activity ->
+                    activity.dismissSnackbar()
+                    activity.onDocumentPicked(MainActivity.DocumentAction.IMPORT_JSON, appLaunchEncFile.toUri())
+                }
+                composeRule.awaitTagDisplayed(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO)
+                composeRule.onNodeWithTag(UiTestTags.IMPORT_MODE_REPLACE_ALL_RADIO).performClick()
+                composeRule.onNodeWithTag(UiTestTags.SECURE_KEY_INPUT).performTextReplacement("appLaunchKey456")
+                composeRule.onNodeWithTag(UiTestTags.DIALOG_POSITIVE_BUTTON).performClick()
+                val restoredFromAppLaunch = TestWaitUtil.awaitStoredTokens(scenario, expectedCount = 2)
+                assertThat(restoredFromAppLaunch.map { it.secret })
+                    .containsExactly(TestData.OTP_HOTP_TOKEN_1.secret, TestData.OTP_TOTP_TOKEN_2.secret)
+                    .inOrder()
+            }
+        } finally {
+            noneEncFile.delete()
+            noneDecFile.delete()
+            appLaunchEncFile.delete()
+            appLaunchDecFile.delete()
+        }
+    }
+
     private fun findDialogPasswordLayouts(activity: MainActivity): List<TextInputLayout> {
         val result = mutableListOf<TextInputLayout>()
         fun collect(view: View) {

@@ -92,10 +92,16 @@ fun SortConfirmationDialog(
 
 @Composable
 fun ExportEncryptionChoiceDialog(
+    useCurrentKeyMessage: Boolean = true,
     onExportEncrypted: () -> Unit,
     onExportDecrypted: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val messageRes = if (useCurrentKeyMessage) {
+        R.string.export_encryption_choice_message
+    } else {
+        R.string.export_encryption_choice_any_mode_message
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         properties = rememberSecureDialogProperties(),
@@ -104,7 +110,7 @@ fun ExportEncryptionChoiceDialog(
             Text(text = stringResource(R.string.export_encryption_choice_title))
         },
         text = {
-            Text(text = stringResource(R.string.export_encryption_choice_message))
+            Text(text = stringResource(messageRes))
         },
         confirmButton = {
             ThreeActionDialogButtons(

@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Введіть ключ шифрування, щоб продовжити.</string>
     <string name="export_encryption_choice_title">Експорт ключів</string>
     <string name="export_encryption_choice_message">Експортувати ключі зашифрованими поточним ключем шифрування чи розшифрованими у вигляді звичайного тексту?</string>
+    <string name="export_encryption_choice_any_mode_message">Експортувати ключі зашифрованими ключем шифрування чи розшифрованими у вигляді звичайного тексту?</string>
+    <string name="export_set_encryption_key_message">Введіть ключ (щонайменше %1$d символів), щоб зашифрувати цю резервну копію JSON. Запам’ятайте цей ключ — він знадобиться для подальшого імпорту резервної копії.</string>
     <string name="export_encrypted">Експортувати зашифрованими</string>
     <string name="export_decrypted">Експортувати розшифрованими</string>
     <string name="import_encrypted_backup_title">Імпорт зашифрованих ключів</string>

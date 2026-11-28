@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">أدخل مفتاح التشفير للمتابعة.</string>
     <string name="export_encryption_choice_title">تصدير الرموز</string>
     <string name="export_encryption_choice_message">هل تريد تصدير رموزك مشفّرة بمفتاحك الحالي أم غير مشفّرة كنص عادي؟</string>
+    <string name="export_encryption_choice_any_mode_message">هل تريد تصدير رموزك مشفّرة بمفتاح تشفير أم غير مشفّرة كنص عادي؟</string>
+    <string name="export_set_encryption_key_message">أدخل مفتاحًا (%1$d أحرف على الأقل) لتشفير نسخة JSON الاحتياطية هذه. تذكّر هذا المفتاح — فستحتاج إليه لاستيراد النسخة الاحتياطية لاحقًا.</string>
     <string name="export_encrypted">تصدير مشفّر</string>
     <string name="export_decrypted">تصدير غير مشفّر</string>
     <string name="import_encrypted_backup_title">استيراد رموز مشفّرة</string>

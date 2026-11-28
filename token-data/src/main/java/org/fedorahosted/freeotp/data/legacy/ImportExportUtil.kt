@@ -112,32 +112,22 @@ class ImportExportUtil @Inject constructor(
         }
     }
 
-    suspend fun exportJsonFile(uri: Uri, encrypt: Boolean = false) {
+    suspend fun exportJsonFile(
+        uri: Uri,
+        encrypt: Boolean = false,
+        backupSetupMaterial: TokenCryptoManager.SetupMaterial? = null
+    ) {
         withContext(Dispatchers.IO) {
             val otpTokens = otpTokenDatabase.otpTokenDao().getAll().first()
 
-            val jsonString = if (encrypt) {
-                val metadata = tokenCryptoManager.getEncryptionMetadata()
-                    ?: throw IllegalStateException("Encryption metadata not available")
-                val encryptedTokens = otpTokens.map { token ->
-                    EncryptedExportToken.fromOtpToken(tokenCryptoManager.encryptTokenForStorage(token))
-                }
-                gson.toJson(
-                    EncryptedExportBundle(
-                        version = 1,
-                        encrypted = true,
-                        kdfSalt = metadata.kdfSalt,
-                        kdfIterations = metadata.kdfIterations,
-                        keyVerifier = metadata.keyVerifier,
-                        tokens = encryptedTokens
-                    )
-                )
-            } else {
-                val plainTokens = otpTokens.map { tokenCryptoManager.decryptToken(it) }
-                val legacyTokens = migrationUtil.convertOtpTokensToLegacyTokens(plainTokens)
-                val tokenOrder = legacyTokens.mapNotNull { it.id }
-                gson.toJson(SavedTokens(legacyTokens, tokenOrder))
-            }
+            val jsonString = buildExportJsonString(
+                otpTokens = otpTokens,
+                encrypt = encrypt,
+                backupSetupMaterial = backupSetupMaterial,
+                migrationUtil = migrationUtil,
+                tokenCryptoManager = tokenCryptoManager,
+                gson = gson
+            )
 
             openTruncatedOutputStream(uri).use { outputStream ->
                 BufferedOutputStream(outputStream).use { buffered ->
@@ -145,6 +135,15 @@ class ImportExportUtil @Inject constructor(
                     buffered.flush()
                 }
             }
+        }
+    }
+
+    suspend fun exportJsonFileWithPassphrase(uri: Uri, passphrase: CharArray) {
+        val setupMaterial = tokenCryptoManager.deriveSetupMaterial(passphrase)
+        try {
+            exportJsonFile(uri, encrypt = true, backupSetupMaterial = setupMaterial)
+        } finally {
+            setupMaterial.clear()
         }
     }
 
@@ -385,6 +384,72 @@ class ImportExportUtil @Inject constructor(
 
     companion object {
         private const val MAX_JSON_BACKUP_BYTES = 32 * 1024 * 1024 // 32 MB safety cap
+
+        internal suspend fun buildExportJsonString(
+            otpTokens: List<OtpToken>,
+            encrypt: Boolean,
+            backupSetupMaterial: TokenCryptoManager.SetupMaterial? = null,
+            migrationUtil: MigrationUtil? = null,
+            tokenCryptoManager: TokenCryptoManager,
+            gson: Gson
+        ): String {
+            if (!encrypt) {
+                val resolvedMigrationUtil = requireNotNull(migrationUtil) {
+                    "MigrationUtil is required for plaintext JSON export"
+                }
+                val plainTokens = otpTokens.map { tokenCryptoManager.decryptToken(it) }
+                val legacyTokens = resolvedMigrationUtil.convertOtpTokensToLegacyTokens(plainTokens)
+                val tokenOrder = legacyTokens.mapNotNull { it.id }
+                return gson.toJson(SavedTokens(legacyTokens, tokenOrder))
+            }
+
+            if (backupSetupMaterial != null) {
+                val keyBytes = backupSetupMaterial.keyBytes.copyOf()
+                try {
+                    val encryptedTokens = otpTokens.map { token ->
+                        val plainSecret = if (token.encryptionType == EncryptionType.ENCRYPTED) {
+                            tokenCryptoManager.decryptSecret(token)
+                        } else {
+                            token.secret
+                        }
+                        EncryptedExportToken.fromOtpToken(
+                            token.copy(
+                                secret = CryptoEngine.encryptSecret(plainSecret, keyBytes),
+                                encryptionType = EncryptionType.ENCRYPTED
+                            )
+                        )
+                    }
+                    return gson.toJson(
+                        EncryptedExportBundle(
+                            version = 1,
+                            encrypted = true,
+                            kdfSalt = backupSetupMaterial.kdfSalt,
+                            kdfIterations = backupSetupMaterial.kdfIterations,
+                            keyVerifier = backupSetupMaterial.keyVerifier,
+                            tokens = encryptedTokens
+                        )
+                    )
+                } finally {
+                    keyBytes.fill(0)
+                }
+            }
+
+            val metadata = tokenCryptoManager.getEncryptionMetadata()
+                ?: throw IllegalStateException("Encryption metadata not available")
+            val encryptedTokens = otpTokens.map { token ->
+                EncryptedExportToken.fromOtpToken(tokenCryptoManager.encryptTokenForStorage(token))
+            }
+            return gson.toJson(
+                EncryptedExportBundle(
+                    version = 1,
+                    encrypted = true,
+                    kdfSalt = metadata.kdfSalt,
+                    kdfIterations = metadata.kdfIterations,
+                    keyVerifier = metadata.keyVerifier,
+                    tokens = encryptedTokens
+                )
+            )
+        }
 
         internal fun inspectJsonBackupString(gson: Gson, jsonText: String): JsonBackupInspection {
             if (jsonText.isBlank()) {

@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Geben Sie Ihren Verschlüsselungsschlüssel ein, um fortzufahren.</string>
     <string name="export_encryption_choice_title">Token exportieren</string>
     <string name="export_encryption_choice_message">Möchten Sie Ihre Token mit Ihrem aktuellen Schlüssel verschlüsselt oder unverschlüsselt im Klartext exportieren?</string>
+    <string name="export_encryption_choice_any_mode_message">Möchten Sie Ihre Token mit einem Verschlüsselungs&#x00AD;schlüssel verschlüsselt oder unverschlüsselt im Klartext exportieren?</string>
+    <string name="export_set_encryption_key_message">Geben Sie einen Schlüssel (mindestens %1$d Zeichen) ein, um diese JSON-Sicherung zu verschlüsseln. Merken Sie sich diesen Schlüssel — Sie benötigen ihn später zum Importieren der Sicherung.</string>
     <string name="export_encrypted">Verschlüsselt exportieren</string>
     <string name="export_decrypted">Entschlüsselt exportieren</string>
     <string name="import_encrypted_backup_title">Verschlüsselte Token importieren</string>

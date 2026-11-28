@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">続行するには暗号化キーを入力してください。</string>
     <string name="export_encryption_choice_title">トークンのエクスポート</string>
     <string name="export_encryption_choice_message">現在のキーで暗号化してエクスポートしますか、それとも平文に復号してエクスポートしますか？</string>
+    <string name="export_encryption_choice_any_mode_message">暗号化キーで暗号化してエクスポートしますか、それとも平文に復号してエクスポートしますか？</string>
+    <string name="export_set_encryption_key_message">このJSONバックアップを暗号化するためのキー（%1$d文字以上）を入力してください。このキーは忘れないようにしてください — 後でバックアップをインポートする際に必要になります。</string>
     <string name="export_encrypted">暗号化してエクスポート</string>
     <string name="export_decrypted">復号してエクスポート</string>
     <string name="import_encrypted_backup_title">暗号化されたトークンのインポート</string>

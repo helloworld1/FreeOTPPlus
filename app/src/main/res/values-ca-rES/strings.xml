@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Introdueix la teva clau de xifratge per continuar.</string>
     <string name="export_encryption_choice_title">Exporta els OTP</string>
     <string name="export_encryption_choice_message">Vols exportar els teus OTP xifrats amb la clau actual o desxifrats en text pla?</string>
+    <string name="export_encryption_choice_any_mode_message">Vols exportar els teus OTP xifrats amb una clau de xifratge o desxifrats en text pla?</string>
+    <string name="export_set_encryption_key_message">Introdueix una clau (d\'almenys %1$d caràcters) per xifrar aquesta còpia de seguretat JSON. Recorda aquesta clau — la necessitaràs per importar la còpia de seguretat més endavant.</string>
     <string name="export_encrypted">Exporta xifrat</string>
     <string name="export_decrypted">Exporta desxifrat</string>
     <string name="import_encrypted_backup_title">Importa OTP xifrats</string>

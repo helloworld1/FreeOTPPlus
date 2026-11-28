@@ -165,6 +165,8 @@
     <string name="verify_encryption_key_message">Enter your encryption key to continue.</string>
     <string name="export_encryption_choice_title">Export tokens</string>
     <string name="export_encryption_choice_message">Do you want to export your tokens encrypted with your current key or decrypted in plain text?</string>
+    <string name="export_encryption_choice_any_mode_message">Do you want to export your tokens encrypted with an encryption key or decrypted in plain text?</string>
+    <string name="export_set_encryption_key_message">Enter a key (at least %1$d characters) to encrypt this JSON backup. Remember this key — you will need it to import the backup later.</string>
     <string name="export_encrypted">Export encrypted</string>
     <string name="export_decrypted">Export decrypted</string>
     <string name="import_encrypted_backup_title">Import encrypted tokens</string>

@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Voer jou enkripsiesleutel in om voort te gaan.</string>
     <string name="export_encryption_choice_title">Voer kentekens uit</string>
     <string name="export_encryption_choice_message">Wil jy jou kentekens met jou huidige sleutel geënkripteer of gedekripteer in gewone teks uitvoer?</string>
+    <string name="export_encryption_choice_any_mode_message">Wil jy jou kentekens met \'n enkripsiesleutel geënkripteer of gedekripteer in gewone teks uitvoer?</string>
+    <string name="export_set_encryption_key_message">Voer \'n sleutel (ten minste %1$d karakters) in om hierdie JSON-rugsteun te enkripteer. Onthou hierdie sleutel — jy sal dit later nodig hê om die rugsteun in te voer.</string>
     <string name="export_encrypted">Voer geënkripteer uit</string>
     <string name="export_decrypted">Voer gedekripteer uit</string>
     <string name="import_encrypted_backup_title">Voer geënkripteerde kentekens in</string>

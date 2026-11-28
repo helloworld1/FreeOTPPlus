@@ -142,6 +142,8 @@
     <string name="verify_encryption_key_message">Introduce a túa clave de cifrado para continuar.</string>
     <string name="export_encryption_choice_title">Exportar tokens</string>
     <string name="export_encryption_choice_message">Queres exportar os teus tokens cifrados coa túa clave actual ou descifrados en texto simple?</string>
+    <string name="export_encryption_choice_any_mode_message">Queres exportar os teus tokens cifrados cunha clave de cifrado ou descifrados en texto simple?</string>
+    <string name="export_set_encryption_key_message">Introduce unha clave (de polo menos %1$d caracteres) para cifrar esta copia de seguranza JSON. Lembra esta clave — precisarála para importar a copia de seguranza máis adiante.</string>
     <string name="export_encrypted">Exportar cifrado</string>
     <string name="export_decrypted">Exportar descifrado</string>
     <string name="import_encrypted_backup_title">Importar tokens cifrados</string>
